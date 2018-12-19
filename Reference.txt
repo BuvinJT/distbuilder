@@ -43,14 +43,7 @@ BUILDING STAND-ALONE EXECUTABLES
             implicitly does this for you when there is 
             a source to copy.  This additional option is
             for adding new empty directories.
-            
-	Note: To debug a PyInstaller binary, be sure to build it
-	with pyInstConfig.isGui set to *False* even if your 
-	program is a gui. Then, launch it from a terminal window,
-	rather than double clicking on the file. Such will allow 
-	you to see error messages from the embedded Python 
-	interpreter which would otherwise be concealed.
-            
+                        
     -------------------------------------------------------
     To generate an obfuscated version of your project, without 
     converting it to binary, invoke obfuscatePy:
@@ -74,8 +67,8 @@ BUILDING STAND-ALONE EXECUTABLES
     Upon creating a binary or Python obfuscation, use the
     following to test the success of those operations:  
         
-        run( binPath, argsString="" ):
-        runPy( pyPath, argsString="" ):
+        run( binPath, args=[], isDebug=False )
+        runPy( pyPath, args=[] )
         
         Note that the path is returned by buildExecutable and
         obfuscatePy, which allows the results of those to flow
@@ -84,9 +77,20 @@ BUILDING STAND-ALONE EXECUTABLES
         The working directory will be automatically set to 
         to the directory of the path specified.
         
-        The (optional) argsString parameter is an open ended
-        string to pass along to your program.
+        The (optional) args parameter is an open ended
+        list (or string) to pass along to your program.
         
+        Set isDebug=True to debug a PyInstaller binary which
+        was created with pyInstConfig.isGui set to True.
+        Normally, when this configuration is used, messages 
+        sent to the console (e.g. print statements or uncaught 
+        exceptions) are not visible even when launching
+        the application from a terminal. The isDebug option, 
+        however, will expose those messages to you. This can 
+        be invaluable for debugging problems that are unique 
+        to a stand-alone binary, and not present when run in 
+        the original raw script form.
+                
 -------------------------------------------------------------------------------
 BULDING INSTALLERS
 

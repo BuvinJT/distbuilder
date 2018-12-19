@@ -1,5 +1,7 @@
 # Standard Libraries
-from sys import argv, stdout, stderr, exit # @UnusedImport
+from six import PY2, PY3  # @UnusedImport
+from sys import argv, stdout, stderr, exit, \
+    executable as PYTHON_PATH
 from os import system, remove as removeFile, \
     getcwd, chdir, makedirs as makeDir, rename, getenv # @UnusedImport
 from os.path import exists, isfile as isFile, \
@@ -10,20 +12,20 @@ from shutil import rmtree as removeDir, move, make_archive, \
     copytree as copyDir, copyfile as copyFile   # @UnusedImport
 import platform
 from tempfile import gettempdir
-from subprocess import list2cmdline     # @UnusedImport
+from subprocess import Popen, PIPE, STDOUT, list2cmdline
 import traceback
 from distutils.sysconfig import get_python_lib
 import inspect  # @UnusedImport
 
-THIS_DIR   = dirPath( realpath( argv[0] ) )
-IS_WINDOWS = platform.system() == "Windows"
-PY_EXT     = ".py"
+THIS_DIR    = dirPath( realpath( argv[0] ) )
+IS_WINDOWS  = platform.system() == "Windows"
+PY_EXT      = ".py"
 SITE_PACKAGES_PATH = get_python_lib()
 
 __IMPORT_TMPLT       = "import %s"
 __FROM_IMPORT_TMPLT  = "from %s import %s"
 __GET_MOD_PATH_TMPLT = "inspect.getfile( %s )"
-
+    
 def isDir( path ): return exists(path) and not isFile(path)
 
 # absolute path relative to the script directory NOT the working directory    
@@ -33,13 +35,30 @@ def absPath( relativePath ):
 def tempDirPath(): return gettempdir()
 
 # -----------------------------------------------------------------------------   
-def run( binPath, argsString="" ):
-    wrkDir, fileName = splitPath( binPath ) 
-    _system( '%s %s' % (fileName, argsString), wrkDir )
-
-def runPy( pyPath, argsString="" ):
+def run( binPath, args=[], isDebug=False ):
+    wrkDir, fileName = splitPath( binPath )
+    if isDebug :
+        cmdList = [binPath]
+        if isinstance(args,list): cmdList.extend( args )
+        else: cmdList.append( args )    
+        print( 'cd "%s"' % (wrkDir,) )
+        print( list2cmdline(cmdList) )
+        p = Popen( cmdList, cwd=wrkDir, shell=False, 
+                   stdout=PIPE, stderr=STDOUT, bufsize=1 )
+        while p.poll() is None:
+            stdout.write( p.stdout.readline() if PY2 else 
+                          p.stdout.readline().decode() )
+            stdout.flush()
+        stdout.write( "\nReturn code: %d\n" % (p.returncode,) )
+        stdout.flush()    
+    else :     
+        if isinstance(args,list): args = list2cmdline(args) 
+        _system( '%s %s' % (fileName, args), wrkDir )
+    
+def runPy( pyPath, args=[] ):
     wrkDir, fileName = splitPath( pyPath )
-    _system( 'python %s %s' % (fileName, argsString), wrkDir )
+    if isinstance(args,list): args = list2cmdline(args)
+    _system( '%s %s %s' % (PYTHON_PATH, fileName, args), wrkDir )
 
 def _system( cmd, wrkDir=None ):
     if wrkDir is not None:
@@ -48,7 +67,7 @@ def _system( cmd, wrkDir=None ):
         chdir( wrkDir  )
     print( cmd )
     system( cmd ) # synchronous, streams results to the console implicitly
-    print()   
+    print('')
     if wrkDir is not None: chdir( initWrkDir )
 
 # -----------------------------------------------------------------------------

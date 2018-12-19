@@ -95,7 +95,7 @@ def buildExecutable( name, entryPointPy,
     if not exists(exePath) : 
         raise Exception( "Binary building failure!" )
     print( 'Binary built successfully!\n"%s"' % (exePath,) )
-    print()
+    print('')
 
     # Add additional distribution resources        
     for res in distResources:
@@ -116,7 +116,7 @@ def buildExecutable( name, entryPointPy,
         print( '"Making directory "%s"...' % ( dirToMk ) )
         try: makeDir( dirToMk ) # works recursively
         except Exception as e: printExc( e )   
-    print()
+    print('')
     
     # Return the paths generated    
     return distDirPath, exePath

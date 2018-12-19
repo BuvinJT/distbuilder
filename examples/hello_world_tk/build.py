@@ -35,7 +35,7 @@ pyInstConfig.iconFilePath    = iconPath
 pyInstConfig.versionFilePath = versionFile
 binDir, binPath = buildExecutable( exeName, entryPointPy, 
                     opyConfig=opyConfig, pyInstConfig=pyInstConfig )
-if IS_TESTING_EXE : run( binPath )
+if IS_TESTING_EXE : run( binPath, isDebug=True )
 
 # Installer creation / testing       
 ifwConfig = QtIfwConfig( binDir, pkgName=ifwPkgName, setupExeName=setupName ) 
