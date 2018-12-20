@@ -166,13 +166,12 @@ class QtIfwConfigXml:
                 XmlElement( QtIfwConfigXml.__ARG_TAG, arg, root )                
         for k, v in six.iteritems( self.otherElements ) : XmlElement( k, v, root )
         xml = ET.tostring( root )        
-        return QtIfwConfigXml.__HEADER + (xml.decode() if six.PY3 else xml) 
+        return QtIfwConfigXml.__HEADER + (xml if six.PY2 else xml.decode()) 
         
     def write( self ):
         configDir = QtIfwConfigXml.dirPath()
         if not isDir( configDir ): makeDir( configDir )
         with open( QtIfwConfigXml.path(), 'w' ) as f: 
-            print(str(self))
             f.write( minidom.parseString( str(self) ).toprettyxml() ) 
         
 # -----------------------------------------------------------------------------            
