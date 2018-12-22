@@ -3,22 +3,22 @@
 *Created By: BuvinJ (StackOverflow handle)*  
 *Initial Alpha Release: December 2018*
 
-This repository contains an open source Python library. 
-"Distribution Builder" wraps other libraries and tools 
-including PyInstaller, the Qt Installer Framework, Opy 
+This is an open source (GPLv3) Python library. 
+"Distribution Builder" is a wrapper for other libraries and 
+tools including PyInstaller, the Qt Installer Framework, Opy 
 (a code obfuscater), PIP, and more.  
 
-See ./docs/QuickStart.md for instructions on installation 
+See `./docs/QuickStart.md` for instructions on installation 
 and getting started.
 
 For a more thorough explanation of how to use the 
-library, refer to the Reference.txt file.
+library, refer to the `./docs/Reference.txt` file.
 	
 If you wish to contribute, please refer to the
-ToDo.md file for a list of known bug or desired tasks 
+`./docs/ToDo.md` file for a list of known bug or desired tasks 
 to be completed.
 	
-##IMPORTANT NOTES: 
+## IMPORTANT NOTES: 
 
 BEFORE USE, BACK UP YOUR PROJECT TO ENSURE THERE WILL 
 BE NO WORK LOST!!! 
