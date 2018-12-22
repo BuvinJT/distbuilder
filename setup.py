@@ -1,11 +1,11 @@
 from setuptools import setup
-from distbuilder import __version__
+exec(open('distbuilder/_version.py').read()) # defines __version__
 
 with open( "README.md", "r" ) as f: readme = f.read()
 
 setup (
 	name             = "distbuilder",
-	version          = __version__,
+	version          = __version__,  # @UndefinedVariable
 	author           = "BuvinJ",
     author_email     = "buvintech@gmail.com",
     description      = "Wrapper for other libraries and tools including PyInstaller, " +
@@ -30,9 +30,9 @@ setup (
     ],    
 	packages         = ["distbuilder"],
 	install_requires = [
-		  "opy_distbuilder"
-		, "six"
-		, "PyInstaller"   # Tested on PyInstaller v3.4  
+		  "six"
+		, "PyInstaller"   # Tested on PyInstaller v3.4
+		, "opy_distbuilder"  
 	],
 	include_package_data=True # extra files defined in MANIFEST.in 
 )
