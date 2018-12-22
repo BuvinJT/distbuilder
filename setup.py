@@ -21,10 +21,11 @@ setup (
 		"Topic :: Software Development :: Build Tools",
 		"Development Status :: 3 - Alpha"
     ],    
-	packages         = ["distbuilder"],
+	packages         = ["distbuilder","docs","examples"],
 	install_requires = [
 		  "six"
 		, "PyInstaller"   # Tested on PyInstaller v3.4 
 		, "Opy==1.1.28.1" # Custom Opy Fork 
-	]  
+	],
+	include_package_data=True # extra files defined in MANIFEST.in 
 )

@@ -36,12 +36,17 @@ installed the utility.
       
 #### Installation instructions:
 
-Git clone, or otherwise download, this repository
-to your local machine.
+Generally speaking, installation is as simple as this: 
 
-On Windows, you may then simply run install.bat.  
-On Mac or Linux, you may use the counterpart 
-install.sh instead.
+	pip install distbuilder
+
+If you are installing from the raw source for this 
+project, however, you may Git clone, or otherwise 
+download the repository to your local machine.
+
+On Windows, you may then simply run install.bat
+(or install3.bat). On Mac or Linux, you may use the 
+counterpart install.sh (or install3.sh) instead.
 
 If you encounter failures with those scripts, try
 the "manual approach":
@@ -53,10 +58,19 @@ directory containing this repo, then execute:
 
 (Don't miss the period at the end!)
 
-Or, alternatively, if you don't have pip 
-installed for some reason:
+Or, if that doesn't work for some reason, try:
+
+	python -m pip install .
+
+Or
+	
+	sudo python -m pip install .
+
+Finally, if you don't have pip 
+installed for some reason, try this:
 
 	python setup.py install
+
 
 #### To use:
 
@@ -78,7 +92,7 @@ The easiest way learn how to use distbuilder is likely
 to reference an example.  Review and test the included
 "Hello World Tk Example" (found at this relative path):
 	
-	./examples/hello_world_tk
+	../examples/hello_world_tk
 
 This example requires the standard Python TKinter 
 library	be installed.
@@ -86,7 +100,7 @@ library	be installed.
 Start by confirming you can run the program 
 script in the "natural" manner:
 
-	python ./examples/hello_world_tk/hello.py
+	python ../examples/hello_world_tk/hello.py
 
 Assuming that works, run the build script.  It
 will obfuscate the code, convert the obfuscated .py 
@@ -95,7 +109,7 @@ that bundled into it, move the installer to your
 desktop (for convenience), and launch it (for testing)! 
 Execute the following:
 
-	python ./examples/hello_world_tk/build.py
+	python ../examples/hello_world_tk/build.py
 	
 If all goes well, you will end up with an 
 installer launched at the end of the script.

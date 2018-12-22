@@ -8,7 +8,7 @@ This repository contains an open source Python library.
 including PyInstaller, the Qt Installer Framework, Opy 
 (a code obfuscater), PIP, and more.  
 
-See QuickStart.md for instructions on installation 
+See ./docs/QuickStart.md for instructions on installation 
 and getting started.
 
 For a more thorough explanation of how to use the 
