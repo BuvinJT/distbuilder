@@ -471,6 +471,7 @@ Attributes & default values:
     distDirPath     = None
     isOneFile       = True     (note this differs from PyInstaller default)
     isGui           = False
+    versionInfo     = None
     versionFilePath = None 
     iconFilePath    = None     
     importPaths     = []
@@ -479,6 +480,27 @@ Attributes & default values:
     binaryFilePaths = []
     isAutoElevated  = False        
     otherPyInstArgs = ""  (open ended argument string)    
+
+WindowsExeVersionInfo
+
+Objects of this type define then versioning details branded
+into Windows executables. This is the object type intended
+for PyInstallerConfig.versionInfo attributes. 
+
+Constructor: 
+
+    WindowsExeVersionInfo()
+
+Attributes & default values:        
+
+	major = 0
+    minor = 0
+    micro = 0
+    build = 0
+    companyName = ""
+    productName = ""
+    description = ""
+    exeName     = ""
 
 -------------------------------------------------------
 QtIfwConfig 

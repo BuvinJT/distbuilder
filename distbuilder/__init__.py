@@ -2,7 +2,8 @@ from ._version import __version__
    
 from distbuilder.py_installer import \
       buildExecutable \
-    , PyInstallerConfig
+    , PyInstallerConfig \
+    , WindowsExeVersionInfo
     
 from distbuilder.qt_installer import \
       buildInstaller \

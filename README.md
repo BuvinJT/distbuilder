@@ -1,4 +1,4 @@
-# Distribution Builder (distbuilder) v.0.1.0 *(ALPHA)* 
+# Distribution Builder (distbuilder) v.0.1.x *(ALPHA)* 
 
 *Created By: BuvinJ (StackOverflow handle)*  
 *Initial Alpha Release: December 2018*

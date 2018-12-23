@@ -1,14 +1,12 @@
 # Distribution Builder (distbuild) 
 
-### HIGH LEVEL DOTO LIST
+### IMMEADIATE HIGH LEVEL DOTO LIST
 
 * Test on platforms other than Windows! 
 	(should work in theory, but confirmation required)
 	
 * Create a top level "shared info" class, for data that is used by
 more than one process e.g. the product name, version, etc.
-
-* Add version file generation to pyInstaller wrapper.
 
 * Further develop the Qt IFW wrapper to the point that the entire installer 
 definition can be generated on the fly (at least a primitive installer
