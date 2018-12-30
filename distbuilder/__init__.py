@@ -1,5 +1,8 @@
 from ._version import __version__ 
-   
+
+from distbuilder.master import \
+    ConfigFactory
+       
 from distbuilder.py_installer import \
       buildExecutable \
     , PyInstallerConfig \

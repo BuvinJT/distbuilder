@@ -14,17 +14,24 @@ class PyInstallerConfig:
     """       
     def __init__( self ) :
         self.pyInstallerPath = util._pythonScriptsPath( "pyinstaller" )
+        
         self.name            = None
-        self.distDirPath     = None
-        self.isOneFile       = True # overrides PyInstaller default
+        self.entryPointPy    = None
+        
         self.isGui           = False
+        self.iconFilePath    = None
+
         self.versionInfo     = None 
         self.versionFilePath = None # TODO: offer programmatic version info
-        self.iconFilePath    = None     
+                     
+        self.distDirPath     = None
+        self.isOneFile       = True # overrides PyInstaller default
+        
         self.importPaths     = []
         self.hiddenImports   = []
         self.dataFilePaths   = []
         self.binaryFilePaths = []
+        
         self.isAutoElevated  = False        
         self.otherPyInstArgs = "" # open ended
         
@@ -151,21 +158,31 @@ VSVersionInfo(
     
     def write( self ):
         filePath = self.path() 
-        with open( filePath,'w') as f : 
-            print( "Generating temp version file: %s" % filePath )
-            f.write( str(self) )
-                        
+        with open( filePath,'w') as f : f.write( str(self) )
+    
+    def debug( self ): print( str(self) )
+                            
 # -----------------------------------------------------------------------------   
-def buildExecutable( name, entryPointPy, 
-        opyConfig=None, pyInstConfig=PyInstallerConfig(),
-        distResources=[], distDirs=[] ):
+def buildExecutable( name=None, entryPointPy=None, 
+                     pyInstConfig=PyInstallerConfig(), 
+                     opyConfig=None,                    
+                     distResources=[], distDirs=[] ):
     ''' returns: (binDir, binPath) '''   
     
-    # Ensure pyInstConfig is defined, then
-    # override / auto assign some pyInstConfig values   
-    if pyInstConfig is None: pyInstConfig=PyInstallerConfig()
+    # Ensure pyInstConfig, name & entryPointPy 
+    # are defined an in sync    
+    if pyInstConfig is None: 
+        pyInstConfig=PyInstallerConfig()
+        pyInstConfig.name = name
+        pyInstConfig.entryPointPy = entryPointPy
+    else :
+        name = pyInstConfig.name   
+        entryPointPy = pyInstConfig.entryPointPy     
+    if not name : raise Exception( "Binary name is required" )
+    if not entryPointPy : raise Exception( "Binary entry point is required" )
+    
+    # auto assign some pyInstConfig values        
     distDirPath = joinPath( THIS_DIR, name ) 
-    pyInstConfig.name = name
     pyInstConfig.distDirPath = distDirPath
     if IS_WINDOWS and pyInstConfig.versionInfo is not None: 
         pyInstConfig.versionFilePath = WindowsExeVersionInfo.path()
@@ -179,7 +196,11 @@ def buildExecutable( name, entryPointPy,
         _, entryPointPy = obfuscatePy( name, entryPointPy, opyConfig ) 
 
     # Create a temp version file    
-    if pyInstConfig.versionInfo is not None: pyInstConfig.versionInfo.write()
+    if pyInstConfig.versionInfo is not None:
+        print( "Generating version file: %s" % 
+               (pyInstConfig.versionInfo.path(),) )
+        pyInstConfig.versionInfo.debug() 
+        pyInstConfig.versionInfo.write()
         
     # Build the executable using PyInstaller        
     __runPyInstaller( entryPointPy, pyInstConfig )

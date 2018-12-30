@@ -16,6 +16,24 @@ entryPointPy = "hello.py"
 ifwPkgName   = "com.somecompany.helloworld"
 setupName    = "HelloWorldSetup.exe"
 
+factory = ConfigFactory()
+factory.productName      = "Hello World Example"
+factory.description      = "A Distribution Builder Example"
+factory.companyTradeName = "Some Company"
+factory.companyLegalName = "Some Company Inc."    
+factory.binaryName       = "HelloWorld"
+factory.isGui            = True        
+factory.entryPointPy     = "hello.py"  
+factory.iconFilePath     = "demo.ico" 
+factory.verMajor         = 1
+factory.verMinor         = 0
+factory.verMicro         = 0
+factory.verBuild         = 0 
+factory.setupName        = "HelloWorldSetup.exe"
+factory.ifwPkgName       = "com.somecompany.helloworld"
+
+pyInstConfig = factory.pyInstallerConfig()
+       
 # Process options
 IS_OBFUSCATING         = True
 IS_TESTING_OBFUSCATION = False
@@ -33,22 +51,8 @@ if IS_OBFUSCATING :
 else: opyConfig = None
 
 # Executable creation / testing
-verInfo = WindowsExeVersionInfo()
-verInfo.major = verMajor
-verInfo.minor = verMinor
-verInfo.micro = verMicro
-verInfo.build = verBuild
-verInfo.companyName = companyName
-verInfo.productName = productName
-verInfo.description = description
-verInfo.exeName     = exeName
-            
-pyInstConfig = PyInstallerConfig()
-pyInstConfig.isGui           = True
-pyInstConfig.iconFilePath    = iconPath
-pyInstConfig.versionInfo     = verInfo
-binDir, binPath = buildExecutable( exeName, entryPointPy, 
-                    opyConfig=opyConfig, pyInstConfig=pyInstConfig )
+binDir, binPath = buildExecutable( pyInstConfig=pyInstConfig, 
+                                   opyConfig=opyConfig )
 if IS_TESTING_EXE : run( binPath, isDebug=True )
 
 # Installer creation / testing        
