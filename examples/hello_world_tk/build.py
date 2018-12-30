@@ -25,14 +25,9 @@ factory.binaryName       = "HelloWorld"
 factory.isGui            = True        
 factory.entryPointPy     = "hello.py"  
 factory.iconFilePath     = "demo.ico" 
-factory.verMajor         = 1
-factory.verMinor         = 0
-factory.verMicro         = 0
-factory.verBuild         = 0 
+factory.version          = (1,0,0,0)
 factory.setupName        = "HelloWorldSetup.exe"
 factory.ifwPkgName       = "com.somecompany.helloworld"
-
-pyInstConfig = factory.pyInstallerConfig()
        
 # Process options
 IS_OBFUSCATING         = True
@@ -42,15 +37,16 @@ IS_TESTING_INSTALL     = True
 
 # Obfuscation settings / testing
 if IS_OBFUSCATING :
-    opyConfig = OpyConfig() 
+    opyConfig = factory.opyConfig() 
     opyConfig.external_modules.extend( [ 'tkinter', 'tkinter.ttk' ] )
     if IS_TESTING_OBFUSCATION:
-        obDir, obPath = obfuscatePy( exeName, entryPointPy, opyConfig )
+        obDir, obPath = obfuscatePy( opyConfig )
         runPy( obPath )
         sys.exit()
 else: opyConfig = None
 
 # Executable creation / testing
+pyInstConfig = factory.pyInstallerConfig()
 binDir, binPath = buildExecutable( pyInstConfig=pyInstConfig, 
                                    opyConfig=opyConfig )
 if IS_TESTING_EXE : run( binPath, isDebug=True )

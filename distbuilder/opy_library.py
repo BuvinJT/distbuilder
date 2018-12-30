@@ -9,6 +9,22 @@ STAGE_DIR_PATH = absPath( "stage" )
 LIBRARY_SETUP_FILE_NAME         = "setup.py"
 PACKAGE_ENTRY_POINT_MODULE_NAME = "__init__"
 PACKAGE_ENTRY_POINT_FILE_NAME   = PACKAGE_ENTRY_POINT_MODULE_NAME + PY_EXT
+# -----------------------------------------------------------------------------    
+class OpyConfigExt( OpyConfig ):
+    """
+    See Opy docs for details.
+    """        
+    def __init__( self, name, entryPointPy=None,
+                  bundleLibs=None, sourceDir=None, patches=None ):
+        self.name = name
+        self.entryPointPy = entryPointPy
+        self.bundleLibs = bundleLibs
+        self.sourceDir = ( THIS_DIR if sourceDir is None 
+                           or str(sourceDir)=="" or str(sourceDir)=="."
+                           else sourceDir )        
+        self.patches = patches
+        OpyConfig.__init__( self )
+
 # -----------------------------------------------------------------------------   
 class LibToBundle:
     def __init__( self, name, localDirPath=None, pipConfig=None, isObfuscated=False ):
@@ -35,20 +51,7 @@ class OpyPatch:
     def apply(self): patch( self.path, self.patches )
 
 # -----------------------------------------------------------------------------    
-class OpyConfigExt( OpyConfig ):
-    """
-    See Opy docs for details.
-    """        
-    def __init__( self, bundleLibs=None, sourceDir=None, patches=None ):
-        self.bundleLibs = bundleLibs
-        self.sourceDir = ( THIS_DIR if sourceDir is None 
-                           or str(sourceDir)=="" or str(sourceDir)=="."
-                           else sourceDir )        
-        self.patches = patches
-        OpyConfig.__init__( self )
-
-# -----------------------------------------------------------------------------    
-def obfuscatePy( name, entryPointPy, opyConfig ):
+def obfuscatePy( opyConfig ):
     ''' returns: (obDir, obPath) '''
          
     # Discard prior obfuscated source   
@@ -65,12 +68,12 @@ def obfuscatePy( name, entryPointPy, opyConfig ):
     except : pass
     
     # Don't obfuscate the name of the entry point module
-    try : opyConfig.plain_names.append( splitExt(entryPointPy)[0] )
+    try : opyConfig.plain_names.append( splitExt(opyConfig.entryPointPy)[0] )
     except : pass         
     
     # Suffix all obfuscated names with the project name
     # (to avoid theoretical collisions with plain names)
-    opyConfig.obfuscated_name_tail = "_%s_" % (name,)
+    opyConfig.obfuscated_name_tail = "_%s_" % (opyConfig.name,)
     
     # Create the obfuscated source using Opy    
     opyResults = opy.obfuscate( sourceRootDirectory = sourceDir,
@@ -87,10 +90,11 @@ def obfuscatePy( name, entryPointPy, opyConfig ):
             if p.obfuscatePath( opyResults.obfuscatedFileDict ): p.apply()
     
     # Return the paths generated 
-    return OBFUS_DIR_PATH, joinPath( OBFUS_DIR_PATH, entryPointPy )
+    return OBFUS_DIR_PATH, joinPath( OBFUS_DIR_PATH, opyConfig.entryPointPy )
             
-def obfuscatePyLib( name, opyConfig, 
-        isExposingPackageImports=True, isExposingPublic=True ):
+def obfuscatePyLib( opyConfig, 
+                    isExposingPackageImports=True, 
+                    isExposingPublic=True ):
     ''' returns: (obDir, obPath) '''
     
     # Leave the setup script and all package entry points in plain text
@@ -98,29 +102,27 @@ def obfuscatePyLib( name, opyConfig,
     for root, _, files in os.walk( THIS_DIR ):
         for f in [f for f in files if f==PACKAGE_ENTRY_POINT_FILE_NAME]:
             plainFiles.append( relpath( joinPath(root, f), THIS_DIR ) )         
-    try : opyConfig.plain_files.extend( plainFiles )
-    except : pass
-
-    # Don't obfuscate package entry point name
-    try : opyConfig.plain_names.extend( [name] )
-    except : pass         
+    opyConfig.plain_files.extend( plainFiles )
+    
+    # Don't obfuscate package name
+    opyConfig.plain_names.extend( [opyConfig.name] )
     
     # Optionally, don't obfuscate any of the imports 
     # defined in the package entry point modules by
     # automatically finding those names and adding  
     # them to the clear text list
     if isExposingPackageImports :
-        _, obfuscatedModImports,_ = analyze( 
-              fileList=[PACKAGE_ENTRY_POINT_FILE_NAME]
-            , configSettings=opyConfig )
-        opyConfig.external_modules.extend( obfuscatedModImports )
+        opyResults = analyze( fileList=[PACKAGE_ENTRY_POINT_FILE_NAME], 
+                              configSettings=opyConfig )
+        opyConfig.external_modules.extend( opyResults.obfuscatedModImports )
     
     # Optionally, don't obfuscate anything with public access
     # (e.g. public module constants or class functions/attributes)
-    if isExposingPublic :
-        opyConfig.skip_public = isExposingPublic
+    opyConfig.skip_public = isExposingPublic
     
-    return obfuscatePy( name, LIBRARY_SETUP_FILE_NAME, opyConfig ) 
+    # Create obfuscated the library, designating setup as the entry point
+    opyConfig.entryPointPy = LIBRARY_SETUP_FILE_NAME    
+    return obfuscatePy( opyConfig ) 
 
 def createStageDir( bundleLibs=[], sourceDir=THIS_DIR ):
     ''' returns: stageDir '''

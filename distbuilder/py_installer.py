@@ -193,7 +193,7 @@ def buildExecutable( name=None, entryPointPy=None,
     
     # Optionally, create obfuscated version of source
     if opyConfig is not None: 
-        _, entryPointPy = obfuscatePy( name, entryPointPy, opyConfig ) 
+        _, entryPointPy = obfuscatePy( opyConfig ) 
 
     # Create a temp version file    
     if pyInstConfig.versionInfo is not None:
@@ -203,7 +203,7 @@ def buildExecutable( name=None, entryPointPy=None,
         pyInstConfig.versionInfo.write()
         
     # Build the executable using PyInstaller        
-    __runPyInstaller( entryPointPy, pyInstConfig )
+    __runPyInstaller( pyInstConfig )
     
     # Discard all temp files (but not distDir!)
     __clean( pyInstConfig )
@@ -240,10 +240,10 @@ def buildExecutable( name=None, entryPointPy=None,
     return distDirPath, exePath
 
 # -----------------------------------------------------------------------------    
-def __runPyInstaller( entryPointPy, config ) :          
+def __runPyInstaller( config ) :          
     util._system( '%s %s "%s"' % 
         ( config.pyInstallerPath, str(config), 
-          normpath(entryPointPy) ) )  
+          normpath(config.entryPointPy) ) )  
 
 def __clean( pyInstConfig, distDirPath=None ) :     
     if distDirPath and exists( distDirPath ) :
