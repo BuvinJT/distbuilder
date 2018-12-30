@@ -2,7 +2,7 @@ from distbuilder import util
 from distbuilder.util import *  # @UnusedWildImport
 from distbuilder.opy_library import obfuscatePyLib, OBFUS_DIR_PATH
 
-PIP_PATH      = "pip" # i.e. on the system path
+PIP_PATH      = util._pythonScriptsPath( "pip" )
 PIP_INSTALL   = "install" 
 PIP_UNINSTALL = "uninstall"
 

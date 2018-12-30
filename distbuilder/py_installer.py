@@ -13,7 +13,7 @@ class PyInstallerConfig:
     See PyInstaller docs for details on these settings.
     """       
     def __init__( self ) :
-        self.pyInstallerPath = "pyinstaller" # i.e. on system path
+        self.pyInstallerPath = util._pythonScriptsPath( "pyinstaller" )
         self.name            = None
         self.distDirPath     = None
         self.isOneFile       = True # overrides PyInstaller default
@@ -82,7 +82,7 @@ class PyInstallerConfig:
 
 class WindowsExeVersionInfo:
 
-    TEMP_FILE_NAME = "win_exe_ver_info.tmp"
+    __TEMP_FILE_NAME = "win_exe_ver_info.tmp"
     
     __FILE_TEMPLT = ( 
 """
@@ -116,6 +116,10 @@ VSVersionInfo(
 )
 """
 )
+    
+    @staticmethod
+    def path(): return absPath( WindowsExeVersionInfo.__TEMP_FILE_NAME )
+
     def __init__( self ) :
         self.major = 0
         self.minor = 0
@@ -144,7 +148,13 @@ VSVersionInfo(
             self.exeName if self.companyName.endswith(".exe")
             else self.exeName + ".exe" )                
         return s 
-        
+    
+    def write( self ):
+        filePath = self.path() 
+        with open( filePath,'w') as f : 
+            print( "Generating temp version file: %s" % filePath )
+            f.write( str(self) )
+                        
 # -----------------------------------------------------------------------------   
 def buildExecutable( name, entryPointPy, 
         opyConfig=None, pyInstConfig=PyInstallerConfig(),
@@ -158,9 +168,8 @@ def buildExecutable( name, entryPointPy,
     pyInstConfig.name = name
     pyInstConfig.distDirPath = distDirPath
     if IS_WINDOWS and pyInstConfig.versionInfo is not None: 
-        tempVerFilePath = absPath( WindowsExeVersionInfo.TEMP_FILE_NAME )                     
-        pyInstConfig.versionFilePath = tempVerFilePath
-    else : tempVerFilePath = None
+        pyInstConfig.versionFilePath = WindowsExeVersionInfo.path()
+    else : pyInstConfig.versionInfo = None
     
     # Prepare to build (discard old build files)       
     __clean( pyInstConfig, distDirPath )
@@ -170,11 +179,7 @@ def buildExecutable( name, entryPointPy,
         _, entryPointPy = obfuscatePy( name, entryPointPy, opyConfig ) 
 
     # Create a temp version file    
-    if tempVerFilePath:
-        with open(tempVerFilePath,'wb') as f : 
-            print( "Generating temp version file: %s" %
-                   tempVerFilePath )
-            f.write(str(pyInstConfig.versionInfo))
+    if pyInstConfig.versionInfo is not None: pyInstConfig.versionInfo.write()
         
     # Build the executable using PyInstaller        
     __runPyInstaller( entryPointPy, pyInstConfig )

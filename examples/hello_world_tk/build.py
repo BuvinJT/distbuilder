@@ -51,9 +51,13 @@ binDir, binPath = buildExecutable( exeName, entryPointPy,
                     opyConfig=opyConfig, pyInstConfig=pyInstConfig )
 if IS_TESTING_EXE : run( binPath, isDebug=True )
 
-# Installer creation / testing       
-ifwConfig = QtIfwConfig( binDir, pkgName=ifwPkgName, setupExeName=setupName ) 
+# Installer creation / testing        
 ifwConfigXml = QtIfwConfigXml( productName, exeName, version, companyName, iconPath )
-setupPath = buildInstaller( ifwConfig, ifwConfigXml, isPkgSrcRemoved=True )
+ifwPackageScript = QtIfwPackageScript( ifwPkgName, exeName=exeName )
+ifwPackageXml = QtIfwPackageXml( ifwPkgName, productName, description, version, 
+                                 scriptName=ifwPackageScript.fileName )
+ifwConfig = QtIfwConfig( binDir, pkgName=ifwPkgName, setupExeName=setupName, 
+    configXml=ifwConfigXml, pkgXml=ifwPackageXml, pkgScript=ifwPackageScript )
+setupPath = buildInstaller( ifwConfig, isPkgSrcRemoved=True )
 setupPath = moveToDesktop( setupPath )
 if IS_TESTING_INSTALL : run( setupPath ) #, QT_IFW_VERBOSE_SWITCH )  

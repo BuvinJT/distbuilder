@@ -9,6 +9,8 @@ from distbuilder.qt_installer import \
       buildInstaller \
     , QtIfwConfig \
     , QtIfwConfigXml \
+    , QtIfwPackageXml \
+    , QtIfwPackageScript \
     , QT_IFW_VERBOSE_SWITCH
 
 from distbuilder.pip_installer import \

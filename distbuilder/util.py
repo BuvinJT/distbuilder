@@ -17,10 +17,12 @@ import traceback
 from distutils.sysconfig import get_python_lib
 import inspect  # @UnusedImport
 
-THIS_DIR    = dirPath( realpath( argv[0] ) )
-IS_WINDOWS  = platform.system() == "Windows"
-PY_EXT      = ".py"
+IS_WINDOWS         = platform.system() == "Windows"
+THIS_DIR           = dirPath( realpath( argv[0] ) )
+PY_DIR             = dirPath( PYTHON_PATH )
+PY_SCRIPTS_DIR     = joinPath( PY_DIR, "Scripts" )
 SITE_PACKAGES_PATH = get_python_lib()
+PY_EXT             = ".py"
 
 __IMPORT_TMPLT       = "import %s"
 __FROM_IMPORT_TMPLT  = "from %s import %s"
@@ -31,6 +33,12 @@ def isDir( path ): return exists(path) and not isFile(path)
 # absolute path relative to the script directory NOT the working directory    
 def absPath( relativePath ):    
     return normpath( joinPath( THIS_DIR, relativePath ) )
+
+def _pythonPath( relativePath ):    
+    return normpath( joinPath( PY_DIR, relativePath ) )
+
+def _pythonScriptsPath( relativePath ):    
+    return normpath( joinPath( PY_SCRIPTS_DIR, relativePath ) )
 
 def tempDirPath(): return gettempdir()
 
