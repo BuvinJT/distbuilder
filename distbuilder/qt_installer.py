@@ -157,8 +157,8 @@ class QtIfwConfigXml( _QtIfwXml ):
                    ]
     __ARG_TAG    = "Argument"
         
-    def __init__( self, name, exeName, version, publisher, 
-                  iconFilePath=None ) :
+    def __init__( self, name, exeName, version, publisher,
+                  companyTradeName=None, iconFilePath=None ) :
         _QtIfwXml.__init__( self, QtIfwConfigXml.__ROOT_TAG, 
                             QtIfwConfigXml.__TAGS )
        
@@ -166,8 +166,9 @@ class QtIfwConfigXml( _QtIfwXml ):
         self.iconFilePath = iconFilePath        
         try:    iconBaseName = splitExt( basename(iconFilePath) )[0]
         except: iconBaseName = None
-        self.companyCommonName        = publisher.replace(".","")
-        self.runProgramArgList        = None
+        self.companyTradeName = ( companyTradeName if companyTradeName 
+                                  else publisher.replace(".","") )
+        self.runProgramArgList = None
 
         # TODO: expand on the built-in attributes here...        
         self.Name                     = name
@@ -188,20 +189,20 @@ class QtIfwConfigXml( _QtIfwXml ):
         if self.Version is None: self.Version = "1.0.0" 
 
     def setDefaultTitle( self ) :
-        if self.Title is None: 
-            self.Title = ("%s Setup" % (self.Name)).strip()
+        if self.Title is None: self.Title = self.Name
+            #self.Title = "%s Setup" % (self.Name) # New IFW seem to be adding "Setup" suffix?
     
     def setDefaultPaths( self ) :        
         if self.exeName is not None: 
             # NOTE: THE WORKING DIRECTORY IS NOT SET FOR RUN PROGRAM!
             # THERE DOES NOT SEEM TO BE AN OPTION YET FOR THIS IN QT IFW        
             self.RunProgram = "@TargetDir@/%s" % (self.exeName,)        
-        if (self.companyCommonName is not None) and (self.Name is not None):    
+        if (self.companyTradeName is not None) and (self.Name is not None):    
             self.TargetDir = ( "@ApplicationsDir@/%s/%s" % 
-                                (self.companyCommonName, self.Name) )
+                                (self.companyTradeName, self.Name) )
         if IS_WINDOWS:
-            if self.companyCommonName is not None :
-                self.StartMenuDir = self.companyCommonName
+            if self.companyTradeName is not None :
+                self.StartMenuDir = self.companyTradeName
                                 
     def addCustomTags( self, root ) :
         if self.runProgramArgList is not None and self.RunProgram is not None:            
