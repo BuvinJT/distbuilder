@@ -1,30 +1,27 @@
+import sys
+
 from distbuilder.util import *  # @UnusedWildImport
 
 from distbuilder.py_installer import \
-      PyInstallerConfig \
+      buildExecutable \
+    , PyInstallerConfig \
     , WindowsExeVersionInfo
 
 from distbuilder.opy_library import \
-    OpyConfigExt as OpyConfig
+      obfuscatePy \
+    , OpyConfigExt as OpyConfig
     
 from distbuilder.qt_installer import \
-      QtIfwConfig \
+      buildInstaller \
+    , QtIfwConfig \
     , QtIfwConfigXml \
     , QtIfwPackageXml \
     , QtIfwPackageScript \
     , DEFAULT_SETUP_NAME \
-    , DEFAULT_QT_IFW_SCRIPT_NAME
-    
-"""    
-from distbuilder.pip_installer import \
-    PipConfig 
+    , DEFAULT_QT_IFW_SCRIPT_NAME \
+    , QT_IFW_VERBOSE_SWITCH
 
-from distbuilder.opy_library import \
-      OpyConfigExt as OpyConfig \
-    , OpyPatch \
-    , LibToBundle 
-"""    
-    
+# -----------------------------------------------------------------------------       
 class ConfigFactory:
     
     def __init__( self ) :        
@@ -114,5 +111,52 @@ class ConfigFactory:
 
     def __pkgSrcDirPath( self ):
         if self.pkgSrcDirPath : return self.pkgSrcDirPath
-        return joinPath( THIS_DIR, self.binaryName )                         
+        return joinPath( THIS_DIR, self.binaryName )                 
+    
+# -----------------------------------------------------------------------------
+class PyToBinInstallerProcess:
+
+    def __init__( self, configFactory, isObfuscating=False ) :
+        self.configFactory = configFactory                      
+        self.isObfuscating = isObfuscating
+        self.isTestingObfuscation  = False
+        self.isTestingExe          = False
+        self.isTestingInstall      = False
+        self.isVerboseInstall      = False
+        self.isMovedToDesktop      = True
+
+    def run( self ):
+        
+        if self.isObfuscating :
+            opyConfig = self.configFactory.opyConfig() 
+            self. onOpyConfig( opyConfig )
+            if self.isTestingObfuscation:
+                _, obPath = obfuscatePy( opyConfig )
+                runPy( obPath )
+                sys.exit()
+        else: opyConfig = None
+        
+        pyInstConfig = self.configFactory.pyInstallerConfig()
+        self.onPyInstConfig( pyInstConfig )
+        _, binPath = buildExecutable( pyInstConfig=pyInstConfig, 
+                                           opyConfig=opyConfig )
+        if self.isTestingExe : run( binPath, isDebug=True )
+        
+        ifwConfig = self.configFactory.qtIfwConfig()
+        self.onQtIfwConfig( ifwConfig )
+        setupPath = buildInstaller( ifwConfig, isPkgSrcRemoved=True )
+        if self.isMovedToDesktop :
+            setupPath = moveToDesktop( setupPath )
+        if self.isTestingInstall : 
+            run( setupPath, 
+                 QT_IFW_VERBOSE_SWITCH 
+                 if self.isVerboseInstall else None )  
+
+        print( "\n\nDone!" )
+
+    # Use these to further customize the build process once the 
+    # ConfigFactory has produced each initial config object
+    def onOpyConfig( self, cfg ):    """VIRTUAL"""                    
+    def onPyInstConfig( self, cfg ): """VIRTUAL"""
+    def onQtIfwConfig( self, cfg ):  """VIRTUAL"""                
                         
