@@ -1,37 +1,150 @@
 # Distribution Builder (distbuilder) 
 ### Reference Manual 
 
+#### HIGH-LEVEL CONFIG FACTORY
+
+It is typical for a build script to start by creating
+a ConfigFactory and setting its attributes.
+
+The major functions within the distbuilder library rely
+upon a collection of "configuration" objects which supply
+parameters to drive various processes.  Many of these 
+classes have overlapping attributes, and scripts employing 
+a series of these tend to have a great deal of redundant
+parameter passing.  With this in mind, a high-level
+ConfigFactory class was created.  
+
+*ConfigFactory*
+
+Using this class, you can produce config objects without 
+having to supply the same values repeatedly.  Then, you 
+may customize the objects if needed after they've been 
+roughly defined for you.    
+
+Constructor:
+
+    ConfigFactory()
+    
+Attributes & default values:                                               
+
+    productName = None
+    description = None
+    
+    companyTradeName = None
+    companyLegalName = None      
+            
+    opyBundleLibs = None
+    opyPatches    = None
+    
+    binaryName   = None  
+    isGui        = False           
+    entryPointPy = None
+    iconFilePath = None       
+    version      = (0,0,0,0)
+		
+    setupName        = "setup"
+    ifwDefDirPath    = None
+    pkgSrcDirPath    = None
+    ifwPkgName       = None
+    ifwPkgNamePrefix = "com"    
+    ifwScriptName    = "installscript.qs"
+    ifwScript        = None
+    ifwScriptPath    = None   
+
+Object creation functions:
+
+    pyInstallerConfig()    
+    opyConfig()
+    qtIfwConfig()
+    qtIfwConfigXml()
+    qtIfwPackageXml()    
+    qtIfwPackageScript()
+
+#### HIGH-LEVEL PROCESS CLASSES
+
+Many build scripts will follow the same essential
+logic flow, to produce analogous distributions. 
+As such, using high-level process classes can prevent 
+having multiple implementation scripts be virtual 
+copies of one another, each containing a fair volume 
+of code.  
+
+*PyToBinInstallerProcess* 
+
+This process class converts a program written as .py
+scripts to a stand-alone binary, then packages it 
+for deployment within an installer.  It uses a
+ConfigFactory to automatically produce the config 
+objects it requires, but allows a client to modify
+those objects before they are implemented by defining
+a derived class and overriding certain functions as 
+needed for this purpose.       
+
+Constructor:
+
+    PyToBinInstallerProcess( configFactory, 
+                             isObfuscating=False, isMovedToDesktop=False )
+    
+Attributes & default values:
+                                               
+    configFactory         = <required>                      
+    isObfuscating         = False
+    isMovedToDesktop      = False
+    isTestingObfuscation  = False
+    isTestingExe          = False
+    isTestingInstall      = False
+    isVerboseInstall      = False
+    
+"Virtual" configuration functions to override:  
+
+    onOpyConfig( cfg )                    
+    onPyInstConfig( cfg )
+    onQtIfwConfig( cfg )              
+
+Use:
+
+Simply invoke the `run()` function to execute the process. 
+
+
 #### BUILDING STAND-ALONE EXECUTABLES
         
 To build a stand-alone binary distribution of a Python
 program, invoke the buildExecutable function: 
 
-    buildExecutable( name, entryPointPy, 
+    buildExecutable( name=None, entryPointPy=None,, 
+        			 pyInstConfig=PyInstallerConfig(), 
         			 opyConfig=None, 
-        			 pyInstConfig=PyInstallerConfig(),
 				     distResources=[], distDirs=[] )
     
 Returns (binDir, binPath): a tuple containing:
     the absolute path to the package created,
-    the absolute path to the binary created  
+    the absolute path to the binary created 
+    (within the package). 
 
-name: The name to give your resulting executable 
-    and package distribution directory.  
+name: The (optional) name given to both the resulting 
+	executable and package distribution directory.
+	This argument is only applied if pyInstConfig 
+	is None. If omitted, the pyInstConfig attribute 
+	for this is used.
     
-entryPointPy: The path to the Python script where 
-    execution begins.             
-    
-opyConfig: An (optional) OpyConfig object, 
-    to dictate code obfuscation details using 
-    the Opy Library. If omitted, no obfuscation 
-    will be performed.  
-    
+entryPointPy: The (optional) path to the Python script 
+	where execution begins. This argument is only 
+	applied	if pyInstConfig is None. If omitted, the 
+	pyInstConfig attribute for this is used.
+        
 pyInstConfig: An (optional) PyInstallerConfig 
     object to dictate extended details for building 
     the binary using the PyInstaller Utility. If 
-    omitted, default settings will be used.
+    omitted, the name and entryPointPy arguments, 
+    plus other default settings will be used.
     See "SUPPORT CLASSES" for more details.  
-    
+
+opyConfig: An (optional) OpyConfig object, to 
+	dictate code obfuscation details using the Opy 
+	Library. If omitted (or explicitly specified as  
+	None), no obfuscation will be performed.  
+    See "SUPPORT CLASSES" for more details.  
+     
 distResources: An (optional) list of external 
     resources to bundle into the distribution package 
     containing the binary. You may use a simple 
@@ -54,17 +167,19 @@ distDirs: An (optional) list of directories to
 To generate an obfuscated version of your project, without 
 converting it to binary, invoke obfuscatePy:
 
-    obfuscatePy( name, entryPointPy, opyConfig )
+    obfuscatePy( opyConfig )
 
 Returns (obDir, obPath): a tuple containing:
-    the absolute path to the obfuscated directory,
-    the absolute path to the obfuscated entry point script  
-
-See the buildExecutable description for more info.  This
-is an optional sub operation within that.
+    the absolute path to the obfuscated package,
+    the absolute path to the obfuscated entry point script
+    (within the package). 
+    
+opyConfig: An OpyConfig object, which dictates the 
+    code obfuscation details using the Opy Library. 
+    See "SUPPORT CLASSES" for more details.  
     
 Upon invoking this, you will be left with an "obfuscated"
-directory adjacent to build.py.  This is a useful 
+directory adjacent to your build script.  This is a useful 
 preliminary step to take, prior to running buildExecutable, 
 so that you may inspect and test the obfuscation results 
 before building the final distribution package.
@@ -100,24 +215,21 @@ the original raw script form.
 #### BULDING INSTALLERS
 
 Upon creating a distribution (especially a stand-alone binary), 
-the    next logical progression is to bundle that into a full-scale 
+the next logical progression is to bundle that into a full-scale 
 installer. This library is designed to employ the open source,
 cross platform utility: Qt IFW  (i.e. "Qt Installer Framework") 
 for such purposes. While the prototypical implementation of this
 tool is with a Qt C++ program, it is equally usable for a Python
-program (even more so if using "Qt for Python", and perhaps a
-QML driven interface...).  (Currently) to create an installer, 
-you must first define it using framework, but once that has been 
-done you may simply invoke buildInstaller to run the utility:
+program (especially if using "Qt for Python", and a QML driven 
+interface...).  
 
-    buildInstaller( qtIfwConfig, 
-                    qtIfwConfigXml=None, isPkgSrcRemoved=False )
+    buildInstaller( qtIfwConfig, isPkgSrcRemoved=False )
 
 Returns: the absolute path to the setup executable created.  
 
 qtIfwConfig: A (required) QtIfwConfig object which dictates 
-     the details for building an installer. Perhaps most
-     critically, this object includes a "qtIfwDirPath"
+     the details for building an installer.      
+     Perhaps most critically, this object includes a "qtIfwDirPath"
      attribute. As this utility's path is not readily
      resolvable, such allows the user to define that.
      If omitted, the library will look for an 
@@ -126,20 +238,22 @@ qtIfwConfig: A (required) QtIfwConfig object which dictates
      all your build scripts may then draw upon that)
      and your project collaborators may independently 
      define their own paths.
-     Note also the need to define a "pkgName" which is
+     The distbuild library allows you either define a
+     QtIFW installer in the full/natural manner, and then
+     drawn upon that resource, or it can generate one from 
+     entiretly from scratch, or any combination thereof is 
+     possible. Setting the attribute installerDefDirPath, 
+     indicates that the installer definition (or at least part 
+     of it) already exists and is to be used.  Dynamic components
+     can be defined via attributes for the nested objects of type
+     QtIfwConfigXml, QtIfwPackageXml, and QtIfwPackageScript.     
+     See "SUPPORT CLASSES" for more details.                         
+     Other key attributes include the "pkgName", which is
      the sub directory where your content will be 
-     dynamically copied, and the "pkgSrcDirPath", which 
-     will typically be the "binDir" returned by 
-     buildExecutable. See "SUPPORT CLASSES" for more details.                    
-        
-qtIfwConfigXml: An (optional) QtIfwConfigXml object which
-    defines the contents of a config.xml which will be 
-    dynamically generated at build time.  This file is 
-    represents the highest level definition of a Qt IFW 
-    installer, containing information such as the product 
-    name and version. If omitted, it is assumed this
-    file is already present in the installer definition.
-    See "SUPPORT CLASSES" for more details.            
+     dynamically copied to within the installer, and the 
+     "pkgSrcDirPath" (most typically the "binDir" returned 
+     by buildExecutable), which is source path of the 
+     content. 
     
 isPkgSrcRemoved: A "convenience" option denoting if the 
     package source content directory should be deleted 
@@ -161,7 +275,7 @@ To generate an obfuscated version of your project, which
 you can then distribute as an importable library, invoke 
 obfuscatePyLib:
  
-    obfuscatePyLib( name, opyConfig, 
+    obfuscatePyLib( opyConfig, 
                     isExposingPackageImports=True, 
                     isExposingPublic=True )
 
@@ -170,17 +284,16 @@ Returns (obDir, setupPath): a tuple containing:
     the absolute path to the (non obfuscated) setup.py 
     script within the prepared package  
 
-name: The name of your library.  
 opyConfig: An OpyConfig object, to dictate code 
     obfuscation details using the Opy Library. 
     See "SUPPORT CLASSES" for more details.  
     
-isExposingPackageImports: Option to not obfuscate 
+isExposingPackageImports: Option to NOT obfuscate 
     any of the imports defined in the package 
     entry point modules (i.e. __init__.py files).
     This is the default mode for a library.  
     
-isExposingPublic: Option to not obfuscate anything 
+isExposingPublic: Option to NOT obfuscate anything 
     which it is naturally granting public access 
     (e.g. module constants, functions, classes, 
     and class members).  All locals and those 
@@ -252,11 +365,11 @@ The Opy Library contains an OpyConfig class, which has been extended
 by this library (and aliased with the same name).  The revised /
 extended class contains attributes for patching the obfuscation and
 for bundling the source of external libraries (so that they too maybe 
-obfuscated). This new configuration type has the additional attributes:
+obfuscated). This new configuration type has the notable additions:
  
+    patches
     bundleLibs 
     sourceDir
-    patches
 
 Patching:
 
@@ -454,7 +567,7 @@ are generally used as arguments to various functions in
 this library.
 
 -------------------------------------------------------
-PyInstallerConfig    
+*PyInstallerConfig*    
 
 Objects of this type define *optional* details for building 
 binaries from .py scripts using the PyInstaller utility 
@@ -466,26 +579,33 @@ Constructor:
 
 Attributes & default values:        
 
-    pyInstallerPath = "pyinstaller"  (i.e. on system path)
-    name            = None
-    distDirPath     = None
-    isOneFile       = True     (note this differs from PyInstaller default)
+    pyInstallerPath = <python scripts directory>/pyinstaller
+      
+    name            = None   
+    entryPointPy    = None
+      
     isGui           = False
+    iconFilePath    = None
+      
     versionInfo     = None
-    versionFilePath = None 
-    iconFilePath    = None     
+    versionFilePath = None
+           
+    distDirPath     = None    
+    isOneFile       = True     (note this differs from PyInstaller default)
+      
     importPaths     = []
     hiddenImports   = []
     dataFilePaths   = []
     binaryFilePaths = []
+      
     isAutoElevated  = False        
     otherPyInstArgs = ""  (open ended argument string)    
 
-WindowsExeVersionInfo
+*WindowsExeVersionInfo*
 
-Objects of this type define then versioning details branded
-into Windows executables. This is the object type intended
-for PyInstallerConfig.versionInfo attributes. 
+Objects of this type define metadata branded into Windows 
+executables. This is the object type intended for 
+PyInstallerConfig.versionInfo attributes. 
 
 Constructor: 
 
@@ -503,7 +623,7 @@ Attributes & default values:
     exeName     = ""
 
 -------------------------------------------------------
-QtIfwConfig 
+*QtIfwConfig* 
 
 Objects of this type define the details for building 
 an installer using the QtIFW utility invoked via the
@@ -513,32 +633,35 @@ Constructor:
 
     QtIfwConfig( pkgSrcDirPath=None, pkgSrcExePath=None,                  
                  pkgName=None, installerDefDirPath=None,
-                 setupExeName=DEFAULT_SETUP_NAME ) 
+                 configXml=None, pkgXml=None, pkgScript=None,
+                 setupExeName=DEFAULT_SETUP_NAME  ) 
                      
 Attributes & default values:                                               
 
-    (basic installer definition)
-        pkgName             = None
-        installerDefDirPath = "installer"
-    (content)
-        pkgSrcDirPath   = None
-        pkgSrcExePath   = None
-        othContentPaths = None                     
-    (exe names)
-        exeName      = None   
-        setupExeName = DEFAULT_SETUP_NAME ("setup.exe")
-    (IFW tool path) 
-        qtIfwDirPath = None    (attempt to use environmental variable QT_IFW_DIR)
-    (other IFW command line options)
-        isDebugMode    = False
-        otherqtIfwArgs = ""
-    (Qt C++ Content extended details / requirements)
-        isQtCppExe     = False
-        isMingwExe     = False
-        qtBinDirPath   = None  (attempt to use environmental variable QT_BIN_DIR)
-        qmlScrDirPath  = None  (for QML projects only)                    
+    pkgName             = None
+    installerDefDirPath = "installer"
+	configXml           = None
+	pkgXml              = None
+	pkgScript           = None     
+        
+    pkgSrcDirPath   = None
+    pkgSrcExePath   = None
+    othContentPaths = None                     
 
-QtIfwConfigXml 
+    exeName      = None   
+    setupExeName = "setup"
+
+    qtIfwDirPath = None    (attempt to use environmental variable QT_IFW_DIR)
+
+    isDebugMode    = False
+    otherqtIfwArgs = ""
+
+    isQtCppExe     = False
+    isMingwExe     = False
+    qtBinDirPath   = None  (attempt to use environmental variable QT_BIN_DIR)
+    qmlScrDirPath  = None  (for QML projects only)                    
+
+*QtIfwConfigXml* 
 
 Objects of this type define the contents of a QtIFW 
 config.xml which will be dynamically generated 
@@ -547,19 +670,19 @@ represents the highest level definition of a QtIFW
 installer, containing information such as the product 
 name and version. Most of the attributes in these 
 objects correspond directly to the name of tags 
-added to config.xml.  Attributes will None values
+added to config.xml.  Attributes with None values
 will not be written, otherwise they will be.
 
 Constructor:                
 
-    QtIfwConfigXml( name, exeName, version, publisher, 
-                    iconFilePath=None, 
-                    isDefaultTitle=True, isDefaultPaths=True ) 
+    QtIfwConfigXml( name, exeName, version, publisher,
+                    companyTradeName=None, iconFilePath=None ) 
               
 Attributes:    
 
     exeName (used indirectly)
     iconFilePath  (used indirectly)
+    companyTradeName (used indirectly)
     Name                     
     Version                  
     Publisher                
@@ -578,8 +701,73 @@ Convenience functions:
     setDefaultTitle()    
     setDefaultPaths()
  
+*QtIfwPackageXml*
+
+Objects of this type define the a QtIFW package.xml 
+file which will be dynamically generated 
+when invoking the buildInstaller function. This file
+defines a component within the installer which maybe
+selected by the user to install. Most of the attributes 
+in these objects correspond directly to the name of tags 
+added to package.xml. Attributes with None values
+will not be written, otherwise they will be.
+
+Constructor:       
+
+	QtIfwPackageXml( pkgName, displayName, description, version, 
+					 scriptName=None, isDefault=True )
+                  
+Attributes & default values:      
+
+	pkgName = <required>
+               
+	DisplayName   = <required>
+	Description   = <required>
+	Version       = <required>            
+	Script        = None 
+	Default       = True
+	ReleaseDate   = date.today()
+
+*QtIfwPackageScript*
+
+Objects of this type are used to dynamically generate
+a script used by a QtIFW package. Scripts are able
+to perform the most sophisticated customizations
+for an installer. 
+
+For maximum flexibility, you may directly define the 
+entire script, by setting the "script" attribute.  Or,
+you specify a source to an external file instead.  Also,
+you may always delegate scripts to a traditional QtIFW 
+definition.
+
+This class currently has very limited functionality,
+but in the future more options will be provided for
+automating the generation common script directives.  
+
+Constructor:       
+
+	QtIfwPackageScript( pkgName, fileName="installscript.qs", 
+                  		exeName=None, script=None, srcPath=None )
+                  
+Attributes & default values:      
+
+	pkgName  = pkgName
+    fileName = "installscript.qs"
+    
+    script = None   
+
+    componentConstructorBody = None
+    isAutoComponentConstructor = True
+    
+    componentCreateOperationsBody = None
+    isAutoComponentCreateOperations = True        
+    exeName = exeName   
+    isWinStartMenuShortcut = True
+    isWinDesktopShortcut   = False
+                                                                          
 -------------------------------------------------------      
-PipConfig
+*PipConfig*
 
 Objects of this type define the details for downloading
 and/or installing Python libraries via the pip utility.
@@ -613,7 +801,7 @@ Attributes:
     otherPipArgs  (open ended argument string)      
          
 ------------------------------------------------------- 
-OpyConfig i.e. OpyConfigExt( OpyConfig )
+*OpyConfig* i.e. OpyConfigExt( OpyConfig )
     
 Objects of this type define obfuscation details for 
 use by the Opy Library. Refer to the documentation 
@@ -626,10 +814,13 @@ description of how objects of this type are used.
 
 Constructor:        
 
-    OpyConfig( bundleLibs=None, sourceDir=None, patches=None )
+    OpyConfig( name, entryPointPy=None,
+               bundleLibs=None, sourceDir=None, patches=None )
 
 Attributes:                
 
+	name
+	entryPointPy
     bundleLibs (list of LibToBundle objects)
     sourceDir (dynamically defined when ommited)
     patches (list of OpyPatch objects)

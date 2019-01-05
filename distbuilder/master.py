@@ -116,15 +116,17 @@ class ConfigFactory:
 # -----------------------------------------------------------------------------
 class PyToBinInstallerProcess:
 
-    def __init__( self, configFactory, isObfuscating=False ) :
-        self.configFactory = configFactory                      
-        self.isObfuscating = isObfuscating
+    def __init__( self, configFactory, 
+                  isObfuscating=False, 
+                  isMovedToDesktop=False ) :
+        self.configFactory     = configFactory                      
+        self.isObfuscating     = isObfuscating
+        self.isMovedToDesktop  = isMovedToDesktop
         self.isTestingObfuscation  = False
         self.isTestingExe          = False
         self.isTestingInstall      = False
         self.isVerboseInstall      = False
-        self.isMovedToDesktop      = True
-
+        
     def run( self ):
         
         if self.isObfuscating :

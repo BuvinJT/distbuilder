@@ -1,43 +1,61 @@
 # Distribution Builder (distbuild) 
 
-### IMMEADIATE HIGH LEVEL DOTO LIST
+### HIGH PRIORITY
 
 * Test on platforms other than Windows! 
 	(should work in theory, but confirmation required)
-	
-* Create a top level "shared info" class, for data that is used by
-more than one process e.g. the product name, version, etc.
 
-* Further develop the Qt IFW wrapper to the point that the entire installer 
-definition can be generated on the fly (at least a primitive installer
-with no custom scripting).  Include shortcut creation (done via qscript). 
+* Add additional examples.
 
-* Add Qt IFW uninstall function.
+* Continue to expand upon the documentation, especially with
+regard to the various configuration options. 
 
-* Add support for multiple Qt IFW packages.
+### MODERATE PRIORITY
 
 * Add the options to build projects outside of the project directory.  
-	(Both the source and the temp build directories.)
+(Both the source and the temp build directories.)  
+
+* Add support to high level "process" class for multiple PyInstaller 
+builds / "package" (sub-component) creation via project sub directory 
+divisions.
+
+* Add support for multiple Qt IFW packages.
+	
+* Further develop the Qt IFW script generation features. 
 			
+* Continue to improve and stablize the Opy library and its beta features.
+
+* Further develop external library bundling (for Opy), making such 
+more automated and less work for the user (e.g. finding external library 
+sources locally and/or downloading them with pip...)
+
+### LOW PRIORITY
+
+* Add all yet to be provided parameters for PyInstaller.  
+
+* Add all yet to be provided elements for the various Qt IFW 
+XML config classes.  
+
+* Add Qt IFW silent install and uninstall functions. 
+(For repetitive testing and debugging.)  
+
 * Add tarball alternative to zip packaging.
 
-### Wish List		
+### WISH LIST		
 
-* Further develop external library bundling (for obfuscation), making such 
-more automated and less work for the user (e.g. finding sources and
-downloading them with pip...)
+* Add an NSIS Wrapper as alternative to Qt IFW.
 
-* Add an NSIS Wrapper as alternative to Qt IFW
+* Add setuptools / distutil wrappers an as alternative to pip.  
 
-* Add setuptools / distutil wrappers an as alternative to pip  
+* Add git integration to commit and push versions.
 
-* Add git integration to commit and push build results
+* Add PyPi integration to publish releases.
 
-* Add (configurable) interactive ui option, to select various 
-operations at runtime. (Command prompt and/or gui?)
-Simple version would be an easy way to define a list of
-check box options.  Then when run, the developer could
-select the options he wants at the moment e.g.
-build exe, run exe, build installer, include obfuscation...
-
-* Add automated version tracking / stamping / tagging...
+* Add automated version tracking / stamping / git tagging...
+  
+* Add (configurable) interactive ui feature, to select various 
+operations at runtime (cli or gui).  Use the selected options
+to define the attributes of a process class, which is subsequently
+executed.  The purpose of such is to allow the developer to
+select the options needed at the moment e.g. build exe, run exe, 
+build installer, include obfuscation...

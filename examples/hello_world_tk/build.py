@@ -15,4 +15,4 @@ factory.setupName        = "HelloWorldSetup.exe"
 class BuildProcess( PyToBinInstallerProcess ):
     def onOpyConfig( self, cfg ):    
         cfg.external_modules.extend( [ 'tkinter', 'tkinter.ttk' ] )
-BuildProcess( factory, isObfuscating=True ).run()       
+BuildProcess( factory, isObfuscating=True, isMovedToDesktop=True ).run()       
