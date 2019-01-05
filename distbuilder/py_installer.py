@@ -6,6 +6,7 @@ SPEC_EXT = ".spec"
 
 BUILD_DIR_PATH = absPath( "build" )
 DIST_DIR_PATH  = absPath( "dist" )
+CACHE_DIR_PATH = absPath( "__pycache__" )
 
 # -----------------------------------------------------------------------------
 class PyInstallerConfig:
@@ -251,6 +252,7 @@ def __clean( pyInstConfig, distDirPath=None ) :
     if exists( OBFUS_DIR_PATH ) : removeDir( OBFUS_DIR_PATH )    
     if exists( BUILD_DIR_PATH ) : removeDir( BUILD_DIR_PATH )
     if exists( DIST_DIR_PATH )  : removeDir( DIST_DIR_PATH )
+    if exists( CACHE_DIR_PATH ) : removeDir( CACHE_DIR_PATH )
     specPath = joinPath( THIS_DIR, pyInstConfig.name + SPEC_EXT )    
     if isFile( specPath ): removeFile( specPath )    
     if( pyInstConfig.versionInfo is not None and

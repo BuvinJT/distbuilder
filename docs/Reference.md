@@ -825,7 +825,7 @@ Attributes:
     sourceDir (dynamically defined when ommited)
     patches (list of OpyPatch objects)
 
-OpyPatch
+*OpyPatch*
 
 See "ADDITIONAL OBFUSCATION FEATURES" for a 
 description of how objects of this type are used.
@@ -845,7 +845,7 @@ Convenience functions:
     obfuscatePath( obfuscatedFileDict )        
     apply()
 
-LibToBundle 
+*LibToBundle* 
 
 See "ADDITIONAL OBFUSCATION FEATURES" for a 
 description of how objects of this type are used.
