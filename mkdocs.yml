@@ -1,0 +1,6 @@
+site_name: Distribution Builder Python Library
+nav:
+    - Home: index.md
+    - Quick Start: QuickStart.md
+    - Reference Manual: Reference.md
+    - To-Do List: ToDo.md

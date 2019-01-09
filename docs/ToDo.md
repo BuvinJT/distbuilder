@@ -1,6 +1,6 @@
-# Distribution Builder (distbuild) 
+# To-Do List 
 
-### HIGH PRIORITY
+### High Priority
 
 * Test on platforms other than Windows! 
 	(should work in theory, but confirmation required)
@@ -10,10 +10,11 @@
 * Continue to expand upon the documentation, especially with
 regard to the various configuration options. 
 
-### MODERATE PRIORITY
+### Moderate Priority
 
-* Add the options to build projects outside of the project directory.  
-(Both the source and the temp build directories.)  
+* Further develop external library bundling (for Opy), making such 
+more automated and less work for the user (e.g. finding external library 
+sources locally and/or downloading them with pip...)
 
 * Add support to high level "process" class for multiple PyInstaller 
 builds / "package" (sub-component) creation via project sub directory 
@@ -25,11 +26,10 @@ divisions.
 			
 * Continue to improve and stablize the Opy library and its beta features.
 
-* Further develop external library bundling (for Opy), making such 
-more automated and less work for the user (e.g. finding external library 
-sources locally and/or downloading them with pip...)
+### Low Priority
 
-### LOW PRIORITY
+* Add the options to build projects outside of the project directory.  
+(Both the source and the temp build directories.)  
 
 * Add all yet to be provided parameters for PyInstaller.  
 
@@ -41,9 +41,14 @@ XML config classes.
 
 * Add tarball alternative to zip packaging.
 
-### WISH LIST		
+### Wish List		
 
-* Add an NSIS Wrapper as alternative to Qt IFW.
+* Add a Py2Exe wrapper as alternative to PyInstaller.
+
+* Add Py2Exe driven functions for Windows specific features 
+which PyInstaller simply lacks (e.g. COM server dll creation).
+
+* Add an NSIS wrapper as alternative to Qt IFW.
 
 * Add setuptools / distutil wrappers an as alternative to pip.  
 
