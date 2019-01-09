@@ -1,4 +1,4 @@
-site_name: Distribution Builder Python Library
+site_name: Distribution Builder
 nav:
     - Home: index.md
     - Quick Start: QuickStart.md

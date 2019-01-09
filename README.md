@@ -7,4 +7,4 @@ tools including PyInstaller, the Qt Installer Framework, Opy
 
 ## Online documentation
 
-https://distribution-builder-python-library.readthedocs.io/en/latest/
+https://distribution-builder.readthedocs.io/en/latest/
