@@ -1,6 +1,6 @@
 site_name: Distribution Builder
 nav:
-    - Home: index.md
+    - Overview: index.md
     - Quick Start: QuickStart.md
-    - Reference Manual: Reference.md
-    - To-Do List: ToDo.md
+    - Reference: Reference.md
+    - To-Do: ToDo.md
