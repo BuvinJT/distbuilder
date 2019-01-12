@@ -1,4 +1,5 @@
 # To-Do List 
+![distbuilder logo](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/distbuilder128.png)
 
 ### High Priority
 
