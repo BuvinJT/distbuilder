@@ -1,4 +1,5 @@
 # Reference Manual 
+![distbuilder logo](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/distbuilder128.png)
 
 ## Configuration Factory  
 
