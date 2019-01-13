@@ -5,4 +5,4 @@ pages:
     - Reference Manual: Reference.md
     - To-Do List: ToDo.md
     - Contact / Contribute: Contribute.md
-theme: windmill
+theme: readthedocs
