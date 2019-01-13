@@ -1,5 +1,5 @@
 # Distribution Builder (distbuilder)  
-![distbuilder logo](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/distbuilder128.png)
+![distbuilder logo](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png)
 
 This is an open source (GPLv3) Python library. 
 "Distribution Builder" is a wrapper for other libraries and 
