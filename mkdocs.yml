@@ -1,5 +1,5 @@
 site_name: Distribution Builder
-nav:
+pages:
     - Overview: index.md
     - Quick Start: QuickStart.md
     - Reference: Reference.md
