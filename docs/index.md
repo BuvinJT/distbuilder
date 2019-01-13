@@ -1,4 +1,4 @@
-# Overview 
+# Distribution Builder Python Library
 ![distbuilder logo](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/distbuilder128.png)
 
 "Distribution Builder" (distbuilder) is an open source (GPLv3) Python library.

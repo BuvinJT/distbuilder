@@ -464,7 +464,7 @@ The following two options are available for a QtIFW installer:
    the installer, try setting `qtIfwConfig.isDebugMode` 
    to `True` for verbose output.
 
-## Archives & Distribution
+## Archives and Distribution
 
 Once you have a fully built distribution package, the 
 following functions provide an easy means for further 
