@@ -1,7 +1,7 @@
 # To-Do List 
 ![distbuilder logo](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/distbuilder128.png)
-
-### High Priority
+ 
+## High Priority
 
 * Test on platforms other than Windows! 
 	(should work in theory, but confirmation required)
@@ -11,7 +11,7 @@
 * Continue to expand upon the documentation, especially with
 regard to the various configuration options. 
 
-### Moderate Priority
+## Moderate Priority
 
 * Further develop external library bundling (for Opy), making such 
 more automated and less work for the user (e.g. finding external library 
@@ -27,7 +27,7 @@ divisions.
 			
 * Continue to improve and stablize the Opy library and its beta features.
 
-### Low Priority
+## Low Priority
 
 * Add the options to build projects outside of the project directory.  
 (Both the source and the temp build directories.)  
@@ -42,7 +42,7 @@ XML config classes.
 
 * Add tarball alternative to zip packaging.
 
-### Wish List		
+## Wish List		
 
 * Add a Py2Exe wrapper as alternative to PyInstaller.
 
