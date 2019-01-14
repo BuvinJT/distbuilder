@@ -2,6 +2,8 @@ from distbuilder import util
 from distbuilder.util import *  # @UnusedWildImport
 from distbuilder.opy_library import obfuscatePy, OBFUS_DIR_PATH
 
+PYINST_BIN_NAME = "pyinstaller"
+
 SPEC_EXT = ".spec"
 
 BUILD_DIR_PATH = absPath( "build" )
@@ -14,7 +16,31 @@ class PyInstallerConfig:
     See PyInstaller docs for details on these settings.
     """       
     def __init__( self ) :
-        self.pyInstallerPath = util._pythonScriptsPath( "pyinstaller" )
+        
+        # Find the "default" installation of pyInstaller. 
+        # Fall back to using the system path if an absolute path is not found.
+        # Note, it is possible for a user to have multiple versions  
+        # on their machine so the "first" one found in a blind search is 
+        # not an advisable auto detection methed.  The logic here is 
+        # based primarily upon pyInstaller documentation. 
+        # Note a user can assign a value to this attribute directly
+        # when this default fails to meet their needs.
+        if IS_WINDOWS :
+            # resolves multi-python version environments
+            p = util._pythonScriptsPath( PYINST_BIN_NAME )
+        elif IS_LINUX :
+            p = util._usrBinPath( PYINST_BIN_NAME )
+            if not exists( p ) :
+                p = util._userHiddenLocalBinDirPath( PYINST_BIN_NAME )            
+        elif IS_MACOS :
+            p = util._usrBinPath( PYINST_BIN_NAME )
+            if not exists( p ) :
+                p = util._usrLocalBinPath( PYINST_BIN_NAME )
+            if not exists( p ) :
+                p = util._optLocalBinPath( PYINST_BIN_NAME )                
+        else : p = None                        
+        self.pyInstallerPath = (
+            PYINST_BIN_NAME if p is None or not exists(p) else p)
         
         self.name            = None
         self.entryPointPy    = None
@@ -64,6 +90,8 @@ class PyInstallerConfig:
             binarySpec += toPyInstallerSrcDestSpec( "--add-binary", paths )
     
         try:
+            # if the iconFilePath is a tuple or list,
+            # it represents an exe path and an icon index embedded within that  
             if( isinstance( self.iconFilePath, tuple ) or
                 isinstance( self.iconFilePath, list ) ):
                 if splitExt( self.iconFilePath[0] )[1]==".exe" :
@@ -72,7 +100,7 @@ class PyInstallerConfig:
                 else : raise    
             else :
                 self.iconFilePath = ( splitExt( self.iconFilePath )[0] +
-                                      ".ico" if IS_WINDOWS else ".icns" )                
+                                      (".icns" if IS_MACOS else ".ico") )                
         except: self.iconFilePath = None
         iconSpec = ( '--icon "%s"' % (self.iconFilePath,) 
                      if self.iconFilePath else "" )
@@ -81,6 +109,7 @@ class PyInstallerConfig:
             versionSpec    = ( '--version-file "%s"' % (self.versionFilePath,) 
                                if self.versionFilePath else "" )        
             adminSwitch    = "--uac-admin" if self.isAutoElevated else ""
+        else : versionSpec = adminSwitch = ""
 
         tokens = (nameSpec, distSpec, oneFileSwitch, 
                   windowedSwitch, adminSwitch, iconSpec, versionSpec,

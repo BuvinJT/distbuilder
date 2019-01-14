@@ -112,22 +112,47 @@ class ConfigFactory:
     def __pkgSrcDirPath( self ):
         if self.pkgSrcDirPath : return self.pkgSrcDirPath
         return joinPath( THIS_DIR, self.binaryName )                 
-    
+   
 # -----------------------------------------------------------------------------
 class PyToBinInstallerProcess:
 
-    def __init__( self, configFactory, 
+    def __init__( self, configFactory,
+                  name="Python To Binary Installer Process", 
                   isObfuscating=False, 
-                  isMovedToDesktop=False ) :
+                  isDesktopTarget=False ) :
+        self.name              = name
         self.configFactory     = configFactory                      
         self.isObfuscating     = isObfuscating
-        self.isMovedToDesktop  = isMovedToDesktop
+        self.isDesktopTarget  = isDesktopTarget
         self.isTestingObfuscation  = False
         self.isTestingExe          = False
         self.isTestingInstall      = False
         self.isVerboseInstall      = False
+
+    def __printHeader( self ):
+        try: 
+            from distbuilder import __version__ as ver
+            libPath = modulePackagePath( "distbuilder" )
+        except: 
+            ver = "?"
+            libPath = "?"
+        DIVIDER = "------------------------------------"
+        print( DIVIDER )    
+        print( ">>> Distrbution Builder Process <<<" )
+        print( "" )
+        print( "Process Name: %s" % (self.name,) )
+        print( "" )
+        print( "Library Version: %s" % (ver,) )
+        print( "Library Path:\n%s" % (libPath,) )
+        print( "" )
+        print( "Python Translator:\n%s" % (sys.version,) )
+        print( "" )
+        print( "System Info:\n%s\n%s" % (platform.system(), platform.release()) )
+        print( DIVIDER )
+        print( "" )
         
-    def run( self ):
+    def run( self ):        
+        self.__printHeader()
         
         if self.isObfuscating :
             opyConfig = self.configFactory.opyConfig() 
@@ -139,7 +164,7 @@ class PyToBinInstallerProcess:
         else: opyConfig = None
         
         pyInstConfig = self.configFactory.pyInstallerConfig()
-        self.onPyInstConfig( pyInstConfig )
+        self.onPyInstConfig( pyInstConfig )        
         _, binPath = buildExecutable( pyInstConfig=pyInstConfig, 
                                            opyConfig=opyConfig )
         if self.isTestingExe : run( binPath, isDebug=True )
@@ -147,14 +172,18 @@ class PyToBinInstallerProcess:
         ifwConfig = self.configFactory.qtIfwConfig()
         self.onQtIfwConfig( ifwConfig )
         setupPath = buildInstaller( ifwConfig, isPkgSrcRemoved=True )
-        if self.isMovedToDesktop :
+        if self.isDesktopTarget :
             setupPath = moveToDesktop( setupPath )
         if self.isTestingInstall : 
             run( setupPath, 
                  QT_IFW_VERBOSE_SWITCH 
-                 if self.isVerboseInstall else None )  
+                 if self.isVerboseInstall else None )
+            
+        self.__printFooter()
 
-        print( "\n\nDone!" )
+    def __printFooter( self ):        
+        #TODO: add time elapsed...      
+        print( "Done!" )
 
     # Use these to further customize the build process once the 
     # ConfigFactory has produced each initial config object
