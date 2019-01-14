@@ -7,6 +7,7 @@ from os import system, remove as removeFile, \
 from os.path import exists, isfile as isFile, \
     dirname as dirPath, normpath, realpath, relpath, \
     join as joinPath, split as splitPath, splitext as splitExt, \
+    expanduser, \
     basename, pathsep      # @UnusedImport
 from shutil import rmtree as removeDir, move, make_archive, \
     copytree as copyDir, copyfile as copyFile   # @UnusedImport
@@ -17,38 +18,51 @@ import traceback
 from distutils.sysconfig import get_python_lib
 import inspect  # @UnusedImport
 
+# -----------------------------------------------------------------------------   
 IS_WINDOWS         = platform.system() == "Windows"
-THIS_DIR           = dirPath( realpath( argv[0] ) )
+IS_LINUX           = platform.system() == "Linux"
+IS_MACOS           = platform.system() == "Darwin"
+
+PY_EXT             = ".py"
 PY_DIR             = dirPath( PYTHON_PATH )
 PY_SCRIPTS_DIR     = joinPath( PY_DIR, "Scripts" )
 SITE_PACKAGES_PATH = get_python_lib()
-PY_EXT             = ".py"
+
+USER_BIN_DIR       = "/usr/bin"
+USER_LOCAL_BIN_DIR = "/usr/local/bin"
+OPT_LOCAL_BIN_DIR  = "/opt/local/bin"
+
+DESKTOP_DIR_NAME   = "Desktop"
+THIS_DIR           = dirPath( realpath( argv[0] ) )
 
 __IMPORT_TMPLT       = "import %s"
 __FROM_IMPORT_TMPLT  = "from %s import %s"
 __GET_MOD_PATH_TMPLT = "inspect.getfile( %s )"
-    
+
+__NOT_SUPPORTED_MSG = ( "Sorry this operation is not supported " +
+                        "this for this platform!" )
+
+__CSIDL_DESKTOP_DIRECTORY = 16
+
+# -----------------------------------------------------------------------------      
 def isDir( path ): return exists(path) and not isFile(path)
 
 # absolute path relative to the script directory NOT the working directory    
 def absPath( relativePath ):    
     return normpath( joinPath( THIS_DIR, relativePath ) )
 
-def _pythonPath( relativePath ):    
-    return normpath( joinPath( PY_DIR, relativePath ) )
-
-def _pythonScriptsPath( relativePath ):    
-    return normpath( joinPath( PY_SCRIPTS_DIR, relativePath ) )
-
 def tempDirPath(): return gettempdir()
 
-# -----------------------------------------------------------------------------   
-def run( binPath, args=[], isDebug=False ):
-    wrkDir, fileName = splitPath( binPath )
+# -----------------------------------------------------------------------------  
+def run( binPath, args=[], 
+         wrkDir=None, isElevated=False, isDebug=False ):
+    # TODO: finish isElevated logic (for windows, in debug mode...)
+    binDir, fileName = splitPath( binPath )
+    if wrkDir is None : wrkDir = binDir
     if isDebug :
         cmdList = [binPath]
         if isinstance(args,list): cmdList.extend( args )
-        else: cmdList.append( args )    
+        elif args is not None: cmdList.append( args )    
         print( 'cd "%s"' % (wrkDir,) )
         print( list2cmdline(cmdList) )
         p = Popen( cmdList, cwd=wrkDir, shell=False, 
@@ -60,13 +74,18 @@ def run( binPath, args=[], isDebug=False ):
         stdout.write( "\nReturn code: %d\n" % (p.returncode,) )
         stdout.flush()    
     else :     
-        if isinstance(args,list): args = list2cmdline(args) 
-        _system( '%s %s' % (fileName, args), wrkDir )
+        if isinstance(args,list): args = list2cmdline(args)
+        elif args is None: args=""
+        elevate = "" if not isElevated or IS_WINDOWS else "sudo"  
+        pwdCmd = "" if IS_WINDOWS else "./"
+        cmd = ('%s %s%s %s' % (elevate, pwdCmd, fileName, args)).strip()
+        _system( cmd, wrkDir )
     
-def runPy( pyPath, args=[] ):
+def runPy( pyPath, args=[], isElevated=False ):
     wrkDir, fileName = splitPath( pyPath )
-    if isinstance(args,list): args = list2cmdline(args)
-    _system( '%s %s %s' % (PYTHON_PATH, fileName, args), wrkDir )
+    pyArgs = [fileName]
+    if isinstance(args,list): pyArgs.extend( args )
+    run( PYTHON_PATH, pyArgs, wrkDir, isElevated, isDebug=False )
 
 def _system( cmd, wrkDir=None ):
     if wrkDir is not None:
@@ -120,11 +139,12 @@ def toZipFile( sourceDir, zipDest=None, removeScr=True ):
     return filePath
     
 def moveToDesktop( path ):        
-    destPath = joinPath( _userDesktopDirPath(), 
+    desktopDir = _userDesktopDirPath()
+    destPath = joinPath( desktopDir, 
                          basename( normpath(path) ) )
     if isFile( destPath ): removeFile( destPath )
     elif isDir( destPath ): removeDir( destPath )
-    move( path, _userDesktopDirPath() )
+    move( path, desktopDir )
     print( 'Moved "%s" to "%s"' % (path, destPath) )
     return destPath
 
@@ -146,6 +166,26 @@ def printExc( e, isDetailed=False, isFatal=False ):
     else : printErr( e )
     if isFatal: exit(1)
 
+# -----------------------------------------------------------------------------   
+def _pythonPath( relativePath ):    
+    return normpath( joinPath( PY_DIR, relativePath ) )
+
+def _pythonScriptsPath( relativePath ):    
+    return normpath( joinPath( PY_SCRIPTS_DIR, relativePath ) )
+
+def _usrBinPath( relativePath ):    
+    return normpath( joinPath( USER_BIN_DIR, relativePath ) )
+
+def _usrLocalBinPath( relativePath ):    
+    return normpath( joinPath( USER_LOCAL_BIN_DIR, relativePath ) )
+
+def _optLocalBinPath( relativePath ):    
+    return normpath( joinPath( OPT_LOCAL_BIN_DIR, relativePath ) )
+
+def _userHiddenLocalBinDirPath( relativePath ) :
+    return normpath( joinPath( "%s/.local/bin" % (_userDirPath(),), 
+                               relativePath ) )
+    
 # -----------------------------------------------------------------------------    
 def _toSrcDestPair( pathPair, destDir=None ):
     ''' "Protected" function for internal library uses only '''
@@ -182,14 +222,15 @@ def _toSrcDestPair( pathPair, destDir=None ):
     return (src, dest) 
             
 # -----------------------------------------------------------------------------           
-__CSIDL_DESKTOP_DIRECTORY = 16
+
+def _userDirPath(): return expanduser('~')
             
 def _userDesktopDirPath():
-    if not IS_WINDOWS : 
-        raise Exception( 
-            "Sorry this library does not yet support " +
-            "this function on this platform!" )        
-    return __getFolderPathByCSIDL( __CSIDL_DESKTOP_DIRECTORY )    
+    if IS_WINDOWS : 
+        return __getFolderPathByCSIDL( __CSIDL_DESKTOP_DIRECTORY )
+    elif IS_LINUX :
+        return normpath( joinPath( _userDirPath(), DESKTOP_DIR_NAME ) )
+    raise Exception( __NOT_SUPPORTED_MSG )        
             
 def __getFolderPathByCSIDL( csidl ):
     import ctypes.wintypes    
@@ -205,10 +246,10 @@ def __importByStr( moduleName, memberName=None ):
         else: exec( __FROM_IMPORT_TMPLT % (moduleName, memberName) )
     except Exception as e: printExc( e )
 
-def _normExeName( exeName ):
+def _normExeName( exeName ):    
     base, ext = splitExt( basename( exeName ) )
     if IS_WINDOWS: 
-        if ext == "": ext = "exe"
-        return base + "." + ext    
+        if ext=="": ext="exe"
+        return base + "." + ext
     return base 
             

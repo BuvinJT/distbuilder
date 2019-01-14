@@ -146,15 +146,16 @@ covers a good portion of the major distbuilder
 features so as to provide a feel for what it does, 
 and how it works.
 
-Note: The most astute observer may notice 
+Note: The most astute observer may notice (on some platforms) 
 that the stdout messages are not produced on the terminal
-by the binary version of the example. It is a feature of PyInstaller, 
-to "swallow" console messages produced by gui applications.  
-This may be counterproductive for debugging most especially, 
-and as such distbuilder provides a direct "solution" for this. 
-Refer to the [Testing](Reference.md#testing) section of 
-the [Reference Manual](Reference.md#installers) for 
-more details.)    
+by the binary version of the example (as normally seen by 
+clicking the "Hello Tkinter" button). This is due to the 
+fact it is a feature of PyInstaller, to "swallow" console 
+messages produced by gui applications. This may be counterproductive 
+for debugging though, and as such distbuilder provides a 
+direct "solution" for this issue. Refer to the 
+[Testing](Reference.md#testing) section of the 
+[Reference Manual](Reference.md#installers) for more details.    
 
 ## Learn More  
 

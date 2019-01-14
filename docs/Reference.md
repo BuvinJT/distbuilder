@@ -86,13 +86,15 @@ needed for this purpose.
 Constructor:
 
     PyToBinInstallerProcess( configFactory, 
+                             name="Python To Binary Installer Process",
                              isObfuscating=False, isMovedToDesktop=False )
     
 Attributes & default values:
                                                
-    configFactory         = <required>                      
+    configFactory         = <required>  
+    name                  = "Python To Binary Installer Process"
     isObfuscating         = False
-    isMovedToDesktop      = False
+    isDesktopTarget       = False
     isTestingObfuscation  = False
     isTestingExe          = False
     isTestingInstall      = False
@@ -410,24 +412,32 @@ interface...).
 Upon creating a binary with PyInstaller, use the
 following to test the success of the operation:  
     
-    run( binPath, args=[], isDebug=False )      
+    run( binPath, args=[], 
+         wrkDir=None, isElevated=False, isDebug=False )      
 
+**binPath**: The path to the binary to be executed. 
 Note that the path is returned by `buildExecutable`, 
 which allows the results of that to flow
 directly into this function.  
 
-The working directory will be automatically set to 
-the directory of the path specified.  
+**args**: An (optional) list of arguments, 
+(or a flat string) to pass along to your program.  
 
-The (optional) args parameter is an open ended
-list (or string) to pass along to your program.  
+**args**: An (optional) working directory specification.
+If omitted (or None), the working directory will be 
+automatically set to that of the binary path specified.  
 
-Set `isDebug=True` to debug a PyInstaller binary which
+**isElevated**: Boolean (option) to run the binary with 
+elevated priviledges.
+
+**isDebug**: Boolean (option) for explictly relaying 
+standard output and standard error messages. Set this
+to `True` to debug a PyInstaller binary which
 was created with `pyInstConfig.isGui` set to `True`.
-Normally, when this configuration is used, messages 
-sent to the console (e.g. print statements or uncaught 
-exceptions) are not visible even when launching
-the application from a terminal. The isDebug option, 
+On some platforms, when that configuration is used, 
+messages sent to the console (e.g. print statements 
+or uncaught exceptions) are not visible even when launching
+the application from a terminal. Enabling this option, 
 however, will expose those messages to you. This can 
 be invaluable for debugging problems that are unique 
 to a stand-alone binary, and not present when run in 
@@ -437,19 +447,24 @@ which case be sure to use the terminal directly!)
 
 ### Obfuscated scripts  
 
-Upon creating a Python obfuscation, use the
-following to test the success of the operation:  
+Upon creating a Python obfuscation, you may wish the 
+to test the success of that operation. The following
+was provided with that in mind:    
 
-    runPy( pyPath, args=[] )
-    
+    runPy( pyPath, args=[], isElevated=False )
+
+**pyPath**: The path to the script to be executed. 
 Note that the path is returned by `obfuscatePy`, which allows 
 the results of that to flow directly into this function.  
 
-The working directory will be automatically set to 
-the directory of the path specified.  
+**args**: An (optional) list of arguments, 
+(or a flat string) to pass along to your program.  
 
-The (optional) args parameter is an open ended
-list (or string) to pass along to your program.  
+**isElevated**: Boolean (option) to run the binary with 
+elevated priviledges.
+   
+The working directory will be automatically set to 
+the directory of the python script.  
 
 ### Installers
 

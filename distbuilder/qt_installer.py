@@ -8,7 +8,7 @@ from abc import ABCMeta, abstractmethod
 
 BUILD_SETUP_DIR_PATH = absPath( "build_setup" )
 INSTALLER_DIR_PATH = "installer"
-DEFAULT_SETUP_NAME = "setup.exe"
+DEFAULT_SETUP_NAME = util._normExeName( "setup" )
 DEFAULT_QT_IFW_SCRIPT_NAME = "installscript.qs"
 
 QT_IFW_VERBOSE_SWITCH = '-v'
@@ -17,7 +17,7 @@ QT_IFW_DIR_ENV_VAR = "QT_IFW_DIR"
 QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
 
 __BIN_SUB_DIR = "bin"
-__QT_INSTALL_CREATOR_EXE_NAME  = "binarycreator.exe"
+__QT_INSTALL_CREATOR_EXE_NAME = util._normExeName( "binarycreator" )
 
 __QT_WINDOWS_DEPLOY_EXE_NAME   = "windeployqt.exe"
 __QT_WINDOWS_DEPLOY_QML_SWITCH = "--qmldir"
@@ -273,6 +273,22 @@ class QtIfwPackageScript:
             "iconId=[ICON_ID]"        
         );    
 """ )
+
+    __X11_ADD_DESKTOP_ENTRY_TMPLT = ( 
+"""
+        component.addOperation( "CreateDesktopEntry", 
+            "/usr/share/applications/[APP_NAME].desktop", 
+            "Version=1.0\nType=Application\nTerminal=false\nExec=@TargetDir@/[EXE_NAME]\nName=[APP_NAME]\nIcon=@TargetDir@[APP_ICON_PNG]\nName[en_US]=[APP_NAME]"
+        );    
+""" )
+
+    __X11_COPY_DESKTOP_ENTRY_TO_DESKTOP_TMPLT = ( 
+"""
+        component.addElevatedOperation( "Copy", 
+            "/usr/share/applications/[APP_NAME].desktop", 
+            "@HomeDir@/Desktop/[APP_NAME].desktop"
+        );
+""" )
      
     __WIN_SHORTCUT_LOCATIONS = {
           DESKTOP_WIN_SHORTCUT          : "@DesktopDir@"
@@ -416,7 +432,8 @@ def __validateConfig( qtIfwConfig ):
 def __initBuild( qtIfwConfig ) :
     print( "Initializing installer build..." )
     # remove any prior setup file
-    setupExePath = joinPath( THIS_DIR, qtIfwConfig.setupExeName )
+    setupExePath = joinPath( THIS_DIR, 
+                             util._normExeName( qtIfwConfig.setupExeName ) )
     if exists( setupExePath ) : removeFile( setupExePath )
     # create a "clean" build directory
     if exists( BUILD_SETUP_DIR_PATH ) : removeDir( BUILD_SETUP_DIR_PATH )
@@ -495,7 +512,8 @@ def __build( qtIfwConfig ) :
     print( "Building installer using Qt IFW...\n" )
     qtUtilityPath = joinPath( qtIfwConfig.qtIfwDirPath, 
         joinPath( __BIN_SUB_DIR, __QT_INSTALL_CREATOR_EXE_NAME ) )
-    setupExePath = joinPath( THIS_DIR, qtIfwConfig.setupExeName )
+    setupExePath = joinPath( THIS_DIR, 
+                             util._normExeName( qtIfwConfig.setupExeName ) )
     cmd = '%s %s "%s"' % ( qtUtilityPath, str(qtIfwConfig), setupExePath )
     util._system( cmd )  
     if exists( setupExePath ) : print( "Created %s!" % (setupExePath,) )
