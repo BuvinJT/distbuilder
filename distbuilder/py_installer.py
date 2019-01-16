@@ -47,6 +47,7 @@ class PyInstallerConfig:
         
         self.isGui           = False
         self.iconFilePath    = None
+        self._pngIconResPath = None
 
         self.versionInfo     = None 
         self.versionFilePath = None # TODO: offer programmatic version info
@@ -61,7 +62,7 @@ class PyInstallerConfig:
         
         self.isAutoElevated  = False        
         self.otherPyInstArgs = "" # open ended
-        
+                
     def __str__( self ):
         nameSpec       = ( "--name %s" % (self.name,)
                            if self.name else "" )
@@ -90,15 +91,22 @@ class PyInstallerConfig:
             binarySpec += toPyInstallerSrcDestSpec( "--add-binary", paths )
     
         try:
-            # if the iconFilePath is a tuple or list,
-            # it represents an exe path and an icon index embedded within that  
-            if( isinstance( self.iconFilePath, tuple ) or
-                isinstance( self.iconFilePath, list ) ):
+            if IS_LINUX : 
+                # icon emmbedding is not supported by PyInstaller for Linux,
+                # this is handled by the library wrapper independently 
+                self._pngIconResPath = splitExt( self.iconFilePath )[0] +".png"
+                self.iconFilePath = None                                                         
+            elif( isinstance( self.iconFilePath, tuple ) or
+                  isinstance( self.iconFilePath, list ) ):
+                # if the iconFilePath is a tuple or list,
+                # it represents a windows exe path and an 
+                # icon index embedded within that                  
                 if splitExt( self.iconFilePath[0] )[1]==".exe" :
                     self.iconFilePath = "%s,%d" % ( 
                         self.iconFilePath[0], self.iconFilePath[1] )
-                else : raise    
+                else : raise
             else :
+                # auto convert between Windows and Mac icon extensions
                 self.iconFilePath = ( splitExt( self.iconFilePath )[0] +
                                       (".icns" if IS_MACOS else ".ico") )                
         except: self.iconFilePath = None
@@ -237,7 +245,21 @@ def buildExecutable( name=None, entryPointPy=None,
     
     # Discard all temp files (but not distDir!)
     __clean( pyInstConfig )
-    
+
+    # automatically add a png icon for Linux to the 
+    # external resources, if one exists and is not already included  
+    if IS_LINUX :
+        try:
+            pngPath = pyInstConfig._pngIconResPath
+            if exists( pngPath ):
+                pngName = basename( pngPath )
+                isRes = False
+                for res in distResources :
+                    isRes = res.endswith( pngName )
+                    if isRes: break
+                if not isRes: distResources.append( pngPath )
+        except: pass
+        
     # Confirm success
     exePath = joinPath( distDirPath, util._normExeName( name ) )
     if not exists(exePath) : 

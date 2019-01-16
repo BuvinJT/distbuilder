@@ -629,6 +629,7 @@ Attributes & default values:
       
     isGui           = False
     iconFilePath    = None
+    _pngIconResPath = None
       
     versionInfo     = None
     versionFilePath = None
@@ -791,8 +792,7 @@ automating the generation common script directives.
 Constructor:       
 
 	QtIfwPackageScript( pkgName, fileName="installscript.qs", 
-                        exeName=None, exeVersion="0.0.0.0",
-                        script=None, srcPath=None )
+                        exeName=None, script=None, srcPath=None )
                   
 Attributes & default values:      
 
@@ -803,6 +803,8 @@ Attributes & default values:
     
     exeName    = None   
     exeVersion = "0.0.0.0"
+    
+    pngIconResPath = None
     
     isAppShortcut     = True
     isDesktopShortcut = False

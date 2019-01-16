@@ -166,9 +166,13 @@ class QtIfwConfigXml( _QtIfwXml ):
                             QtIfwConfigXml.__TAGS )
        
         self.exeName = util._normExeName( exeName )
-        self.iconFilePath = iconFilePath        
-        try:    iconBaseName = splitExt( basename(iconFilePath) )[0]
-        except: iconBaseName = None
+        if IS_LINUX :
+            # qt installer does not support icon embedding in Linux
+            iconBaseName = self.iconFilePath = None
+        else :    
+            self.iconFilePath = iconFilePath        
+            try:    iconBaseName = splitExt( basename(iconFilePath) )[0]
+            except: iconBaseName = None
         self.companyTradeName = ( companyTradeName if companyTradeName 
                                   else publisher.replace(".","") )
         self.runProgramArgList = None
@@ -331,7 +335,7 @@ class QtIfwPackageScript:
     def __linuxAddDesktopEntry( location, exeName, version, 
                                 label="@ProductName@", 
                                 directory="@TargetDir@", 
-                                pngPath="",
+                                pngPath=None,
                                 isGui=True ):        
         exePath = "%s/%s" % (directory, util._normExeName( exeName ))
         locDir = QtIfwPackageScript.__X11_SHORTCUT_LOCATIONS[location]             
@@ -341,14 +345,14 @@ class QtIfwPackageScript:
         s = s.replace( "[SHORTCUT_PATH]", shortcutPath )
         s = s.replace( "[LABEL]", label )
         s = s.replace( "[VERSION]", version )
-        s = s.replace( "[PNG_PATH]", pngPath )
+        s = s.replace( "[PNG_PATH]", "" if pngPath is None else 
+                                     joinPath( "@TargetDir@", pngPath ) )
         s = s.replace( "[IS_TERMINAL]", "false" if isGui else "true" )
         s = s.replace( "[WORKING_DIR]", directory )        
         return s 
     
     def __init__( self, pkgName, fileName=DEFAULT_QT_IFW_SCRIPT_NAME, 
-                  exeName=None, exeVersion="0.0.0.0",
-                  script=None, srcPath=None ) :
+                  exeName=None, script=None, srcPath=None ) :
         self.pkgName  = pkgName
         self.fileName = fileName
         if srcPath :
@@ -356,7 +360,9 @@ class QtIfwPackageScript:
         else : self.script = script  
 
         self.exeName = exeName   
-        self.exeVersion = exeVersion
+        
+        self.exeVersion = "0.0.0.0"        
+        self.pngIconResPath = None
         
         self.isAppShortcut     = True
         self.isDesktopShortcut = False
@@ -407,10 +413,12 @@ class QtIfwPackageScript:
             x11Ops = ""
             if self.exeName and self.isAppShortcut :
                 x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
-                        APPS_X11_SHORTCUT, self.exeName, self.exeVersion )                
+                        APPS_X11_SHORTCUT, self.exeName, self.exeVersion,
+                        pngPath=self.pngIconResPath )                
             if self.exeName and self.isDesktopShortcut:
                 x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
-                        DESKTOP_X11_SHORTCUT, self.exeName, self.exeVersion )                               
+                        DESKTOP_X11_SHORTCUT, self.exeName, self.exeVersion,
+                        pngPath=self.pngIconResPath )                               
             if x11Ops!="" :    
                 self.componentCreateOperationsBody += (             
                     '    if( systemInfo.kernelType === "linux" ){\n' +
