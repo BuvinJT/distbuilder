@@ -97,6 +97,7 @@ class ConfigFactory:
         return QtIfwPackageScript( self.__ifwPkgName(), 
                                    fileName=self.ifwScriptName, 
                                    exeName=self.binaryName, 
+                                   exeVersion=self.__versionStr(),
                                    script=self.ifwScriptPath, 
                                    srcPath=self.ifwScriptPath )
             
@@ -126,8 +127,10 @@ class PyToBinInstallerProcess:
         self.isDesktopTarget  = isDesktopTarget
         self.isTestingObfuscation  = False
         self.isTestingExe          = False
+        self.exeTestArgs           = []
         self.isTestingInstall      = False
         self.isVerboseInstall      = False
+        self.isElevatedTest        = False
 
     def __printHeader( self ):
         try: 
@@ -167,7 +170,9 @@ class PyToBinInstallerProcess:
         self.onPyInstConfig( pyInstConfig )        
         _, binPath = buildExecutable( pyInstConfig=pyInstConfig, 
                                            opyConfig=opyConfig )
-        if self.isTestingExe : run( binPath, isDebug=True )
+        if self.isTestingExe : 
+            run( binPath, self.exeTestArgs,
+                 isElevated=self.isElevatedTest, isDebug=True )
         
         ifwConfig = self.configFactory.qtIfwConfig()
         self.onQtIfwConfig( ifwConfig )
@@ -176,8 +181,9 @@ class PyToBinInstallerProcess:
             setupPath = moveToDesktop( setupPath )
         if self.isTestingInstall : 
             run( setupPath, 
-                 QT_IFW_VERBOSE_SWITCH 
-                 if self.isVerboseInstall else None )
+                 (QT_IFW_VERBOSE_SWITCH 
+                 if self.isVerboseInstall else None),
+                 isElevated=self.isElevatedTest )
             
         self.__printFooter()
 
