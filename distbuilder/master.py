@@ -75,13 +75,13 @@ class ConfigFactory:
                           bundleLibs=self.opyBundleLibs,
                           patches=self.opyPatches )                 
     
-    def qtIfwConfig( self ):
+    def qtIfwConfig( self, pyInstConfig=None ):
         return QtIfwConfig( pkgSrcDirPath=self.__pkgSrcDirPath(), 
                             pkgName=self.__ifwPkgName(),
                             installerDefDirPath=self.ifwDefDirPath,
                             configXml=self.qtIfwConfigXml(), 
                             pkgXml=self.qtIfwPackageXml(), 
-                            pkgScript=self.qtIfwPackageScript(),
+                            pkgScript=self.qtIfwPackageScript( pyInstConfig ),
                             setupExeName=self.setupName )
 
     def qtIfwConfigXml( self ) :
@@ -93,13 +93,17 @@ class ConfigFactory:
         return QtIfwPackageXml( self.__ifwPkgName(), self.productName, self.description, 
                                 self.__versionStr(), self.ifwScriptName )
     
-    def qtIfwPackageScript( self ) :
-        return QtIfwPackageScript( self.__ifwPkgName(), 
-                                   fileName=self.ifwScriptName, 
-                                   exeName=self.binaryName, 
-                                   exeVersion=self.__versionStr(),
-                                   script=self.ifwScriptPath, 
-                                   srcPath=self.ifwScriptPath )
+    def qtIfwPackageScript( self, pyInstConfig=None ) :
+        script = QtIfwPackageScript( self.__ifwPkgName(), 
+                                     fileName=self.ifwScriptName, 
+                                     exeName=self.binaryName,                                      
+                                     script=self.ifwScriptPath, 
+                                     srcPath=self.ifwScriptPath )
+        if IS_LINUX:
+            script.exeVersion = self.__versionStr()
+            if pyInstConfig is not None:
+                script.pngIconResPath = pyInstConfig._pngIconResPath             
+        return script
             
     def __versionStr( self ):
         return "%d.%d.%d.%d" % self.version
@@ -174,7 +178,7 @@ class PyToBinInstallerProcess:
             run( binPath, self.exeTestArgs,
                  isElevated=self.isElevatedTest, isDebug=True )
         
-        ifwConfig = self.configFactory.qtIfwConfig()
+        ifwConfig = self.configFactory.qtIfwConfig( pyInstConfig )
         self.onQtIfwConfig( ifwConfig )
         setupPath = buildInstaller( ifwConfig, isPkgSrcRemoved=True )
         if self.isDesktopTarget :
