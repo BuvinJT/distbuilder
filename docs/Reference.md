@@ -791,23 +791,27 @@ automating the generation common script directives.
 Constructor:       
 
 	QtIfwPackageScript( pkgName, fileName="installscript.qs", 
-                  		exeName=None, script=None, srcPath=None )
+                        exeName=None, exeVersion="0.0.0.0",
+                        script=None, srcPath=None )
                   
 Attributes & default values:      
 
-	pkgName  = pkgName
+	pkgName  = <required>
     fileName = "installscript.qs"
     
-    script = None   
+    script = None <or loaded via srcPath>
+    
+    exeName    = None   
+    exeVersion = "0.0.0.0"
+    
+    isAppShortcut     = True
+    isDesktopShortcut = False
 
     componentConstructorBody = None
     isAutoComponentConstructor = True
     
     componentCreateOperationsBody = None
     isAutoComponentCreateOperations = True        
-    exeName = exeName   
-    isWinStartMenuShortcut = True
-    isWinDesktopShortcut   = False
                                                                           
 -------------------------------------------------------      
 ### PipConfig

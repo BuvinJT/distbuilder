@@ -27,10 +27,13 @@ __MINGW_DLL_LIST = [
     , "libwinpthread-1.dll"
 ]
 
-DESKTOP_WIN_SHORTCUT           = 0
-STARTMENU_WIN_SHORTCUT         = 1
+STARTMENU_WIN_SHORTCUT         = 0
+DESKTOP_WIN_SHORTCUT           = 1
 THIS_USER_STARTUP_WIN_SHORTCUT = 2
 ALL_USERS_STARTUP_WIN_SHORTCUT = 3
+
+APPS_X11_SHORTCUT    = 0
+DESKTOP_X11_SHORTCUT = 1
 
 # -----------------------------------------------------------------------------
 class QtIfwConfig:
@@ -274,20 +277,25 @@ class QtIfwPackageScript:
         );    
 """ )
 
+    # an example for use down the line...
+    __LINUX_GET_DISTRIBUTION = ( 
+"""
+        var IS_UBUNTU = (systemInfo.productType === "ubuntu");
+        var IS_OPENSUSE = (systemInfo.productType === "opensuse");             
+""" )
+
     __X11_ADD_DESKTOP_ENTRY_TMPLT = ( 
 """
         component.addOperation( "CreateDesktopEntry", 
-            "/usr/share/applications/[APP_NAME].desktop", 
-            "Version=1.0\nType=Application\nTerminal=false\nExec=@TargetDir@/[EXE_NAME]\nName=[APP_NAME]\nIcon=@TargetDir@[APP_ICON_PNG]\nName[en_US]=[APP_NAME]"
+            "[SHORTCUT_PATH]",
+            "Type=Application\\n" 
+          + "Terminal=[IS_TERMINAL]\\n" 
+          + "Exec=bash -c 'cd \\\"[WORKING_DIR]\\\" && \\\"[EXE_PATH]\\\"'\\n"
+          + "Name=[LABEL]\\n" 
+          + "Name[en_US]=[LABEL]\\n" 
+          + "Version=[VERSION]\\n" 
+          + "Icon=[PNG_PATH]\\n"                     
         );    
-""" )
-
-    __X11_COPY_DESKTOP_ENTRY_TO_DESKTOP_TMPLT = ( 
-"""
-        component.addElevatedOperation( "Copy", 
-            "/usr/share/applications/[APP_NAME].desktop", 
-            "@HomeDir@/Desktop/[APP_NAME].desktop"
-        );
 """ )
      
     __WIN_SHORTCUT_LOCATIONS = {
@@ -295,6 +303,12 @@ class QtIfwPackageScript:
         , STARTMENU_WIN_SHORTCUT        : "@StartMenuDir@"
         , THIS_USER_STARTUP_WIN_SHORTCUT: "@UserStartMenuProgramsPath@/Startup"
         , ALL_USERS_STARTUP_WIN_SHORTCUT: "@AllUsersMenuProgramsPath@/Startup"    
+    }
+
+    # these may not be correct on all distros?
+    __X11_SHORTCUT_LOCATIONS = {
+          DESKTOP_X11_SHORTCUT : "@HomeDir@/Desktop"
+        , APPS_X11_SHORTCUT    : "/usr/share/applications" 
     }
 
     @staticmethod
@@ -312,24 +326,47 @@ class QtIfwPackageScript:
         s = s.replace( "[ICON_PATH]", exePath )
         s = s.replace( "[ICON_ID]", str(iconId) )
         return s 
+
+    @staticmethod
+    def __linuxAddDesktopEntry( location, exeName, version, 
+                                label="@ProductName@", 
+                                directory="@TargetDir@", 
+                                pngPath="",
+                                isGui=True ):        
+        exePath = "%s/%s" % (directory, util._normExeName( exeName ))
+        locDir = QtIfwPackageScript.__X11_SHORTCUT_LOCATIONS[location]             
+        shortcutPath = "%s/%s.desktop" % (locDir, label.replace(" ","_"))        
+        s = QtIfwPackageScript.__X11_ADD_DESKTOP_ENTRY_TMPLT
+        s = s.replace( "[EXE_PATH]", exePath )
+        s = s.replace( "[SHORTCUT_PATH]", shortcutPath )
+        s = s.replace( "[LABEL]", label )
+        s = s.replace( "[VERSION]", version )
+        s = s.replace( "[PNG_PATH]", pngPath )
+        s = s.replace( "[IS_TERMINAL]", "false" if isGui else "true" )
+        s = s.replace( "[WORKING_DIR]", directory )        
+        return s 
     
     def __init__( self, pkgName, fileName=DEFAULT_QT_IFW_SCRIPT_NAME, 
-                  exeName=None, script=None, srcPath=None ) :
+                  exeName=None, exeVersion="0.0.0.0",
+                  script=None, srcPath=None ) :
         self.pkgName  = pkgName
         self.fileName = fileName
         if srcPath :
             with open( srcPath, 'rb' ) as f: self.script = f.read()
         else : self.script = script  
 
+        self.exeName = exeName   
+        self.exeVersion = exeVersion
+        
+        self.isAppShortcut     = True
+        self.isDesktopShortcut = False
+
         self.componentConstructorBody = None
         self.isAutoComponentConstructor = True
         
         self.componentCreateOperationsBody = None
-        self.isAutoComponentCreateOperations = True        
-        self.exeName = exeName   
-        self.isWinStartMenuShortcut = True
-        self.isWinDesktopShortcut   = False
-                            
+        self.isAutoComponentCreateOperations = True
+                                            
     def __str__( self ) : 
         if not self.script: self._generate()
         return self.script
@@ -356,16 +393,28 @@ class QtIfwPackageScript:
         self.componentCreateOperationsBody = ""        
         if IS_WINDOWS:
             winOps=""
-            if self.exeName and self.isWinStartMenuShortcut :
+            if self.exeName and self.isAppShortcut :
                 winOps += QtIfwPackageScript.__winAddShortcut(
                         STARTMENU_WIN_SHORTCUT, self.exeName )              
-            if self.exeName and self.isWinDesktopShortcut:
+            if self.exeName and self.isDesktopShortcut:
                 winOps += QtIfwPackageScript.__winAddShortcut(
                         DESKTOP_WIN_SHORTCUT, self.exeName ) 
             if winOps!="" :    
                 self.componentCreateOperationsBody += (             
-                    '    if( systemInfo.productType === "windows" ){\n' +
-                    '%s\n    }' % (winOps,) )            
+                    '    if( systemInfo.kernelType === "winnt" ){\n' +
+                    '%s\n    }' % (winOps,) )
+        elif IS_LINUX:
+            x11Ops = ""
+            if self.exeName and self.isAppShortcut :
+                x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
+                        APPS_X11_SHORTCUT, self.exeName, self.exeVersion )                
+            if self.exeName and self.isDesktopShortcut:
+                x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
+                        DESKTOP_X11_SHORTCUT, self.exeName, self.exeVersion )                               
+            if x11Ops!="" :    
+                self.componentCreateOperationsBody += (             
+                    '    if( systemInfo.kernelType === "linux" ){\n' +
+                    '%s\n    }' % (x11Ops,) )                                
         if self.componentCreateOperationsBody == "" :
             self.componentCreateOperationsBody = None
 
