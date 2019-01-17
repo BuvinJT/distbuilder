@@ -2,7 +2,10 @@ from distbuilder import util
 from distbuilder.util import *  # @UnusedWildImport
 from distbuilder.opy_library import obfuscatePyLib, OBFUS_DIR_PATH
 
-PIP_PATH      = util._pythonScriptsPath( "pip" )
+__pipName = "pip"
+__p = util._pythonScriptsPath( __pipName )
+PIP_PATH = __p if exists( __p ) else __pipName
+
 PIP_INSTALL   = "install" 
 PIP_UNINSTALL = "uninstall"
 
@@ -26,7 +29,8 @@ class PipConfig:
                 , destPath = None
                 , asSource = False
                 , incDependencies = True        
-                , isForced= False                
+                , isForced = False         
+                , isCacheUsed = True       
                 , isUpgrade = False
                 , otherPipArgs = "" ) :
         self.pipPath         = PIP_PATH
@@ -36,7 +40,8 @@ class PipConfig:
         self.destPath        = destPath
         self.asSource        = asSource
         self.incDependencies = incDependencies        
-        self.isForced        = isForced                
+        self.isForced        = isForced
+        self.isCacheUsed     = isCacheUsed                
         self.isUpgrade       = isUpgrade
         self.otherPipArgs    = otherPipArgs # open ended
 
@@ -46,20 +51,47 @@ class PipConfig:
         elif exists( self.source ) :
             self.source = '"%s"' % (self.source,) 
         sourceSpec = ( self.source if self.version is None else
-            ("%s%s%s" % (self.sourceSpec, self.verEquality, self.version)) )
+            ("%s%s%s" % (self.source, self.verEquality, self.version)) )
         destSpec = '--target "%s"' % (self.destPath, ) if self.destPath else "" 
         editableSwitch    = "--editable" if self.asSource else ""
         forcedSwitch      = "--force-reinstall" if self.isForced else ""
         upgradeSwitch     = "--upgrade" if self.isUpgrade else ""
+        noCacheSwitch     = "" if self.isCacheUsed else "--no-cache-dir" 
         incDpndncsSwitch  = "" if self.incDependencies else "--no-deps"
         self.otherPipArgs += " "
-        tokens = (destSpec, upgradeSwitch, forcedSwitch, incDpndncsSwitch,                     
-                  self.otherPipArgs, editableSwitch, sourceSpec )
+        tokens = (destSpec, upgradeSwitch, forcedSwitch, incDpndncsSwitch, 
+                  noCacheSwitch, self.otherPipArgs, editableSwitch, sourceSpec )
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )         
 
-# -----------------------------------------------------------------------------   
-def installLibrary( name, opyConfig=None, pipConfig=PipConfig() ):
-
+# -----------------------------------------------------------------------------
+def installLibraries( *libs ):
+        
+    # Note: *libs allows a tuple of arbitrary length to be provided as  
+    # series of arguments (like varargs in C++/Java...)
+    # Else, a single tuple or list, may be passed
+    # OR a single item like a string will be converted to a 1 item tuple...
+    if len(libs)==1: libs=libs[0]
+    if not isinstance(libs, tuple) and not isinstance(libs, list): libs=(libs,)
+         
+    for lib in libs:
+        # each lib item maybe a tuple/list, and then treated as
+        # the argument list for installLibrary, or it may be 
+        # just a string, representing the name  
+        if isinstance(lib, tuple) or isinstance(lib, list):
+            try   : name      = lib[0]
+            except: name      = None  
+            try   : opyConfig = lib[1]
+            except: opyConfig = None  
+            try   : pipConfig = lib[2]
+            except: pipConfig = PipConfig()  
+            installLibrary( name, opyConfig, pipConfig )
+        elif isinstance(lib, dict): installLibrary( **lib )                        
+        else: installLibrary( lib )
+                
+def installLibrary( name, opyConfig=None, pipConfig=None ):
+ 
+    if pipConfig is None : pipConfig=PipConfig()
+    
     # Set the pip source and working directory. 
     # Optionally, create obfuscated version of source
     if opyConfig is None:
@@ -68,7 +100,7 @@ def installLibrary( name, opyConfig=None, pipConfig=PipConfig() ):
     else:
         wrkDir, _ = obfuscatePyLib( name, opyConfig )
         pipConfig.source = None
-        
+
     util._system( __PIP_INSTALL_TMPLT % 
         ( pipConfig.pipPath, PIP_INSTALL, str(pipConfig) ), wrkDir )  
 

@@ -18,7 +18,8 @@ from distbuilder.qt_installer import \
     , QT_IFW_VERBOSE_SWITCH
 
 from distbuilder.pip_installer import \
-      installLibrary \
+      installLibraries \
+    , installLibrary \
     , uninstallLibrary \
     , PipConfig \
     , vcsUrl
