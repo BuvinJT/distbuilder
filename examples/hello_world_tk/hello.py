@@ -1,5 +1,6 @@
 from sys import stdout
-# import Tkinter in a cross Python version manner  
+
+# cross environment Tkinter import    
 try:    from tkinter import Tk 
 except: from Tkinter import Tk
 try:    from tkinter.ttk import Button 

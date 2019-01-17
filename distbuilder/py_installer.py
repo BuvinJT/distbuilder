@@ -47,7 +47,6 @@ class PyInstallerConfig:
         
         self.isGui           = False
         self.iconFilePath    = None
-        self._pngIconResPath = None
 
         self.versionInfo     = None 
         self.versionFilePath = None # TODO: offer programmatic version info
@@ -62,6 +61,11 @@ class PyInstallerConfig:
         
         self.isAutoElevated  = False        
         self.otherPyInstArgs = "" # open ended
+
+        # Not directly fed into the utility. Employed by buildExecutable function.       
+        self._pngIconResPath = None
+        self.distResources   = []
+        self.distDirs        = [] 
                 
     def __str__( self ):
         nameSpec       = ( "--name %s" % (self.name,)
@@ -207,16 +211,22 @@ def buildExecutable( name=None, entryPointPy=None,
                      distResources=[], distDirs=[] ):
     ''' returns: (binDir, binPath) '''   
     
-    # Ensure pyInstConfig, name & entryPointPy 
-    # are defined an in sync    
+    # Resolve PyInstallerConfig and the overlapping parameters passed directly
+    # (PyInstallerConfig values are given priority)    
     if pyInstConfig is None: 
-        pyInstConfig=PyInstallerConfig()
-        pyInstConfig.name = name
-        pyInstConfig.entryPointPy = entryPointPy
+        pyInstConfig = PyInstallerConfig()
+        pyInstConfig.name          = name
+        pyInstConfig.entryPointPy  = entryPointPy
+        pyInstConfig.distResources = distResources
+        pyInstConfig.distDirs      = distDirs
     else :
-        name = pyInstConfig.name   
-        entryPointPy = pyInstConfig.entryPointPy     
-    if not name : raise Exception( "Binary name is required" )
+        name          = pyInstConfig.name   
+        entryPointPy  = pyInstConfig.entryPointPy
+        distResources = pyInstConfig.distResources
+        distDirs      = pyInstConfig.distDirs             
+    
+    # Verify the required parameters are present    
+    if not name :         raise Exception( "Binary name is required" )
     if not entryPointPy : raise Exception( "Binary entry point is required" )
     
     # auto assign some pyInstConfig values        
@@ -246,7 +256,7 @@ def buildExecutable( name=None, entryPointPy=None,
     # Discard all temp files (but not distDir!)
     __clean( pyInstConfig )
 
-    # automatically add a png icon for Linux to the 
+    # On Linux, automatically add a png icon to the 
     # external resources, if one exists and is not already included  
     if IS_LINUX :
         try:

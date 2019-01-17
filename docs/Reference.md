@@ -629,7 +629,6 @@ Attributes & default values:
       
     isGui           = False
     iconFilePath    = None
-    _pngIconResPath = None
       
     versionInfo     = None
     versionFilePath = None
@@ -644,6 +643,11 @@ Attributes & default values:
       
     isAutoElevated  = False        
     otherPyInstArgs = ""  (open ended argument string)    
+
+    (Not directly fed into the utility. Employed by buildExecutable function.)
+    _pngIconResPath = None
+    distResources   = []
+    distDirs        = [] 
 
 ### WindowsExeVersionInfo
 
