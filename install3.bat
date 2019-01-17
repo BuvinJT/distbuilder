@@ -1,5 +1,5 @@
 set thisDir=%~dp0
 cd "%thisDir%"
 
-pip3 install .
+python3 -m pip install .
 pause

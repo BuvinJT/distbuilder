@@ -1,5 +1,5 @@
 set thisDir=%~dp0
 cd "%thisDir%"
 
-pip install .
+python -m pip install .
 pause
