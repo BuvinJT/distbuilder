@@ -2,7 +2,7 @@ from distbuilder import util
 from distbuilder.util import *  # @UnusedWildImport
 from distbuilder.opy_library import obfuscatePy, OBFUS_DIR_PATH
 
-PYINST_BIN_NAME = "pyinstaller"
+PYINST_BIN_NAME = util._normExeName( "pyinstaller" )
 
 SPEC_EXT = ".spec"
 
@@ -263,6 +263,7 @@ def buildExecutable( name=None, entryPointPy=None,
     # Confirm success
     exePath = joinPath( distDirPath, util._normExeName( name ) )
     if not exists(exePath) : 
+        print( 'Binary not found: "%s"' % (exePath,) )
         raise Exception( "Binary building failure!" )
     print( 'Binary built successfully!\n"%s"' % (exePath,) )
     print('')
