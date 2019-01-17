@@ -223,21 +223,26 @@ obfuscatePyLib:
     (denoting private) will be still be obfuscated.     
     This is the default mode for a library.
 
--------------------------------------------------------
-To install a library (via pip), simply invoke installLibrary: 
+## Library Installation  
+ 
+To install a library (via pip), invoke installLibrary.
+Note: that installLibraries (pural) may used to install
+multiple libraries in a single call.  
     
     installLibrary( name, opyConfig=None, pipConfig=PipConfig() )
     
 **Returns: None**
 
 **name**: The name/source of the library.  If the
-    library is your current project itself, supply
-    the name you are giving it.  If you are NOT
-    obfuscating it, specify "." instead.  Otherwise,
-    you may specific a remote package name registered
-    with pip (i.e. the typical way pip is used),
-    or a local path, or a url (http/git). See
-    pip documentation for details.               
+    library is your *current project itself* and you 
+    are obfuscating it, be sure to supply the name you 
+    are giving it.  If you are NOT obfuscating it, 
+    specify "." instead.  If you wish to install a
+    remote package registered with pip (i.e. the typical way pip 
+    is used), simply supply the name.
+    If you wish to use a local path, or a specifc url (http/git), 
+    see [PipConfig](#pipconfig) (and perhaps the pip documentation 
+    for details).               
     
 **opyConfig**: An (optional) [OpyConfig](#opyconfig) object, 
     to dictate code obfuscation details using 
@@ -247,7 +252,7 @@ To install a library (via pip), simply invoke installLibrary:
     as a importable library, this function is useful 
     for testing the operations of your library 
     post-obfuscation/pre-distribution. This will  
-    run obfuscatePyLib with default arguments, 
+    run [obfuscatePyLib](#-library-obfuscation) with default arguments, 
     install the library, and remove the temporary 
     obfuscation from the working directory.                             
     
@@ -261,9 +266,40 @@ To install a library (via pip), simply invoke installLibrary:
     a specific path such as a temp build directory,
     and to request raw .py scripts be placed there.
     Note that remote raw pip packages will require an 
-    alternate "vcs url" be supplied to "development" 
+    alternate "vcs url" be supplied to a "development" 
     repository in place of the simple package name.  
     See [editable-installs](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs)
+
+	installLibraries( *libs )
+
+This function is a convenience wrapper over installLibrary (singluar) function.
+	    
+**Returns: None**
+
+***libs**: This function is extremely flexible in terms of how 
+   it may be invoked. The libs argment maybe a tuple, a list,
+   or a series of arguments passed directly to the function 
+   of arbitrary lenth.  The arguments or collection may consist of 
+   simple strings (i.e. the library names), or be tuples / dictionaries
+   themselves.  When passing tuples, or dictionaries, they will be
+   treated as the argument list to installLibrary().
+   
+Simple example:
+ 	
+	installLibraries( 'six', 'abc' )
+
+Simple example with a version detail:
+
+	installLibraries( 'six', 'abc', 'setuptools==40.6.3' )
+
+Complex example:
+ 	
+ 	opyCfg = OpyConfig()
+ 	... 	
+ 	pipCfg = PipConfig()
+ 	... 	
+ 	myLib = {'name':'MyLib', 'opyConfig':opyCfg, 'pipConfig':pipCfg } 	
+ 	installLibraries( 'six', myLib )
             
     uninstallLibrary( name )
 
@@ -278,6 +314,7 @@ Convenience function to build vcsUrls from their
 component parts. This is to be used in conjunction
 with the PipConfig attribute asSource.
 See https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support
+
 
 ## Obfuscation Features 
 
@@ -836,7 +873,8 @@ Constructor:
              , destPath = None
              , asSource = False
              , incDependencies = True        
-             , isForced= False                
+             , isForced= False
+             , isCacheUsed = True                
              , isUpgrade = False
              , otherPipArgs = "" ) 
 
@@ -849,7 +887,8 @@ Attributes:
     destPath        
     asSource        
     incDependencies       
-    isForced                  
+    isForced 
+    isCacheUsed                  
     isUpgrade      
     otherPipArgs  (open ended argument string)      
          
