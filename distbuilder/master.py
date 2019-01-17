@@ -39,7 +39,7 @@ class ConfigFactory:
         self.entryPointPy = None
         self.iconFilePath = None       
         self.version      = (0,0,0,0)
-
+        
         self.setupName     = DEFAULT_SETUP_NAME
         self.ifwDefDirPath = None
         self.pkgSrcDirPath = None
@@ -128,7 +128,7 @@ class PyToBinInstallerProcess:
         self.name              = name
         self.configFactory     = configFactory                      
         self.isObfuscating     = isObfuscating
-        self.isDesktopTarget  = isDesktopTarget
+        self.isDesktopTarget   = isDesktopTarget
         self.isTestingObfuscation  = False
         self.isTestingExe          = False
         self.exeTestArgs           = []
@@ -173,7 +173,7 @@ class PyToBinInstallerProcess:
         pyInstConfig = self.configFactory.pyInstallerConfig()
         self.onPyInstConfig( pyInstConfig )        
         _, binPath = buildExecutable( pyInstConfig=pyInstConfig, 
-                                           opyConfig=opyConfig )
+                                      opyConfig=opyConfig )
         if self.isTestingExe : 
             run( binPath, self.exeTestArgs,
                  isElevated=self.isElevatedTest, isDebug=True )
