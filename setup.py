@@ -1,9 +1,49 @@
 from setuptools import setup
-exec(open('distbuilder/_version.py').read()) # defines __version__
 
+# Override standard setutools commands. 
+# Enforce the order of dependency installation
+#-------------------------------------------------
+PREREQS = [ "six" ]
+
+from setuptools.command.install import install
+from setuptools.command.develop import develop
+from setuptools.command.egg_info import egg_info
+
+def requires( packages ): 
+    from os import system
+    from sys import executable as PYTHON_PATH
+    from pkg_resources import require
+    require( "pip" )
+    CMD_TMPLT = '"' + PYTHON_PATH + '" -m pip install %s'
+    for pkg in packages: system( CMD_TMPLT % (pkg,) )   	
+
+class OrderedInstall( install ):
+    def run( self ):
+        requires( PREREQS )
+        install.run( self )        
+        
+class OrderedDevelop( develop ):
+    def run( self ):
+        requires( PREREQS )
+        develop.run( self )        
+        
+class OrderedEggInfo( egg_info ):
+    def run( self ):
+        requires( PREREQS )
+        egg_info.run( self )        
+
+CMD_CLASSES = { 
+     "install" : OrderedInstall
+   , "develop" : OrderedDevelop
+   , "egg_info": OrderedEggInfo 
+}        
+#-------------------------------------------------
+
+# get __version__ and readme
+exec( open('distbuilder/_version.py').read() ) 
 with open( "README.md", "r" ) as f: readme = f.read()
 
-setup (
+setup (	
 	name             = "distbuilder",
 	version          = __version__,  # @UndefinedVariable
 	author           = "BuvinJ",
@@ -19,7 +59,7 @@ setup (
 	],
     url              = "https://github.com/BuvinJT/distbuilder",	
 	classifiers=[
-		'Programming Language :: Python :: 2.7',
+		"Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
 		"License :: OSI Approved :: GNU General Public License v3 (GPLv3)",        
@@ -29,10 +69,10 @@ setup (
 		"Development Status :: 3 - Alpha"
     ],    
 	packages         = ["distbuilder"],
-	install_requires = [
-		  "six"
-		, "PyInstaller"   # Tested on PyInstaller v3.4
+	install_requires = [		  
+		  "PyInstaller"   # Tested on PyInstaller v3.4
 		, "opy_distbuilder"  
 	],
-	include_package_data=True # extra files defined in MANIFEST.in 
+	include_package_data=True, # extra files defined in MANIFEST.in
+    cmdclass = CMD_CLASSES
 )
