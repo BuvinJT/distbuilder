@@ -2,9 +2,7 @@ from distbuilder import util
 from distbuilder.util import *  # @UnusedWildImport
 from distbuilder.opy_library import obfuscatePyLib, OBFUS_DIR_PATH
 
-__pipName = "pip"
-__p = util._pythonScriptsPath( __pipName )
-PIP_PATH = __p if exists( __p ) else __pipName
+PIP_CMD_BASE = '"' + PYTHON_PATH + '" -m pip'
 
 PIP_INSTALL   = "install" 
 PIP_UNINSTALL = "uninstall"
@@ -33,7 +31,7 @@ class PipConfig:
                 , isCacheUsed = True       
                 , isUpgrade = False
                 , otherPipArgs = "" ) :
-        self.pipPath         = PIP_PATH
+        self.pipCmdBase      = PIP_CMD_BASE
         self.source          = source
         self.version         = version
         self.verEquality     = verEquality 
@@ -102,7 +100,7 @@ def installLibrary( name, opyConfig=None, pipConfig=None ):
         pipConfig.source = None
 
     util._system( __PIP_INSTALL_TMPLT % 
-        ( pipConfig.pipPath, PIP_INSTALL, str(pipConfig) ), wrkDir )  
+        ( pipConfig.pipCmdBase, PIP_INSTALL, str(pipConfig) ), wrkDir )  
 
     # Discard temp files
     if( opyConfig is not None and 
@@ -110,7 +108,7 @@ def installLibrary( name, opyConfig=None, pipConfig=None ):
         removeDir( OBFUS_DIR_PATH )    
     
 def uninstallLibrary( name ):
-    util._system( __PIP_UNINSTALL_TMPLT % ( PIP_PATH, PIP_UNINSTALL, name ) )  
+    util._system( __PIP_UNINSTALL_TMPLT % ( PIP_CMD_BASE, PIP_UNINSTALL, name ) )  
 
 #https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs
 #https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support

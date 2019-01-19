@@ -3,6 +3,7 @@ pages:
     - Home: index.md
     - Quick Start Guide: QuickStart.md
     - Reference Manual: Reference.md
+    - Troubleshooting: Issues.md
     - To-Do List: ToDo.md
     - Contact / Contribute: Contribute.md
 theme: readthedocs

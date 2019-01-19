@@ -1,6 +1,6 @@
 from setuptools import setup
 
-# Override standard setutools commands. 
+# Override standard setuptools commands. 
 # Enforce the order of dependency installation
 #-------------------------------------------------
 PREREQS = [ "six" ]
@@ -70,7 +70,8 @@ setup (
     ],    
 	packages         = ["distbuilder"],
 	install_requires = [		  
-		  "PyInstaller"   # Tested on PyInstaller v3.4
+          "six"           # Forced as prerequisite too
+		, "PyInstaller"   # Tested on PyInstaller v3.4
 		, "opy_distbuilder"  
 	],
 	include_package_data=True, # extra files defined in MANIFEST.in

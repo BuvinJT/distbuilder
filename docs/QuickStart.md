@@ -3,14 +3,23 @@
 
 ## Pre-Requisites
 
+### Pip
+
+Both the distbuilder installation, and the use of some features within it, require [pip](https://docs.python.org/3/installing/index.html).  More than likley, you already have that installed.  If not, note that installation process may be slightly different based on your platform or environmental details (e.g. having multiple Python installations).  The scope of such matters is beyond what can be addressed here.  Refer to these links as a starting point: 
+
+[Pip on Windows](https://stackoverflow.com/questions/4750806/how-do-i-install-pip-on-windows)
+
+[Pip on Mac](https://stackoverflow.com/questions/17271319/how-do-i-install-pip-on-macos-or-os-x)
+
+[Pip on Linux](https://stackoverflow.com/questions/6587507/how-to-install-pip-with-python-3)
+
 ### Opy
 
 This library requires a fork from the open source project 
 "Opy", dubbed "Opy for Distribution Builder". When installing 
-distbuilder via the "natural" method of using `pip`, this 
-dependency will be **automatically installed**. If using an 
-alternate, less automated method, that library can be 
-acquired instead from: 
+distbuilder, this dependency should be **automatically installed**
+for you. To aquire the source for that directly, and manually install
+it, you may use the links/urls below:  
 
 [Opy for Distribution Builder](https://github.com/QQuick/Opy/tree/opy_distbuilder)  
 
@@ -29,9 +38,9 @@ accessible via:
 
 Additionally, the "Qt Installer Framework"
 is recommended.  This component is not a hard
-requirement, but is strongly recommended, so 
-that you may employ the distbuilder installation
-building features.
+requirement, but is *strongly recommended*, so 
+that you may employ the distbuilder installer
+creation features.
 
 QtIFW can be acquired from: [QtIFW Downloads](http://download.qt.io/official_releases/qt-installer-framework)
 
@@ -39,57 +48,46 @@ Once installed, the best way to integrate it
 with distbuilder is to define an environmental
 variable name `QT_IFW_DIR` and the set value
 for that equal to the directory where you 
-installed the utility. Refer to the 
-[Installers](Reference.md#installers) section of 
-the [Reference Manual](Reference.md#installers) for 
-more details. 
+installed the utility. Note, it also possible to
+supply the path within your implemenation script. 
+Refer to the [Installers](Reference.md#installers) section of 
+the Reference Manual for details. 
       
 ## Installation 
 
-Normally, installation is as simple as executing the following 
+Standard installation is as simple as executing the following 
 on your terminal / command prompt: 
 
-	pip install distbuilder
+	python -m pip install distbuilder
 
 To install from the raw source instead, you may perform a 
 Git clone from `https://github.com/BuvinJT/distbuilder.git`, 
 or otherwise download the repository from the 
 [GitHub](https://github.com/BuvinJT/distbuilder) page.
 
-
-With you local copy of the source, on Windows you may 
+With a local copy of the full source, on Windows you may 
 simply run `install.bat` (or `install3.bat`). 
 On Mac or Linux, you may use the counterpart `install.sh` 
 (or `install3.sh`) instead.
 
 If you encounter failures with those scripts, try
 this "manual" approach. From a command line interface, 
-change to the directory containing this repo, then execute:
-
-	pip install .    
-
-(Don't miss the period at the end!)
-
-Or, if that doesn't work for some reason, try:
+change to the directory containing the source, then execute:
 
 	python -m pip install .
 
-Finally, as a last resort, if you don't have pip 
-installed for some reason, you can use this:
+    (Don't miss the period at the end!)
 
-	python setup.py install
-
-
-## Use Overview
+## Implementation Overview
 
 The standard way the library was intended for use is to
 add a `build.py` script to the root directory of the
 project you wish to distribute. (Note: the file may have 
 any name of your choice - "build.py" is merely a 
 recommended naming convention).  After defining that 
-script, you run it to build your distribution package. 
+script, you simply run it to build your distribution package. 
 
-In `build.py`, you may wish to simply import everything 
+In `build.py`, you may wish to import everything 
 from this library via `import distbuilder *`.  If 
 your build script will use the "low level functions" offered 
 by the library, starting it in that manner is often a 
@@ -106,21 +104,21 @@ library	be installed.*
 
 The easiest way learn how to use distbuilder is likely 
 to reference an example.  The "Hello World Tk Example" 
-is include in the "source distribution" of the library.
+is included in the "source distribution" of the library.
 You may visit the [PyPi](https://pypi.org/project/distbuilder/#files) 
-downloads page for the project to acquire this.
+downloads page for the project to acquire this in the form of a tarball.
 
-Alternatively, you may download/copy the source files directly from GitHub into a local directory:   
+Alternatively, you may download/copy these example files directly from GitHub into a local directory:   
 
-[hello.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/hello.py)
+Example app: [hello.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/hello.py)
 
-[build.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/build.py)
+Build script: [build.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/build.py)
 
-Windows: [demo.ico](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.ico)
+Windows resource: [demo.ico](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.ico)
 
-Mac: [demo.icns](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.icns)
+Mac resource: [demo.icns](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.icns)
 
-Linux: [demo.png](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.png)
+Linux resource: [demo.png](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.png)
 
 Start by confirming you can run the program 
 script in the "natural" manner:
@@ -159,7 +157,7 @@ messages produced by gui applications. This may be counterproductive
 for debugging though, and as such distbuilder provides a 
 direct "solution" for this issue. Refer to the 
 [Testing](Reference.md#testing) section of the 
-[Reference Manual](Reference.md#installers) for more details.    
+Reference Manual for more details.    
 
 ## Learn More  
 

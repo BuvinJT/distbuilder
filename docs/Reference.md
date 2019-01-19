@@ -880,7 +880,7 @@ Constructor:
 
 Attributes:                        
 
-    pipPath = "pip"  (i.e. on the system path)
+    pipCmdBase = "[PYTHON BINARY PATH]" -m pip
     source          
     version         
     verEquality     

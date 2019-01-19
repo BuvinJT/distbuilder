@@ -3,9 +3,6 @@
  
 ## High Priority
 
-* Test on platforms other than Windows! 
-	(should work in theory, but confirmation required)
-
 * Add additional examples.
 
 * Continue to expand upon the documentation, especially with
@@ -26,6 +23,10 @@ divisions.
 * Further develop the Qt IFW script generation features. 
 			
 * Continue to improve and stablize the Opy library and its beta features.
+
+* Test on latest macOS
+
+* Test on more Linux distros
 
 ## Low Priority
 

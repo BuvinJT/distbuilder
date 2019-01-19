@@ -6,7 +6,7 @@
 If you wish to report bugs, make request features, or contribute to this 
 project, please [join GitHub](https://github.com/join). 
 
-## Post Issue 
+## Post An Issue 
 
 Once you have a GitHub account, you can [post an issue](https://github.com/BuvinJT/distbuilder/issues)
 for this project.  
