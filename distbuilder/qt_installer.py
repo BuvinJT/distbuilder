@@ -32,6 +32,9 @@ DESKTOP_WIN_SHORTCUT           = 1
 THIS_USER_STARTUP_WIN_SHORTCUT = 2
 ALL_USERS_STARTUP_WIN_SHORTCUT = 3
 
+APPS_MAC_SHORTCUT    = 0              
+DESKTOP_MAC_SHORTCUT = 1             
+                
 APPS_X11_SHORTCUT    = 0
 DESKTOP_X11_SHORTCUT = 1
 
@@ -203,6 +206,21 @@ class QtIfwConfigXml( _QtIfwXml ):
             #self.Title = "%s Setup" % (self.Name) # New IFW seem to be adding "Setup" suffix?
     
     def setDefaultPaths( self ) :        
+        if( self.companyTradeName is not None and 
+            self.Name is not None ):
+            # On macOS, self-contained "app bundles" are typically dropped 
+            # into "Applications", but "traditional" directories e.g.
+            # what QtIFW installs (with the .app contained within it)
+            # are NOT placed there.  Instead, the user's home directory
+            # seems more typical, with a link perhaps also appearing 
+            # in Applications.  On Linux and Windows, @ApplicationsDir@
+            # resolves to a typical (cross user) apps location.       
+            dirVar = "@HomeDir@" if IS_MACOS else "@ApplicationsDir@"
+            subDir = "%s/%s" % (self.companyTradeName, self.Name) 
+            self.TargetDir = "%s/%s" % (dirVar, subDir)
+        if IS_WINDOWS:
+            if self.companyTradeName is not None :
+                self.StartMenuDir = self.companyTradeName
         if self.exeName is not None: 
             # NOTE: THE WORKING DIRECTORY IS NOT SET FOR RUN PROGRAM!
             # THERE DOES NOT SEEM TO BE AN OPTION YET FOR THIS IN QT IFW   
@@ -212,17 +230,11 @@ class QtIfwConfigXml( _QtIfwXml ):
                 if not isinstance( self.runProgramArgList, list ) :
                     self.runProgramArgList = []
                 self.runProgramArgList.insert(0, programPath)
-            else : self.RunProgram = programPath     
-                
-        if (self.companyTradeName is not None) and (self.Name is not None):    
-            self.TargetDir = ( "@ApplicationsDir@/%s/%s" % 
-                                (self.companyTradeName, self.Name) )
-        if IS_WINDOWS:
-            if self.companyTradeName is not None :
-                self.StartMenuDir = self.companyTradeName
-                                
+            else : self.RunProgram = programPath                    
+                                     
     def addCustomTags( self, root ) :
-        if self.runProgramArgList is not None and self.RunProgram is not None:            
+        if( self.RunProgram is not None and 
+            self.runProgramArgList is not None ):            
             runArgs = _QtIfwXmlElement( QtIfwConfigXml.__RUN_ARGS_TAG, 
                                         None, root )
             for arg in self.runProgramArgList:
@@ -282,6 +294,13 @@ class QtIfwPackageScript:
     __DIR_TMPLT  = "%s/packages/%s/meta"
     __PATH_TMPLT = __DIR_TMPLT + "/%s"
 
+    # an example for use down the line...
+    __LINUX_GET_DISTRIBUTION = ( 
+"""
+        var IS_UBUNTU   = (systemInfo.productType === "ubuntu");
+        var IS_OPENSUSE = (systemInfo.productType === "opensuse");             
+""" )
+
     __WIN_ADD_SHORTCUT_TMPLT = ( 
 """
         component.addOperation( "CreateShortcut",
@@ -293,11 +312,12 @@ class QtIfwPackageScript:
         );    
 """ )
 
-    # an example for use down the line...
-    __LINUX_GET_DISTRIBUTION = ( 
+    __MAC_ADD_SYMLINK_TMPLT = ( 
 """
-        var IS_UBUNTU = (systemInfo.productType === "ubuntu");
-        var IS_OPENSUSE = (systemInfo.productType === "opensuse");             
+        component.addOperation( "CreateLink",  
+            "[SHORTCUT_PATH]",
+            "[EXE_PATH]"
+        );    
 """ )
 
     __X11_ADD_DESKTOP_ENTRY_TMPLT = ( 
@@ -321,6 +341,11 @@ class QtIfwPackageScript:
         , ALL_USERS_STARTUP_WIN_SHORTCUT: "@AllUsersMenuProgramsPath@/Startup"    
     }
 
+    __MAC_SHORTCUT_LOCATIONS = {
+          DESKTOP_MAC_SHORTCUT : "@HomeDir@/Desktop"
+        , APPS_MAC_SHORTCUT    : "@HomeDir@/Applications" 
+    }
+
     # these may not be correct on all distros?
     __X11_SHORTCUT_LOCATIONS = {
           DESKTOP_X11_SHORTCUT : "@HomeDir@/Desktop"
@@ -341,6 +366,19 @@ class QtIfwPackageScript:
         s = s.replace( "[WORKING_DIR]", directory )
         s = s.replace( "[ICON_PATH]", exePath )
         s = s.replace( "[ICON_ID]", str(iconId) )
+        return s 
+
+    @staticmethod
+    def __macAddShortcut( location, exeName, isGui,
+                          label="@ProductName@", 
+                          directory="@TargetDir@" ):        
+        exePath = "%s/%s" % (directory, util.normBinaryName( exeName, 
+                                                             isGui=isGui ))
+        locDir = QtIfwPackageScript.__MAC_SHORTCUT_LOCATIONS[location]             
+        shortcutPath = "%s/%s" % (locDir, label)        
+        s = QtIfwPackageScript.__MAC_ADD_SYMLINK_TMPLT
+        s = s.replace( "[EXE_PATH]", exePath )
+        s = s.replace( "[SHORTCUT_PATH]", shortcutPath )
         return s 
 
     @staticmethod
@@ -423,6 +461,20 @@ class QtIfwPackageScript:
                 self.componentCreateOperationsBody += (             
                     '    if( systemInfo.kernelType === "winnt" ){\n' +
                     '%s\n    }' % (winOps,) )
+        elif IS_MACOS:
+            macOps = ""
+            if self.exeName and self.isAppShortcut :
+                macOps += QtIfwPackageScript.__macAddShortcut(
+                        APPS_MAC_SHORTCUT, self.exeName,
+                        self.isGui )              
+            if self.exeName and self.isDesktopShortcut:
+                macOps += QtIfwPackageScript.__macAddShortcut(
+                        DESKTOP_MAC_SHORTCUT, self.exeName,
+                        self.isGui )             
+            if macOps!="" :    
+                self.componentCreateOperationsBody += (             
+                    '    if( systemInfo.kernelType === "darwin" ){\n' +
+                    '%s\n    }' % (macOps,) )                    
         elif IS_LINUX:
             x11Ops = ""
             if self.exeName and self.isAppShortcut :
