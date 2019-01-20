@@ -8,7 +8,7 @@ from abc import ABCMeta, abstractmethod
 
 BUILD_SETUP_DIR_PATH = absPath( "build_setup" )
 INSTALLER_DIR_PATH = "installer"
-DEFAULT_SETUP_NAME = util._normExeName( "setup" )
+DEFAULT_SETUP_NAME = util.normBinaryName( "setup" )
 DEFAULT_QT_IFW_SCRIPT_NAME = "installscript.qs"
 
 QT_IFW_VERBOSE_SWITCH = '-v'
@@ -16,10 +16,8 @@ QT_IFW_VERBOSE_SWITCH = '-v'
 QT_IFW_DIR_ENV_VAR = "QT_IFW_DIR"
 QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
 
-__MACOS_SETUP_EXT = ".app"
-
 __BIN_SUB_DIR = "bin"
-__QT_INSTALL_CREATOR_EXE_NAME = util._normExeName( "binarycreator" )
+__QT_INSTALL_CREATOR_EXE_NAME = util.normBinaryName( "binarycreator" )
 
 __QT_WINDOWS_DEPLOY_EXE_NAME   = "windeployqt.exe"
 __QT_WINDOWS_DEPLOY_QML_SWITCH = "--qmldir"
@@ -67,7 +65,7 @@ class QtIfwConfig:
         # IFW tool path (attempt to use environmental variable if None)
         self.qtIfwDirPath = None
         # other IFW command line options
-        self.isDebugMode    = False
+        self.isDebugMode    = True
         self.otherqtIfwArgs = ""
         # Qt C++ Content extended details / requirements
         self.isQtCppExe     = False
@@ -160,19 +158,22 @@ class QtIfwConfigXml( _QtIfwXml ):
                    , "RunProgram" # RunProgramArguments added separately...
                    , "RunProgramDescription"                                 
                    ]
-    __ARG_TAG    = "Argument"
+    __RUN_ARGS_TAG = "RunProgramArguments"
+    __ARG_TAG      = "Argument"
         
     def __init__( self, name, exeName, version, publisher,
-                  companyTradeName=None, iconFilePath=None ) :
+                  iconFilePath=None, isGui=True,
+                  companyTradeName=None ) :
         _QtIfwXml.__init__( self, QtIfwConfigXml.__ROOT_TAG, 
                             QtIfwConfigXml.__TAGS )
        
-        self.exeName = util._normExeName( exeName )
+        self.exeName = util.normBinaryName( exeName, isGui=isGui )
         if IS_LINUX :
             # qt installer does not support icon embedding in Linux
             iconBaseName = self.iconFilePath = None
         else :    
-            self.iconFilePath = iconFilePath        
+            self.iconFilePath = util._normIconName( iconFilePath, 
+                                                    isPathPreserved=True )        
             try:    iconBaseName = splitExt( basename(iconFilePath) )[0]
             except: iconBaseName = None
         self.companyTradeName = ( companyTradeName if companyTradeName 
@@ -204,8 +205,15 @@ class QtIfwConfigXml( _QtIfwXml ):
     def setDefaultPaths( self ) :        
         if self.exeName is not None: 
             # NOTE: THE WORKING DIRECTORY IS NOT SET FOR RUN PROGRAM!
-            # THERE DOES NOT SEEM TO BE AN OPTION YET FOR THIS IN QT IFW        
-            self.RunProgram = "@TargetDir@/%s" % (self.exeName,)        
+            # THERE DOES NOT SEEM TO BE AN OPTION YET FOR THIS IN QT IFW   
+            programPath = "@TargetDir@/%s" % (self.exeName,)    
+            if util._isMacApp( self.exeName ):   
+                self.RunProgram = util._LAUNCH_MACOS_APP_CMD 
+                if not isinstance( self.runProgramArgList, list ) :
+                    self.runProgramArgList = []
+                self.runProgramArgList.insert(0, programPath)
+            else : self.RunProgram = programPath     
+                
         if (self.companyTradeName is not None) and (self.Name is not None):    
             self.TargetDir = ( "@ApplicationsDir@/%s/%s" % 
                                 (self.companyTradeName, self.Name) )
@@ -215,8 +223,10 @@ class QtIfwConfigXml( _QtIfwXml ):
                                 
     def addCustomTags( self, root ) :
         if self.runProgramArgList is not None and self.RunProgram is not None:            
+            runArgs = _QtIfwXmlElement( QtIfwConfigXml.__RUN_ARGS_TAG, 
+                                        None, root )
             for arg in self.runProgramArgList:
-                _QtIfwXmlElement( QtIfwConfigXml.__ARG_TAG, arg, root )                
+                _QtIfwXmlElement( QtIfwConfigXml.__ARG_TAG, arg, runArgs )                
         
     def path( self ) :   
         return joinPath( BUILD_SETUP_DIR_PATH, 
@@ -322,7 +332,7 @@ class QtIfwPackageScript:
                           label="@ProductName@", 
                           directory="@TargetDir@", 
                           iconId=0 ):        
-        exePath = "%s/%s" % (directory, util._normExeName( exeName ))
+        exePath = "%s/%s" % (directory, util.normBinaryName( exeName ))
         locDir = QtIfwPackageScript.__WIN_SHORTCUT_LOCATIONS[location]             
         shortcutPath = "%s/%s.lnk" % (locDir, label)        
         s = QtIfwPackageScript.__WIN_ADD_SHORTCUT_TMPLT
@@ -339,7 +349,7 @@ class QtIfwPackageScript:
                                 directory="@TargetDir@", 
                                 pngPath=None,
                                 isGui=True ):        
-        exePath = "%s/%s" % (directory, util._normExeName( exeName ))
+        exePath = "%s/%s" % (directory, util.normBinaryName( exeName ))
         locDir = QtIfwPackageScript.__X11_SHORTCUT_LOCATIONS[location]             
         shortcutPath = "%s/%s.desktop" % (locDir, label.replace(" ","_"))        
         s = QtIfwPackageScript.__X11_ADD_DESKTOP_ENTRY_TMPLT
@@ -354,14 +364,16 @@ class QtIfwPackageScript:
         return s 
     
     def __init__( self, pkgName, fileName=DEFAULT_QT_IFW_SCRIPT_NAME, 
-                  exeName=None, script=None, srcPath=None ) :
+                  exeName=None, isGui=True, 
+                  script=None, scriptPath=None ) :
         self.pkgName  = pkgName
         self.fileName = fileName
-        if srcPath :
-            with open( srcPath, 'rb' ) as f: self.script = f.read()
+        if scriptPath :
+            with open( scriptPath, 'rb' ) as f: self.script = f.read()
         else : self.script = script  
 
         self.exeName = exeName   
+        self.isGui   = isGui
         
         self.exeVersion = "0.0.0.0"        
         self.pngIconResPath = None
@@ -416,11 +428,13 @@ class QtIfwPackageScript:
             if self.exeName and self.isAppShortcut :
                 x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
                         APPS_X11_SHORTCUT, self.exeName, self.exeVersion,
-                        pngPath=self.pngIconResPath )                
+                        pngPath=self.pngIconResPath,
+                        isGui=self.isGui )                
             if self.exeName and self.isDesktopShortcut:
                 x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
                         DESKTOP_X11_SHORTCUT, self.exeName, self.exeVersion,
-                        pngPath=self.pngIconResPath )                               
+                        pngPath=self.pngIconResPath,
+                        isGui=self.isGui )                               
             if x11Ops!="" :    
                 self.componentCreateOperationsBody += (             
                     '    if( systemInfo.kernelType === "linux" ){\n' +
@@ -492,7 +506,7 @@ def __initBuild( qtIfwConfig ) :
     print( "Initializing installer build..." )
     # remove any prior setup file
     setupExePath = joinPath( THIS_DIR, 
-                             util._normExeName( qtIfwConfig.setupExeName ) )
+                             util.normBinaryName( qtIfwConfig.setupExeName ) )
     if exists( setupExePath ) : removeFile( setupExePath )
     # create a "clean" build directory
     if exists( BUILD_SETUP_DIR_PATH ) : removeDir( BUILD_SETUP_DIR_PATH )
@@ -572,12 +586,14 @@ def __build( qtIfwConfig ) :
     qtUtilityPath = joinPath( qtIfwConfig.qtIfwDirPath, 
         joinPath( __BIN_SUB_DIR, __QT_INSTALL_CREATOR_EXE_NAME ) )
     setupExePath = joinPath( THIS_DIR, 
-                             util._normExeName( qtIfwConfig.setupExeName ) )
+                             util.normBinaryName( qtIfwConfig.setupExeName ) )
     cmd = '%s %s "%s"' % ( qtUtilityPath, str(qtIfwConfig), setupExePath )
-    util._system( cmd )     
-    if IS_MACOS : setupExePath = "%s%s" % (setupExePath, __MACOS_SETUP_EXT) 
-    if exists( setupExePath ) : print( "Created %s!" % (setupExePath,) )
-    else: raise Exception( "FAILED to create %s" % (setupExePath,) )
+    util._system( cmd )  
+    setupExePath = normBinaryName( setupExePath, 
+                                   isPathPreserved=True, isGui=True )
+    if not exists( setupExePath ) : 
+        raise Exception( 'FAILED to create "%s"' % (setupExePath,) )
+    print( 'Installer built successfully!\n"%s"!' % (setupExePath,) )
     return setupExePath
 
 def __postBuild( qtIfwConfig, isPkgSrcRemoved ):  # @UnusedVariable

@@ -521,7 +521,8 @@ The following two options are available for a QtIFW installer:
        
 2) If the build process is failing before you can run 
    the installer, try setting `qtIfwConfig.isDebugMode` 
-   to `True` for verbose output.
+   to `True` for verbose output (note this should 
+   currently be the be the default now).
 
 ## Archives and Distribution
 
@@ -583,6 +584,17 @@ The path to the directory running the build script.
     
 The absolute path relative to THIS_DIR (which is not 
 necessarily the current working directory).  
+
+	normBinaryName( path, isPathPreserved=False, isGui=False )
+	
+The "normalized" name of a binary, resolving such for
+cross platform contexts.  On Windows, binaries normally end 
+in a ".exe" extension, but on other platforms they normally have
+no extension.  On macOS, binaries to be launched with a GUI, 
+normally have a ".app" extension (vs none when they do not have
+a GUI).  That additional logic is applied when `isGui` is True. 
+When `isPathPreserved` is True, the entire path is returned rather 
+than only the file name.
 
     modulePath( moduleName )
     
@@ -755,7 +767,7 @@ Attributes & default values:
 
     qtIfwDirPath = None    (attempt to use environmental variable QT_IFW_DIR)
 
-    isDebugMode    = False
+    isDebugMode    = True
     otherqtIfwArgs = ""
 
     isQtCppExe     = False
@@ -778,11 +790,12 @@ will not be written, otherwise they will be.
 Constructor:                
 
     QtIfwConfigXml( name, exeName, version, publisher,
-                    companyTradeName=None, iconFilePath=None ) 
+                    iconFilePath=None, isGui=True,
+                    companyTradeName=None ) 
               
 Attributes:    
 
-    exeName (used indirectly)
+    exeName (used indirectly w/ isGui)
     iconFilePath  (used indirectly)
     companyTradeName (used indirectly)
     Name                     
@@ -850,22 +863,24 @@ automating the generation common script directives.
 Constructor:       
 
 	QtIfwPackageScript( pkgName, fileName="installscript.qs", 
-                        exeName=None, script=None, srcPath=None )
+                        exeName=None, isGui=True, 
+                        script=None, scriptPath=None )
                   
 Attributes & default values:      
 
 	pkgName  = <required>
     fileName = "installscript.qs"
     
-    script = None <or loaded via srcPath>
+    script = None <or loaded via scriptPath>
     
-    exeName    = None   
-    exeVersion = "0.0.0.0"
+    exeName = None   
+    isGui   = True
     
+    exeVersion     = "0.0.0.0"
     pngIconResPath = None
     
     isAppShortcut     = True
-    topShortcut = False
+    isDesktopShortcut = False
 
     componentConstructorBody = None
     isAutoComponentConstructor = True

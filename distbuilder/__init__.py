@@ -52,6 +52,7 @@ from distbuilder.util import \
     , splitExt \
     , run \
     , runPy \
+    , normBinaryName \
     , toZipFile \
     , moveToDesktop \
     , moveToHomeDir \

@@ -3,7 +3,8 @@ from six import PY2, PY3  # @UnusedImport
 from sys import argv, stdout, stderr, exit, \
     executable as PYTHON_PATH
 from os import system, remove as removeFile, \
-    getcwd, chdir, makedirs as makeDir, rename, getenv # @UnusedImport
+    getcwd, chdir, \
+    getenv, listdir, makedirs as makeDir, rename # @UnusedImport   
 from os.path import exists, isfile as isFile, \
     dirname as dirPath, normpath, realpath, relpath, \
     join as joinPath, split as splitPath, splitext as splitExt, \
@@ -17,7 +18,6 @@ from subprocess import Popen, PIPE, STDOUT, list2cmdline
 import traceback
 from distutils.sysconfig import get_python_lib
 import inspect  # @UnusedImport
-from fileinput import filename
 
 # -----------------------------------------------------------------------------   
 __plat = platform.system()
@@ -37,14 +37,19 @@ OPT_LOCAL_BIN_DIR  = "/opt/local/bin"
 DESKTOP_DIR_NAME   = "Desktop"
 THIS_DIR           = dirPath( realpath( argv[0] ) )
 
+_MACOS_APP_EXT        = ".app"
+_LAUNCH_MACOS_APP_CMD = "open"
+
+_WINDOWS_ICON_EXT = ".ico"
+_MACOS_ICON_EXT   = ".icns" 
+_LINUX_ICON_EXT   = ".png" 
+
 __IMPORT_TMPLT       = "import %s"
 __FROM_IMPORT_TMPLT  = "from %s import %s"
 __GET_MOD_PATH_TMPLT = "inspect.getfile( %s )"
 
 __NOT_SUPPORTED_MSG = ( "Sorry this operation is not supported " +
                         "this for this platform!" )
-
-__LAUNCH_MAC_APP_CMD = "open"
 
 __CSIDL_DESKTOP_DIRECTORY = 16
 
@@ -63,11 +68,11 @@ def run( binPath, args=[],
     # TODO: finish isElevated logic (for windows, in debug mode...)    
     binDir, fileName = splitPath( binPath )   
     if wrkDir is None : wrkDir = binDir
-    isMacApp = IS_MACOS and splitExt(fileName)[1]==".app"
+    isMacApp = _isMacApp( binPath )
     if isMacApp:     
         try   : args.append( fileName )
         except: args=[ fileName ]   
-        binPath = fileName = __LAUNCH_MAC_APP_CMD
+        binPath = fileName = _LAUNCH_MACOS_APP_CMD
     if isDebug :
         cmdList = [binPath]
         if isinstance(args,list): cmdList.extend( args )
@@ -165,7 +170,7 @@ def toZipFile( sourceDir, zipDest=None, removeScr=True ):
 def printErr( msg, isFatal=False ):
     try: stderr.write( str(msg) + "\n" )
     except: 
-        try: stderr.write( unicode(msg) + "\n" )
+        try: stderr.write( unicode(msg) + "\n" )  # @UndefinedVariable
         except: stderr.write( "ERROR on: %s\n" % 
                 (traceback.format_stack(limit=1)) )
     stderr.flush()        
@@ -180,11 +185,26 @@ def printExc( e, isDetailed=False, isFatal=False ):
     if isFatal: exit(1)
 
 # -----------------------------------------------------------------------------   
-def _normExeName( exeName ):    
-    base, ext = splitExt( basename( exeName ) )
+def normBinaryName( path, isPathPreserved=False, isGui=False ):    
+    if not isPathPreserved : path = basename( path )
+    base, ext = splitExt( path )
+    if IS_MACOS and isGui :
+        return "%s%s" % (base, _MACOS_APP_EXT)      
     if IS_WINDOWS: return base + (".exe" if ext=="" else ext)
     return base 
-                
+                        
+def _normIconName( path, isPathPreserved=False ):    
+    if not isPathPreserved : path = basename( path )
+    base, _ = splitExt( path )
+    if IS_WINDOWS: return "%s%s" % (base, _WINDOWS_ICON_EXT) 
+    elif IS_MACOS: return "%s%s" % (base, _MACOS_ICON_EXT) 
+    elif IS_LINUX: return "%s%s" % (base, _LINUX_ICON_EXT) 
+    raise Exception( __NOT_SUPPORTED_MSG )
+    return base 
+                        
+def _isMacApp( path ): return IS_MACOS and splitExt(path)[1]==".app"
+
+# -----------------------------------------------------------------------------                          
 def _pythonPath( relativePath ):    
     return normpath( joinPath( PY_DIR, relativePath ) )
 
@@ -236,7 +256,7 @@ def _toSrcDestPair( pathPair, destDir=None ):
     
     src = dest = None             
     if( isinstance(pathPair, str) or
-        isinstance(pathPair, unicode) ):
+        isinstance(pathPair, unicode) ):  # @UndefinedVariable
         # shortcut syntax - only provide the source,
         # (the destination is relative)
         src = pathPair

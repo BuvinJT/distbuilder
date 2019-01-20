@@ -2,13 +2,15 @@ from distbuilder import util
 from distbuilder.util import *  # @UnusedWildImport
 from distbuilder.opy_library import obfuscatePy, OBFUS_DIR_PATH
 
-PYINST_BIN_NAME = util._normExeName( "pyinstaller" )
+PYINST_BIN_NAME = util.normBinaryName( "pyinstaller" )
 
 SPEC_EXT = ".spec"
 
 BUILD_DIR_PATH = absPath( "build" )
 DIST_DIR_PATH  = absPath( "dist" )
 CACHE_DIR_PATH = absPath( "__pycache__" )
+
+__TEMP_NEST_DIR_NAME = "__nested__"
 
 # -----------------------------------------------------------------------------
 class PyInstallerConfig:
@@ -98,9 +100,11 @@ class PyInstallerConfig:
             if IS_LINUX : 
                 # icon emmbedding is not supported by PyInstaller for Linux,
                 # this is handled by the library wrapper independently 
-                self._pngIconResPath = splitExt( self.iconFilePath )[0] +".png"
+                self._pngIconResPath = util._normIconName( 
+                    self.iconFilePath, isPathPreserved=True )
                 self.iconFilePath = None                                                         
-            elif( isinstance( self.iconFilePath, tuple ) or
+            elif( IS_WINDOWS and
+                  isinstance( self.iconFilePath, tuple ) or
                   isinstance( self.iconFilePath, list ) ):
                 # if the iconFilePath is a tuple or list,
                 # it represents a windows exe path and an 
@@ -110,9 +114,8 @@ class PyInstallerConfig:
                         self.iconFilePath[0], self.iconFilePath[1] )
                 else : raise
             else :
-                # auto convert between Windows and Mac icon extensions
-                self.iconFilePath = ( splitExt( self.iconFilePath )[0] +
-                                      (".icns" if IS_MACOS else ".ico") )                
+                self.iconFilePath = util._normIconName( 
+                    self.iconFilePath, isPathPreserved=True )               
         except: self.iconFilePath = None
         iconSpec = ( '--icon "%s"' % (self.iconFilePath,) 
                      if self.iconFilePath else "" )
@@ -252,9 +255,34 @@ def buildExecutable( name=None, entryPointPy=None,
         
     # Build the executable using PyInstaller        
     __runPyInstaller( pyInstConfig )
-    
+
     # Discard all temp files (but not distDir!)
-    __clean( pyInstConfig )
+    __clean( pyInstConfig ) 
+
+    # eliminate the directory nesting created when the 
+    # binary is not bundled into one file 
+    if not pyInstConfig.isOneFile :
+        print( '"UN-nesting" the dist directory content...' )
+        nestedInitDir = joinPath( distDirPath, name )
+        nestedTempDir = joinPath( distDirPath, __TEMP_NEST_DIR_NAME )
+        if isDir( nestedInitDir ):           
+            rename( nestedInitDir, nestedTempDir )
+            dirEntries = listdir(nestedTempDir)
+            for entry in dirEntries :
+                move( joinPath( nestedTempDir, entry ),
+                      joinPath( distDirPath,   entry ) )  
+            removeDir( nestedTempDir )
+
+    # Confirm success
+    exePath = joinPath( distDirPath, util.normBinaryName( name ) )    
+    if IS_MACOS and pyInstConfig.isGui :
+        # Remove extraneous UNIX binary, and point result to the .app file
+        if isFile( exePath ) : removeFile( exePath )
+        exePath = normBinaryName( exePath, isPathPreserved=True, isGui=True )   
+    if not exists(exePath) : 
+        raise Exception( 'FAILED to create "%s"' % (exePath,) ) 
+    print( 'Binary built successfully!\n"%s"' % (exePath,) )
+    print('')
 
     # On Linux, automatically add a png icon to the 
     # external resources, if one exists and is not already included  
@@ -269,15 +297,7 @@ def buildExecutable( name=None, entryPointPy=None,
                     if isRes: break
                 if not isRes: distResources.append( pngPath )
         except: pass
-        
-    # Confirm success
-    exePath = joinPath( distDirPath, util._normExeName( name ) )
-    if not exists(exePath) : 
-        print( 'Binary not found: "%s"' % (exePath,) )
-        raise Exception( "Binary building failure!" )
-    print( 'Binary built successfully!\n"%s"' % (exePath,) )
-    print('')
-
+            
     # Add additional distribution resources        
     for res in distResources:
         src, dest = util._toSrcDestPair( res, destDir=distDirPath )
@@ -303,10 +323,10 @@ def buildExecutable( name=None, entryPointPy=None,
     return distDirPath, exePath
 
 # -----------------------------------------------------------------------------    
-def __runPyInstaller( config ) :          
+def __runPyInstaller( pyInstConfig ) :          
     util._system( '%s %s "%s"' % 
-        ( config.pyInstallerPath, str(config), 
-          normpath(config.entryPointPy) ) )  
+        ( pyInstConfig.pyInstallerPath, str(pyInstConfig), 
+          normpath(pyInstConfig.entryPointPy) ) )  
 
 def __clean( pyInstConfig, distDirPath=None ) :     
     if distDirPath and exists( distDirPath ) :
@@ -321,3 +341,5 @@ def __clean( pyInstConfig, distDirPath=None ) :
         pyInstConfig.versionFilePath is not None and
         isFile( pyInstConfig.versionFilePath ) ) : 
         removeFile( pyInstConfig.versionFilePath )           
+    
+    

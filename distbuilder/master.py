@@ -87,7 +87,9 @@ class ConfigFactory:
     def qtIfwConfigXml( self ) :
         return QtIfwConfigXml( self.productName, self.binaryName, 
                                self.__versionStr(), self.companyLegalName, 
-                               self.companyTradeName, self.iconFilePath ) 
+                               iconFilePath=self.iconFilePath, 
+                               isGui=self.isGui,                               
+                               companyTradeName=self.companyTradeName ) 
     
     def qtIfwPackageXml( self ) :
         return QtIfwPackageXml( self.__ifwPkgName(), self.productName, self.description, 
@@ -96,9 +98,10 @@ class ConfigFactory:
     def qtIfwPackageScript( self, pyInstConfig=None ) :
         script = QtIfwPackageScript( self.__ifwPkgName(), 
                                      fileName=self.ifwScriptName, 
-                                     exeName=self.binaryName,                                      
+                                     exeName=self.binaryName,    
+                                     isGui=self.isGui,                                  
                                      script=self.ifwScriptPath, 
-                                     srcPath=self.ifwScriptPath )
+                                     scriptPath=self.ifwScriptPath )
         if IS_LINUX:
             script.exeVersion = self.__versionStr()
             if pyInstConfig is not None:
