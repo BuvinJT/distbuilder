@@ -54,6 +54,7 @@ from distbuilder.util import \
     , runPy \
     , toZipFile \
     , moveToDesktop \
+    , moveToHomeDir \
     , isImportableModule \
     , isImportableFromModule \
     , modulePath \

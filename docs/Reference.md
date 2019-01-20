@@ -87,14 +87,21 @@ Constructor:
 
     PyToBinInstallerProcess( configFactory, 
                              name="Python To Binary Installer Process",
-                             isObfuscating=False, isMovedToDesktop=False )
-    
+                             isObfuscating=False, 
+                             isDesktopTarget=False,
+                             isHomeDirTarget=False )
+                                 
 Attributes & default values:
                                                
     configFactory         = <required>  
+    
     name                  = "Python To Binary Installer Process"
+    
     isObfuscating         = False
+    
     isDesktopTarget       = False
+    isHomeDirTarget       = False
+    
     isTestingObfuscation  = False
     isTestingExe          = False
     isTestingInstall      = False
@@ -546,8 +553,18 @@ Moves a file or directory to the desktop.
 (Note: it *moves* the path specified, it does
 not leave a copy of the source). This
 *Replaces* any existing copy found at the 
-destination path (i.e. on the desktop).
+destination path.
         
+    moveToHomeDir( path )            
+    
+**Returns**: the new path to the file or directory.        
+
+Moves a file or directory to the current user's home directory.
+(Note: it *moves* the path specified, it does
+not leave a copy of the source). This
+*Replaces* any existing copy found at the 
+destination path.
+                
 *TODO: Add git commit/push...*    
                                                                   
 ## Low-Level Utilities
@@ -848,7 +865,7 @@ Attributes & default values:
     pngIconResPath = None
     
     isAppShortcut     = True
-    isDesktopShortcut = False
+    topShortcut = False
 
     componentConstructorBody = None
     isAutoComponentConstructor = True

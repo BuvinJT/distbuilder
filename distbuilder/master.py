@@ -124,11 +124,13 @@ class PyToBinInstallerProcess:
     def __init__( self, configFactory,
                   name="Python To Binary Installer Process", 
                   isObfuscating=False, 
-                  isDesktopTarget=False ) :
+                  isDesktopTarget=False,
+                  isHomeDirTarget=False ) :
         self.name              = name
         self.configFactory     = configFactory                      
         self.isObfuscating     = isObfuscating
         self.isDesktopTarget   = isDesktopTarget
+        self.isHomeDirTarget   = isHomeDirTarget
         self.isTestingObfuscation  = False
         self.isTestingExe          = False
         self.exeTestArgs           = []
@@ -183,6 +185,8 @@ class PyToBinInstallerProcess:
         setupPath = buildInstaller( ifwConfig, isPkgSrcRemoved=True )
         if self.isDesktopTarget :
             setupPath = moveToDesktop( setupPath )
+        elif self.isHomeDirTarget :
+            setupPath = moveToHomeDir( setupPath )    
         if self.isTestingInstall : 
             run( setupPath, 
                  (QT_IFW_VERBOSE_SWITCH 

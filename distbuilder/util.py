@@ -17,11 +17,13 @@ from subprocess import Popen, PIPE, STDOUT, list2cmdline
 import traceback
 from distutils.sysconfig import get_python_lib
 import inspect  # @UnusedImport
+from fileinput import filename
 
 # -----------------------------------------------------------------------------   
-IS_WINDOWS         = platform.system() == "Windows"
-IS_LINUX           = platform.system() == "Linux"
-IS_MACOS           = platform.system() == "Darwin"
+__plat = platform.system()
+IS_WINDOWS         = __plat == "Windows"
+IS_LINUX           = __plat == "Linux"
+IS_MACOS           = __plat == "Darwin"
 
 PY_EXT             = ".py"
 PY_DIR             = dirPath( PYTHON_PATH )
@@ -42,6 +44,8 @@ __GET_MOD_PATH_TMPLT = "inspect.getfile( %s )"
 __NOT_SUPPORTED_MSG = ( "Sorry this operation is not supported " +
                         "this for this platform!" )
 
+__LAUNCH_MAC_APP_CMD = "open"
+
 __CSIDL_DESKTOP_DIRECTORY = 16
 
 # -----------------------------------------------------------------------------      
@@ -56,9 +60,14 @@ def tempDirPath(): return gettempdir()
 # -----------------------------------------------------------------------------  
 def run( binPath, args=[], 
          wrkDir=None, isElevated=False, isDebug=False ):
-    # TODO: finish isElevated logic (for windows, in debug mode...)
-    binDir, fileName = splitPath( binPath )
+    # TODO: finish isElevated logic (for windows, in debug mode...)    
+    binDir, fileName = splitPath( binPath )   
     if wrkDir is None : wrkDir = binDir
+    isMacApp = IS_MACOS and splitExt(fileName)[1]==".app"
+    if isMacApp:     
+        try   : args.append( fileName )
+        except: args=[ fileName ]   
+        binPath = fileName = __LAUNCH_MAC_APP_CMD
     if isDebug :
         cmdList = [binPath]
         if isinstance(args,list): cmdList.extend( args )
@@ -77,7 +86,7 @@ def run( binPath, args=[],
         if isinstance(args,list): args = list2cmdline(args)
         elif args is None: args=""
         elevate = "" if not isElevated or IS_WINDOWS else "sudo"  
-        pwdCmd = "" if IS_WINDOWS else "./"
+        pwdCmd = "" if IS_WINDOWS or isMacApp else "./"
         cmd = ('%s %s%s %s' % (elevate, pwdCmd, fileName, args)).strip()
         _system( cmd, wrkDir )
     
@@ -96,6 +105,20 @@ def _system( cmd, wrkDir=None ):
     system( cmd ) # synchronous, streams results to the console implicitly
     print('')
     if wrkDir is not None: chdir( initWrkDir )
+
+# -----------------------------------------------------------------------------  
+def moveToDesktop( path ): return _moveToDir( path, _userDesktopDirPath() )
+
+def moveToHomeDir( path ): return _moveToDir( path, _userHomeDirPath() )
+    
+def _moveToDir( srcPath, destDirPath ):        
+    destPath = joinPath( destDirPath, 
+                         basename( normpath(srcPath) ) )
+    if isFile( destPath ): removeFile( destPath )
+    elif isDir( destPath ): removeDir( destPath )
+    move( srcPath, destDirPath )
+    print( 'Moved "%s" to "%s"' % (srcPath, destPath) )
+    return destPath
 
 # -----------------------------------------------------------------------------
 def isImportableModule( moduleName ):
@@ -137,17 +160,7 @@ def toZipFile( sourceDir, zipDest=None, removeScr=True ):
         removeDir( sourceDir )
         print( 'Removed directory: "%s"' % (sourceDir,) )        
     return filePath
-    
-def moveToDesktop( path ):        
-    desktopDir = _userDesktopDirPath()
-    destPath = joinPath( desktopDir, 
-                         basename( normpath(path) ) )
-    if isFile( destPath ): removeFile( destPath )
-    elif isDir( destPath ): removeDir( destPath )
-    move( path, desktopDir )
-    print( 'Moved "%s" to "%s"' % (path, destPath) )
-    return destPath
-
+ 
 # -----------------------------------------------------------------------------           
 def printErr( msg, isFatal=False ):
     try: stderr.write( str(msg) + "\n" )
@@ -167,6 +180,11 @@ def printExc( e, isDetailed=False, isFatal=False ):
     if isFatal: exit(1)
 
 # -----------------------------------------------------------------------------   
+def _normExeName( exeName ):    
+    base, ext = splitExt( basename( exeName ) )
+    if IS_WINDOWS: return base + (".exe" if ext=="" else ext)
+    return base 
+                
 def _pythonPath( relativePath ):    
     return normpath( joinPath( PY_DIR, relativePath ) )
 
@@ -183,14 +201,39 @@ def _optLocalBinPath( relativePath ):
     return normpath( joinPath( OPT_LOCAL_BIN_DIR, relativePath ) )
 
 def _userHiddenLocalBinDirPath( relativePath ) :
-    return normpath( joinPath( "%s/.local/bin" % (_userDirPath(),), 
+    return normpath( joinPath( "%s/.local/bin" % (_userHomeDirPath(),), 
                                relativePath ) )
-    
+
+def _userHomeDirPath(): return expanduser('~') # works in Windows too!
+            
+def _userDesktopDirPath():
+    if IS_WINDOWS : 
+        return __getFolderPathByCSIDL( __CSIDL_DESKTOP_DIRECTORY )
+    elif IS_LINUX or IS_MACOS :
+        return normpath( joinPath( _userHomeDirPath(), DESKTOP_DIR_NAME ) )
+    raise Exception( __NOT_SUPPORTED_MSG )        
+            
+def __getFolderPathByCSIDL( csidl ):
+    import ctypes.wintypes    
+    SHGFP_TYPE_CURRENT = 0   # Get current, not default value
+    buf = ctypes.create_unicode_buffer( ctypes.wintypes.MAX_PATH )
+    ctypes.windll.shell32.SHGetFolderPathW( 
+        None, csidl, None, SHGFP_TYPE_CURRENT, buf )
+    return buf.value 
+            
+def __importByStr( moduleName, memberName=None ):
+    try: 
+        if memberName is None : exec( __IMPORT_TMPLT % (moduleName,) )
+        else: exec( __FROM_IMPORT_TMPLT % (moduleName, memberName) )
+    except Exception as e: printExc( e )
+
 # -----------------------------------------------------------------------------    
 def _toSrcDestPair( pathPair, destDir=None ):
-    ''' "Protected" function for internal library uses only '''
+    ''' UGLY "Protected" function for internal library uses only '''
     
-    isPyInstallerArg = (destDir is None) # private implementation detail
+    # this is private implementation detail
+    isPyInstallerArg = (destDir is None) 
+    
     src = dest = None             
     if( isinstance(pathPair, str) or
         isinstance(pathPair, unicode) ):
@@ -222,34 +265,3 @@ def _toSrcDestPair( pathPair, destDir=None ):
     return (src, dest) 
             
 # -----------------------------------------------------------------------------           
-
-def _userDirPath(): return expanduser('~')
-            
-def _userDesktopDirPath():
-    if IS_WINDOWS : 
-        return __getFolderPathByCSIDL( __CSIDL_DESKTOP_DIRECTORY )
-    elif IS_LINUX :
-        return normpath( joinPath( _userDirPath(), DESKTOP_DIR_NAME ) )
-    raise Exception( __NOT_SUPPORTED_MSG )        
-            
-def __getFolderPathByCSIDL( csidl ):
-    import ctypes.wintypes    
-    SHGFP_TYPE_CURRENT = 0   # Get current, not default value
-    buf = ctypes.create_unicode_buffer( ctypes.wintypes.MAX_PATH )
-    ctypes.windll.shell32.SHGetFolderPathW( 
-        None, csidl, None, SHGFP_TYPE_CURRENT, buf )
-    return buf.value 
-            
-def __importByStr( moduleName, memberName=None ):
-    try: 
-        if memberName is None : exec( __IMPORT_TMPLT % (moduleName,) )
-        else: exec( __FROM_IMPORT_TMPLT % (moduleName, memberName) )
-    except Exception as e: printExc( e )
-
-def _normExeName( exeName ):    
-    base, ext = splitExt( basename( exeName ) )
-    if IS_WINDOWS: 
-        if ext=="": ext="exe"
-        return base + "." + ext
-    return base 
-            

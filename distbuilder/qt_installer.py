@@ -16,6 +16,8 @@ QT_IFW_VERBOSE_SWITCH = '-v'
 QT_IFW_DIR_ENV_VAR = "QT_IFW_DIR"
 QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
 
+__MACOS_SETUP_EXT = ".app"
+
 __BIN_SUB_DIR = "bin"
 __QT_INSTALL_CREATOR_EXE_NAME = util._normExeName( "binarycreator" )
 
@@ -572,7 +574,8 @@ def __build( qtIfwConfig ) :
     setupExePath = joinPath( THIS_DIR, 
                              util._normExeName( qtIfwConfig.setupExeName ) )
     cmd = '%s %s "%s"' % ( qtUtilityPath, str(qtIfwConfig), setupExePath )
-    util._system( cmd )  
+    util._system( cmd )     
+    if IS_MACOS : setupExePath = "%s%s" % (setupExePath, __MACOS_SETUP_EXT) 
     if exists( setupExePath ) : print( "Created %s!" % (setupExePath,) )
     else: raise Exception( "FAILED to create %s" % (setupExePath,) )
     return setupExePath
