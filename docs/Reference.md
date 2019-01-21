@@ -259,7 +259,7 @@ multiple libraries in a single call.
     as a importable library, this function is useful 
     for testing the operations of your library 
     post-obfuscation/pre-distribution. This will  
-    run [obfuscatePyLib](#-library-obfuscation) with default arguments, 
+    run [obfuscatePyLib](#library-obfuscation) with default arguments, 
     install the library, and remove the temporary 
     obfuscation from the working directory.                             
     
@@ -275,7 +275,7 @@ multiple libraries in a single call.
     Note that remote raw pip packages will require an 
     alternate "vcs url" be supplied to a "development" 
     repository in place of the simple package name.  
-    See [editable-installs](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs)
+    See [editable installs](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs)  
 
 	installLibraries( *libs )
 
@@ -467,27 +467,35 @@ directly into this function.
 **args**: An (optional) list of arguments, 
 (or a flat string) to pass along to your program.  
 
-**args**: An (optional) working directory specification.
+**wrkDir**: An (optional) working directory specification.
 If omitted (or None), the working directory will be 
 automatically set to that of the binary path specified.  
 
 **isElevated**: Boolean (option) to run the binary with 
 elevated priviledges.
 
-**isDebug**: Boolean (option) for explictly relaying 
+**isDebug**: Boolean (option) for explictly displaying 
 standard output and standard error messages. Set this
 to `True` to debug a PyInstaller binary which
 was created with `pyInstConfig.isGui` set to `True`.
 On some platforms, when that configuration is used, 
-messages sent to the console (e.g. print statements 
-or uncaught exceptions) are not visible even when launching
+messages sent to the console (e.g. *print* statements 
+or *uncaught exceptions*) are not visible even when launching
 the application from a terminal. Enabling this option, 
 however, will expose those messages to you. This can 
 be invaluable for debugging problems that are unique 
 to a stand-alone binary, and not present when run in 
-the original raw script form.  (Note: some IDE's
-may render this inoperable e.g. Eclipse/PyDev, in
-which case be sure to use the terminal directly!)  
+the original raw script form.  For instance, it is common
+for PyInstaller binaries to be missing dependencies which must 
+be accounted for (e.g. via "hidden imports").  In such situations,
+exceptions maybe thrown when the app launches.  Without this
+debugging feature, you may have no information regarding the 
+fatal error.  
+
+Note: some IDE / platform combinations may render this 
+inoperable e.g. Eclipse/PyDev on Windows, in which case 
+simply run the build script directly from the terminal
+when employing isDebug.  
 
 ### Obfuscated scripts  
 

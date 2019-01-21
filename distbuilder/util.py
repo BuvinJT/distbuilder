@@ -18,6 +18,7 @@ from subprocess import Popen, PIPE, STDOUT, list2cmdline
 import traceback
 from distutils.sysconfig import get_python_lib
 import inspect  # @UnusedImport
+from builtins import isinstance
 
 # -----------------------------------------------------------------------------   
 __plat = platform.system()
@@ -37,8 +38,11 @@ OPT_LOCAL_BIN_DIR  = "/opt/local/bin"
 DESKTOP_DIR_NAME   = "Desktop"
 THIS_DIR           = dirPath( realpath( argv[0] ) )
 
-_MACOS_APP_EXT        = ".app"
-_LAUNCH_MACOS_APP_CMD = "open"
+_MACOS_APP_EXT                     = ".app"
+_LAUNCH_MACOS_APP_CMD             = "open"
+__LAUNCH_MACOS_APP_NEW_SWITCH      = "-n"
+__LAUNCH_MACOS_APP_BLOCK_SWITCH    = "-W"
+__INTERNAL_MACOS_APP_BINARY_TMPLT  = "%s/Contents/MacOS/%s"
 
 _WINDOWS_ICON_EXT = ".ico"
 _MACOS_ICON_EXT   = ".icns" 
@@ -69,11 +73,12 @@ def run( binPath, args=[],
     binDir, fileName = splitPath( binPath )   
     if wrkDir is None : wrkDir = binDir
     isMacApp = _isMacApp( binPath )
-    if isMacApp:     
-        try   : args.append( fileName )
-        except: args=[ fileName ]   
-        binPath = fileName = _LAUNCH_MACOS_APP_CMD
     if isDebug :
+        if isMacApp:                
+            binPath = __INTERNAL_MACOS_APP_BINARY_TMPLT % (
+                  normBinaryName( fileName, isGui=True )
+                , normBinaryName( fileName, isGui=False )  
+            )                
         cmdList = [binPath]
         if isinstance(args,list): cmdList.extend( args )
         elif args is not None: cmdList.append( args )    
@@ -88,6 +93,14 @@ def run( binPath, args=[],
         stdout.write( "\nReturn code: %d\n" % (p.returncode,) )
         stdout.flush()    
     else :     
+        if isMacApp:     
+            newArgs = [ __LAUNCH_MACOS_APP_NEW_SWITCH
+                      , __LAUNCH_MACOS_APP_BLOCK_SWITCH 
+                      , fileName
+            ]
+            if isinstance( args, list ): newArgs.extend( args ) 
+            args=newArgs
+            binPath = fileName = _LAUNCH_MACOS_APP_CMD
         if isinstance(args,list): args = list2cmdline(args)
         elif args is None: args=""
         elevate = "" if not isElevated or IS_WINDOWS else "sudo"  

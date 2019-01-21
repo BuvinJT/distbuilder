@@ -148,14 +148,15 @@ covers a good portion of the major distbuilder
 features so as to provide a feel for what it does, 
 and how it works.
 
-Note: The most astute observer may notice (on some platforms) 
-that the stdout messages are not produced on the terminal
-by the binary version of the example (as normally seen by 
-clicking the "Hello Tkinter" button). This is due to the 
-fact it is a feature of PyInstaller, to "swallow" console 
-messages produced by gui applications. This may be counterproductive 
-for debugging though, and as such distbuilder provides a 
-direct "solution" for this issue. Refer to the 
+Note: The most astute observer may notice (on most platforms) 
+that the stdout/err messages are not produced on the terminal
+by the binary version of the example (as they are normally seen by 
+clicking the "Hello Tkinter" button when run the raw .py script). 
+This is caused by a feature of PyInstaller, to "swallow" console 
+messages produced by gui applications and/or by additional platform
+details regarding standard output streams. This may be highly
+counterproductive for debugging, and as such distbuilder has included
+a direct solution for this issue. Refer to the 
 [Testing](Reference.md#testing) section of the 
 Reference Manual for more details.    
 
