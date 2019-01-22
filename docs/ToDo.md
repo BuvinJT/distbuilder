@@ -6,27 +6,33 @@
 * Add additional examples.
 
 * Continue to expand upon the documentation, especially with
-regard to the various configuration options. 
-
-## Moderate Priority
-
-* Further develop external library bundling (for Opy), making such 
-more automated and less work for the user (e.g. finding external library 
-sources locally and/or downloading them with pip...)
+regard to the various configuration options.
 
 * Add support to high level "process" class for multiple PyInstaller 
 builds / "package" (sub-component) creation via project sub directory 
 divisions.
 
 * Add support for multiple Qt IFW packages.
-	
-* Further develop the Qt IFW script generation features. 
+
+## Moderate Priority
+
+* Test on more Linux distros
+
+* Test QtIFW use on terminals / non-gui Linux distros like CentOS 
+(silent installs / noninteractive). Look into options for producing such 
+explictly (maybe a PyInstaller wrapper?) so the user does not have to pass a 
+switch. 
+
+* Further develop external library bundling (for Opy), making such 
+more automated and less work for the user (e.g. finding external library 
+sources locally and/or downloading them with pip...)
 			
 * Continue to improve and stablize the Opy library and its beta features.
 
-* Test on latest macOS
+* Add documentation/examples on sys._MEIPASS and resource bundling 
+with PyInstaller. 
 
-* Test on more Linux distros
+* Add option for appending platform suffix onto installer file names. 
 
 ## Low Priority
 
@@ -40,6 +46,8 @@ XML config classes.
 
 * Add Qt IFW silent install and uninstall functions. 
 (For repetitive testing and debugging.)  
+
+* Further develop the Qt IFW script generation features. 
 
 * Add tarball alternative to zip packaging.
 
