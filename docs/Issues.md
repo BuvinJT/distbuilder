@@ -30,20 +30,23 @@ OS Language:
 
 PyInstaller:  
 
+* Binary / Script
+* 2.1
 * 3.4
 
 Qt Installer Framework:  
 
+* 2.0.5
 * 3.0.6  
-
-Opy distbuilder:  
-
-* 0.9+  
 
 Pip:  
 
 * 8.x  
 * 18.x  
+
+Opy distbuilder:  
+
+* 0.9+  
 
 ## Binary launching runtime issues
 

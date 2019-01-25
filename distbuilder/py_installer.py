@@ -23,7 +23,7 @@ class PyInstallerConfig:
         # Fall back to using the system path if an absolute path is not found.
         # Note, it is possible for a user to have multiple versions  
         # on their machine so the "first" one found in a blind search is 
-        # not an advisable auto detection methed.  The logic here is 
+        # not an advisable auto detection method.  The logic here is 
         # based primarily upon pyInstaller documentation. 
         # Note a user can assign a value to this attribute directly
         # when this default fails to meet their needs.
@@ -43,7 +43,7 @@ class PyInstallerConfig:
         else : p = None                        
         self.pyInstallerPath = (
             PYINST_BIN_NAME if p is None or not exists(p) else p)
-        
+               
         self.name            = None
         self.entryPointPy    = None
         
@@ -98,7 +98,7 @@ class PyInstallerConfig:
     
         try:
             if IS_LINUX : 
-                # icon emmbedding is not supported by PyInstaller for Linux,
+                # icon embedding is not supported by PyInstaller for Linux,
                 # this is handled by the library wrapper independently 
                 self._pngIconResPath = util._normIconName( 
                     self.iconFilePath, isPathPreserved=True )
@@ -121,9 +121,9 @@ class PyInstallerConfig:
                      if self.iconFilePath else "" )
     
         if IS_WINDOWS :        
-            versionSpec    = ( '--version-file "%s"' % (self.versionFilePath,) 
-                               if self.versionFilePath else "" )        
-            adminSwitch    = "--uac-admin" if self.isAutoElevated else ""
+            versionSpec = ( '--version-file "%s"' % (self.versionFilePath,) 
+                            if self.versionFilePath else "" )        
+            adminSwitch = "--uac-admin" if self.isAutoElevated else ""
         else : versionSpec = adminSwitch = ""
 
         tokens = (nameSpec, distSpec, oneFileSwitch, 
@@ -323,9 +323,12 @@ def buildExecutable( name=None, entryPointPy=None,
     return distDirPath, exePath
 
 # -----------------------------------------------------------------------------    
-def __runPyInstaller( pyInstConfig ) :          
-    util._system( '%s %s "%s"' % 
-        ( pyInstConfig.pyInstallerPath, str(pyInstConfig), 
+def __runPyInstaller( pyInstConfig ) :
+    _, ext = splitExt( pyInstConfig.pyInstallerPath )    
+    runAsScriptPrefix = '"%s" ' % (PYTHON_PATH,) if ext.lower()==PY_EXT else ""           
+    util._system( '%s"%s" %s "%s"' % 
+        ( runAsScriptPrefix, pyInstConfig.pyInstallerPath, 
+          str(pyInstConfig), 
           normpath(pyInstConfig.entryPointPy) ) )  
 
 def __clean( pyInstConfig, distDirPath=None ) :     

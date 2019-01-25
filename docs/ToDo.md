@@ -3,6 +3,8 @@
  
 ## High Priority
 
+* Investigate (and resolve ?) PyInstaller temp folder creation bugs that occasionally arise...
+
 * Add additional examples.
 
 * Continue to expand upon the documentation, especially with
