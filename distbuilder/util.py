@@ -15,7 +15,7 @@ from shutil import rmtree as removeDir, move, make_archive, \
 import platform
 from tempfile import gettempdir
 from subprocess import Popen, list2cmdline, \
-    PIPE, STDOUT, STARTUPINFO, STARTF_USESHOWWINDOW
+    PIPE, STDOUT
 import traceback
 from distutils.sysconfig import get_python_lib
 import inspect  # @UnusedImport
@@ -110,6 +110,18 @@ def runPy( pyPath, args=[], isElevated=False ):
     if isinstance(args,list): pyArgs.extend( args )
     run( PYTHON_PATH, pyArgs, wrkDir, isElevated, isDebug=False )
 
+__SCRUB_CMD_TMPL = "{0}{1}"
+__DBL_QUOTE      = '"'
+__SPACE          = ' '
+__ESC_SPACE      = '\\ '
+if IS_WINDOWS :        
+    __BATCH_RUN_AND_RETURN_CMD = ["cmd","/K"] # simply assuming cmd is on the system path... 
+    __BATCH_ONE_LINER_TMPLT    = "{0} 1>&2\n" # the newline triggers execution when piped in via stdin
+    __BATCH_ESCAPE_PATH_TMPLT  = 'for %A in ("{0}") do @echo %~sA' 
+    from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW
+    __BATCH_ONE_LINER_STARTUPINFO = STARTUPINFO()
+    __BATCH_ONE_LINER_STARTUPINFO.dwFlags |= STARTF_USESHOWWINDOW 
+
 def _system( cmd, wrkDir=None ):
     if wrkDir is not None:
         initWrkDir = getcwd()
@@ -131,31 +143,23 @@ def __scrubSystemCmd( cmd ):
     built into the function can all fall apart.  So, this scrub function
     solves that...  
     """    
-    if not cmd.startswith('"'): return cmd
-    cmdParts = cmd[1:].split('"')
+    if not cmd.startswith( __DBL_QUOTE ): return cmd
+    cmdParts    = cmd[1:].split( __DBL_QUOTE )
     safeBinPath = _escapePath( cmdParts[0] )
-    args = '"'.join(cmdParts[1:]) # (the leading space will remain)
-    return "%s%s" % (safeBinPath, args) 
-
-__BATCH_ESCAPE_PATH_TMPLT = 'for %A in ("{0}") do @echo %~sA'             
+    args        = __DBL_QUOTE.join( cmdParts[1:] ) # (the leading space will remain)
+    return __SCRUB_CMD_TMPL.format( safeBinPath, args ) 
+                 
 def _escapePath( path ):
-    if IS_WINDOWS :     
-        if " " not in path: return path       
-        return __batchOneLinerOutput( __BATCH_ESCAPE_PATH_TMPLT.format(path) )
-    else: return path.replace(" ", "\\ ") 
+    if not IS_WINDOWS: return path.replace(__SPACE, __ESC_SPACE)     
+    return( path if __SPACE not in path else        
+            __batchOneLinerOutput( __BATCH_ESCAPE_PATH_TMPLT.format(path) ) )    
 
-# simply assuming cmd is on the system path...
-# the newline in the batch causes it to execute when piped in via stdin
-__BATCH_RUN_AND_RETURN_CMD = ["cmd","/K"]  
-__BATCH_ONE_LINER_TMPLT = "{0} 1>&2\n"  
-__BATCH_ONE_LINER_STARTUPINFO = STARTUPINFO()
-__BATCH_ONE_LINER_STARTUPINFO.dwFlags |= STARTF_USESHOWWINDOW 
 def __batchOneLinerOutput( batch ):
     cmd = __BATCH_ONE_LINER_TMPLT.format( batch )
     p = Popen( __BATCH_RUN_AND_RETURN_CMD, shell=False, 
                startupinfo=__BATCH_ONE_LINER_STARTUPINFO,
                stdin=PIPE, stdout=PIPE, stderr=PIPE )    
-    # pipe cmd to stdin, return stdout, minus a trailing newline
+    # pipe cmd to stdin, return stderr, minus a trailing newline
     return p.communicate( cmd )[1].rstrip()  
             
 # -----------------------------------------------------------------------------  
