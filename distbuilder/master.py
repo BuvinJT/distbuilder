@@ -4,7 +4,9 @@ from distbuilder.util import *  # @UnusedWildImport
 
 from distbuilder.py_installer import \
       buildExecutable \
+    , makePyInstSpec \
     , PyInstallerConfig \
+    , PyInstSpec \
     , WindowsExeVersionInfo
 
 from distbuilder.opy_library import \
@@ -176,8 +178,13 @@ class PyToBinInstallerProcess:
         else: opyConfig = None
         
         pyInstConfig = self.configFactory.pyInstallerConfig()
-        self.onPyInstConfig( pyInstConfig )        
+        self.onPyInstConfig( pyInstConfig )                
+        
+        specPath = makePyInstSpec( pyInstConfig, opyConfig=opyConfig )                
+        self.onMakeSpec( PyInstSpec( pyInstConfig, isFile=True ) )
+            
         _, binPath = buildExecutable( pyInstConfig=pyInstConfig, 
+                                      pyInstSpecPath=specPath,
                                       opyConfig=opyConfig )
         if self.isTestingExe : 
             run( binPath, self.exeTestArgs,
@@ -206,5 +213,6 @@ class PyToBinInstallerProcess:
     # ConfigFactory has produced each initial config object
     def onOpyConfig( self, cfg ):    """VIRTUAL"""                    
     def onPyInstConfig( self, cfg ): """VIRTUAL"""
+    def onMakeSpec( self, spec ):    """VIRTUAL"""
     def onQtIfwConfig( self, cfg ):  """VIRTUAL"""                
                         

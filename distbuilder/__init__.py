@@ -6,7 +6,9 @@ from distbuilder.master import \
        
 from distbuilder.py_installer import \
       buildExecutable \
+    , makePyInstSpec \
     , PyInstallerConfig \
+    , PyInstSpec \
     , WindowsExeVersionInfo
     
 from distbuilder.qt_installer import \

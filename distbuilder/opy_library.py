@@ -90,8 +90,11 @@ def obfuscatePy( opyConfig ):
             if p.obfuscatePath( opyResults.obfuscatedFileDict ): p.apply()
     
     # Return the paths generated 
+    return _toObfuscatedPaths( opyConfig )
+
+def _toObfuscatedPaths( opyConfig ) :
     return OBFUS_DIR_PATH, joinPath( OBFUS_DIR_PATH, opyConfig.entryPointPy )
-            
+    
 def obfuscatePyLib( opyConfig, 
                     isExposingPackageImports=True, 
                     isExposingPublic=True ):

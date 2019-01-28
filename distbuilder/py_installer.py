@@ -1,8 +1,10 @@
 from distbuilder import util 
 from distbuilder.util import *  # @UnusedWildImport
-from distbuilder.opy_library import obfuscatePy, OBFUS_DIR_PATH
+from distbuilder.opy_library import obfuscatePy, \
+    _toObfuscatedPaths, OBFUS_DIR_PATH
 
-PYINST_BIN_NAME = util.normBinaryName( "pyinstaller" )
+PYINST_BIN_NAME          = util.normBinaryName( "pyinstaller" )
+PYINST_MAKESPEC_BIN_NAME = util.normBinaryName( "pyi-makespec" )
 
 SPEC_EXT = ".spec"
 
@@ -24,7 +26,9 @@ class PyInstallerConfig:
         # Note, it is possible for a user to have multiple versions  
         # on their machine so the "first" one found in a blind search is 
         # not an advisable auto detection method.  The logic here is 
-        # based primarily upon pyInstaller documentation. 
+        # based primarily upon pyInstaller documentation, with little 
+        # tweaks based on real world observations. 
+        #
         # Note a user can assign a value to this attribute directly
         # when this default fails to meet their needs.
         if IS_WINDOWS :
@@ -40,9 +44,14 @@ class PyInstallerConfig:
                 p = util._usrLocalBinPath( PYINST_BIN_NAME )
             if not exists( p ) :
                 p = util._optLocalBinPath( PYINST_BIN_NAME )                
-        else : p = None                        
-        self.pyInstallerPath = (
-            PYINST_BIN_NAME if p is None or not exists(p) else p)
+        else : p = None
+        if p is None or not exists(p):
+            self.pyInstallerPath = PYINST_BIN_NAME
+            self.pyInstallerMakeSpecPath = PYINST_MAKESPEC_BIN_NAME
+        else :
+            self.pyInstallerPath = p
+            self.pyInstallerMakeSpecPath = joinPath( 
+                dirPath( p ), PYINST_MAKESPEC_BIN_NAME )
                
         self.name            = None
         self.entryPointPy    = None
@@ -65,15 +74,22 @@ class PyInstallerConfig:
         self.otherPyInstArgs = "" # open ended
 
         # Not directly fed into the utility. Employed by buildExecutable function.       
-        self._pngIconResPath = None
-        self.distResources   = []
-        self.distDirs        = [] 
+        self._pngIconResPath   = None
+        self.distResources     = []
+        self.distDirs          = [] 
+        self.isSpecFileRemoved = True
                 
-    def __str__( self ):
+    def toArgs( self, pyInstSpecPath=None, isMakeSpec=False ) :
+
+        entryPointSpec = ( '"%s"' % (normpath(self.entryPointPy),)          
+                           if isMakeSpec else "" )        
+        specFileSpec = ( '"%s"' % (normpath(pyInstSpecPath),) 
+                         if not isMakeSpec and pyInstSpecPath else "" )
+        
         nameSpec       = ( "--name %s" % (self.name,)
                            if self.name else "" )
         distSpec       = ('--distpath "%s"' % (self.distDirPath,)
-                          if self.distDirPath else "" )
+                          if not isMakeSpec and self.distDirPath else "" )
 
         oneFileSwitch  = "--onefile" if self.isOneFile else ""
         windowedSwitch = "--windowed" if self.isGui else ""
@@ -129,8 +145,31 @@ class PyInstallerConfig:
         tokens = (nameSpec, distSpec, oneFileSwitch, 
                   windowedSwitch, adminSwitch, iconSpec, versionSpec,
                   pathsSpec, importsSpec, dataSpec, binarySpec,
-                  self.otherPyInstArgs )
+                  self.otherPyInstArgs, entryPointSpec, specFileSpec )
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )         
+
+class PyInstSpec:
+
+    @staticmethod
+    def path( pyInstConfig ): return absPath( pyInstConfig.name + SPEC_EXT )
+
+    def __init__( self, pyInstConfig, isFile=False, content=None ) :
+        self.pyInstConfig = pyInstConfig 
+        if isFile: self.read()
+        else: self.content = content
+    
+    def __str__( self ): return self.content
+
+    def read( self ):
+        self.content = None
+        filePath = PyInstSpec.path( self.pyInstConfig )
+        with open( filePath , 'rb' ) as f : self.content = f.read() 
+            
+    def write( self ):
+        filePath = PyInstSpec.path( self.pyInstConfig ) 
+        with open( filePath,'w') as f : f.write( str(self) )
+    
+    def debug( self ): print( str(self) )
 
 class WindowsExeVersionInfo:
 
@@ -210,6 +249,7 @@ VSVersionInfo(
 # -----------------------------------------------------------------------------   
 def buildExecutable( name=None, entryPointPy=None, 
                      pyInstConfig=PyInstallerConfig(), 
+                     pyInstSpecPath=None,
                      opyConfig=None,                    
                      distResources=[], distDirs=[] ):
     ''' returns: (binDir, binPath) '''   
@@ -229,22 +269,24 @@ def buildExecutable( name=None, entryPointPy=None,
         distDirs      = pyInstConfig.distDirs             
     
     # Verify the required parameters are present    
-    if not name :         raise Exception( "Binary name is required" )
-    if not entryPointPy : raise Exception( "Binary entry point is required" )
+    if not pyInstConfig.name :         
+        raise Exception( "Binary name is required" )
+    if not pyInstConfig.entryPointPy : 
+        raise Exception( "Binary entry point is required" )
     
     # auto assign some pyInstConfig values        
-    distDirPath = joinPath( THIS_DIR, name ) 
+    distDirPath = joinPath( THIS_DIR, pyInstConfig.name ) 
     pyInstConfig.distDirPath = distDirPath
     if IS_WINDOWS and pyInstConfig.versionInfo is not None: 
         pyInstConfig.versionFilePath = WindowsExeVersionInfo.path()
     else : pyInstConfig.versionInfo = None
-    
+        
     # Prepare to build (discard old build files)       
-    __clean( pyInstConfig, distDirPath )
+    __clean( pyInstConfig, pyInstSpecPath=None, distDirPath=distDirPath )
     
     # Optionally, create obfuscated version of source
     if opyConfig is not None: 
-        _, entryPointPy = obfuscatePy( opyConfig ) 
+        _, pyInstConfig.entryPointPy = obfuscatePy( opyConfig )
 
     # Create a temp version file    
     if pyInstConfig.versionInfo is not None:
@@ -254,10 +296,11 @@ def buildExecutable( name=None, entryPointPy=None,
         pyInstConfig.versionInfo.write()
         
     # Build the executable using PyInstaller        
-    __runPyInstaller( pyInstConfig )
+    __runPyInstaller( pyInstConfig, pyInstSpecPath )
 
     # Discard all temp files (but not distDir!)
-    __clean( pyInstConfig ) 
+    if pyInstSpecPath : pyInstSpecPath = PyInstSpec.path( pyInstConfig )
+    __clean( pyInstConfig, pyInstSpecPath=pyInstSpecPath, distDirPath=None )
 
     # eliminate the directory nesting created when the 
     # binary is not bundled into one file 
@@ -322,27 +365,57 @@ def buildExecutable( name=None, entryPointPy=None,
     # Return the paths generated    
     return distDirPath, exePath
 
-# -----------------------------------------------------------------------------    
-def __runPyInstaller( pyInstConfig ) :
-    _, ext = splitExt( pyInstConfig.pyInstallerPath )    
-    runAsScriptPrefix = '"%s" ' % (PYTHON_PATH,) if ext.lower()==PY_EXT else ""           
-    util._system( '%s"%s" %s "%s"' % 
-        ( runAsScriptPrefix, pyInstConfig.pyInstallerPath, 
-          str(pyInstConfig), 
-          normpath(pyInstConfig.entryPointPy) ) )  
+def makePyInstSpec( pyInstConfig, opyConfig=None ):
+    
+    # Verify the required parameters are present    
+    if not pyInstConfig.name :         
+        raise Exception( "Binary name is required" )
+    if not pyInstConfig.entryPointPy : 
+        raise Exception( "Binary entry point is required" )
+    
+    # auto assign some pyInstConfig values        
+    pyInstConfig.distDirPath = joinPath( THIS_DIR, pyInstConfig.name )
+    if IS_WINDOWS and pyInstConfig.versionInfo is not None: 
+        pyInstConfig.versionFilePath = WindowsExeVersionInfo.path()
+    else : pyInstConfig.versionInfo = None
+    
+    # Optionally, get what will be the obfuscated paths
+    if opyConfig is not None: 
+        _, pyInstConfig.entryPointPy = _toObfuscatedPaths( opyConfig ) 
+        
+    # Generate the .spec file using the PyInstaller
+    __runPyInstaller( pyInstConfig, isMakeSpec=True )
 
-def __clean( pyInstConfig, distDirPath=None ) :     
-    if distDirPath and exists( distDirPath ) :
+    # Confirm success
+    specPath = PyInstSpec.path( pyInstConfig )    
+    if not exists(specPath) : 
+        raise Exception( 'FAILED to create "%s"' % (specPath,) ) 
+    print( 'Spec file generated successfully!\n"%s"' % (specPath,) )
+    print('')
+    
+    # return the path to the .spec file
+    return specPath
+    
+# -----------------------------------------------------------------------------    
+def __runPyInstaller( pyInstConfig, pyInstSpecPath=None, isMakeSpec=False ) :   
+    progPath = ( pyInstConfig.pyInstallerMakeSpecPath if isMakeSpec else
+                 pyInstConfig.pyInstallerPath )    
+    _, ext = splitExt( progPath )    
+    runAsScriptPrefix = '"%s" ' % (PYTHON_PATH,) if ext.lower()==PY_EXT else ""           
+    args = pyInstConfig.toArgs( pyInstSpecPath, isMakeSpec )
+    util._system( '%s"%s" %s' % (runAsScriptPrefix, progPath, args) )   
+
+def __clean( pyInstConfig, pyInstSpecPath=None, distDirPath=None ) :     
+    if distDirPath and isDir( distDirPath ) :
         removeDir( distDirPath )
     if exists( OBFUS_DIR_PATH ) : removeDir( OBFUS_DIR_PATH )    
     if exists( BUILD_DIR_PATH ) : removeDir( BUILD_DIR_PATH )
     if exists( DIST_DIR_PATH )  : removeDir( DIST_DIR_PATH )
     if exists( CACHE_DIR_PATH ) : removeDir( CACHE_DIR_PATH )
-    specPath = joinPath( THIS_DIR, pyInstConfig.name + SPEC_EXT )    
-    if isFile( specPath ): removeFile( specPath )    
+    if( pyInstSpecPath and pyInstConfig.isSpecFileRemoved and 
+        isFile( pyInstSpecPath ) ): 
+        removeFile( pyInstSpecPath )        
     if( pyInstConfig.versionInfo is not None and
         pyInstConfig.versionFilePath is not None and
         isFile( pyInstConfig.versionFilePath ) ) : 
         removeFile( pyInstConfig.versionFilePath )           
-    
-    

@@ -124,6 +124,7 @@ program, invoke the buildExecutable function:
 
     buildExecutable( name=None, entryPointPy=None,
         			 pyInstConfig=PyInstallerConfig(), 
+        			 pyInstSpecPath=None,
         			 opyConfig=None, 
 				     distResources=[], distDirs=[] )
     
@@ -148,6 +149,11 @@ program, invoke the buildExecutable function:
     the binary using the PyInstaller Utility. If 
     omitted, the name and entryPointPy arguments, 
     plus other default settings will be used.
+
+**pyInstSpecPath**: An (optional) path to a PyInstaller
+	.spec file.  Note that build settings contained within
+	this file will override any which conflict with those 
+	supplied via a [PyInstallerConfig](#pyinstallerconfig) object.
 
 **opyConfig**: An (optional) [OpyConfig](#opyconfig) object, to 
 	dictate code obfuscation details using the Opy 
