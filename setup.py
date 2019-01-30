@@ -70,8 +70,9 @@ setup (
     ],    
 	packages         = ["distbuilder"],
 	install_requires = [		  
-          "six"           # Forced as prerequisite too
-		, "PyInstaller"   # Tested on PyInstaller v3.4
+          "six"           # Forced as a prerequisite too
+        , "ast"   
+		, "PyInstaller"   
 		, "opy_distbuilder"  
 	],
 	include_package_data=True, # extra files defined in MANIFEST.in

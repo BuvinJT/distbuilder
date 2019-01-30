@@ -180,8 +180,13 @@ class PyToBinInstallerProcess:
         pyInstConfig = self.configFactory.pyInstallerConfig()
         self.onPyInstConfig( pyInstConfig )                
         
-        specPath = makePyInstSpec( pyInstConfig, opyConfig=opyConfig )                
-        self.onMakeSpec( PyInstSpec( pyInstConfig, isFile=True ) )
+        specPath, pyInstSpec = makePyInstSpec( pyInstConfig, 
+                                               opyConfig=opyConfig )
+        pyInstSpec.injectDataSetPatch()
+        pyInstSpec.write()
+        print("Spec file patched!")
+        pyInstSpec.debug()        
+        self.onMakeSpec( pyInstSpec )
             
         _, binPath = buildExecutable( pyInstConfig=pyInstConfig, 
                                       pyInstSpecPath=specPath,

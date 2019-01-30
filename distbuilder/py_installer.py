@@ -1,3 +1,4 @@
+import ast # pip install ast
 from distbuilder import util 
 from distbuilder.util import *  # @UnusedWildImport
 from distbuilder.opy_library import obfuscatePy, \
@@ -150,6 +151,9 @@ class PyInstallerConfig:
 
 class PyInstSpec:
 
+    __DATA_SET_PATCH_LINE = (
+        "a.datas = list({tuple(map(str.upper, t)) for t in a.datas})" )
+
     @staticmethod
     def path( pyInstConfig ): return absPath( pyInstConfig.name + SPEC_EXT )
 
@@ -170,7 +174,56 @@ class PyInstSpec:
         with open( filePath,'w') as f : f.write( str(self) )
     
     def debug( self ): print( str(self) )
+    
+    def injectDataSetPatch( self ):
+        """
+        This patches a known bug in PyInstaller on Windows. 
+        PyInstaller analysis can build a set of data file names
+        which contain "duplicates" due to the Windows 
+        file system case insensitivity.  This patch eliminates
+        such duplicates, thus preventing runtime errors in the 
+        binary produced.
+        """
+        if not IS_WINDOWS or not self.content: return                 
+        # inject the patch after "a=Analysis(..."
+        aAssignFound=False
+        injectLineNo=None
+        assigns = self._parseAssigments()
+        for item in assigns :
+            name, lineno = item
+            if name == "a": aAssignFound=True
+            elif aAssignFound :
+                injectLineNo = lineno
+                break
+        if aAssignFound:
+            self._injectLine( PyInstSpec.__DATA_SET_PATCH_LINE, injectLineNo )
 
+    def _toLines( self ):        
+        return self.content.split('\n' ) if self.content else []
+    
+    def _fromLines( self, lines ): self.content = '\n'.join( lines )
+
+    def _injectLine( self, injection, lineNo ):               
+        lines = self._toLines()            
+        if lineNo : lines.insert( lineNo-1, injection )
+        else : lines.append( injection )
+        self._fromLines( lines )
+    
+    def _parseAssigments( self ):
+        """
+        Returns a list of tuples in the form of 
+        (variable name, file line numbers (1 based) )
+        """        
+        assigments = []
+        if self.content:
+            root = ast.parse( self.content )    
+            for child in ast.iter_child_nodes( root ):
+                if isinstance( child, ast.Assign ):
+                    for target in child.targets :
+                        if isinstance( target, ast.Name ) :
+                            assigments.append( ( target.id, child.lineno ) )
+        return assigments
+        
 class WindowsExeVersionInfo:
 
     __TEMP_FILE_NAME = "win_exe_ver_info.tmp"
@@ -393,8 +446,13 @@ def makePyInstSpec( pyInstConfig, opyConfig=None ):
     print( 'Spec file generated successfully!\n"%s"' % (specPath,) )
     print('')
     
-    # return the path to the .spec file
-    return specPath
+    # Create a PyInstSpec object from the file, and display its content
+    pyInstSpec = PyInstSpec( pyInstConfig, isFile=True )
+    pyInstSpec.debug()
+    
+    # return the path to the .spec file, 
+    # and a PyInstSpec object (for manipulating it)  
+    return specPath, pyInstSpec
     
 # -----------------------------------------------------------------------------    
 def __runPyInstaller( pyInstConfig, pyInstSpecPath=None, isMakeSpec=False ) :   
