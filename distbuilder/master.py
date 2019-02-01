@@ -185,8 +185,7 @@ class PyToBinInstallerProcess:
         self.onPyInstConfig( pyInstConfig )                
         
         if self.pyInstSpecPath:
-            pyInstSpec = PyInstSpec(
-                filePath=self.pyInstSpecPath, isFile=True )
+            pyInstSpec = PyInstSpec( self.pyInstSpecPath )
         else :
             self.pyInstSpecPath, pyInstSpec = makePyInstSpec( 
                 pyInstConfig, opyConfig=opyConfig )                       

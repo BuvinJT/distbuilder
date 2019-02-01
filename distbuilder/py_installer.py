@@ -157,12 +157,11 @@ class PyInstSpec:
     @staticmethod
     def cfgToPath( pyInstConfig ): return absPath( pyInstConfig.name+SPEC_EXT )
 
-    def __init__( self, filePath=None, pyInstConfig=None, 
-                  isFile=False, content=None ) :
+    def __init__( self, filePath=None, pyInstConfig=None, content=None ) :
         self.filePath = filePath
         self.pyInstConfig = pyInstConfig 
-        if isFile: self.read()
-        else: self.content = content
+        if content: self.content = content
+        elif filePath and isFile(filePath): self.read()
     
     def __str__( self ): return self.content
 
@@ -172,7 +171,7 @@ class PyInstSpec:
     
     def read( self ):
         self.content = None        
-        with open( self.path(), 'rb' ) as f : self.content = f.read() 
+        with open( self.path(), 'r' ) as f : self.content = f.read() 
             
     def write( self ):
         with open( self.path(), 'w' ) as f : f.write( str(self) )
@@ -451,13 +450,10 @@ def makePyInstSpec( pyInstConfig, opyConfig=None ):
         raise Exception( 'FAILED to create "%s"' % (specPath,) ) 
     print( 'Spec file generated successfully!\n"%s"' % (specPath,) )
     print('')
-    
-    # Create a PyInstSpec object from the file
-    pyInstSpec = PyInstSpec( pyInstConfig=pyInstConfig, isFile=True )
-    
+        
     # return the path to the .spec file, 
     # and a PyInstSpec object (for more easily manipulating it)  
-    return specPath, pyInstSpec
+    return specPath, PyInstSpec( specPath )
     
 # -----------------------------------------------------------------------------    
 def __runPyInstaller( pyInstConfig, pyInstSpecPath=None, isMakeSpec=False ) :   
