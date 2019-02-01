@@ -78,7 +78,7 @@ class PyInstallerConfig:
         self._pngIconResPath   = None
         self.distResources     = []
         self.distDirs          = [] 
-        self.isSpecFileRemoved = True
+        self.isSpecFileRemoved = False
                 
     def toArgs( self, pyInstSpecPath=None, isMakeSpec=False ) :
 
@@ -151,31 +151,35 @@ class PyInstallerConfig:
 
 class PyInstSpec:
 
-    __DATA_SET_PATCH_LINE = (
+    __DUPLICATE_DATA_FILE_PATCH = (
         "a.datas = list({tuple(map(str.upper, t)) for t in a.datas})" )
 
     @staticmethod
-    def path( pyInstConfig ): return absPath( pyInstConfig.name + SPEC_EXT )
+    def cfgToPath( pyInstConfig ): return absPath( pyInstConfig.name+SPEC_EXT )
 
-    def __init__( self, pyInstConfig, isFile=False, content=None ) :
+    def __init__( self, filePath=None, pyInstConfig=None, 
+                  isFile=False, content=None ) :
+        self.filePath = filePath
         self.pyInstConfig = pyInstConfig 
         if isFile: self.read()
         else: self.content = content
     
     def __str__( self ): return self.content
 
+    def path( self ):
+        return ( self.filePath if self.filePath else 
+                 PyInstSpec.cfgToPath( self.pyInstConfig ) )
+    
     def read( self ):
-        self.content = None
-        filePath = PyInstSpec.path( self.pyInstConfig )
-        with open( filePath , 'rb' ) as f : self.content = f.read() 
+        self.content = None        
+        with open( self.path(), 'rb' ) as f : self.content = f.read() 
             
     def write( self ):
-        filePath = PyInstSpec.path( self.pyInstConfig ) 
-        with open( filePath,'w') as f : f.write( str(self) )
+        with open( self.path(), 'w' ) as f : f.write( str(self) )
     
     def debug( self ): print( str(self) )
     
-    def injectDataSetPatch( self ):
+    def injectDuplicateDataPatch( self ):
         """
         This patches a known bug in PyInstaller on Windows. 
         PyInstaller analysis can build a set of data file names
@@ -196,8 +200,10 @@ class PyInstSpec:
                 injectLineNo = lineno
                 break
         if aAssignFound:
-            self._injectLine( PyInstSpec.__DATA_SET_PATCH_LINE, injectLineNo )
-
+            self._injectLine( 
+                PyInstSpec.__DUPLICATE_DATA_FILE_PATCH, injectLineNo )
+            print("Duplicate data patch injected into .spec file...")
+            
     def _toLines( self ):        
         return self.content.split('\n' ) if self.content else []
     
@@ -212,7 +218,7 @@ class PyInstSpec:
     def _parseAssigments( self ):
         """
         Returns a list of tuples in the form of 
-        (variable name, file line numbers (1 based) )
+        (variable name, file line number (1 based) )
         """        
         assigments = []
         if self.content:
@@ -352,7 +358,7 @@ def buildExecutable( name=None, entryPointPy=None,
     __runPyInstaller( pyInstConfig, pyInstSpecPath )
 
     # Discard all temp files (but not distDir!)
-    if pyInstSpecPath : pyInstSpecPath = PyInstSpec.path( pyInstConfig )
+    if pyInstSpecPath : pyInstSpecPath = PyInstSpec.cfgToPath( pyInstConfig )
     __clean( pyInstConfig, pyInstSpecPath=pyInstSpecPath, distDirPath=None )
 
     # eliminate the directory nesting created when the 
@@ -440,18 +446,17 @@ def makePyInstSpec( pyInstConfig, opyConfig=None ):
     __runPyInstaller( pyInstConfig, isMakeSpec=True )
 
     # Confirm success
-    specPath = PyInstSpec.path( pyInstConfig )    
+    specPath = PyInstSpec.cfgToPath( pyInstConfig )    
     if not exists(specPath) : 
         raise Exception( 'FAILED to create "%s"' % (specPath,) ) 
     print( 'Spec file generated successfully!\n"%s"' % (specPath,) )
     print('')
     
-    # Create a PyInstSpec object from the file, and display its content
-    pyInstSpec = PyInstSpec( pyInstConfig, isFile=True )
-    pyInstSpec.debug()
+    # Create a PyInstSpec object from the file
+    pyInstSpec = PyInstSpec( pyInstConfig=pyInstConfig, isFile=True )
     
     # return the path to the .spec file, 
-    # and a PyInstSpec object (for manipulating it)  
+    # and a PyInstSpec object (for more easily manipulating it)  
     return specPath, pyInstSpec
     
 # -----------------------------------------------------------------------------    

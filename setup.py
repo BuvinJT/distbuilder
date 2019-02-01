@@ -71,7 +71,6 @@ setup (
 	packages         = ["distbuilder"],
 	install_requires = [		  
           "six"           # Forced as a prerequisite too
-        , "ast"   
 		, "PyInstaller"   
 		, "opy_distbuilder"  
 	],

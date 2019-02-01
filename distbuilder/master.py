@@ -126,22 +126,25 @@ class ConfigFactory:
 # -----------------------------------------------------------------------------
 class PyToBinInstallerProcess:
 
-    def __init__( self, configFactory,
+    def __init__( self, configFactory,                  
                   name="Python To Binary Installer Process", 
+                  pyInstSpecPath=None,
                   isObfuscating=False, 
                   isDesktopTarget=False,
                   isHomeDirTarget=False ) :
         self.name              = name
         self.configFactory     = configFactory                      
+        self.pyInstSpecPath    = pyInstSpecPath
         self.isObfuscating     = isObfuscating
         self.isDesktopTarget   = isDesktopTarget
         self.isHomeDirTarget   = isHomeDirTarget
-        self.isTestingObfuscation  = False
-        self.isTestingExe          = False
-        self.exeTestArgs           = []
-        self.isTestingInstall      = False
-        self.isVerboseInstall      = False
-        self.isElevatedTest        = False
+        self.isPyInstDupDataPatched = None
+        self.isTestingObfuscation   = False
+        self.isTestingExe           = False
+        self.exeTestArgs            = []
+        self.isTestingInstall       = False
+        self.isVerboseInstall       = False
+        self.isElevatedTest         = False
 
     def __printHeader( self ):
         try: 
@@ -177,19 +180,26 @@ class PyToBinInstallerProcess:
                 sys.exit()
         else: opyConfig = None
         
-        pyInstConfig = self.configFactory.pyInstallerConfig()
+        pyInstConfig = self.configFactory.pyInstallerConfig()        
+        pyInstConfig.isSpecFileRemoved = (self.pyInstSpecPath is None)
         self.onPyInstConfig( pyInstConfig )                
         
-        specPath, pyInstSpec = makePyInstSpec( pyInstConfig, 
-                                               opyConfig=opyConfig )
-        pyInstSpec.injectDataSetPatch()
-        pyInstSpec.write()
-        print("Spec file patched!")
-        pyInstSpec.debug()        
+        if self.pyInstSpecPath:
+            pyInstSpec = PyInstSpec(
+                filePath=self.pyInstSpecPath, isFile=True )
+        else :
+            self.pyInstSpecPath, pyInstSpec = makePyInstSpec( 
+                pyInstConfig, opyConfig=opyConfig )                       
+            if self.isPyInstDupDataPatched is None: 
+                self.isPyInstDupDataPatched = True            
+        if self.isPyInstDupDataPatched:        
+            pyInstSpec.injectDuplicateDataPatch()
+            pyInstSpec.write()            
         self.onMakeSpec( pyInstSpec )
+        pyInstSpec.debug()
             
         _, binPath = buildExecutable( pyInstConfig=pyInstConfig, 
-                                      pyInstSpecPath=specPath,
+                                      pyInstSpecPath=self.pyInstSpecPath,
                                       opyConfig=opyConfig )
         if self.isTestingExe : 
             run( binPath, self.exeTestArgs,
