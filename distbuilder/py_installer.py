@@ -1,4 +1,4 @@
-import ast # pip install ast
+import ast 
 from distbuilder import util 
 from distbuilder.util import *  # @UnusedWildImport
 from distbuilder.opy_library import obfuscatePy, \

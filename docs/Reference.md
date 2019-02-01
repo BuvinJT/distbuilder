@@ -77,7 +77,7 @@ of code.
 This process class converts a program written in .py
 scripts to a stand-alone binary, then packages it 
 for deployment within an installer.  It uses a
-[ConfigFactory](#configfactory)  to automatically produce the config 
+[ConfigFactory](#configfactory) to automatically produce the config 
 objects it requires, but allows a client to modify
 those objects before they are implemented by defining
 a derived class and overriding certain functions as 
@@ -87,30 +87,35 @@ Constructor:
 
     PyToBinInstallerProcess( configFactory, 
                              name="Python To Binary Installer Process",
+                             pyInstSpecPath=None,
                              isObfuscating=False, 
                              isDesktopTarget=False,
                              isHomeDirTarget=False )
                                  
 Attributes & default values:
                                                
-    configFactory         = <required>  
+    configFactory          = <required>  
     
-    name                  = "Python To Binary Installer Process"
+    name                   = "Python To Binary Installer Process"
     
-    isObfuscating         = False
+    pyInstSpecPath         = None
+    isObfuscating          = False
     
-    isDesktopTarget       = False
-    isHomeDirTarget       = False
+    isDesktopTarget        = False
+    isHomeDirTarget        = False
     
-    isTestingObfuscation  = False
-    isTestingExe          = False
-    isTestingInstall      = False
-    isVerboseInstall      = False
+    isPyInstDupDataPatched = None (None=Dynamic, True/False=explicit)
+    
+    isTestingObfuscation   = False
+    isTestingExe           = False
+    isTestingInstall       = False
+    isVerboseInstall       = False
     
 "Virtual" configuration functions to override:  
 
     onOpyConfig( cfg )                    
     onPyInstConfig( cfg )
+    onMakeSpec( spec )
     onQtIfwConfig( cfg )              
 
 Use:
@@ -154,6 +159,11 @@ program, invoke the buildExecutable function:
 	.spec file.  Note that build settings contained within
 	this file will override any which conflict with those 
 	supplied via a [PyInstallerConfig](#pyinstallerconfig) object.
+	Note: note may supply a traditional (perhaps legacy) spec file
+	definition, or you may wish to generate one with the library 
+	via the makePyInstSpec() function.  In either case, you may
+	also opt to dynamically manipulate the spec via the implementation
+	of the [PyInstSpec](#pyinstspec) class. 
 
 **opyConfig**: An (optional) [OpyConfig](#opyconfig) object, to 
 	dictate code obfuscation details using the Opy 
@@ -178,7 +188,27 @@ program, invoke the buildExecutable function:
     implicitly does this for you when there is 
     a source to copy.  This additional option is
     for adding new empty directories.  
-                    
+
+
+To generate a PyInstaller .spec file, using the secondary
+utility "pyi-makespec" (bundled with PyInstaller), 
+invoke the makePyInstSpec function:   
+
+	makePyInstSpec( pyInstConfig, opyConfig=None )
+
+**Returns (specPath, pyInstSpec)**: a tuple containing:
+    the absolute path to the spec file created,
+    a [PyInstSpec](#pyinstspec) object. 
+        
+**pyInstConfig**: An [PyInstallerConfig](#pyinstallerconfig) 
+    object used to dictate the details for generating 
+    the spec file using the makespec Utility.
+
+**opyConfig**: An (optional) [OpyConfig](#opyconfig) object, 
+	providing supplemental details regarding the spec file
+	creation.  Be sure to include this if you desire obfuscation
+	and will be subsequently invoking the buildExecutable function.
+	                    
 ## Executable Obfuscation
 
 PyInstaller is a truly amazing utility, but it has a significant
@@ -728,6 +758,45 @@ Attributes & default values:
     _pngIconResPath = None
     distResources   = []
     distDirs        = [] 
+	isSpecFileRemoved = False
+
+### PyInstSpec:
+
+Objects of this type are used for PyInstaller spec file
+parsing, and programatic maniplaution.  This class provides
+an easy mechanism for applying known PyInstaller patches, 
+as well as convienent mechanisms for applying custom 
+revisions for similiar purposes.  
+
+Constructor: 
+
+    PyInstSpec( filePath=None, pyInstConfig=None, 
+                isFile=False, content=None )
+
+Attributes & default values:
+        
+    filePath     = None
+    pyInstConfig = None 
+    isFile       = False
+    content 	 = None
+
+Static Method:
+    
+    cfgToPath( pyInstConfig )
+
+Object Methods:
+
+	path()
+	read()
+	write()
+    debug()
+    
+    injectDuplicateDataPatch()
+    
+    _toLines()
+    _fromLines( lines )
+	_injectLine( injection, lineNo )
+	_parseAssigments() 
 
 ### WindowsExeVersionInfo
 
