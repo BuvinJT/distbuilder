@@ -57,14 +57,15 @@ class PyInstallerConfig:
         self.name            = None
         self.entryPointPy    = None
         
+        self.pyInstSpec      = None 
+        
         self.isGui           = False
         self.iconFilePath    = None
 
         self.versionInfo     = None 
-        self.versionFilePath = None # TODO: offer programmatic version info
+        self.versionFilePath = None 
                      
-        self.distDirPath     = None
-        self.isOneFile       = True # overrides PyInstaller default
+        self.isOneFile       = True # this differs from the PyInstaller default
         
         self.importPaths     = []
         self.hiddenImports   = []
@@ -72,20 +73,25 @@ class PyInstallerConfig:
         self.binaryFilePaths = []
         
         self.isAutoElevated  = False        
+        
+        self.distDirPath     = None
+               
         self.otherPyInstArgs = "" # open ended
-
+        
         # Not directly fed into the utility. Employed by buildExecutable function.       
         self._pngIconResPath   = None
         self.distResources     = []
         self.distDirs          = [] 
         self.isSpecFileRemoved = False
                 
-    def toArgs( self, pyInstSpecPath=None, isMakeSpec=False ) :
+    def toArgs( self, isMakeSpec=False ) :
 
+        specPath = self.pyInstSpec.path() if self.pyInstSpec else None
+    
         entryPointSpec = ( '"%s"' % (normpath(self.entryPointPy),)          
                            if isMakeSpec else "" )        
-        specFileSpec = ( '"%s"' % (normpath(pyInstSpecPath),) 
-                         if not isMakeSpec and pyInstSpecPath else "" )
+        specFileSpec = ( '"%s"' % (normpath(specPath),) 
+                         if not isMakeSpec and specPath else "" )
         
         nameSpec       = ( "--name %s" % (self.name,)
                            if self.name else "" )
@@ -166,8 +172,8 @@ class PyInstSpec:
     def __str__( self ): return self.content
 
     def path( self ):
-        return ( self.filePath if self.filePath else 
-                 PyInstSpec.cfgToPath( self.pyInstConfig ) )
+        return ( PyInstSpec.cfgToPath( self.pyInstConfig )
+                 if self.pyInstConfig else self.filePath )
     
     def read( self ):
         self.content = None        
@@ -307,7 +313,6 @@ VSVersionInfo(
 # -----------------------------------------------------------------------------   
 def buildExecutable( name=None, entryPointPy=None, 
                      pyInstConfig=PyInstallerConfig(), 
-                     pyInstSpecPath=None,
                      opyConfig=None,                    
                      distResources=[], distDirs=[] ):
     ''' returns: (binDir, binPath) '''   
@@ -340,7 +345,7 @@ def buildExecutable( name=None, entryPointPy=None,
     else : pyInstConfig.versionInfo = None
         
     # Prepare to build (discard old build files)       
-    __clean( pyInstConfig, pyInstSpecPath=None, distDirPath=distDirPath )
+    __clean( pyInstConfig, True )
     
     # Optionally, create obfuscated version of source
     if opyConfig is not None: 
@@ -354,11 +359,10 @@ def buildExecutable( name=None, entryPointPy=None,
         pyInstConfig.versionInfo.write()
         
     # Build the executable using PyInstaller        
-    __runPyInstaller( pyInstConfig, pyInstSpecPath )
+    __runPyInstaller( pyInstConfig )
 
-    # Discard all temp files (but not distDir!)
-    if pyInstSpecPath : pyInstSpecPath = PyInstSpec.cfgToPath( pyInstConfig )
-    __clean( pyInstConfig, pyInstSpecPath=pyInstSpecPath, distDirPath=None )
+    # Discard all temp files
+    __clean( pyInstConfig, False )
 
     # eliminate the directory nesting created when the 
     # binary is not bundled into one file 
@@ -450,31 +454,40 @@ def makePyInstSpec( pyInstConfig, opyConfig=None ):
         raise Exception( 'FAILED to create "%s"' % (specPath,) ) 
     print( 'Spec file generated successfully!\n"%s"' % (specPath,) )
     print('')
-        
-    # return the path to the .spec file, 
-    # and a PyInstSpec object (for more easily manipulating it)  
-    return specPath, PyInstSpec( specPath )
+
+    # Create a PyInstSpec object and return it indirectly 
+    # by updating the pyInstConfig
+    pyInstConfig.pyInstSpec = PyInstSpec( specPath )
+    
+    # return the path to the .spec file
+    return specPath
     
 # -----------------------------------------------------------------------------    
-def __runPyInstaller( pyInstConfig, pyInstSpecPath=None, isMakeSpec=False ) :   
+def __runPyInstaller( pyInstConfig, isMakeSpec=False ) :   
     progPath = ( pyInstConfig.pyInstallerMakeSpecPath if isMakeSpec else
                  pyInstConfig.pyInstallerPath )    
     _, ext = splitExt( progPath )    
     runAsScriptPrefix = '"%s" ' % (PYTHON_PATH,) if ext.lower()==PY_EXT else ""           
-    args = pyInstConfig.toArgs( pyInstSpecPath, isMakeSpec )
+    args = pyInstConfig.toArgs( isMakeSpec )
     util._system( '%s"%s" %s' % (runAsScriptPrefix, progPath, args) )   
 
-def __clean( pyInstConfig, pyInstSpecPath=None, distDirPath=None ) :     
-    if distDirPath and isDir( distDirPath ) :
-        removeDir( distDirPath )
+def __clean( pyInstConfig, isBuildPrep ) :     
     if exists( OBFUS_DIR_PATH ) : removeDir( OBFUS_DIR_PATH )    
     if exists( BUILD_DIR_PATH ) : removeDir( BUILD_DIR_PATH )
     if exists( DIST_DIR_PATH )  : removeDir( DIST_DIR_PATH )
     if exists( CACHE_DIR_PATH ) : removeDir( CACHE_DIR_PATH )
-    if( pyInstSpecPath and pyInstConfig.isSpecFileRemoved and 
-        isFile( pyInstSpecPath ) ): 
-        removeFile( pyInstSpecPath )        
     if( pyInstConfig.versionInfo is not None and
         pyInstConfig.versionFilePath is not None and
         isFile( pyInstConfig.versionFilePath ) ) : 
         removeFile( pyInstConfig.versionFilePath )           
+    
+    if isBuildPrep:
+       if isDir( pyInstConfig.distDirPath ) :
+        removeDir( pyInstConfig.distDirPath )
+    else :
+        specPath = pyInstConfig.pyInstSpecPath
+        if( specPath and pyInstConfig.isSpecFileRemoved and 
+            isFile( specPath ) ): 
+            removeFile( specPath )        
+
+    
