@@ -43,6 +43,7 @@ Attributes & default values:
     isGui        = False           
     entryPointPy = None
     iconFilePath = None       
+	specFilePath = None
     version      = (0,0,0,0)
 		
     setupName        = "setup"
@@ -87,7 +88,6 @@ Constructor:
 
     PyToBinInstallerProcess( configFactory, 
                              name="Python To Binary Installer Process",
-                             pyInstSpecPath=None,
                              isObfuscating=False, 
                              isDesktopTarget=False,
                              isHomeDirTarget=False )
@@ -98,7 +98,6 @@ Attributes & default values:
     
     name                   = "Python To Binary Installer Process"
     
-    pyInstSpecPath         = None
     isObfuscating          = False
     
     isDesktopTarget        = False
@@ -129,7 +128,6 @@ program, invoke the buildExecutable function:
 
     buildExecutable( name=None, entryPointPy=None,
         			 pyInstConfig=PyInstallerConfig(), 
-        			 pyInstSpecPath=None,
         			 opyConfig=None, 
 				     distResources=[], distDirs=[] )
     
@@ -154,16 +152,6 @@ program, invoke the buildExecutable function:
     the binary using the PyInstaller Utility. If 
     omitted, the name and entryPointPy arguments, 
     plus other default settings will be used.
-
-**pyInstSpecPath**: An (optional) path to a PyInstaller
-	.spec file.  Note that build settings contained within
-	this file will override any which conflict with those 
-	supplied via a [PyInstallerConfig](#pyinstallerconfig) object.
-	Note: note may supply a traditional (perhaps legacy) spec file
-	definition, or you may wish to generate one with the library 
-	via the makePyInstSpec() function.  In either case, you may
-	also opt to dynamically manipulate the spec via the implementation
-	of the [PyInstSpec](#pyinstspec) class. 
 
 **opyConfig**: An (optional) [OpyConfig](#opyconfig) object, to 
 	dictate code obfuscation details using the Opy 
@@ -196,9 +184,10 @@ invoke the makePyInstSpec function:
 
 	makePyInstSpec( pyInstConfig, opyConfig=None )
 
-**Returns (specPath, pyInstSpec)**: a tuple containing:
-    the absolute path to the spec file created,
-    a [PyInstSpec](#pyinstspec) object. 
+**Returns: the absolute path to the spec file created.
+    Also, updates the pyInstConfig argument, supplying 
+	a [PyInstSpec](#pyinstspec) object and effectively
+	returning it "by reference". 
         
 **pyInstConfig**: An [PyInstallerConfig](#pyinstallerconfig) 
     object used to dictate the details for generating 
@@ -726,6 +715,15 @@ Objects of this type define *optional* details for building
 binaries from .py scripts using the PyInstaller utility 
 invoked via the buildExecutable function. 
 
+Note that if a [PyInstSpec](#pyinstspec) attribute is provided for one of 
+these objects, the  build settings contained within such will **override** 
+any that conflict with those supplied via the other attributes set directly 
+in the object.  PyInstSpec objects may be created by supplying 
+a traditional (perhaps legacy) spec file definition, or you may wish to 
+generate one with distbuilder via the makePyInstSpec() function.  
+In either case, you may also opt to dynamically manipulate the spec via 
+the implementation of that class. 
+
 Constructor: 
 
     PyInstallerConfig()
@@ -736,7 +734,9 @@ Attributes & default values:
       
     name            = None   
     entryPointPy    = None
-      
+
+    pyInstSpec      = None
+	
     isGui           = False
     iconFilePath    = None
       
@@ -763,21 +763,19 @@ Attributes & default values:
 ### PyInstSpec:
 
 Objects of this type are used for PyInstaller spec file
-parsing, and programatic maniplaution.  This class provides
+parsing, and programmatic manipulation.  This class provides
 an easy mechanism for applying known PyInstaller patches, 
-as well as convienent mechanisms for applying custom 
-revisions for similiar purposes.  
+as well as convenient mechanisms for applying custom 
+revisions for similar purposes.  
 
 Constructor: 
 
-    PyInstSpec( filePath=None, pyInstConfig=None, 
-                isFile=False, content=None )
+    PyInstSpec( filePath=None, pyInstConfig=None, content=None ) 
 
 Attributes & default values:
         
     filePath     = None
     pyInstConfig = None 
-    isFile       = False
     content 	 = None
 
 Static Method:
