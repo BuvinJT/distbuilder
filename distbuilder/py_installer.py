@@ -482,10 +482,11 @@ def __clean( pyInstConfig, isBuildPrep ) :
         removeFile( pyInstConfig.versionFilePath )           
     
     if isBuildPrep:
-       if isDir( pyInstConfig.distDirPath ) :
-        removeDir( pyInstConfig.distDirPath )
+        if isDir( pyInstConfig.distDirPath ) :
+            removeDir( pyInstConfig.distDirPath )
     else :
-        specPath = pyInstConfig.pyInstSpecPath
+        specPath = ( pyInstConfig.pyInstSpec.path() 
+                     if pyInstConfig.pyInstSpec else None )
         if( specPath and pyInstConfig.isSpecFileRemoved and 
             isFile( specPath ) ): 
             removeFile( specPath )        
