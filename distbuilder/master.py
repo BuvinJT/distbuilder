@@ -17,6 +17,7 @@ from distbuilder.qt_installer import \
       buildInstaller \
     , QtIfwConfig \
     , QtIfwConfigXml \
+    , QtIfwPackage \
     , QtIfwPackageXml \
     , QtIfwPackageScript \
     , DEFAULT_SETUP_NAME \
@@ -44,11 +45,12 @@ class ConfigFactory:
         self.version      = (0,0,0,0)
         
         self.setupName     = DEFAULT_SETUP_NAME
-        self.ifwDefDirPath = None
-        self.pkgSrcDirPath = None
+        self.ifwDefDirPath = None        
+        self.ifwPackages   = None
 
         self.ifwPkgName       = None
         self.ifwPkgNamePrefix = "com"
+        self.pkgSrcDirPath    = None
         
         self.ifwScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
         self.ifwScript     = None
@@ -80,14 +82,12 @@ class ConfigFactory:
                           bundleLibs=self.opyBundleLibs,
                           patches=self.opyPatches )                 
     
-    def qtIfwConfig( self, pyInstConfig=None ):
-        return QtIfwConfig( pkgSrcDirPath=self.__pkgSrcDirPath(), 
-                            pkgName=self.__ifwPkgName(),
-                            installerDefDirPath=self.ifwDefDirPath,
+    def qtIfwConfig( self, packages=None ):
+        if packages is not None: self.ifwPackages = packages
+        return QtIfwConfig( installerDefDirPath=self.ifwDefDirPath,
+                            packages=self.ifwPackages,
                             configXml=self.qtIfwConfigXml(), 
-                            pkgXml=self.qtIfwPackageXml(), 
-                            pkgScript=self.qtIfwPackageScript( pyInstConfig ),
-                            setupExeName=self.setupName )
+                            setupExeName=self.setupName ) 
 
     def qtIfwConfigXml( self ) :
         return QtIfwConfigXml( self.productName, self.binaryName, 
@@ -95,22 +95,32 @@ class ConfigFactory:
                                iconFilePath=self.iconFilePath, 
                                isGui=self.isGui,                               
                                companyTradeName=self.companyTradeName ) 
+
+    def qtIfwPackage( self, pyInstConfig=None, isTempSrc=False ):
+        if pyInstConfig is not None: self.pyInstConfig = pyInstConfig
+        return QtIfwPackage( name=self.__ifwPkgName(), 
+                        srcDirPath=self.__pkgSrcDirPath(),                  
+                        isTempSrc = isTempSrc,
+                        pkgXml=self.qtIfwPackageXml(), 
+                        pkgScript=self.qtIfwPackageScript( self.pyInstConfig ) )
     
     def qtIfwPackageXml( self ) :
-        return QtIfwPackageXml( self.__ifwPkgName(), self.productName, self.description, 
+        return QtIfwPackageXml( self.__ifwPkgName(), 
+                                self.productName, self.description, 
                                 self.__versionStr(), self.ifwScriptName )
     
     def qtIfwPackageScript( self, pyInstConfig=None ) :
+        if pyInstConfig is not None: self.pyInstConfig = pyInstConfig
         script = QtIfwPackageScript( self.__ifwPkgName(), 
                                      fileName=self.ifwScriptName, 
                                      exeName=self.binaryName,    
                                      isGui=self.isGui,                                  
-                                     script=self.ifwScriptPath, 
+                                     script=self.ifwScript, 
                                      scriptPath=self.ifwScriptPath )
         if IS_LINUX:
             script.exeVersion = self.__versionStr()
-            if pyInstConfig is not None:
-                script.pngIconResPath = pyInstConfig._pngIconResPath             
+            if self.pyInstConfig is not None:
+                script.pngIconResPath = self.pyInstConfig._pngIconResPath             
         return script
             
     def __versionStr( self ):
@@ -202,9 +212,12 @@ class PyToBinInstallerProcess:
             run( binPath, self.exeTestArgs,
                  isElevated=self.isElevatedTest, isDebug=True )
         
-        ifwConfig = self.configFactory.qtIfwConfig( pyInstConfig )
+        ifwPackage = self.configFactory.qtIfwPackage( pyInstConfig, 
+                                                      isTempSrc=True )
+        ifwConfig = self.configFactory.qtIfwConfig( packages=[ifwPackage] )
         self.onQtIfwConfig( ifwConfig )
-        setupPath = buildInstaller( ifwConfig, isPkgSrcRemoved=True )
+        setupPath = buildInstaller( ifwConfig )
+        
         if self.isDesktopTarget :
             setupPath = moveToDesktop( setupPath )
         elif self.isHomeDirTarget :

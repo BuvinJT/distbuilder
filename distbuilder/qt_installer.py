@@ -44,55 +44,32 @@ class QtIfwConfig:
     Refer to the Qt Installer Framework docs for command line usage details.
     """    
     
-    __PACKAGES_PATH_TMPLT = "%s/packages"
-    __CONTENT_PATH_TMPLT = "%s/packages/%s/data" 
-    
     def __init__( self, 
-                  pkgSrcDirPath=None, pkgSrcExePath=None,                  
-                  pkgName=None, installerDefDirPath=None,
-                  configXml=None, pkgXml=None, pkgScript=None,
+                  installerDefDirPath=None,
+                  packages=None,
+                  configXml=None, 
                   setupExeName=DEFAULT_SETUP_NAME ) :       
-        # definition
-        self.pkgName             = pkgName
         self.installerDefDirPath = installerDefDirPath
-        self.configXml           = configXml
-        self.pkgXml              = pkgXml
-        self.pkgScript           = pkgScript        
-        # content
-        self.pkgSrcDirPath   = pkgSrcDirPath
-        self.pkgSrcExePath   = pkgSrcExePath
-        self.othContentPaths = None                     
-        # exe names
-        self.exeName      = None   
-        self.setupExeName = setupExeName
-        # IFW tool path (attempt to use environmental variable if None)
+        self.packages            = packages # list of QtIfwPackages or directory paths
+        self.configXml           = configXml        
+        self.setupExeName        = setupExeName
+        # Qt paths (attempt to use environmental variables if not defined)
         self.qtIfwDirPath = None
+        self.qtBinDirPath = None          
         # other IFW command line options
         self.isDebugMode    = True
-        self.otherqtIfwArgs = ""
-        # Qt C++ Content extended details / requirements
-        self.isQtCppExe     = False
-        self.isMingwExe     = False
-        self.qtBinDirPath   = None  # (attempt to use environmental variable if None)
-        self.qmlScrDirPath  = None  # for QML projects only   
+        self.otherQtIfwArgs = ""
                 
     def __str__( self ) :
         configSpec   = '-c "%s"' % (self.configXml.path() if self.configXml 
                                     else QtIfwConfigXml().path(),)
-        packagesSpec = '-p "%s"' % (self.pkgDirPath(),)
+        packagesSpec = ""
+        try:             
+            for p in self.packages: packagesSpec += ' -p "%s"' % (str(p),)
+        except: pass       
         verboseSpec  = '-v' if self.isDebugMode else ''                
-        tokens = (configSpec, packagesSpec, verboseSpec, self.otherqtIfwArgs)
+        tokens = (configSpec, packagesSpec, verboseSpec, self.otherQtIfwArgs)
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )         
-
-    def pkgDirPath( self ) :  
-        return joinPath( BUILD_SETUP_DIR_PATH,
-            normpath( QtIfwConfig.__PACKAGES_PATH_TMPLT 
-                      % (INSTALLER_DIR_PATH,) ) )
-            
-    def pkgContentDirPath( self ) :
-        return joinPath( BUILD_SETUP_DIR_PATH,
-            normpath( QtIfwConfig.__CONTENT_PATH_TMPLT 
-                      % (INSTALLER_DIR_PATH, self.pkgName,) ) )
 
 # -----------------------------------------------------------------------------    
 class _QtIfwXmlElement( ET.Element ):
@@ -249,6 +226,43 @@ class QtIfwConfigXml( _QtIfwXml ):
         return joinPath( BUILD_SETUP_DIR_PATH, 
             normpath( QtIfwConfigXml.__DIR_TMPLT 
                       % (INSTALLER_DIR_PATH,) ) )     
+    
+# -----------------------------------------------------------------------------
+class QtIfwPackage:
+    
+    __PACKAGES_PATH_TMPLT = "%s/packages"
+    __CONTENT_PATH_TMPLT = "%s/packages/%s/data" 
+    
+    def __init__( self, name=None, 
+                  srcDirPath=None, srcExePath=None,    
+                  isTempSrc=False,
+                  pkgXml=None, pkgScript=None ) :       
+        # definition
+        self.name            = name
+        self.pkgXml          = pkgXml
+        self.pkgScript       = pkgScript        
+        # content        
+        self.srcDirPath      = srcDirPath
+        self.srcExePath      = srcExePath
+        self.othContentPaths = None
+        self.isTempSrc       = isTempSrc                     
+        # extended content detail
+        self.exeName      = None   
+        self.isQtCppExe     = False
+        self.isMingwExe     = False
+        self.qmlScrDirPath  = None  # for QML projects only   
+
+    def dirPath( self ) :  
+        return joinPath( BUILD_SETUP_DIR_PATH,
+            normpath( QtIfwPackage.__PACKAGES_PATH_TMPLT 
+                      % (INSTALLER_DIR_PATH,) ) )
+            
+    def contentDirPath( self ) :
+        return joinPath( BUILD_SETUP_DIR_PATH,
+            normpath( QtIfwPackage.__CONTENT_PATH_TMPLT 
+                      % (INSTALLER_DIR_PATH, self.name,) ) )
+    
+    def __str__(self): return self.dirPath()
     
 # -----------------------------------------------------------------------------    
 class QtIfwPackageXml( _QtIfwXml ):
@@ -514,45 +528,46 @@ class QtIfwPackageScript:
     def debug( self ): print( str(self) )
         
 # -----------------------------------------------------------------------------            
-def buildInstaller( qtIfwConfig, isPkgSrcRemoved=False ):
+def buildInstaller( qtIfwConfig ):
     ''' returns setupExePath '''
     __validateConfig( qtIfwConfig )        
     __initBuild( qtIfwConfig )    
     __addInstallerResources( qtIfwConfig )     
-    if qtIfwConfig.othContentPaths is not None : __addOtherFiles( qtIfwConfig )     
-    if qtIfwConfig.isQtCppExe : __addQtCppDependencies( qtIfwConfig )        
     setupExePath = __build( qtIfwConfig )    
-    __postBuild( qtIfwConfig, isPkgSrcRemoved )
+    __postBuild( qtIfwConfig )
     return setupExePath
 
 # -----------------------------------------------------------------------------
 def __validateConfig( qtIfwConfig ):
     ''' Very superficial validation... '''
     # installer definition requirements
-    if qtIfwConfig.pkgName is None :
-        raise Exception( "Package Name required" )
     if( qtIfwConfig.installerDefDirPath is not None and
         not isDir(qtIfwConfig.installerDefDirPath) ):        
         raise Exception( "Installer definition directory path is not valid" )
-    if qtIfwConfig.pkgSrcDirPath is None:
-        if qtIfwConfig.pkgSrcExePath is None:
-            raise Exception( "Package Source directory OR exe path required" )
-        elif not isFile(qtIfwConfig.pkgSrcExePath) :        
-            raise Exception( "Package Source exe path is not valid" )    
-    elif not isDir(qtIfwConfig.pkgSrcDirPath) :        
-        raise Exception( "Package Source directory path is not valid" )
-    # tool path requirements
+    if qtIfwConfig.packages is None :
+        raise Exception( "Package specification(s)/definition(s) required" )
+    for p in qtIfwConfig.packages :
+        if p.srcDirPath is None:
+            if p.srcExePath is None:
+                raise Exception( "Package Source directory OR exe path required" )
+            elif not isFile(p.srcExePath) :        
+                raise Exception( "Package Source exe path is not valid" )    
+        elif not isDir(p.srcDirPath) :        
+            raise Exception( "Package Source directory path is not valid" )
+    # required Qt utility paths 
     if qtIfwConfig.qtIfwDirPath is None:
         qtIfwConfig.qtIfwDirPath = getenv( QT_IFW_DIR_ENV_VAR )    
     if( qtIfwConfig.qtIfwDirPath is None or
         not isDir(qtIfwConfig.qtIfwDirPath) ):        
         raise Exception( "Valid Qt IFW directory path required" )
-    if qtIfwConfig.isQtCppExe : 
-        if qtIfwConfig.qtBinDirPath is None:
-            qtIfwConfig.qtBinDirPath = getenv( QT_BIN_DIR_ENV_VAR )    
-        if( qtIfwConfig.qtBinDirPath is None or
-            not isDir(qtIfwConfig.qtBinDirPath) ):        
-            raise Exception( "Valid Qt Bin directory path required" )
+    for p in qtIfwConfig.packages :
+        if not isinstance( p, QtIfwPackage ) : continue
+        if p.isQtCppExe : 
+            if qtIfwConfig.qtBinDirPath is None:
+                qtIfwConfig.qtBinDirPath = getenv( QT_BIN_DIR_ENV_VAR )    
+            if( qtIfwConfig.qtBinDirPath is None or
+                not isDir(qtIfwConfig.qtBinDirPath) ):        
+                raise Exception( "Valid Qt Bin directory path required" )
 
 def __initBuild( qtIfwConfig ) :
     print( "Initializing installer build..." )
@@ -568,24 +583,24 @@ def __initBuild( qtIfwConfig ) :
         copyDir( qtIfwConfig.installerDefDirPath, 
                  joinPath( BUILD_SETUP_DIR_PATH, INSTALLER_DIR_PATH ) )
     # copy the source content into the build directory
-    destDir = qtIfwConfig.pkgContentDirPath()                
-    if qtIfwConfig.pkgSrcDirPath : 
-        qtIfwConfig.pkgSrcDirPath = normpath( qtIfwConfig.pkgSrcDirPath )
-        copyDir( qtIfwConfig.pkgSrcDirPath, destDir )    
-    if qtIfwConfig.pkgSrcExePath :
-        srcExeDir, srcExeName = splitPath( qtIfwConfig.pkgSrcExePath )
-        if srcExeDir != qtIfwConfig.pkgSrcDirPath :                    
-            copyFile( qtIfwConfig.pkgSrcExePath, destDir )                
-        if qtIfwConfig.exeName is None: qtIfwConfig.exeName = srcExeName 
-        elif qtIfwConfig.exeName != srcExeName :             
-            rename( joinPath( destDir, srcExeName ),
-                    joinPath( destDir, qtIfwConfig.exeName ) )            
+    for p in qtIfwConfig.packages :
+        if not isinstance( p, QtIfwPackage ) : continue
+        destDir = p.contentDirPath()                
+        if p.srcDirPath : 
+            p.srcDirPath = normpath( p.srcDirPath )
+            copyDir( p.srcDirPath, destDir )    
+        if p.srcExePath :
+            srcExeDir, srcExeName = splitPath( p.srcExePath )
+            if srcExeDir != p.srcDirPath :                    
+                copyFile( p.srcExePath, destDir )                
+            if p.exeName is None: p.exeName = srcExeName 
+            elif p.exeName != srcExeName :             
+                rename( joinPath( destDir, srcExeName ),
+                        joinPath( destDir, p.exeName ) )            
     print( "Build directory created: %s" % (BUILD_SETUP_DIR_PATH,) )
 
 def __addInstallerResources( qtIfwConfig ) :    
-    configXml = qtIfwConfig.configXml          
-    pkgXml = qtIfwConfig.pkgXml              
-    pkgScript = qtIfwConfig.pkgScript                   
+    configXml = qtIfwConfig.configXml
     if configXml : 
         print( "Adding installer configuration resources..." )
         configXml.debug()
@@ -594,43 +609,50 @@ def __addInstallerResources( qtIfwConfig ) :
             isFile( configXml.iconFilePath ) ):
             copyFile( configXml.iconFilePath,                       
                       joinPath( configXml.dirPath(), 
-                        basename( configXml.iconFilePath ) ) )
-    if pkgXml :            
-        print( "Adding installer package definition: %s..." 
-               % (pkgXml.pkgName) )
-        pkgXml.debug()
-        pkgXml.write()            
-    if pkgScript :
-        print( "Adding installer package script: %s..." 
-               % (pkgScript.fileName) )
-        pkgScript.debug()
-        pkgScript.write()            
+                        basename( configXml.iconFilePath ) ) )              
+    for p in qtIfwConfig.packages :
+        if not isinstance( p, QtIfwPackage ) : continue
+        pkgXml = p.pkgXml              
+        pkgScript = p.pkgScript                   
+        if pkgXml :            
+            print( "Adding installer package definition: %s..." 
+                   % (pkgXml.pkgName) )
+            pkgXml.debug()
+            pkgXml.write()            
+        if pkgScript :
+            print( "Adding installer package script: %s..." 
+                   % (pkgScript.fileName) )
+            pkgScript.debug()
+            pkgScript.write()            
+        if p.othContentPaths is not None : __addOtherFiles( p )     
+        if p.isQtCppExe : __addQtCppDependencies( qtIfwConfig, p )        
+            
 
-def __addOtherFiles( qtIfwConfig ) :    
+def __addOtherFiles( package ) :    
     print( "Adding additional files..." )
-    destPath = qtIfwConfig.pkgContentDirPath()            
-    for srcPath in qtIfwConfig.othContentPaths:
+    destPath = package.contentDirPath()            
+    for srcPath in package.othContentPaths:
         if isDir( srcPath ) : copyDir( srcPath, destPath )
         else : copyFile( srcPath, joinPath( destPath, basename( srcPath ) ) )
 
-def __addQtCppDependencies( qtIfwConfig ) :
+def __addQtCppDependencies( qtIfwConfig, package ) :
     # TODO: Add the counterparts here for other platforms
     if IS_WINDOWS :
         print( "Adding Qt C++ dependencies...\n" )
         qtUtilityPath =  normpath( joinPath(
-            qtIfwConfig.qtBinDirPath, __QT_WINDOWS_DEPLOY_EXE_NAME ) )
-        destDirPath = qtIfwConfig.pkgContentDirPath()
-        exePath = joinPath( destDirPath, qtIfwConfig.exeName )
+            qtIfwConfig.qtBinDirPath, __QT_WINDOWS_DEPLOY_EXE_NAME ) )                    
+        destDirPath = package.contentDirPath()
+        exePath = joinPath( destDirPath, package.exeName )
         cmdList = [qtUtilityPath, exePath]
-        if qtIfwConfig.qmlScrDirPath is not None:
+        if package.qmlScrDirPath is not None:
             cmdList.append( __QT_WINDOWS_DEPLOY_QML_SWITCH )
-            cmdList.append( normpath( qtIfwConfig.qmlScrDirPath ) )
+            cmdList.append( normpath( package.qmlScrDirPath ) )
         cmd = list2cmdline( cmdList )
         system( cmd )
-        if qtIfwConfig.isMingwExe :
+        if package.isMingwExe :
             print( "Adding additional Qt dependencies..." )
             for fileName in __MINGW_DLL_LIST:
-                copyFile( normpath( qtIfwConfig.qtBinDirPath ), 
+                copyFile( normpath( package.qtBinDirPath ), 
                           joinPath( destDirPath, fileName ) )
 
 def __build( qtIfwConfig ) :
@@ -648,7 +670,10 @@ def __build( qtIfwConfig ) :
     print( 'Installer built successfully!\n"%s"!' % (setupExePath,) )
     return setupExePath
 
-def __postBuild( qtIfwConfig, isPkgSrcRemoved ):  # @UnusedVariable
+def __postBuild( qtIfwConfig ):  # @UnusedVariable
     removeDir( BUILD_SETUP_DIR_PATH )
-    if isPkgSrcRemoved and isDir( qtIfwConfig.pkgSrcDirPath ): 
-        removeDir( qtIfwConfig.pkgSrcDirPath )
+    for p in qtIfwConfig.packages :
+        if not isinstance( p, QtIfwPackage ) : continue        
+        if not p.isTempSrc : continue
+        if   p.srcDirPath and isDir(  p.srcDirPath): removeDir(  p.srcDirPath )
+        elif p.srcExePath and isFile( p.srcExePath): removeFile( p.srcExePath )                    

@@ -15,6 +15,7 @@ from distbuilder.qt_installer import \
       buildInstaller \
     , QtIfwConfig \
     , QtIfwConfigXml \
+    , QtIfwPackage \
     , QtIfwPackageXml \
     , QtIfwPackageScript \
     , QT_IFW_VERBOSE_SWITCH
