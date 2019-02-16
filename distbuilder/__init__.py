@@ -2,7 +2,9 @@ from ._version import __version__
 
 from distbuilder.master import \
       ConfigFactory \
-    , PyToBinInstallerProcess
+    , PyToBinPackageProcess \
+    , BuildInstallerProcess \
+    , SimplePyToBinInstallerProcess
        
 from distbuilder.py_installer import \
       buildExecutable \
