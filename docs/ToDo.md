@@ -3,25 +3,29 @@
  
 ## High Priority
 
+* Add PyInstallPackage "merging" features.  
+  (With nested directories, sibiling directories, and directory unions)   
+
+* Test and develop as needed, QtIFW packges that do not install shortcuts, 
+  and are not enabled for install by default.
+
+* Test and develop as needed, QtIFW packges containing only data (no exe).
+
+* Test and develop as needed, QtIFW packges for Qt C++ exes (including QML).
+
 * Add additional examples.
 
 * Continue to expand upon the documentation, especially with
 regard to the various configuration options.
 
-* Add support to high level "process" class for multiple PyInstaller 
-builds / "package" (sub-component) creation via project sub directory 
-divisions.
-
-* Add support for multiple Qt IFW packages.
-
 ## Moderate Priority
-
-* Test on more Linux distros
 
 * Test QtIFW use on terminals / non-gui Linux distros like CentOS 
 (silent installs / noninteractive). Look into options for producing such 
 explictly (maybe a PyInstaller wrapper?) so the user does not have to pass a 
 switch. 
+
+* Test on more Linux distros
 
 * Further develop external library bundling (for Opy), making such 
 more automated and less work for the user (e.g. finding external library 
@@ -29,15 +33,12 @@ sources locally and/or downloading them with pip...)
 			
 * Continue to improve and stablize the Opy library and its beta features.
 
+## Low Priority
+
 * Add documentation/examples on sys._MEIPASS and resource bundling 
 with PyInstaller. 
 
 * Add option for appending platform suffix onto installer file names. 
-
-## Low Priority
-
-* Add the options to build projects outside of the project directory.  
-(Both the source and the temp build directories.)  
 
 * Add all yet to be provided parameters for PyInstaller.  
 
@@ -49,7 +50,11 @@ XML config classes.
 
 * Further develop the Qt IFW script generation features. 
 
+* Add QtIFW "online" installer features.
+
 * Add tarball alternative to zip packaging.
+
+* Add the option to build projects outside of the build script directory.  
 
 ## Wish List		
 
