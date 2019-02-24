@@ -68,7 +68,9 @@ def obfuscatePy( opyConfig ):
     except : pass
     
     # Don't obfuscate the name of the entry point module
-    try : opyConfig.plain_names.append( splitExt(opyConfig.entryPointPy)[0] )
+    try : 
+        opyConfig.plain_names.append( 
+            splitExt(splitPath(opyConfig.entryPointPy)[1])[0] )
     except : pass         
     
     # Suffix all obfuscated names with the project name
@@ -93,7 +95,8 @@ def obfuscatePy( opyConfig ):
     return _toObfuscatedPaths( opyConfig )
 
 def _toObfuscatedPaths( opyConfig ) :
-    return OBFUS_DIR_PATH, joinPath( OBFUS_DIR_PATH, opyConfig.entryPointPy )
+    entryPoint = splitPath( opyConfig.entryPointPy )[1] 
+    return OBFUS_DIR_PATH, joinPath( OBFUS_DIR_PATH, entryPoint )
     
 def obfuscatePyLib( opyConfig, 
                     isExposingPackageImports=True, 

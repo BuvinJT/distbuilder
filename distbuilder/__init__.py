@@ -3,8 +3,8 @@ from ._version import __version__
 from distbuilder.master import \
       ConfigFactory \
     , PyToBinPackageProcess \
-    , BuildInstallerProcess \
-    , SimplePyToBinInstallerProcess
+    , PyToBinInstallerProcess \
+    , RobustInstallerProcess 
        
 from distbuilder.py_installer import \
       buildExecutable \

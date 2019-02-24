@@ -250,9 +250,9 @@ def _isMacApp( path ): return IS_MACOS and splitExt(path)[1]==".app"
 # -----------------------------------------------------------------------------      
 def isDir( path ): return exists(path) and not isFile(path)
 
-# absolute path relative to the script directory NOT the working directory    
-def absPath( relativePath ):    
-    return normpath( joinPath( THIS_DIR, relativePath ) )
+def absPath( relativePath, basePath=None ):
+    if basePath is None: basePath=THIS_DIR        
+    return realpath( normpath( joinPath( basePath, relativePath ) ) )
 
 def tempDirPath(): return gettempdir()
 
@@ -293,43 +293,6 @@ def __getFolderPathByCSIDL( csidl ):
         None, csidl, None, SHGFP_TYPE_CURRENT, buf )
     return buf.value 
             
-# -----------------------------------------------------------------------------    
-def _toSrcDestPair( pathPair, destDir=None ):
-    ''' UGLY "Protected" function for internal library uses ONLY! '''
-    
-    # this is private implementation detail
-    isPyInstallerArg = (destDir is None) 
-    
-    src = dest = None             
-    if( isinstance(pathPair, str) or
-        isinstance(pathPair, unicode) ):  # @UndefinedVariable
-        # shortcut syntax - only provide the source,
-        # (the destination is relative)
-        src = pathPair
-    elif isinstance(pathPair, dict) :
-        # if a dictionary is provided, use the first k/v pair  
-        try : src, dest = pathPair.iteritems().next() 
-        except: pass
-    else: 
-        # a two element tuple (or list) is the expected format
-        try : src = pathPair[0] 
-        except: pass
-        try : dest = pathPair[1] 
-        except: pass
-    if src is None: return None
-    src = normpath( src )
-    srcHead, srcTail = splitPath( src )
-    if srcHead=="" : 
-        srcHead = THIS_DIR
-        src = joinPath( srcHead, srcTail )
-    if isPyInstallerArg:
-        if dest is None: dest = relpath( srcHead )  # relative to cwd                   
-    else :
-        if dest is None:
-            dest = joinPath( relpath( srcHead ), srcTail )         
-        dest = normpath( joinPath( destDir, dest ) )                             
-    return (src, dest) 
-
 # -----------------------------------------------------------------------------           
 def printErr( msg, isFatal=False ):
     try: stderr.write( str(msg) + "\n" )

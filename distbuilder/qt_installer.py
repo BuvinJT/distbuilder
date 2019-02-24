@@ -63,12 +63,9 @@ class QtIfwConfig:
     def __str__( self ) :
         configSpec   = '-c "%s"' % (self.configXml.path() if self.configXml 
                                     else QtIfwConfigXml().path(),)
-        packagesSpec = ""
-        try:             
-            for p in self.packages: packagesSpec += ' -p "%s"' % (str(p),)
-        except: pass       
+        packageDirSpec = ' -p "%s"' % (QtIfwPackage.dirPath(),)        
         verboseSpec  = '-v' if self.isDebugMode else ''                
-        tokens = (configSpec, packagesSpec, verboseSpec, self.otherQtIfwArgs)
+        tokens = (configSpec, packageDirSpec, verboseSpec, self.otherQtIfwArgs)
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )         
 
 # -----------------------------------------------------------------------------    
@@ -147,7 +144,8 @@ class QtIfwConfigXml( _QtIfwXml ):
         _QtIfwXml.__init__( self, QtIfwConfigXml.__ROOT_TAG, 
                             QtIfwConfigXml.__TAGS )
        
-        self.exeName = util.normBinaryName( exeName, isGui=isGui )
+        self.exeName = ( util.normBinaryName( exeName, isGui=isGui )
+                         if exeName else None )
         if IS_LINUX :
             # qt installer does not support icon embedding in Linux
             iconBaseName = self.iconFilePath = None
@@ -232,6 +230,12 @@ class QtIfwPackage:
     
     __PACKAGES_PATH_TMPLT = "%s/packages"
     __CONTENT_PATH_TMPLT = "%s/packages/%s/data" 
+
+    @staticmethod
+    def dirPath() :  
+        return joinPath( BUILD_SETUP_DIR_PATH,
+            normpath( QtIfwPackage.__PACKAGES_PATH_TMPLT 
+                      % (INSTALLER_DIR_PATH,) ) )
     
     def __init__( self, name=None, 
                   srcDirPath=None, srcExePath=None,    
@@ -247,15 +251,11 @@ class QtIfwPackage:
         self.othContentPaths = None
         self.isTempSrc       = isTempSrc                     
         # extended content detail
-        self.exeName      = None   
+        self.exeName        = None   
+        self.isGui          = False
         self.isQtCppExe     = False
         self.isMingwExe     = False
         self.qmlScrDirPath  = None  # for QML projects only   
-
-    def dirPath( self ) :  
-        return joinPath( BUILD_SETUP_DIR_PATH,
-            normpath( QtIfwPackage.__PACKAGES_PATH_TMPLT 
-                      % (INSTALLER_DIR_PATH,) ) )
             
     def contentDirPath( self ) :
         return joinPath( BUILD_SETUP_DIR_PATH,
@@ -415,7 +415,8 @@ class QtIfwPackageScript:
         s = s.replace( "[WORKING_DIR]", directory )        
         return s 
     
-    def __init__( self, pkgName, fileName=DEFAULT_QT_IFW_SCRIPT_NAME, 
+    def __init__( self, pkgName, fileName=DEFAULT_QT_IFW_SCRIPT_NAME,
+                  productName="@ProductName@", 
                   exeName=None, isGui=True, 
                   script=None, scriptPath=None ) :
         self.pkgName  = pkgName
@@ -424,6 +425,7 @@ class QtIfwPackageScript:
             with open( scriptPath, 'rb' ) as f: self.script = f.read()
         else : self.script = script  
 
+        self.productName = productName
         self.exeName = exeName   
         self.isGui   = isGui
         
@@ -467,10 +469,12 @@ class QtIfwPackageScript:
             winOps=""
             if self.exeName and self.isAppShortcut :
                 winOps += QtIfwPackageScript.__winAddShortcut(
-                        STARTMENU_WIN_SHORTCUT, self.exeName )              
+                        STARTMENU_WIN_SHORTCUT, self.exeName,
+                        label=self.productName )              
             if self.exeName and self.isDesktopShortcut:
                 winOps += QtIfwPackageScript.__winAddShortcut(
-                        DESKTOP_WIN_SHORTCUT, self.exeName ) 
+                        DESKTOP_WIN_SHORTCUT, self.exeName,
+                        label=self.productName ) 
             if winOps!="" :    
                 self.componentCreateOperationsBody += (             
                     '    if( systemInfo.kernelType === "winnt" ){\n' +
@@ -480,11 +484,11 @@ class QtIfwPackageScript:
             if self.exeName and self.isAppShortcut :
                 macOps += QtIfwPackageScript.__macAddShortcut(
                         APPS_MAC_SHORTCUT, self.exeName,
-                        self.isGui )              
+                        self.isGui, label=self.productName )              
             if self.exeName and self.isDesktopShortcut:
                 macOps += QtIfwPackageScript.__macAddShortcut(
                         DESKTOP_MAC_SHORTCUT, self.exeName,
-                        self.isGui )             
+                        self.isGui, label=self.productName )             
             if macOps!="" :    
                 self.componentCreateOperationsBody += (             
                     '    if( systemInfo.kernelType === "darwin" ){\n' +
@@ -494,11 +498,13 @@ class QtIfwPackageScript:
             if self.exeName and self.isAppShortcut :
                 x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
                         APPS_X11_SHORTCUT, self.exeName, self.exeVersion,
+                        label=self.productName,
                         pngPath=self.pngIconResPath,
                         isGui=self.isGui )                
             if self.exeName and self.isDesktopShortcut:
                 x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
                         DESKTOP_X11_SHORTCUT, self.exeName, self.exeVersion,
+                        label=self.productName,
                         pngPath=self.pngIconResPath,
                         isGui=self.isGui )                               
             if x11Ops!="" :    
@@ -604,12 +610,13 @@ def __addInstallerResources( qtIfwConfig ) :
     if configXml : 
         print( "Adding installer configuration resources..." )
         configXml.debug()
-        configXml.write()        
-        if( configXml.iconFilePath and 
-            isFile( configXml.iconFilePath ) ):
-            copyFile( configXml.iconFilePath,                       
-                      joinPath( configXml.dirPath(), 
-                        basename( configXml.iconFilePath ) ) )              
+        configXml.write()
+        if configXml.iconFilePath :
+            iconFilePath = absPath( configXml.iconFilePath )
+            if isFile( iconFilePath ):
+                copyFile( iconFilePath,                       
+                          joinPath( configXml.dirPath(), 
+                                    basename( configXml.iconFilePath ) ) )              
     for p in qtIfwConfig.packages :
         if not isinstance( p, QtIfwPackage ) : continue
         pkgXml = p.pkgXml              

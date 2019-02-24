@@ -53,8 +53,10 @@ class PyInstallerConfig:
             self.pyInstallerPath = p
             self.pyInstallerMakeSpecPath = joinPath( 
                 dirPath( p ), PYINST_MAKESPEC_BIN_NAME )
-               
+            
         self.name            = None
+        
+        self.sourceDir       = None
         self.entryPointPy    = None
         
         self.pyInstSpec      = None 
@@ -88,14 +90,14 @@ class PyInstallerConfig:
 
         specPath = self.pyInstSpec.path() if self.pyInstSpec else None
     
-        entryPointSpec = ( '"%s"' % (normpath(self.entryPointPy),)          
+        entryPointSpec = ( '"%s"' % (self._absPath(self.entryPointPy),)          
                            if isMakeSpec else "" )        
-        specFileSpec = ( '"%s"' % (normpath(specPath),) 
+        specFileSpec = ( '"%s"' % (self._absPath(specPath),) 
                          if not isMakeSpec and specPath else "" )
         
         nameSpec       = ( "--name %s" % (self.name,)
                            if self.name else "" )
-        distSpec       = ('--distpath "%s"' % (self.distDirPath,)
+        distSpec       = ('--distpath "%s"' % (self._absPath(self.distDirPath),)
                           if not isMakeSpec and self.distDirPath else "" )
 
         oneFileSwitch  = "--onefile" if self.isOneFile else ""
@@ -103,28 +105,30 @@ class PyInstallerConfig:
                 
         pathsSpec = ""
         for path in self.importPaths:
-            pathsSpec += '--paths "%s"' % (path,)
+            pathsSpec += '--paths "%s"' % (self._absPath(path),)
         importsSpec = ""
         for importMod in self.hiddenImports:
             importsSpec += '--hidden-import "%s"' % (importMod,)
                 
         def toPyInstallerSrcDestSpec( pyInstArg, paths ):
-            src, dest = util._toSrcDestPair( paths ) 
+            src, dest = self._toSrcDestPair( paths ) 
             return '%s "%s%s%s" ' % (pyInstArg, src, pathsep, dest)
         
         dataSpec = ""
-        for paths in self.dataFilePaths:
-            dataSpec += toPyInstallerSrcDestSpec( "--add-data", paths )
+        for path in self.dataFilePaths:
+            dataSpec += toPyInstallerSrcDestSpec( "--add-data", 
+                                                  self._absPath(path) )
         binarySpec = ""
-        for paths in self.binaryFilePaths:
-            binarySpec += toPyInstallerSrcDestSpec( "--add-binary", paths )
+        for path in self.binaryFilePaths:
+            binarySpec += toPyInstallerSrcDestSpec( "--add-binary", 
+                                                    self._absPath(path) )
     
         try:
             if IS_LINUX : 
                 # icon embedding is not supported by PyInstaller for Linux,
                 # this is handled by the library wrapper independently 
-                self._pngIconResPath = util._normIconName( 
-                    self.iconFilePath, isPathPreserved=True )
+                self._pngIconResPath = self._absPath( util._normIconName( 
+                    self.iconFilePath, isPathPreserved=True ) )
                 self.iconFilePath = None                                                         
             elif( IS_WINDOWS and
                   isinstance( self.iconFilePath, tuple ) or
@@ -134,17 +138,17 @@ class PyInstallerConfig:
                 # icon index embedded within that                  
                 if splitExt( self.iconFilePath[0] )[1]==".exe" :
                     self.iconFilePath = "%s,%d" % ( 
-                        self.iconFilePath[0], self.iconFilePath[1] )
+                        self._absPath(self.iconFilePath[0]), self.iconFilePath[1] )
                 else : raise
             else :
-                self.iconFilePath = util._normIconName( 
-                    self.iconFilePath, isPathPreserved=True )               
+                self.iconFilePath = self._absPath( util._normIconName( 
+                    self.iconFilePath, isPathPreserved=True ) )               
         except: self.iconFilePath = None
         iconSpec = ( '--icon "%s"' % (self.iconFilePath,) 
                      if self.iconFilePath else "" )
     
         if IS_WINDOWS :        
-            versionSpec = ( '--version-file "%s"' % (self.versionFilePath,) 
+            versionSpec = ( '--version-file "%s"' % (self._absPath(self.versionFilePath),) 
                             if self.versionFilePath else "" )        
             adminSwitch = "--uac-admin" if self.isAutoElevated else ""
         else : versionSpec = adminSwitch = ""
@@ -154,6 +158,45 @@ class PyInstallerConfig:
                   pathsSpec, importsSpec, dataSpec, binarySpec,
                   self.otherPyInstArgs, entryPointSpec, specFileSpec )
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )         
+
+    def _absPath( self, path ): return absPath( path, self.sourceDir )
+    
+    def _toSrcDestPair( self, pathPair, destDir=None ):
+        ''' UGLY "Protected" function for internal library uses ONLY! '''
+        
+        # this is private implementation detail
+        isPyInstallerArg = (destDir is None) 
+        
+        src = dest = None             
+        if( isinstance(pathPair, str) or
+            isinstance(pathPair, unicode) ):  # @UndefinedVariable
+            # shortcut syntax - only provide the source,
+            # (the destination is relative)
+            src = pathPair
+        elif isinstance(pathPair, dict) :
+            # if a dictionary is provided, use the first k/v pair  
+            try : src, dest = pathPair.iteritems().next() 
+            except: pass
+        else: 
+            # a two element tuple (or list) is the expected format
+            try : src = pathPair[0] 
+            except: pass
+            try : dest = pathPair[1] 
+            except: pass
+        if src is None: return None
+        src = normpath( src )
+        srcHead, srcTail = splitPath( src )
+        if srcHead=="" : 
+            srcHead = THIS_DIR if self.sourceDir is None else self.sourceDir
+            src = self._absPath( srcTail )                    
+        if isPyInstallerArg:
+            if dest is None: dest = relpath( srcHead, THIS_DIR )                    
+        else :
+            if dest is None:
+                relTo = THIS_DIR if self.sourceDir is None else self.sourceDir                                            
+                dest = joinPath( relpath( srcHead, relTo ), srcTail )         
+            dest = self._absPath( joinPath( destDir, dest ) )                             
+        return (src, dest) 
 
 class PyInstSpec:
 
@@ -173,7 +216,7 @@ class PyInstSpec:
 
     def path( self ):
         return ( PyInstSpec.cfgToPath( self.pyInstConfig )
-                 if self.pyInstConfig else self.filePath )
+                 if self.pyInstConfig else absPath(self.filePath) )
     
     def read( self ):
         self.content = None        
@@ -405,7 +448,7 @@ def buildExecutable( name=None, entryPointPy=None,
             
     # Add additional distribution resources        
     for res in distResources:
-        src, dest = util._toSrcDestPair( res, destDir=distDirPath )
+        src, dest = pyInstConfig._toSrcDestPair( res, destDir=distDirPath )
         print( 'Copying "%s" to "%s"...' % ( src, dest ) )
         if isFile( src ) :
             destDir = dirPath( dest )

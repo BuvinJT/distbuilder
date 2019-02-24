@@ -5,6 +5,7 @@ from copy import deepcopy
 from datetime import datetime 
 from time import time as curTime
 
+from distbuilder import util
 from distbuilder.util import *  # @UnusedWildImport
 
 from distbuilder.py_installer import \
@@ -32,8 +33,8 @@ from distbuilder.qt_installer import \
 # -----------------------------------------------------------------------------       
 class ConfigFactory:
     
-    @classmethod
-    def copy( cls, instance ): return cls( deepcopy( instance ) )
+    @staticmethod
+    def copy( instance ): return deepcopy( instance )
 
     def __init__( self ) :        
         self.productName = None
@@ -41,16 +42,20 @@ class ConfigFactory:
         
         self.companyTradeName = None
         self.companyLegalName = None      
-                
+
+        self.isObfuscating = False                
         self.opyBundleLibs = None
         self.opyPatches    = None
         
-        self.binaryName   = None  
-        self.isGui        = False           
-        self.entryPointPy = None
-        self.iconFilePath = None       
-        self.specFilePath = None
-        self.version      = (0,0,0,0)
+        self.binaryName    = None  
+        self.version       = (0,0,0,0)
+        self.isGui         = False
+        
+        self.sourceDir     = None      
+        self.entryPointPy  = None
+        self.iconFilePath  = None       
+        self.distResources = []
+        self.specFilePath  = None
         
         self.setupName     = DEFAULT_SETUP_NAME
         self.ifwDefDirPath = None        
@@ -63,13 +68,17 @@ class ConfigFactory:
         self.ifwScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
         self.ifwScript     = None
         self.ifwScriptPath = None
+        
+        self.__pkgPyInstConfig = None
                             
     def pyInstallerConfig( self ): 
-        cfg = PyInstallerConfig()
-        cfg.name         = self.binaryName
-        cfg.entryPointPy = self.entryPointPy 
-        cfg.isGui        = self.isGui
-        cfg.iconFilePath = self.iconFilePath 
+        cfg = PyInstallerConfig()        
+        cfg.name          = self.binaryName
+        cfg.sourceDir     = self.sourceDir
+        cfg.entryPointPy  = self.entryPointPy 
+        cfg.isGui         = self.isGui
+        cfg.iconFilePath  = self.iconFilePath
+        cfg.distResources = self.distResources 
         if self.specFilePath :
             cfg.pyInstSpec = PyInstSpec( self.specFilePath )
         if IS_WINDOWS :
@@ -87,6 +96,7 @@ class ConfigFactory:
     
     def opyConfig( self ):
         return OpyConfig( self.binaryName, self.entryPointPy,
+                          sourceDir = self.sourceDir,
                           bundleLibs=self.opyBundleLibs,
                           patches=self.opyPatches )                 
     
@@ -98,37 +108,48 @@ class ConfigFactory:
                             setupExeName=self.setupName ) 
 
     def qtIfwConfigXml( self ) :
-        return QtIfwConfigXml( self.productName, self.binaryName, 
-                               self.__versionStr(), self.companyLegalName, 
-                               iconFilePath=self.iconFilePath, 
-                               isGui=self.isGui,                               
-                               companyTradeName=self.companyTradeName ) 
+        xml = QtIfwConfigXml( self.productName, self.binaryName, 
+                              self.__versionStr(), self.companyLegalName, 
+                              iconFilePath=self.iconFilePath, 
+                              isGui=self.isGui,                               
+                              companyTradeName=self.companyTradeName )
+        if xml.RunProgram is None and self.ifwPackages is not None:
+            firstPkg = self.ifwPackages[0]
+            xml.RunProgramDescription = firstPkg.pkgXml.DisplayName
+            xml.exeName = util.normBinaryName( firstPkg.exeName, 
+                                               isGui=firstPkg.isGui )            
+            xml.setDefaultPaths()
+        return xml
 
     def qtIfwPackage( self, pyInstConfig=None, isTempSrc=False ):
-        if pyInstConfig is not None: self.pyInstConfig = pyInstConfig
-        return QtIfwPackage( name=self.__ifwPkgName(), 
-                        srcDirPath=self.__pkgSrcDirPath(),                  
-                        isTempSrc = isTempSrc,
-                        pkgXml=self.qtIfwPackageXml(), 
-                        pkgScript=self.qtIfwPackageScript( self.pyInstConfig ) )
-    
+        self.__pkgPyInstConfig = pyInstConfig
+        pkg = QtIfwPackage( name=self.__ifwPkgName(), 
+                srcDirPath=self.__pkgSrcDirPath(),                  
+                isTempSrc = isTempSrc,
+                pkgXml=self.qtIfwPackageXml(), 
+                pkgScript=self.qtIfwPackageScript( self.__pkgPyInstConfig ) )
+        pkg.exeName = self.binaryName
+        pkg.isGui = self.isGui
+        return pkg
+
     def qtIfwPackageXml( self ) :
         return QtIfwPackageXml( self.__ifwPkgName(), 
-                                self.productName, self.description, 
-                                self.__versionStr(), self.ifwScriptName )
+                self.productName, self.description, 
+                self.__versionStr(), self.ifwScriptName )
     
     def qtIfwPackageScript( self, pyInstConfig=None ) :
-        if pyInstConfig is not None: self.pyInstConfig = pyInstConfig
+        self.__pkgPyInstConfig = pyInstConfig
         script = QtIfwPackageScript( self.__ifwPkgName(), 
-                                     fileName=self.ifwScriptName, 
-                                     exeName=self.binaryName,    
-                                     isGui=self.isGui,                                  
-                                     script=self.ifwScript, 
-                                     scriptPath=self.ifwScriptPath )
+                    fileName=self.ifwScriptName,
+                    productName=self.productName,
+                    exeName=self.binaryName,    
+                    isGui=self.isGui,                                  
+                    script=self.ifwScript, 
+                    scriptPath=self.ifwScriptPath )
         if IS_LINUX:
             script.exeVersion = self.__versionStr()
-            if self.pyInstConfig is not None:
-                script.pngIconResPath = self.pyInstConfig._pngIconResPath             
+            if self.__pkgPyInstConfig is not None:
+                script.pngIconResPath = self.__pkgPyInstConfig._pngIconResPath             
         return script
             
     def __versionStr( self ):
@@ -136,11 +157,17 @@ class ConfigFactory:
 
     def __ifwPkgName( self ):
         if self.ifwPkgName : return self.ifwPkgName
-        comp = self.companyTradeName.replace(" ", "").replace(".", "").lower()
-        prod = self.productName.replace(" ", "").replace(".", "").lower()
+        comp = ( self.companyTradeName if self.companyTradeName
+                 else self.companyLegalName )
+        prod = ( self.__pkgPyInstConfig.name if self.__pkgPyInstConfig 
+                 else self.productName )        
+        comp = comp.replace(" ", "").replace(".", "").lower()
+        prod = prod.replace(" ", "").replace(".", "").lower()            
         return "%s.%s.%s" % (self.ifwPkgNamePrefix, comp, prod)
 
     def __pkgSrcDirPath( self ):
+        if self.__pkgPyInstConfig :
+            return joinPath( THIS_DIR, self.__pkgPyInstConfig.name )
         if self.pkgSrcDirPath : return self.pkgSrcDirPath
         return joinPath( THIS_DIR, self.binaryName )                 
 
@@ -198,10 +225,10 @@ class _DistBuildProcessBase:
 class PyToBinPackageProcess( _DistBuildProcessBase ):
 
     def __init__( self, configFactory,                  
-                  name="Python to Binary Package Process", 
-                  isObfuscating=False ) :
+                  name="Python to Binary Package Process",
+                  isZipped=False ) :
         _DistBuildProcessBase.__init__( self, configFactory, name )        
-        self.isObfuscating = isObfuscating
+        self.isZipped = isZipped
                         
         self.isPyInstDupDataPatched = None
         self.isTestingObfuscation   = False
@@ -213,9 +240,9 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
         
     def _body( self ):        
         
-        if self.isObfuscating :
+        if self.configFactory.isObfuscating :
             opyConfig = self.configFactory.opyConfig() 
-            self. onOpyConfig( opyConfig )
+            self.onOpyConfig( opyConfig )
             if self.isTestingObfuscation:
                 _, obPath = obfuscatePy( opyConfig )
                 runPy( obPath )
@@ -237,32 +264,33 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
         self.onMakeSpec( spec )
         spec.debug()
             
-        _, binPath = buildExecutable( pyInstConfig=self._pyInstConfig, 
-                                      opyConfig=opyConfig )
+        binDir, binPath = buildExecutable( pyInstConfig=self._pyInstConfig, 
+                                           opyConfig=opyConfig )
         if self.isTestingExe : 
             run( binPath, self.exeTestArgs,
                  isElevated=self.isElevatedTest, isDebug=True )
+        
+        if self.isZipped :
+            toZipFile( binDir, zipDest=None, removeScr=True )
                     
-    # Use these to further customize the build process once the 
+    # Override these to further customize the build process once the 
     # ConfigFactory has produced each initial config object
     def onOpyConfig( self, cfg ):    """VIRTUAL"""                    
     def onPyInstConfig( self, cfg ): """VIRTUAL"""
     def onMakeSpec( self, spec ):    """VIRTUAL"""
                         
 # -----------------------------------------------------------------------------                        
-class BuildInstallerProcess( _DistBuildProcessBase ):
+class _BuildInstallerProcess( _DistBuildProcessBase ):
 
     def __init__( self, configFactory,
                   name="Build Installer Process",  
-                  ifwPackages=[],
-                  buildPackageProcesses=[],                                                                                  
-                  isDesktopTarget=False,
-                  isHomeDirTarget=False ) :
+                  pyToBinPkgProcesses=[], ifwPackages=[],                                                                                   
+                  isDesktopTarget=False, isHomeDirTarget=False ) :
         _DistBuildProcessBase.__init__( self, configFactory, name )
-        self.ifwPackages           = ifwPackages
-        self.buildPackageProcesses = buildPackageProcesses        
-        self.isDesktopTarget       = isDesktopTarget
-        self.isHomeDirTarget       = isHomeDirTarget
+        self.pyToBinPkgProcesses = pyToBinPkgProcesses        
+        self.ifwPackages         = ifwPackages
+        self.isDesktopTarget     = isDesktopTarget
+        self.isHomeDirTarget     = isHomeDirTarget
         
         self.isElevatedTest         = False       
         self.isTestingInstall       = False
@@ -270,11 +298,11 @@ class BuildInstallerProcess( _DistBuildProcessBase ):
         
     def _body( self ):        
 
-        for p in self.buildPackageProcesses :
-            p.run()            
-            self.ifwPackages.append( 
-                self.configFactory.qtIfwPackage( p._pyInstConfig, 
-                                                 isTempSrc=True )
+        for p in self.pyToBinPkgProcesses :
+            p.run()
+            self.ifwPackages.append(                
+                p.configFactory.qtIfwPackage( p._pyInstConfig, 
+                                              isTempSrc=True )
             )
             
         ifwConfig = self.configFactory.qtIfwConfig( packages=self.ifwPackages )
@@ -291,39 +319,80 @@ class BuildInstallerProcess( _DistBuildProcessBase ):
                  if self.isVerboseInstall else None),
                  isElevated=self.isElevatedTest )
             
-    # Use these to further customize the build process once the 
-    # ConfigFactory has produced each initial config object
+    # Override this to further customize the build process once the 
+    # ConfigFactory has produced the initial config object
     def onQtIfwConfig( self, cfg ):  """VIRTUAL"""                
-                                                
+
 # -----------------------------------------------------------------------------                        
-class SimplePyToBinInstallerProcess( BuildInstallerProcess ):
+class PyToBinInstallerProcess( _BuildInstallerProcess ):
     
     def __init__( self, configFactory,                  
                   name="Python to Binary Installer Process",
-                  isObfuscating=False,
-                  isDesktopTarget=False,
-                  isHomeDirTarget=False ) :
+                  isDesktopTarget=False, isHomeDirTarget=False ) :
         
         class CallbackPyToBinPackageProcess( PyToBinPackageProcess ):
-            def __init__( self, parent, configFactory, isObfuscating ):
-                PyToBinPackageProcess.__init__( self, configFactory, 
-                                                isObfuscating=isObfuscating )
+            def __init__( self, parent, configFactory ):
+                PyToBinPackageProcess.__init__( self, configFactory )
                 self.__parent = parent
             def onOpyConfig( self, cfg ):    self.__parent.onOpyConfig( cfg )                    
             def onPyInstConfig( self, cfg ): self.__parent.onPyInstConfig( cfg )
             def onMakeSpec( self, spec ):    self.__parent.onMakeSpec( spec )       
                 
-        binPrcs = CallbackPyToBinPackageProcess( self, configFactory, 
-                                                 isObfuscating=isObfuscating )    
-        BuildInstallerProcess.__init__( self, 
+        binPrcs = CallbackPyToBinPackageProcess( self, configFactory )    
+        _BuildInstallerProcess.__init__( self, 
             configFactory, name,
-            buildPackageProcesses=[ binPrcs ],                                         
-            isDesktopTarget=isDesktopTarget, isHomeDirTarget=isHomeDirTarget )
+            pyToBinPkgProcesses=[ binPrcs ],                                         
+            isDesktopTarget=isDesktopTarget, 
+            isHomeDirTarget=isHomeDirTarget )
 
-    # Use these to further customize the build process once the 
+    # Override these to further customize the build process once the 
     # ConfigFactory has produced each initial config object
     def onOpyConfig( self, cfg ):    """VIRTUAL"""                    
     def onPyInstConfig( self, cfg ): """VIRTUAL"""
     def onMakeSpec( self, spec ):    """VIRTUAL"""   
     def onQtIfwConfig( self, cfg ):  """VIRTUAL"""                                                                
+                                                                                                
+# -----------------------------------------------------------------------------                        
+class RobustInstallerProcess( _BuildInstallerProcess ):
+    
+    def __init__( self, masterConfigFactory, 
+                  name="Multi-Package Python to Binary Installer Process",
+                  pyPkgConfigFactoryDict={}, ifwPackages=[],                                     
+                  isDesktopTarget=False, isHomeDirTarget=False ) :
+        
+        class CallbackPyToBinPackageProcess( PyToBinPackageProcess ):
+            def __init__( self, parent, key, configFactory ):
+                PyToBinPackageProcess.__init__( self, configFactory )
+                self.__parent = parent
+                self.__key    = key
+            def onOpyConfig( self, cfg ):    
+                self.__parent.onOpyConfig( self.__key, cfg )                    
+            def onPyInstConfig( self, cfg ): 
+                self.__parent.onPyInstConfig( self.__key, cfg )
+            def onMakeSpec( self, spec ):    
+                self.__parent.onMakeSpec( self.__key, spec )       
+
+        binPrcs = []
+        for key, factory in six.iteritems( pyPkgConfigFactoryDict ) :        
+            if factory is None :
+                factory = ConfigFactory.copy( masterConfigFactory )
+                self.onConfigFactory( key, factory )
+            prcs = CallbackPyToBinPackageProcess( self, key, factory )
+            self.onPyPackageProcess( key, prcs )    
+            binPrcs.append( prcs )
+        
+        _BuildInstallerProcess.__init__( self, 
+            masterConfigFactory, name,
+            ifwPackages=ifwPackages,
+            pyToBinPkgProcesses=binPrcs,                                         
+            isDesktopTarget=isDesktopTarget, 
+            isHomeDirTarget=isHomeDirTarget )
+
+    # Override these to further customize the build process  
+    def onConfigFactory( self, key, factory ):    """VIRTUAL"""
+    def onPyPackageProcess( self, key, binPrcs ): """VIRTUAL"""
+    def onOpyConfig( self, key, cfg ):            """VIRTUAL"""                    
+    def onPyInstConfig( self, key, cfg ):         """VIRTUAL"""
+    def onMakeSpec( self, key, spec ):            """VIRTUAL"""   
+    def onQtIfwConfig( self, cfg ):               """VIRTUAL"""                                                                
                                                 
