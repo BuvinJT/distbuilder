@@ -237,10 +237,12 @@ class QtIfwPackage:
             normpath( QtIfwPackage.__PACKAGES_PATH_TMPLT 
                       % (INSTALLER_DIR_PATH,) ) )
     
-    def __init__( self, name=None, 
+    def __init__( self, pkgId=None, name=None, 
                   srcDirPath=None, srcExePath=None,    
                   isTempSrc=False,
-                  pkgXml=None, pkgScript=None ) :       
+                  pkgXml=None, pkgScript=None ) :
+        # internal id
+        self.pkgId           = pkgId       
         # definition
         self.name            = name
         self.pkgXml          = pkgXml
@@ -302,7 +304,7 @@ class QtIfwPackageXml( _QtIfwXml ):
             normpath( QtIfwPackageXml.__DIR_TMPLT 
                       % (INSTALLER_DIR_PATH, self.pkgName) ) )     
 
-# -----------------------------------------------------------------------------    
+# -----------------------------------------------------------------------------
 class QtIfwPackageScript:
     
     __DIR_TMPLT  = "%s/packages/%s/meta"
@@ -415,9 +417,9 @@ class QtIfwPackageScript:
         s = s.replace( "[WORKING_DIR]", directory )        
         return s 
     
-    def __init__( self, pkgName, fileName=DEFAULT_QT_IFW_SCRIPT_NAME,
-                  productName="@ProductName@", 
-                  exeName=None, isGui=True, 
+    def __init__( self, pkgName,
+                  shortcuts=[],                   
+                  fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
         self.pkgName  = pkgName
         self.fileName = fileName
@@ -425,15 +427,7 @@ class QtIfwPackageScript:
             with open( scriptPath, 'rb' ) as f: self.script = f.read()
         else : self.script = script  
 
-        self.productName = productName
-        self.exeName = exeName   
-        self.isGui   = isGui
-        
-        self.exeVersion = "0.0.0.0"        
-        self.pngIconResPath = None
-        
-        self.isAppShortcut     = True
-        self.isDesktopShortcut = False
+        self.shortcuts = shortcuts
 
         self.componentConstructorBody = None
         self.isAutoComponentConstructor = True
@@ -464,55 +458,61 @@ class QtIfwPackageScript:
         self.componentConstructorBody = ""   
             
     def __genComponentCreateOperationsBody( self ):
-        self.componentCreateOperationsBody = ""        
-        if IS_WINDOWS:
-            winOps=""
-            if self.exeName and self.isAppShortcut :
-                winOps += QtIfwPackageScript.__winAddShortcut(
-                        STARTMENU_WIN_SHORTCUT, self.exeName,
-                        label=self.productName )              
-            if self.exeName and self.isDesktopShortcut:
-                winOps += QtIfwPackageScript.__winAddShortcut(
-                        DESKTOP_WIN_SHORTCUT, self.exeName,
-                        label=self.productName ) 
-            if winOps!="" :    
-                self.componentCreateOperationsBody += (             
-                    '    if( systemInfo.kernelType === "winnt" ){\n' +
-                    '%s\n    }' % (winOps,) )
-        elif IS_MACOS:
-            macOps = ""
-            if self.exeName and self.isAppShortcut :
-                macOps += QtIfwPackageScript.__macAddShortcut(
-                        APPS_MAC_SHORTCUT, self.exeName,
-                        self.isGui, label=self.productName )              
-            if self.exeName and self.isDesktopShortcut:
-                macOps += QtIfwPackageScript.__macAddShortcut(
-                        DESKTOP_MAC_SHORTCUT, self.exeName,
-                        self.isGui, label=self.productName )             
-            if macOps!="" :    
-                self.componentCreateOperationsBody += (             
-                    '    if( systemInfo.kernelType === "darwin" ){\n' +
-                    '%s\n    }' % (macOps,) )                    
-        elif IS_LINUX:
-            x11Ops = ""
-            if self.exeName and self.isAppShortcut :
-                x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
-                        APPS_X11_SHORTCUT, self.exeName, self.exeVersion,
-                        label=self.productName,
-                        pngPath=self.pngIconResPath,
-                        isGui=self.isGui )                
-            if self.exeName and self.isDesktopShortcut:
-                x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
-                        DESKTOP_X11_SHORTCUT, self.exeName, self.exeVersion,
-                        label=self.productName,
-                        pngPath=self.pngIconResPath,
-                        isGui=self.isGui )                               
-            if x11Ops!="" :    
-                self.componentCreateOperationsBody += (             
-                    '    if( systemInfo.kernelType === "linux" ){\n' +
-                    '%s\n    }' % (x11Ops,) )                                
+        self.componentCreateOperationsBody = ""
+        self.__addShortcuts()
         if self.componentCreateOperationsBody == "" :
             self.componentCreateOperationsBody = None
+        
+    def __addShortcuts( self ):
+        for shortcut in self.shortcuts :                
+            if IS_WINDOWS:
+                winOps=""
+                if shortcut.exeName and shortcut.isAppShortcut :
+                    winOps += QtIfwPackageScript.__winAddShortcut(
+                            STARTMENU_WIN_SHORTCUT, shortcut.exeName,
+                            label=shortcut.productName )              
+                if shortcut.exeName and shortcut.isDesktopShortcut:
+                    winOps += QtIfwPackageScript.__winAddShortcut(
+                            DESKTOP_WIN_SHORTCUT, shortcut.exeName,
+                            label=shortcut.productName ) 
+                if winOps!="" :    
+                    self.componentCreateOperationsBody += (             
+                        '    if( systemInfo.kernelType === "winnt" ){\n' +
+                        '%s\n    }' % (winOps,) )
+            elif IS_MACOS:
+                macOps = ""
+                if shortcut.exeName and shortcut.isAppShortcut :
+                    macOps += QtIfwPackageScript.__macAddShortcut(
+                            APPS_MAC_SHORTCUT, shortcut.exeName,
+                            shortcut.isGui, label=shortcut.productName )              
+                if shortcut.exeName and shortcut.isDesktopShortcut:
+                    macOps += QtIfwPackageScript.__macAddShortcut(
+                            DESKTOP_MAC_SHORTCUT, shortcut.exeName,
+                            shortcut.isGui, label=shortcut.productName )             
+                if macOps!="" :    
+                    self.componentCreateOperationsBody += (             
+                        '    if( systemInfo.kernelType === "darwin" ){\n' +
+                        '%s\n    }' % (macOps,) )                    
+            elif IS_LINUX:
+                x11Ops = ""
+                if shortcut.exeName and shortcut.isAppShortcut :
+                    x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
+                            APPS_X11_SHORTCUT, 
+                            shortcut.exeName, shortcut.exeVersion,
+                            label=shortcut.productName,
+                            pngPath=shortcut.pngIconResPath,
+                            isGui=shortcut.isGui )                
+                if shortcut.exeName and shortcut.isDesktopShortcut:
+                    x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
+                            DESKTOP_X11_SHORTCUT, 
+                            shortcut.exeName, shortcut.exeVersion,
+                            label=shortcut.productName,
+                            pngPath=shortcut.pngIconResPath,
+                            isGui=shortcut.isGui )                               
+                if x11Ops!="" :    
+                    self.componentCreateOperationsBody += (             
+                        '    if( systemInfo.kernelType === "linux" ){\n' +
+                        '%s\n    }' % (x11Ops,) )                                
 
     def path( self ) :   
         return joinPath( BUILD_SETUP_DIR_PATH, 
@@ -532,7 +532,46 @@ class QtIfwPackageScript:
             f.write( str(self) ) 
     
     def debug( self ): print( str(self) )
-        
+
+# -----------------------------------------------------------------------------    
+class QtIfwShortcut:
+    def __init__( self, productName="@ProductName@", 
+                  exeName=None, exeVersion="0.0.0.0",        
+                  pngIconResPath=None, isGui=True ) :
+        self.productName    = productName
+        self.exeName        = exeName   
+        self.isGui          = isGui
+        self.exeVersion     = exeVersion        
+        self.pngIconResPath = pngIconResPath        
+        self.isAppShortcut     = True
+        self.isDesktopShortcut = False
+
+# -----------------------------------------------------------------------------                   
+def findQtIfwPackage( pkgs, pkgId ):        
+    for p in pkgs: 
+        if p.pkgId==pkgId: return p
+    return None 
+
+def removeQtIfwPackage( pkgs, pkgId ):        
+    pkgIndex=None
+    for i, pkg in enumerate( pkgs ):
+        if pkg.pkgId==pkgId: 
+            pkgIndex=i
+            break 
+    if pkgIndex : del pkgs[ pkgIndex ]               
+
+def mergeQtIfwPackages( pkgs, srcId, destId ):                
+    srcPkg  = findQtIfwPackage( pkgs, srcId )
+    destPkg = findQtIfwPackage( pkgs, destId )
+    if not srcPkg or not destPkg:
+        raise Exception( "Cannot merge QtIfw packages. " +
+                         "Invalid id(s) provided." ) 
+    mergeDirs( srcPkg.srcDirPath, destPkg.srcDirPath )
+    destPkg.pkgScript.shortcuts.extend( 
+        srcPkg.pkgScript.shortcuts )
+    removeQtIfwPackage( pkgs, srcId )        
+    return destPkg
+    
 # -----------------------------------------------------------------------------            
 def buildInstaller( qtIfwConfig ):
     ''' returns setupExePath '''

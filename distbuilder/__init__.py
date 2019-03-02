@@ -15,11 +15,15 @@ from distbuilder.py_installer import \
     
 from distbuilder.qt_installer import \
       buildInstaller \
+    , findQtIfwPackage \
+    , removeQtIfwPackage \
+    , mergeQtIfwPackages \
     , QtIfwConfig \
     , QtIfwConfigXml \
     , QtIfwPackage \
     , QtIfwPackageXml \
     , QtIfwPackageScript \
+    , QtIfwShortcut \
     , QT_IFW_VERBOSE_SWITCH
 
 from distbuilder.pip_installer import \
@@ -55,15 +59,25 @@ from distbuilder.util import \
     , joinPath \
     , splitPath \
     , splitExt \
+    , normBinaryName \
+    , copyToDir \
+    , moveToDir \
+    , removeFromDir \
+    , renameInDir \
+    , moveToDesktop \
+    , copyToDesktop \
+    , moveToHomeDir \
+    , copyToHomeDir \
+    , collectDirs \
+    , mergeDirs \
     , run \
     , runPy \
-    , normBinaryName \
     , toZipFile \
-    , moveToDesktop \
-    , moveToHomeDir \
     , isImportableModule \
     , isImportableFromModule \
     , modulePath \
     , modulePackagePath \
-    , sitePackagePath   
-    
+    , sitePackagePath \
+    , printErr \
+    , printExc \
+    , halt

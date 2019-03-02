@@ -3,27 +3,23 @@
  
 ## High Priority
 
-* Add PyInstallPackage "merging" features.  
-  (With nested directories, sibiling directories, and directory unions)   
-
-* Test and develop as needed, QtIFW packges that do not install shortcuts, 
-  and are not enabled for install by default.
-
-* Test and develop as needed, QtIFW packges containing only data (no exe).
-
-* Test and develop as needed, QtIFW packges for Qt C++ exes (including QML).
-
-* Add additional examples.
+* Test QtIFW use on terminals / non-gui Linux distros like CentOS 
+(silent installs / noninteractive). Look into options for producing such 
+explictly (maybe a PyInstaller wrapper?) so the user does not have to pass a 
+switch. 
 
 * Continue to expand upon the documentation, especially with
 regard to the various configuration options.
 
 ## Moderate Priority
 
-* Test QtIFW use on terminals / non-gui Linux distros like CentOS 
-(silent installs / noninteractive). Look into options for producing such 
-explictly (maybe a PyInstaller wrapper?) so the user does not have to pass a 
-switch. 
+* Test (and develop as needed) QtIFW packges which: 
+	* do not install shortcuts
+	* are not enabled for install by default
+	* contain only "data" (no exe)
+
+* Test (and develop as needed) QtIFW packges for Qt C++ exes, 
+to confirm auto dependency collection (include QML based projects).
 
 * Test on more Linux distros
 
@@ -34,6 +30,8 @@ sources locally and/or downloading them with pip...)
 * Continue to improve and stablize the Opy library and its beta features.
 
 ## Low Priority
+
+* Add additional examples.
 
 * Add documentation/examples on sys._MEIPASS and resource bundling 
 with PyInstaller. 

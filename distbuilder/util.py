@@ -3,13 +3,13 @@ from six import PY2, PY3  # @UnusedImport
 from sys import argv, stdout, stderr, exit, \
     executable as PYTHON_PATH
 from os import system, remove as removeFile, \
-    getcwd, chdir, \
+    getcwd, chdir, walk, \
     getenv, listdir, makedirs as makeDir, rename # @UnusedImport   
 from os.path import exists, isfile as isFile, \
-    dirname as dirPath, normpath, realpath, relpath, \
+    dirname as dirPath, normpath, realpath, isabs, \
     join as joinPath, split as splitPath, splitext as splitExt, \
     expanduser, \
-    basename, pathsep      # @UnusedImport
+    basename, pathsep, relpath      # @UnusedImport
 from shutil import rmtree as removeDir, move, make_archive, \
     copytree as copyDir, copyfile as copyFile   # @UnusedImport
 import platform
@@ -19,7 +19,6 @@ from subprocess import Popen, list2cmdline, \
 import traceback
 from distutils.sysconfig import get_python_lib
 import inspect  # @UnusedImport
-from builtins import isinstance
 
 # -----------------------------------------------------------------------------   
 __plat = platform.system()
@@ -162,19 +161,147 @@ def __batchOneLinerOutput( batch ):
     # pipe cmd to stdin, return stderr, minus a trailing newline
     return p.communicate( cmd )[1].rstrip()  
             
-# -----------------------------------------------------------------------------  
-def moveToDesktop( path ): return _moveToDir( path, _userDesktopDirPath() )
+# -----------------------------------------------------------------------------
+def collectDirs( srcDirPaths, destDirPath ):
+    """ Move a list of directories into a common parent directory """
+    destDirPath = absPath( destDirPath )    
+    if not isDir( destDirPath ): makeDir( destDirPath )
+    moveToDir( srcDirPaths, destDirPath )  
 
-def moveToHomeDir( path ): return _moveToDir( path, _userHomeDirPath() )
+def mergeDirs( srcDirPaths, destDirPath, isRecursive=True ):
+    if isinstance(srcDirPaths,list) or isinstance(srcDirPaths,tuple):
+        for src in srcDirPaths : 
+            __mergeDirs( src, destDirPath, isRecursive )
+    else: __mergeDirs( srcDirPaths, destDirPath, isRecursive )          
+        
+def __mergeDirs( srcDirPath, destDirPath, isRecursive=True ):
+    """ 
+    Move the contents of a source directory into a target directory, 
+    over writing the target contents where applicable.
+    If performed recursively, the destination contents contained 
+    within merged sub directory are all preserved. Otherwise,
+    the source sub directories replace the target sub directories. 
+    """    
+    srcDirPath  = absPath( srcDirPath )
+    destDirPath = absPath( destDirPath )    
+    if not isDir( destDirPath ): makeDir( destDirPath )
+    if not isDir( srcDirPath ): return
+    if isRecursive:
+        def moveItem( root, item, isSubDir=False ):
+            srcPath = joinPath( root, item )                
+            destDir = joinPath( destDirPath, 
+                                relpath( root, srcDirPath ) )
+            if isSubDir and isDir(destDir): return 
+            __moveToDir( srcPath, destDir )            
+        for root, dirs, files in walk( srcDirPath, topdown=False ):
+            for f in files: moveItem( root, f )                
+            for d in dirs:  moveItem( root, d, True )        
+    else: 
+        srcPaths = [ joinPath( srcDirPath, item ) 
+                     for item in listdir( srcDirPath ) ]        
+        moveToDir( srcPaths, destDirPath )
+    removeDir( srcDirPath )
+
+# -----------------------------------------------------------------------------
+def copyToDesktop( path ): return __copyToDir( path, _userDesktopDirPath() )
+def moveToDesktop( path ): return __moveToDir( path, _userDesktopDirPath() )
+
+def copyToHomeDir( path ): return __copyToDir( path, _userHomeDirPath() )
+def moveToHomeDir( path ): return __moveToDir( path, _userHomeDirPath() )
+
+def copyToDir( srcPaths, destDirPath ):
+    """ 
+    Copy files OR directories to a given destination.
+    The argument srcPaths may be a singular path (i.e. a string)
+    or an iterable (i.e. list or tuple).  
+    """
+    if isinstance(srcPaths,list) or isinstance(srcPaths,tuple):
+        destList=[]
+        for src in srcPaths :
+            destList.append( __copyToDir( src, destDirPath ) )
+        return destList
+    else: return __copyToDir( srcPaths, destDirPath )          
+
+def __copyToDir( srcPath, destDirPath ):        
+    """ Copies 1 item (recursively) """
+    srcPath     = absPath( srcPath )
+    destDirPath = absPath( destDirPath )
+    srcTail = basename( normpath(srcPath) )
+    destPath = joinPath( destDirPath, srcTail )
+    if srcPath == destPath: return
+    __removeFromDir( srcTail, destDirPath )
+    if isFile( srcPath ): copyFile( srcPath )
+    elif isDir( srcPath ): copyDir( srcPath )        
+    print( 'Copied "%s" to "%s"' % (srcPath, destPath) )
+    return destPath
+
+def moveToDir( srcPaths, destDirPath ):
+    """ 
+    Move files OR directories to a given destination.
+    The argument srcPaths may be a singular path (i.e. a string)
+    or an iterable (i.e. list or tuple).  
+    """
+    if isinstance(srcPaths,list) or isinstance(srcPaths,tuple):
+        destList=[]
+        for src in srcPaths : 
+            destList.append( __moveToDir( src, destDirPath ) )
+        return destList
+    else: return __moveToDir( srcPaths, destDirPath )          
     
-def _moveToDir( srcPath, destDirPath ):        
-    destPath = joinPath( destDirPath, 
-                         basename( normpath(srcPath) ) )
-    if isFile( destPath ): removeFile( destPath )
-    elif isDir( destPath ): removeDir( destPath )
-    move( srcPath, destDirPath )
+def __moveToDir( srcPath, destDirPath ):        
+    """ Moves 1 item (recursively) """
+    srcPath     = absPath( srcPath )
+    destDirPath = absPath( destDirPath )    
+    srcTail = basename( normpath(srcPath) )
+    destPath = joinPath( destDirPath, srcTail )
+    if srcPath == destPath: return
+    __removeFromDir( srcTail, destDirPath )
+    move( srcPath, destDirPath )    
     print( 'Moved "%s" to "%s"' % (srcPath, destPath) )
     return destPath
+
+def removeFromDir( subPaths, parentDirPath ):
+    """ 
+    Removes files OR directories from a given directory.
+    The argument subPaths may be a singular path (i.e. a string)
+    or an iterable collection (i.e. list or tuple).  
+    """
+    if isinstance(subPaths,list) or isinstance(subPaths,tuple):
+        for subPath in subPaths : __moveToDir( subPath, parentDirPath )
+    else: __removeFromDir( subPaths, parentDirPath )          
+    
+def __removeFromDir( subPath, parentDirPath ):        
+    """ Removes 1 item (recursively) """
+    parentDirPath = absPath( parentDirPath )   
+    remPath = joinPath( parentDirPath, subPath )    
+    if isFile( remPath ): 
+        removeFile( remPath )
+        print( 'Removed "%s"' % (remPath,) )
+    elif isDir( remPath ): 
+        removeDir( remPath )
+        print( 'Removed "%s"' % (remPath,) )
+
+def renameInDir( namePairs, parentDirPath ):
+    """ 
+    Renames files OR directories in a given destination.
+    The argument namePairs may be a singular tuple (oldName, newName)
+    or an iterable (i.e. list or tuple) of such tuple pairs.  
+    """
+    if isinstance(namePairs,list) or isinstance(namePairs,tuple): 
+        destList=[]
+        for pair in namePairs : 
+            destList.append( __renameInDir( pair, parentDirPath ) )
+        return destList
+    else: return __renameInDir( namePairs, parentDirPath )          
+    
+def __renameInDir( namePair, parentDirPath ):
+    parentDirPath = absPath( parentDirPath )    
+    oldName, newName = namePair
+    oldPath = joinPath( parentDirPath, oldName )        
+    newPath = joinPath( parentDirPath, newName )
+    rename( oldPath, newPath )
+    print( 'Renamed "%s" to "%s"' % (oldPath, newPath) )
+    return newPath
 
 # -----------------------------------------------------------------------------
 __IMPORT_TMPLT       = "import %s"
@@ -251,6 +378,7 @@ def _isMacApp( path ): return IS_MACOS and splitExt(path)[1]==".app"
 def isDir( path ): return exists(path) and not isFile(path)
 
 def absPath( relativePath, basePath=None ):
+    if isabs( relativePath ): return relativePath
     if basePath is None: basePath=THIS_DIR        
     return realpath( normpath( joinPath( basePath, relativePath ) ) )
 
@@ -293,7 +421,9 @@ def __getFolderPathByCSIDL( csidl ):
         None, csidl, None, SHGFP_TYPE_CURRENT, buf )
     return buf.value 
             
-# -----------------------------------------------------------------------------           
+# -----------------------------------------------------------------------------
+def halt(): printErr( "HALT!", isFatal=True )
+               
 def printErr( msg, isFatal=False ):
     try: stderr.write( str(msg) + "\n" )
     except: 

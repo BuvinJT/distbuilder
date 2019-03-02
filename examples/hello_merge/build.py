@@ -1,12 +1,12 @@
-from distbuilder import RobustInstallerProcess, ConfigFactory
+from distbuilder import RobustInstallerProcess, ConfigFactory, mergeQtIfwPackages
   
 f = masterConfigFactory = ConfigFactory()
-f.productName      = "Hello Packages Example"
+f.productName      = "Hello Merge Example"
 f.companyTradeName = "Some Company"
 f.companyLegalName = "Some Company Inc."    
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
 f.version          = (1,0,0,0)
-f.setupName        = "HelloPackagesSetup"
+f.setupName        = "HelloMergeSetup"
 
 TK_CONFIG_KEY  = "tk"
 CLI_CONFIG_KEY = "cli"
@@ -40,6 +40,14 @@ class BuildProcess( RobustInstallerProcess ):
     def onOpyConfig( self, key, cfg ):
         if key==TK_CONFIG_KEY:    
             cfg.external_modules.extend( [ 'tkinter', 'tkinter.ttk' ] )
+            
+    def onPyToBinPkgsBuilt( self, pkgs ):
+        comboPkg = mergeQtIfwPackages( pkgs, CLI_CONFIG_KEY, TK_CONFIG_KEY )
+        comboPkg.pkgXml.DisplayName = "Hello World Examples"
+        comboPkg.pkgXml.Description = "Tk and CLI Examples"
+    
+    def onQtIfwConfig( self, cfg ):
+        cfg.configXml.RunProgramDescription = "Start Hello World Tk Example"
             
 p = BuildProcess( masterConfigFactory, pyPkgConfigFactoryDict=pkgFactories, 
                   isDesktopTarget=True )

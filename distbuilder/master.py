@@ -26,6 +26,7 @@ from distbuilder.qt_installer import \
     , QtIfwPackage \
     , QtIfwPackageXml \
     , QtIfwPackageScript \
+    , QtIfwShortcut \
     , DEFAULT_SETUP_NAME \
     , DEFAULT_QT_IFW_SCRIPT_NAME \
     , QT_IFW_VERBOSE_SWITCH
@@ -36,7 +37,9 @@ class ConfigFactory:
     @staticmethod
     def copy( instance ): return deepcopy( instance )
 
-    def __init__( self ) :        
+    def __init__( self, cfgId=None ) :
+        self.cfgId = cfgId
+        
         self.productName = None
         self.description = None
         
@@ -61,6 +64,7 @@ class ConfigFactory:
         self.ifwDefDirPath = None        
         self.ifwPackages   = None
 
+        self.ifwPkgId         = None
         self.ifwPkgName       = None
         self.ifwPkgNamePrefix = "com"
         self.pkgSrcDirPath    = None
@@ -123,7 +127,9 @@ class ConfigFactory:
 
     def qtIfwPackage( self, pyInstConfig=None, isTempSrc=False ):
         self.__pkgPyInstConfig = pyInstConfig
-        pkg = QtIfwPackage( name=self.__ifwPkgName(), 
+        pkg = QtIfwPackage(
+                pkgId=self.__ifwPkgId(), 
+                name=self.__ifwPkgName(), 
                 srcDirPath=self.__pkgSrcDirPath(),                  
                 isTempSrc = isTempSrc,
                 pkgXml=self.qtIfwPackageXml(), 
@@ -139,29 +145,40 @@ class ConfigFactory:
     
     def qtIfwPackageScript( self, pyInstConfig=None ) :
         self.__pkgPyInstConfig = pyInstConfig
+        pngIconResPath = ( self.__pkgPyInstConfig._pngIconResPath
+            if IS_LINUX and self.__pkgPyInstConfig is not None
+            else None )                     
+        defShortcut= QtIfwShortcut(                    
+                        productName=self.productName,
+                        exeName=self.binaryName,    
+                        exeVersion=self.__versionStr(),
+                        isGui=self.isGui,                                  
+                        pngIconResPath=pngIconResPath )  
         script = QtIfwPackageScript( self.__ifwPkgName(), 
+                    shortcuts=[ defShortcut ],
                     fileName=self.ifwScriptName,
-                    productName=self.productName,
-                    exeName=self.binaryName,    
-                    isGui=self.isGui,                                  
                     script=self.ifwScript, 
                     scriptPath=self.ifwScriptPath )
-        if IS_LINUX:
-            script.exeVersion = self.__versionStr()
-            if self.__pkgPyInstConfig is not None:
-                script.pngIconResPath = self.__pkgPyInstConfig._pngIconResPath             
         return script
             
     def __versionStr( self ):
         return "%d.%d.%d.%d" % self.version
 
+    def __ifwPkgId( self ):
+        if self.ifwPkgId : return self.ifwPkgId
+        if self.cfgId : return self.cfgId
+        prod = ( self.__pkgPyInstConfig.name if self.__pkgPyInstConfig 
+                 else self.productName )        
+        prod = prod.replace(" ", "").replace(".", "").lower()            
+        return prod
+    
     def __ifwPkgName( self ):
         if self.ifwPkgName : return self.ifwPkgName
         comp = ( self.companyTradeName if self.companyTradeName
                  else self.companyLegalName )
+        comp = comp.replace(" ", "").replace(".", "").lower()
         prod = ( self.__pkgPyInstConfig.name if self.__pkgPyInstConfig 
                  else self.productName )        
-        comp = comp.replace(" ", "").replace(".", "").lower()
         prod = prod.replace(" ", "").replace(".", "").lower()            
         return "%s.%s.%s" % (self.ifwPkgNamePrefix, comp, prod)
 
@@ -188,7 +205,9 @@ class _DistBuildProcessBase:
     def run( self ):        
         self.__startTime = curTime()
         self.__printHeader()        
-        self._body()    
+        self.onInitialize()
+        self._body()
+        self.onFinalize()
         self.__endTime   = curTime()
         self.__durationSecs  = self.__endTime - self.__startTime 
         self.__printFooter()
@@ -221,6 +240,9 @@ class _DistBuildProcessBase:
     @abstractmethod
     def _body( self ): """PURE VIRTUAL"""           
    
+    def onInitialize( self ): """VIRTUAL"""
+    def onFinalize( self ):   """VIRTUAL"""
+
 # -----------------------------------------------------------------------------
 class PyToBinPackageProcess( _DistBuildProcessBase ):
 
@@ -304,6 +326,7 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
                 p.configFactory.qtIfwPackage( p._pyInstConfig, 
                                               isTempSrc=True )
             )
+        self.onPyToBinPkgsBuilt( self.ifwPackages )
             
         ifwConfig = self.configFactory.qtIfwConfig( packages=self.ifwPackages )
         self.onQtIfwConfig( ifwConfig )                
@@ -318,11 +341,14 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
                  (QT_IFW_VERBOSE_SWITCH 
                  if self.isVerboseInstall else None),
                  isElevated=self.isElevatedTest )
-            
-    # Override this to further customize the build process once the 
+        
+    # Override these to further customize the build process once the 
     # ConfigFactory has produced the initial config object
-    def onQtIfwConfig( self, cfg ):  """VIRTUAL"""                
-
+    def onInitialize( self ):             """VIRTUAL"""
+    def onPyToBinPkgsBuilt( self, pkgs ): """VIRTUAL"""
+    def onQtIfwConfig( self, cfg ):       """VIRTUAL"""                
+    def onFinalize( self ):               """VIRTUAL"""
+    
 # -----------------------------------------------------------------------------                        
 class PyToBinInstallerProcess( _BuildInstallerProcess ):
     
@@ -347,10 +373,12 @@ class PyToBinInstallerProcess( _BuildInstallerProcess ):
 
     # Override these to further customize the build process once the 
     # ConfigFactory has produced each initial config object
-    def onOpyConfig( self, cfg ):    """VIRTUAL"""                    
-    def onPyInstConfig( self, cfg ): """VIRTUAL"""
-    def onMakeSpec( self, spec ):    """VIRTUAL"""   
-    def onQtIfwConfig( self, cfg ):  """VIRTUAL"""                                                                
+    def onInitialize( self ):             """VIRTUAL"""    
+    def onOpyConfig( self, cfg ):         """VIRTUAL"""                    
+    def onPyInstConfig( self, cfg ):      """VIRTUAL"""
+    def onMakeSpec( self, spec ):         """VIRTUAL"""
+    def onQtIfwConfig( self, cfg ):       """VIRTUAL"""                                                                
+    def onFinalize( self ):               """VIRTUAL"""
                                                                                                 
 # -----------------------------------------------------------------------------                        
 class RobustInstallerProcess( _BuildInstallerProcess ):
@@ -376,10 +404,11 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
         for key, factory in six.iteritems( pyPkgConfigFactoryDict ) :        
             if factory is None :
                 factory = ConfigFactory.copy( masterConfigFactory )
+                factory.cfgId = key
                 self.onConfigFactory( key, factory )
             prcs = CallbackPyToBinPackageProcess( self, key, factory )
             self.onPyPackageProcess( key, prcs )    
-            binPrcs.append( prcs )
+            binPrcs.append( prcs )        
         
         _BuildInstallerProcess.__init__( self, 
             masterConfigFactory, name,
@@ -389,10 +418,12 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
             isHomeDirTarget=isHomeDirTarget )
 
     # Override these to further customize the build process  
+    def onInitialize( self ):                     """VIRTUAL"""        
     def onConfigFactory( self, key, factory ):    """VIRTUAL"""
-    def onPyPackageProcess( self, key, binPrcs ): """VIRTUAL"""
+    def onPyPackageProcess( self, key, binPrc ):  """VIRTUAL"""
     def onOpyConfig( self, key, cfg ):            """VIRTUAL"""                    
     def onPyInstConfig( self, key, cfg ):         """VIRTUAL"""
     def onMakeSpec( self, key, spec ):            """VIRTUAL"""   
+    def onPyToBinPkgsBuilt( self, pkgs ):         """VIRTUAL"""
     def onQtIfwConfig( self, cfg ):               """VIRTUAL"""                                                                
-                                                
+    def onFinalize( self ):                       """VIRTUAL"""
