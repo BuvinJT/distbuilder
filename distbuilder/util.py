@@ -213,7 +213,7 @@ def copyToDir( srcPaths, destDirPath ):
     """ 
     Copy files OR directories to a given destination.
     The argument srcPaths may be a singular path (i.e. a string)
-    or an iterable (i.e. list or tuple).  
+    or an iterable (i.e. a list or tuple).  
     """
     if isinstance(srcPaths,list) or isinstance(srcPaths,tuple):
         destList=[]
@@ -239,7 +239,7 @@ def moveToDir( srcPaths, destDirPath ):
     """ 
     Move files OR directories to a given destination.
     The argument srcPaths may be a singular path (i.e. a string)
-    or an iterable (i.e. list or tuple).  
+    or an iterable (i.e. a list or tuple).  
     """
     if isinstance(srcPaths,list) or isinstance(srcPaths,tuple):
         destList=[]
@@ -264,7 +264,7 @@ def removeFromDir( subPaths, parentDirPath ):
     """ 
     Removes files OR directories from a given directory.
     The argument subPaths may be a singular path (i.e. a string)
-    or an iterable collection (i.e. list or tuple).  
+    or an iterable collection (i.e. a list or tuple).  
     """
     if isinstance(subPaths,list) or isinstance(subPaths,tuple):
         for subPath in subPaths : __moveToDir( subPath, parentDirPath )
@@ -285,7 +285,7 @@ def renameInDir( namePairs, parentDirPath ):
     """ 
     Renames files OR directories in a given destination.
     The argument namePairs may be a singular tuple (oldName, newName)
-    or an iterable (i.e. list or tuple) of such tuple pairs.  
+    or an iterable (i.e. a list or tuple) of such tuple pairs.  
     """
     if isinstance(namePairs,list) or isinstance(namePairs,tuple): 
         destList=[]

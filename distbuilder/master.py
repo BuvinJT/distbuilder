@@ -297,10 +297,12 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
                     
     # Override these to further customize the build process once the 
     # ConfigFactory has produced each initial config object
+    def onInitialize( self ):        """VIRTUAL"""    
     def onOpyConfig( self, cfg ):    """VIRTUAL"""                    
     def onPyInstConfig( self, cfg ): """VIRTUAL"""
     def onMakeSpec( self, spec ):    """VIRTUAL"""
-                        
+    def onFinalize( self ):          """VIRTUAL"""
+                            
 # -----------------------------------------------------------------------------                        
 class _BuildInstallerProcess( _DistBuildProcessBase ):
 
@@ -362,18 +364,20 @@ class PyToBinInstallerProcess( _BuildInstallerProcess ):
                 self.__parent = parent
             def onOpyConfig( self, cfg ):    self.__parent.onOpyConfig( cfg )                    
             def onPyInstConfig( self, cfg ): self.__parent.onPyInstConfig( cfg )
-            def onMakeSpec( self, spec ):    self.__parent.onMakeSpec( spec )       
-                
-        binPrcs = CallbackPyToBinPackageProcess( self, configFactory )    
+            def onMakeSpec( self, spec ):    self.__parent.onMakeSpec( spec )                       
+        prc = CallbackPyToBinPackageProcess( self, configFactory )
+        self.onPyPackageProcess( prc )
+            
         _BuildInstallerProcess.__init__( self, 
             configFactory, name,
-            pyToBinPkgProcesses=[ binPrcs ],                                         
+            pyToBinPkgProcesses=[ prc ],                                         
             isDesktopTarget=isDesktopTarget, 
             isHomeDirTarget=isHomeDirTarget )
 
     # Override these to further customize the build process once the 
     # ConfigFactory has produced each initial config object
     def onInitialize( self ):             """VIRTUAL"""    
+    def onPyPackageProcess( self, prc ):  """VIRTUAL"""
     def onOpyConfig( self, cfg ):         """VIRTUAL"""                    
     def onPyInstConfig( self, cfg ):      """VIRTUAL"""
     def onMakeSpec( self, spec ):         """VIRTUAL"""
@@ -406,9 +410,9 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
                 factory = ConfigFactory.copy( masterConfigFactory )
                 factory.cfgId = key
                 self.onConfigFactory( key, factory )
-            prcs = CallbackPyToBinPackageProcess( self, key, factory )
-            self.onPyPackageProcess( key, prcs )    
-            binPrcs.append( prcs )        
+            prc = CallbackPyToBinPackageProcess( self, key, factory )
+            self.onPyPackageProcess( key, prc )    
+            binPrcs.append( prc )        
         
         _BuildInstallerProcess.__init__( self, 
             masterConfigFactory, name,
@@ -420,7 +424,7 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
     # Override these to further customize the build process  
     def onInitialize( self ):                     """VIRTUAL"""        
     def onConfigFactory( self, key, factory ):    """VIRTUAL"""
-    def onPyPackageProcess( self, key, binPrc ):  """VIRTUAL"""
+    def onPyPackageProcess( self, key, prc ):     """VIRTUAL"""
     def onOpyConfig( self, key, cfg ):            """VIRTUAL"""                    
     def onPyInstConfig( self, key, cfg ):         """VIRTUAL"""
     def onMakeSpec( self, key, spec ):            """VIRTUAL"""   

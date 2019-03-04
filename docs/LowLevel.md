@@ -1,127 +1,9 @@
-# Reference Manual 
+# Low Level Classes And Functions 
 ![distbuilder logo](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png)
 
-## Configuration Factory  
-
-It is typical for a build script to start by creating
-a high-level *ConfigFactory* object and setting its attributes.
-
-The major functions within the distbuilder library rely
-upon a collection of "configuration" objects which supply
-parameters to drive various processes.  Many of these 
-classes have overlapping attributes, and scripts employing 
-a series of these tend to have a great deal of redundant
-parameter passing.  With this in mind, the ConfigFactory class 
-was created.
-
-See [Configuration Classes](#configuration-classes) for more 
-information on the type of objects created by this factory class.  
-
-### ConfigFactory
-
-Using this class, you can produce config objects without 
-having to supply the same values repeatedly.  Then, you 
-may customize the objects if needed after they have been 
-roughly defined for you.    
-
-Constructor:
-
-    ConfigFactory()
-    
-Attributes & default values:                                               
-
-    productName = None
-    description = None
-    
-    companyTradeName = None
-    companyLegalName = None      
-            
-    opyBundleLibs = None
-    opyPatches    = None
-    
-    binaryName   = None  
-    isGui        = False           
-    entryPointPy = None
-    iconFilePath = None       
-	specFilePath = None
-    version      = (0,0,0,0)
-		
-    setupName        = "setup"
-    ifwDefDirPath    = None
-    pkgSrcDirPath    = None
-    ifwPkgName       = None
-    ifwPkgNamePrefix = "com"    
-    ifwScriptName    = "installscript.qs"
-    ifwScript        = None
-    ifwScriptPath    = None   
-
-Object creation functions:
-
-    pyInstallerConfig()    
-    opyConfig()
-    qtIfwConfig()
-    qtIfwConfigXml()
-    qtIfwPackageXml()    
-    qtIfwPackageScript()
-
-## Process Classes
-
-Many build scripts will follow the same essential
-logic flow, to produce analogous distributions. 
-As such, using high-level "process classes" can prevent 
-having multiple implementation scripts be virtual 
-duplicates of one another, each containing a fair volume 
-of code.  
-
-### PyToBinInstallerProcess 
-
-This process class converts a program written in .py
-scripts to a stand-alone binary, then packages it 
-for deployment within an installer.  It uses a
-[ConfigFactory](#configfactory) to automatically produce the config 
-objects it requires, but allows a client to modify
-those objects before they are implemented by defining
-a derived class and overriding certain functions as 
-needed for this purpose.       
-
-Constructor:
-
-    PyToBinInstallerProcess( configFactory, 
-                             name="Python To Binary Installer Process",
-                             isObfuscating=False, 
-                             isDesktopTarget=False,
-                             isHomeDirTarget=False )
-                                 
-Attributes & default values:
-                                               
-    configFactory          = <required>  
-    
-    name                   = "Python To Binary Installer Process"
-    
-    isObfuscating          = False
-    
-    isDesktopTarget        = False
-    isHomeDirTarget        = False
-    
-    isPyInstDupDataPatched = None (None=Dynamic, True/False=explicit)
-    
-    isTestingObfuscation   = False
-    isTestingExe           = False
-    isTestingInstall       = False
-    isVerboseInstall       = False
-    
-"Virtual" configuration functions to override:  
-
-    onOpyConfig( cfg )                    
-    onPyInstConfig( cfg )
-    onMakeSpec( spec )
-    onQtIfwConfig( cfg )              
-
-Use:
-
-Simply invoke the `run()` function to execute the process. 
-
 ## Stand-Alone Executables 
+
+### buildExecutable
         
 To build a stand-alone binary distribution of a Python
 program, invoke the buildExecutable function: 
@@ -130,7 +12,7 @@ program, invoke the buildExecutable function:
         			 pyInstConfig=PyInstallerConfig(), 
         			 opyConfig=None, 
 				     distResources=[], distDirs=[] )
-    
+                             
 **Returns (binDir, binPath)**: a tuple containing:
     the absolute path to the package created,
     the absolute path to the binary created 
@@ -177,6 +59,7 @@ program, invoke the buildExecutable function:
     a source to copy.  This additional option is
     for adding new empty directories.  
 
+### makePyInstSpec
 
 To generate a PyInstaller .spec file, using the secondary
 utility "pyi-makespec" (bundled with PyInstaller), 
@@ -197,13 +80,16 @@ invoke the makePyInstSpec function:
 	providing supplemental details regarding the spec file
 	creation.  Be sure to include this if you desire obfuscation
 	and will be subsequently invoking the buildExecutable function.
-	                    
+
+-------------------------------------------------------      	                    
 ## Executable Obfuscation
 
 PyInstaller is a truly amazing utility, but it has a significant
 inherent weakness... it is possible reverse engineer the binaries 
 it produces to extract the original source code! Distribution Builder 
 has a core built-in feature to mitigate this risk for you: *code obfuscation*.
+
+### obfuscatePy
  
 To generate an obfuscated version of your project (without 
 converting it to binary) invoke obfuscatePy:
@@ -225,6 +111,8 @@ so that you may inspect and test the obfuscation results
 before building the final distribution package.
                
 ## Library Obfuscation  
+
+### obfuscatePyLib
 
 To generate an obfuscated version of your project, which 
 you can then distribute as an importable library, invoke 
@@ -257,8 +145,10 @@ obfuscatePyLib:
 
 ## Library Installation  
  
+### installLibrary
+ 
 To install a library (via pip), invoke installLibrary.
-Note: that installLibraries (pural) may used to install
+Note: that installLibraries (plural) may used to install
 multiple libraries in a single call.  
     
     installLibrary( name, opyConfig=None, pipConfig=PipConfig() )
@@ -272,7 +162,7 @@ multiple libraries in a single call.
     specify "." instead.  If you wish to install a
     remote package registered with pip (i.e. the typical way pip 
     is used), simply supply the name.
-    If you wish to use a local path, or a specifc url (http/git), 
+    If you wish to use a local path, or a specific url (http/git), 
     see [PipConfig](#pipconfig) (and perhaps the pip documentation 
     for details).               
     
@@ -302,16 +192,21 @@ multiple libraries in a single call.
     repository in place of the simple package name.  
     See [editable installs](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs)  
 
+### installLibraries
+
 	installLibraries( *libs )
 
-This function is a convenience wrapper over installLibrary (singluar) function.
+This function is a convenience wrapper over installLibrary (singular) function.
+One of the primary uses for this function is to ensure that the product to be
+created by a build script is being run in an environment which has all of its
+dependencies. 
 	    
 **Returns: None**
 
 ***libs**: This function is extremely flexible in terms of how 
-   it may be invoked. The libs argment maybe a tuple, a list,
+   it may be invoked. The libs argument maybe a tuple, a list,
    or a series of arguments passed directly to the function 
-   of arbitrary lenth.  The arguments or collection may consist of 
+   of arbitrary length.  The arguments or collection may consist of 
    simple strings (i.e. the library names), or be tuples / dictionaries
    themselves.  When passing tuples, or dictionaries, they will be
    treated as the argument list to installLibrary().
@@ -347,7 +242,6 @@ component parts. This is to be used in conjunction
 with the PipConfig attribute asSource.
 See https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support
 
-
 ## Obfuscation Features 
 
 The Opy Library contains an [OpyConfig](#opyconfig) class, which has been extended
@@ -371,6 +265,8 @@ you are encountering, you may simply define a list of "OpyPatch"
 objects for the configuration.  They will be applied at the end 
 of the process to fix any problems. An [OpyPatch](#opypatch) is created via:
 
+### OpyPatch
+
     OpyPatch( relPath, patches, parentDir=OBFUS_DIR_PATH )
     
 relPath: The relative file path within the obfuscation 
@@ -392,6 +288,8 @@ used in combination with sourceDir to create a "staging directory".
 The bundleLibs attributes may be either None or a list of     
 "LibToBundle" objects. [LibToBundle](#libtobundle) objects maybe created via: 
 
+### LibToBundle
+
     LibToBundle( name, localDirPath=None, pipConfig=None, 
                  isObfuscated=False )
 
@@ -412,6 +310,8 @@ creating such an object as well.
 **isObfuscated**: A boolean indicating if the library is *already* 
     obfuscated, and therefore may be bundled as is.  
 
+### createStageDir
+
 In the event that defining bundleLibs for an OpyConfig object will 
 not suffice to setup your staging directory, you may instead call:      
 
@@ -427,6 +327,7 @@ Note that the OpyConfig external_modules list attribute must still
 be set in such a manner to account for the libraries which were 
 bundled, or which remain as "external" imports.
                 
+-------------------------------------------------------      
 ## Installers 
             
 Upon creating a distribution (especially a stand-alone executable), 
@@ -437,6 +338,8 @@ for such purposes. While the prototypical implementation of this
 tool is with a Qt C++ program, it is equally usable for a Python
 program (especially if using "Qt for Python", and a QML driven 
 interface...).  
+
+### buildInstaller
 
     buildInstaller( qtIfwConfig, isPkgSrcRemoved=False )
 
@@ -461,8 +364,10 @@ interface...).
      indicates that the installer definition (or at least part 
      of it) already exists and is to be used.  Dynamic components
      can be defined via attributes for the nested objects of type
-     [QtIfwConfigXml](#qtifwconfigxml), [QtIfwPackageXml](#qtifwpackagexml), 
-     and [QtIfwPackageScript](#qtifwpackagescript).                                  
+     [QtIfwConfigXml](ConfigClasses.md#qtifwconfigxml), 
+     [QtIfwPackage](ConfigClasses.md#qtifwpackage),
+     [QtIfwPackageXml](ConfigClasses.md#qtifwpackagexml), 
+     and [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript).                                  
      Other key attributes include the "pkgName", which is
      the sub directory where your content will be 
      dynamically copied to within the installer, and the 
@@ -474,9 +379,36 @@ interface...).
     package source content directory should be deleted 
     after successfully building the installer.   
 
+### QtIfwPackage list manipulation
+
+These functions are useful within an overridden version of
+`onPyToBinPkgsBuilt` in a [RobustInstallerProcess](HighLevel.md#robustinstallerprocess), 
+object
+	
+	findQtIfwPackage( pkgs, pkgId )
+	
+**Returns**: [QtIfwPackage](ConfigClasses.md#qtifwpackage) object 
+within the *pkgs* argument with the id supplied by *pkgId*.   
+	
+	removeQtIfwPackage( pkgs, pkgId )
+
+Removes the [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
+within the *pkgs* argument with the id supplied by *pkgId*.   
+	
+	mergeQtIfwPackages( pkgs, srcId, destId )
+	
+Merges the [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
+objects within the *pkgs* argument with the ids supplied by 
+*srcId* and *destId*.  "Merging" entails a recurvise 
+directory merge of the source into the targe via [mergeDirs](#mergeDirs)
+as well as combining the [QtIfwShortcut](ConfigClasses.md#qtifwshortcut)    
+list nested inside the [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript)
+objects.	
+
+-------------------------------------------------------      
 ## Testing
 
-### Stand-alone Executables 
+### run 
 
 Upon creating a binary with PyInstaller, use the
 following to test the success of the operation:  
@@ -497,9 +429,9 @@ If omitted (or None), the working directory will be
 automatically set to that of the binary path specified.  
 
 **isElevated**: Boolean (option) to run the binary with 
-elevated priviledges.
+elevated privileges.
 
-**isDebug**: Boolean (option) for explictly displaying 
+**isDebug**: Boolean (option) for explicitly displaying 
 standard output and standard error messages. Set this
 to `True` to debug a PyInstaller binary which
 was created with `pyInstConfig.isGui` set to `True`.
@@ -522,7 +454,7 @@ inoperable e.g. Eclipse/PyDev on Windows, in which case
 simply run the build script directly from the terminal
 when employing isDebug.  
 
-### Obfuscated scripts  
+### runPy   
 
 Upon creating a Python obfuscation, you may wish the 
 to test the success of that operation. The following
@@ -538,12 +470,12 @@ the results of that to flow directly into this function.
 (or a flat string) to pass along to your program.  
 
 **isElevated**: Boolean (option) to run the binary with 
-elevated priviledges.
+elevated privileges.
    
 The working directory will be automatically set to 
 the directory of the python script.  
 
-### Installers
+### Testing installers
 
 The following two options are available for a QtIFW installer:
   
@@ -557,11 +489,14 @@ The following two options are available for a QtIFW installer:
    to `True` for verbose output (note this should 
    currently be the be the default now).
 
+-------------------------------------------------------      
 ## Archives and Distribution
 
 Once you have a fully built distribution package, the 
 following functions provide an easy means for further 
 preparing the program for distribution:   
+
+### toZipFile
 
     toZipFile( sourceDir, zipDest=None, removeScr=True )
 
@@ -578,46 +513,101 @@ preparing the program for distribution:
 **removeScr**: Option to delete the sourceDir after
     creating the zip of it. Note this is the 
     default behavior.
-
-    moveToDesktop( path )            
-    
-**Returns**: the new path to the file or directory.        
-
-Moves a file or directory to the desktop.
-(Note: it *moves* the path specified, it does
-not leave a copy of the source). This
-*Replaces* any existing copy found at the 
-destination path.
-        
-    moveToHomeDir( path )            
-    
-**Returns**: the new path to the file or directory.        
-
-Moves a file or directory to the current user's home directory.
-(Note: it *moves* the path specified, it does
-not leave a copy of the source). This
-*Replaces* any existing copy found at the 
-destination path.
                 
 *TODO: Add git commit/push...*    
                                                                   
-## Low-Level Utilities
+-------------------------------------------------------      
+## Utilities
 
 The following low level "utilities" are also provided for 
 convenience, as they maybe useful in defining the build 
 parameters, further manipulating the package, or testing 
 the results, etc.   
 
+### absPath
+
     THIS_DIR 
     
-The path to the directory running the build script. 
-(This should be the path to your project directory.) 
+The path to the directory which contains the build script. 
 
-    absPath( relPath )
+    absPath( relativePath, basePath=None )
     
-The absolute path relative to THIS_DIR (which is not 
-necessarily the current working directory).  
+Covert a relative path to an absolute path. If a `basePath` 
+is not specified, the path is re resolved relative to `THIS_DIR` 
+(which may or **MAY NOT** be the *current working directory*).  
 
+### Copy or Move To Dir
+
+    copyToDir( srcPaths, destDirPath )
+    
+**Returns**: the destination path(s) to the file(s) / directory(ies).        
+
+Copies files OR directories to a given destination.
+The argument srcPaths may be a singular path (i.e. a string)
+or an iterable (i.e. a list or tuple). This *replaces* any existing 
+copy found at the destination path.  When relative paths are specified,
+they are resolved via [absPath](#absPath).
+      
+    moveToDir( srcPaths, destDirPath )
+        
+Moves files OR directories to a given destination.
+The argument srcPaths may be a singular path (i.e. a string)
+or an iterable (i.e. a list or tuple).  (Note: it *moves* the 
+path specified, it does not leave a copy of the source). This
+*replaces* any existing copy found at the destination path.
+When relative paths are specified, they are resolved via [absPath](#absPath).
+
+    copyToDesktop( path )            
+	moveToDesktop( path )
+    copyToHomeDir( path )   
+    moveToHomeDir( path )
+
+Convenience wrapper functions which directly imply the destination.
+
+### removeFromDir 
+    
+	removeFromDir( subPaths, parentDirPath )
+
+Removes files OR directories from a given directory.
+The argument subPaths may be a singular path (i.e. a string)
+or an iterable (i.e. a list or tuple).  A `subPath` argument must be 
+relative to the `parentDirPath`.
+When relative paths are specified for `parentDirPath`, 
+they are resolved via [absPath](#absPath).
+
+### renameInDir 
+
+	renameInDir( namePairs, parentDirPath )
+
+Renames files OR directories with a given directory.
+The argument namePairs may be a singular tuple (oldName, newName)
+or an iterable (i.e. a list or tuple) of such tuple pairs. 
+When relative paths are specified for `parentDirPath`, 
+they are resolved via [absPath](#absPath).
+
+### collectDirs 
+
+	collectDirs( srcDirPaths, destDirPath ) 
+	
+Moves a list of directories into a common parent directory.
+That parent directory will be created is it does not exist.
+When relative paths are specified or `parentDirPath`, 
+they are resolved via [absPath](#absPath).
+
+### mergeDirs
+
+	mergeDirs( srcDirPaths, destDirPath, isRecursive=True )
+	
+Move the contents of a source directory into a target directory, 
+over writing the target contents where applicable.
+If performed recursively, the destination contents contained 
+within a merged sub directory target are all preserved. Otherwise,
+the source sub directories replace the target sub directories as
+whole units. When relative paths are specified, 
+they are resolved via [absPath](#absPath).
+        
+### normBinaryName
+    
 	normBinaryName( path, isPathPreserved=False, isGui=False )
 	
 The "normalized" name of a binary, resolving such for
@@ -628,6 +618,8 @@ normally have a ".app" extension (vs none when they do not have
 a GUI).  That additional logic is applied when `isGui` is True. 
 When `isPathPreserved` is True, the entire path is returned rather 
 than only the file name.
+
+### Module import utilities 
 
     modulePath( moduleName )
     
@@ -661,7 +653,7 @@ than a more universal path resolution.
 
     isImportableModule( moduleName )
     isImportableFromModule( moduleName, memberName )            
-
+ 
 Attempts the import, and returns a boolean indication
 of success without raising an exception upon failure.  
 Like the related functions here, the arguments are 
@@ -669,6 +661,17 @@ expected to be strings (not direct references).
 The purpose of this to test for library installation
 success, or to preemptively confirm the presence
 of dependencies.
+
+### halt
+	
+	halt()
+	
+Immediately stops execution of the script.
+This can be useful for debugging, since it is typical
+to the use library for auto generating and purging files
+which you might want to inspect along the way. 	 
+
+### printErr, printExc
 
     printErr( msg, isFatal=False )
 
@@ -684,11 +687,11 @@ prints a stack trace as well when isDetailed=True.
 Note: use printErr( e ) to print just an exception 
 "message". 
 
-    Library Function       Alias For (Standard Function)
+### Aliased standard python functions
                 
         exists                 os.path.exists 
         isFile                 os.path.isfile
-        isDir                  os.path.exists and not os.path.isfile
+        isDir                  exists AND not isFile
         copyFile               shutil.copyFile 
         removeFile             os.remove
         makeDir                os.makedirs
@@ -701,368 +704,3 @@ Note: use printErr( e ) to print just an exception
         joinPath               os.path.join
         splitPath              os.path.split
         splitExt               os.path.splitext 
- 
-## Configuration Classes
-
-The following classes are used to create objects which
-are employed as arguments to various functions within the library.
-Many of these can be generated for you using the [Configuration Factory](#configuration-factory).
-
--------------------------------------------------------
-### PyInstallerConfig    
-
-Objects of this type define *optional* details for building 
-binaries from .py scripts using the PyInstaller utility 
-invoked via the buildExecutable function. 
-
-Note that if a [PyInstSpec](#pyinstspec) attribute is provided for one of 
-these objects, the  build settings contained within such will **override** 
-any that conflict with those supplied via the other attributes set directly 
-in the object.  PyInstSpec objects may be created by supplying 
-a traditional (perhaps legacy) spec file definition, or you may wish to 
-generate one with distbuilder via the makePyInstSpec() function.  
-In either case, you may also opt to dynamically manipulate the spec via 
-the implementation of that class. 
-
-Constructor: 
-
-    PyInstallerConfig()
-
-Attributes & default values:        
-
-    pyInstallerPath = <python scripts directory>/pyinstaller
-      
-    name            = None   
-    entryPointPy    = None
-
-    pyInstSpec      = None
-	
-    isGui           = False
-    iconFilePath    = None
-      
-    versionInfo     = None
-    versionFilePath = None
-           
-    distDirPath     = None    
-    isOneFile       = True     (note this differs from PyInstaller default)
-      
-    importPaths     = []
-    hiddenImports   = []
-    dataFilePaths   = []
-    binaryFilePaths = []
-      
-    isAutoElevated  = False        
-    otherPyInstArgs = ""  (open ended argument string)    
-
-    (Not directly fed into the utility. Employed by buildExecutable function.)
-    _pngIconResPath = None
-    distResources   = []
-    distDirs        = [] 
-	isSpecFileRemoved = False
-
-### PyInstSpec:
-
-Objects of this type are used for PyInstaller spec file
-parsing, and programmatic manipulation.  This class provides
-an easy mechanism for applying known PyInstaller patches, 
-as well as convenient mechanisms for applying custom 
-revisions for similar purposes.  
-
-Constructor: 
-
-    PyInstSpec( filePath=None, pyInstConfig=None, content=None ) 
-
-Attributes & default values:
-        
-    filePath     = None
-    pyInstConfig = None 
-    content 	 = None
-
-Static Method:
-    
-    cfgToPath( pyInstConfig )
-
-Object Methods:
-
-	path()
-	read()
-	write()
-    debug()
-    
-    injectDuplicateDataPatch()
-    
-    _toLines()
-    _fromLines( lines )
-	_injectLine( injection, lineNo )
-	_parseAssigments() 
-
-### WindowsExeVersionInfo
-
-Objects of this type define metadata branded into Windows 
-executables. This is the object type intended for 
-PyInstallerConfig.versionInfo attributes. 
-
-Constructor: 
-
-    WindowsExeVersionInfo()
-
-Attributes & default values:        
-
-	major = 0
-    minor = 0
-    micro = 0
-    build = 0
-    companyName = ""
-    productName = ""
-    description = ""
-    exeName     = ""
-
--------------------------------------------------------
-### QtIfwConfig 
-
-Objects of this type define the details for building 
-an installer using the QtIFW utility invoked via the
-buildInstaller function. 
-
-Constructor: 
-
-    QtIfwConfig( pkgSrcDirPath=None, pkgSrcExePath=None,                  
-                 pkgName=None, installerDefDirPath=None,
-                 configXml=None, pkgXml=None, pkgScript=None,
-                 setupExeName=DEFAULT_SETUP_NAME  ) 
-                     
-Attributes & default values:                                               
-
-    pkgName             = None
-    installerDefDirPath = "installer"
-	configXml           = None
-	pkgXml              = None
-	pkgScript           = None     
-        
-    pkgSrcDirPath   = None
-    pkgSrcExePath   = None
-    othContentPaths = None                     
-
-    exeName      = None   
-    setupExeName = "setup"
-
-    qtIfwDirPath = None    (attempt to use environmental variable QT_IFW_DIR)
-
-    isDebugMode    = True
-    otherqtIfwArgs = ""
-
-    isQtCppExe     = False
-    isMingwExe     = False
-    qtBinDirPath   = None  (attempt to use environmental variable QT_BIN_DIR)
-    qmlScrDirPath  = None  (for QML projects only)                    
-
-### QtIfwConfigXml 
-
-Objects of this type define the contents of a QtIFW 
-config.xml which will be dynamically generated 
-when invoking the buildInstaller function. This file 
-represents the highest level definition of a QtIFW 
-installer, containing information such as the product 
-name and version. Most of the attributes in these 
-objects correspond directly to the name of tags 
-added to config.xml.  Attributes with None values
-will not be written, otherwise they will be.
-
-Constructor:                
-
-    QtIfwConfigXml( name, exeName, version, publisher,
-                    iconFilePath=None, isGui=True,
-                    companyTradeName=None ) 
-              
-Attributes:    
-
-    exeName (used indirectly w/ isGui)
-    iconFilePath  (used indirectly)
-    companyTradeName (used indirectly)
-    Name                     
-    Version                  
-    Publisher                
-    InstallerApplicationIcon  (icon base name, i.e. omit extension)
-    Title                    
-    TargetDir                
-    StartMenuDir             
-    RunProgram               
-    RunProgramDescription    
-    runProgramArgList  (used indirectly)
-    otherElements (open end dictionary of key/value pairs to inject)
-
-Convenience functions:
-
-    setDefaultVersion()
-    setDefaultTitle()    
-    setDefaultPaths()
- 
-### QtIfwPackageXml
-
-Objects of this type define the a QtIFW package.xml 
-file which will be dynamically generated 
-when invoking the buildInstaller function. This file
-defines a component within the installer which maybe
-selected by the user to install. Most of the attributes 
-in these objects correspond directly to the name of tags 
-added to package.xml. Attributes with None values
-will not be written, otherwise they will be.
-
-Constructor:       
-
-	QtIfwPackageXml( pkgName, displayName, description, version, 
-					 scriptName=None, isDefault=True )
-                  
-Attributes & default values:      
-
-	pkgName = <required>
-               
-	DisplayName   = <required>
-	Description   = <required>
-	Version       = <required>            
-	Script        = None 
-	Default       = True
-	ReleaseDate   = date.today()
-
-### QtIfwPackageScript
-
-Objects of this type are used to dynamically generate
-a script used by a QtIFW package. Scripts are able
-to perform the most sophisticated customizations
-for an installer. 
-
-For maximum flexibility, you may directly define the 
-entire script, by setting the "script" attribute.  Or,
-you specify a source to an external file instead.  Also,
-you may always delegate scripts to a traditional QtIFW 
-definition.
-
-This class currently has very limited functionality,
-but in the future more options will be provided for
-automating the generation common script directives.  
-
-Constructor:       
-
-	QtIfwPackageScript( pkgName, fileName="installscript.qs", 
-                        exeName=None, isGui=True, 
-                        script=None, scriptPath=None )
-                  
-Attributes & default values:      
-
-	pkgName  = <required>
-    fileName = "installscript.qs"
-    
-    script = None <or loaded via scriptPath>
-    
-    exeName = None   
-    isGui   = True
-    
-    exeVersion     = "0.0.0.0"
-    pngIconResPath = None
-    
-    isAppShortcut     = True
-    isDesktopShortcut = False
-
-    componentConstructorBody = None
-    isAutoComponentConstructor = True
-    
-    componentCreateOperationsBody = None
-    isAutoComponentCreateOperations = True        
-                                                                          
--------------------------------------------------------      
-### PipConfig
-
-Objects of this type define the details for downloading
-and/or installing Python libraries via the pip utility.
-These objects are used directly by the installLibrary 
-function as well indirectly via the obfuscation functions
-and support classes.
-    
-Constructor:
-
-    PipConfig( source = None
-             , version = None
-             , verEquality = "==" 
-             , destPath = None
-             , asSource = False
-             , incDependencies = True        
-             , isForced= False
-             , isCacheUsed = True                
-             , isUpgrade = False
-             , otherPipArgs = "" ) 
-
-Attributes:                        
-
-    pipCmdBase = "[PYTHON BINARY PATH]" -m pip
-    source          
-    version         
-    verEquality     
-    destPath        
-    asSource        
-    incDependencies       
-    isForced 
-    isCacheUsed                  
-    isUpgrade      
-    otherPipArgs  (open ended argument string)      
-         
-------------------------------------------------------- 
-### OpyConfig
-    
-Objects of this type define obfuscation details for 
-use by the Opy Library.
-**Refer to the documentation for that library for details.**
-
-This library **EXTENDS** the natural OpyConfig, however,
-adding the attributes / features described below.
-See [Obfuscation Features](#obfuscation-features) for a 
-description of how objects of this type are used.
-
-Constructor:        
-
-    OpyConfig( name, entryPointPy=None,
-               bundleLibs=None, sourceDir=None, patches=None )
-
-Attributes:                
-
-	name
-	entryPointPy
-    bundleLibs (list of LibToBundle objects)
-    sourceDir (dynamically defined when ommited)
-    patches (list of OpyPatch objects)
-
-### OpyPatch
-
-See [Obfuscation Features](#obfuscation-features) for a 
-description of how objects of this type are used.
-    
-Constructor:
-
-    OpyPatch( relPath, patches, parentDir=OBFUS_DIR_PATH )
-        
-Attributes:                    
-
-    relPath 
-    path    
-    patches 
-    
-Convenience functions:
-
-    obfuscatePath( obfuscatedFileDict )        
-    apply()
-
-### LibToBundle 
-
-See [Obfuscation Features](#obfuscation-features) for a 
-description of how objects of this type are used.
-
-Constructor:
-
-    LibToBundle( name, localDirPath=None, pipConfig=None, isObfuscated=False )
-    
-Attributes:                    
-
-    name         
-    localDirPath 
-    pipConfig    
-    isObfuscated 
-
