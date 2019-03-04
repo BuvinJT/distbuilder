@@ -114,7 +114,6 @@ Attributes & default values:
     description = ""
     exeName     = ""
 
--------------------------------------------------------
 ## QtIfwConfig 
 
 Objects of this type define the details for building 
@@ -317,7 +316,6 @@ Attributes & default values:
     isAppShortcut     = True
     isDesktopShortcut = False
 
--------------------------------------------------------      
 ## PipConfig
 
 Objects of this type define the details for downloading
@@ -352,8 +350,7 @@ Attributes:
     isCacheUsed                  
     isUpgrade      
     otherPipArgs  (open ended argument string)      
-         
-------------------------------------------------------- 
+          
 ## OpyConfig
     
 Objects of this type define obfuscation details for 

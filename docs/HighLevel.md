@@ -85,7 +85,7 @@ of code.
 
 This process class converts a program written as standard Python
 scripts int to a stand-alone executable binary.  It additionally
-has built-ing options for employing obfustication, for testing the 
+has built-in options for employing obfuscation, for testing the 
 resulting product, and for primitive "bundling" into an archive.  
 The process uses a [ConfigFactory](#configfactory) to automatically 
 produce the config objects it requires, but allows a client to modify
@@ -126,17 +126,17 @@ Simply invoke the `run()` function to execute the process.
 This process contains a [PyToBinPackageProcess](#PyToBinPackageProcess)
 within it, and thus provides the full functionality of that.    
 In addition, however, this also rolls the product of that process within
-a fullfleded installer.  Like the other process classes, this uses a
+a full fledge installer.  Like the other process classes, this uses a
 [ConfigFactory](#configfactory) to automatically produce the config 
 objects it requires, but allows a client to modify those objects before 
 they are implemented by defining a derived class and overriding certain 
 functions as needed for this purpose.       
 
-This process is basically a simplflied version of a
+This process is basically a simplified version of a
 [RobustInstallerProcess](#RobustInstallerProcess).  Use that instead
-if you need to build an installable distrubtion which does NOT involve
+if you need to build an installable distribution which does NOT involve
 a Python to binary conversion process (e.g. packaging binaries
-produced in another langauge with some other compiler), or if
+produced in another language with some other compiler), or if
 you need to produce multiple binaries or installable "packages" bundled 
 together. 
   
@@ -176,11 +176,11 @@ Simply invoke the `run()` function to execute the process.
 
 ### RobustInstallerProcess
 
-This process is intended for use you need to produce multiple binaries 
+This process is intended for use when you need to produce multiple binaries 
 from Python scripts and/or multiple installable "packages" bundled together.  
-It is also usueful building an installable distrubtion which does NOT involve
+It is also useful building an installable distribution which does NOT involve
 a Python to binary conversion process (e.g. packaging binaries
-produced in another langauge with some other compiler).
+produced in another language with some other compiler).
   
 Constructor:
 

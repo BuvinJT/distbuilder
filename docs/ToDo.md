@@ -8,18 +8,18 @@
 explictly (maybe a PyInstaller wrapper?) so the user does not have to pass a 
 switch. 
 
-* Continue to expand upon the documentation, especially with
-regard to the various configuration options.
+* Test (and develop as needed) QtIFW packges for Qt C++ exes, 
+to confirm auto dependency collection (include QML based projects).
 
 ## Moderate Priority
+
+* Continue to expand upon the documentation, especially with
+regard to the high level classes and the various configuration options.
 
 * Test (and develop as needed) QtIFW packges which: 
 	* do not install shortcuts
 	* are not enabled for install by default
 	* contain only "data" (no exe)
-
-* Test (and develop as needed) QtIFW packges for Qt C++ exes, 
-to confirm auto dependency collection (include QML based projects).
 
 * Test on more Linux distros
 

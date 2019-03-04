@@ -80,8 +80,7 @@ invoke the makePyInstSpec function:
 	providing supplemental details regarding the spec file
 	creation.  Be sure to include this if you desire obfuscation
 	and will be subsequently invoking the buildExecutable function.
-
--------------------------------------------------------      	                    
+      	                    
 ## Executable Obfuscation
 
 PyInstaller is a truly amazing utility, but it has a significant
@@ -326,8 +325,7 @@ staging path while leaving bundleLibs as None in the configuration.
 Note that the OpyConfig external_modules list attribute must still 
 be set in such a manner to account for the libraries which were 
 bundled, or which remain as "external" imports.
-                
--------------------------------------------------------      
+                      
 ## Installers 
             
 Upon creating a distribution (especially a stand-alone executable), 
@@ -404,8 +402,7 @@ directory merge of the source into the targe via [mergeDirs](#mergeDirs)
 as well as combining the [QtIfwShortcut](ConfigClasses.md#qtifwshortcut)    
 list nested inside the [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript)
 objects.	
-
--------------------------------------------------------      
+      
 ## Testing
 
 ### run 
@@ -488,8 +485,7 @@ The following two options are available for a QtIFW installer:
    the installer, try setting `qtIfwConfig.isDebugMode` 
    to `True` for verbose output (note this should 
    currently be the be the default now).
-
--------------------------------------------------------      
+      
 ## Archives and Distribution
 
 Once you have a fully built distribution package, the 
@@ -515,8 +511,7 @@ preparing the program for distribution:
     default behavior.
                 
 *TODO: Add git commit/push...*    
-                                                                  
--------------------------------------------------------      
+                                                                        
 ## Utilities
 
 The following low level "utilities" are also provided for 
