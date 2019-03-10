@@ -23,6 +23,7 @@ from distbuilder.qt_installer import \
       buildInstaller \
     , QtIfwConfig \
     , QtIfwConfigXml \
+    , QtIfwControlScript \
     , QtIfwPackage \
     , QtIfwPackageXml \
     , QtIfwPackageScript \
@@ -60,19 +61,25 @@ class ConfigFactory:
         self.distResources = []
         self.specFilePath  = None
         
+        self.isSilentSetup = False
         self.setupName     = DEFAULT_SETUP_NAME
         self.ifwDefDirPath = None        
         self.ifwPackages   = None
+        
+        self.ifwCntrlScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
+        self.ifwCntrlScript     = None
+        self.ifwCntrlScriptPath = None
 
         self.ifwPkgId         = None
         self.ifwPkgName       = None
-        self.ifwPkgNamePrefix = "com"
+        self.ifwPkgNamePrefix = "com"        
+       
+        self.ifwPkgScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
+        self.ifwPkgScript     = None
+        self.ifwPkgScriptPath = None        
+        
         self.pkgSrcDirPath    = None
-        
-        self.ifwScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
-        self.ifwScript     = None
-        self.ifwScriptPath = None
-        
+       
         self.__pkgPyInstConfig = None
                             
     def pyInstallerConfig( self ): 
@@ -109,13 +116,15 @@ class ConfigFactory:
         return QtIfwConfig( installerDefDirPath=self.ifwDefDirPath,
                             packages=self.ifwPackages,
                             configXml=self.qtIfwConfigXml(), 
+                            controlScript=self.qtIfwControlScript(),
                             setupExeName=self.setupName ) 
 
     def qtIfwConfigXml( self ) :
-        xml = QtIfwConfigXml( self.productName, self.binaryName, 
+        xml = QtIfwConfigXml( self.productName,  
                               self.__versionStr(), self.companyLegalName, 
                               iconFilePath=self.iconFilePath, 
-                              isGui=self.isGui,                               
+                              primaryContentExe=self.binaryName,
+                              isGuiPrimaryContentExe=self.isGui,                               
                               companyTradeName=self.companyTradeName )
         if xml.RunProgram is None and self.ifwPackages is not None:
             firstPkg = self.ifwPackages[0]
@@ -125,6 +134,17 @@ class ConfigFactory:
             xml.setDefaultPaths()
         return xml
 
+    def qtIfwControlScript( self ) :
+        if( not self.isSilentSetup and
+            self.ifwCntrlScript is None and 
+            self.ifwCntrlScriptPath is None ):
+            return None     
+        return QtIfwControlScript(
+                isAutoPilotMode = self.isSilentSetup,
+                fileName=self.ifwCntrlScriptName,
+                script=self.ifwCntrlScript, 
+                scriptPath=self.ifwCntrlScriptPath )
+        
     def qtIfwPackage( self, pyInstConfig=None, isTempSrc=False ):
         self.__pkgPyInstConfig = pyInstConfig
         pkg = QtIfwPackage(
@@ -141,7 +161,7 @@ class ConfigFactory:
     def qtIfwPackageXml( self ) :
         return QtIfwPackageXml( self.__ifwPkgName(), 
                 self.productName, self.description, 
-                self.__versionStr(), self.ifwScriptName )
+                self.__versionStr(), self.ifwPkgScriptName )
     
     def qtIfwPackageScript( self, pyInstConfig=None ) :
         self.__pkgPyInstConfig = pyInstConfig
@@ -156,9 +176,9 @@ class ConfigFactory:
                         pngIconResPath=pngIconResPath )  
         script = QtIfwPackageScript( self.__ifwPkgName(), 
                     shortcuts=[ defShortcut ],
-                    fileName=self.ifwScriptName,
-                    script=self.ifwScript, 
-                    scriptPath=self.ifwScriptPath )
+                    fileName=self.ifwPkgScriptName,
+                    script=self.ifwPkgScript, 
+                    scriptPath=self.ifwPkgScriptPath )
         return script
             
     def __versionStr( self ):

@@ -54,6 +54,8 @@ XML config classes.
 
 * Add the option to build projects outside of the build script directory.  
 
+* Finish run elevated logic. 
+
 ## Wish List		
 
 * Add a Py2Exe wrapper as alternative to PyInstaller.

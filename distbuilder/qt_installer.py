@@ -46,12 +46,17 @@ class QtIfwConfig:
     
     def __init__( self, 
                   installerDefDirPath=None,
-                  packages=None,
-                  configXml=None, 
+                  packages=None,                  
+                  configXml=None,
+                  controlScript=None, 
                   setupExeName=DEFAULT_SETUP_NAME ) :       
         self.installerDefDirPath = installerDefDirPath
         self.packages            = packages # list of QtIfwPackages or directory paths
-        self.configXml           = configXml        
+        self.configXml           = configXml
+        self.controlScript       = controlScript         
+        if self.controlScript and self.configXml: 
+            self.configXml.ControlScript = self.controlScript.fileName  
+        
         self.setupExeName        = setupExeName
         # Qt paths (attempt to use environmental variables if not defined)
         self.qtIfwDirPath = None
@@ -133,25 +138,33 @@ class QtIfwConfigXml( _QtIfwXml ):
                    , "TargetDir"
                    , "StartMenuDir"             
                    , "RunProgram" # RunProgramArguments added separately...
-                   , "RunProgramDescription"                                 
+                   , "RunProgramDescription"
+                   , "ControlScript"                                 
                    ]
     __RUN_ARGS_TAG = "RunProgramArguments"
     __ARG_TAG      = "Argument"
         
-    def __init__( self, name, exeName, version, publisher,
-                  iconFilePath=None, isGui=True,
+    def __init__( self, name, version, publisher,
+                  iconFilePath=None, 
+                  controlScriptName=None,
+                  primaryContentExe=None,
+                  isGuiPrimaryContentExe=True,
                   companyTradeName=None ) :
         _QtIfwXml.__init__( self, QtIfwConfigXml.__ROOT_TAG, 
                             QtIfwConfigXml.__TAGS )
        
-        self.exeName = ( util.normBinaryName( exeName, isGui=isGui )
-                         if exeName else None )
+        self.primaryContentExe = ( 
+            util.normBinaryName( primaryContentExe, 
+                                 isGui=isGuiPrimaryContentExe )
+            if primaryContentExe else None )
+        
         if IS_LINUX :
             # qt installer does not support icon embedding in Linux
             iconBaseName = self.iconFilePath = None
         else :    
-            self.iconFilePath = util._normIconName( iconFilePath, 
-                                                    isPathPreserved=True )        
+            self.iconFilePath = ( None if iconFilePath is None else 
+                                  util._normIconName( iconFilePath, 
+                                                      isPathPreserved=True ) )        
             try:    iconBaseName = splitExt( basename(iconFilePath) )[0]
             except: iconBaseName = None
         self.companyTradeName = ( companyTradeName if companyTradeName 
@@ -162,7 +175,8 @@ class QtIfwConfigXml( _QtIfwXml ):
         self.Name                     = name
         self.Version                  = version
         self.Publisher                = publisher
-        self.InstallerApplicationIcon = iconBaseName 
+        self.InstallerApplicationIcon = iconBaseName
+        self.ControlScript            = controlScriptName 
         self.Title                    = None        
         self.TargetDir                = None        
         self.StartMenuDir             = None
@@ -196,11 +210,11 @@ class QtIfwConfigXml( _QtIfwXml ):
         if IS_WINDOWS:
             if self.companyTradeName is not None :
                 self.StartMenuDir = self.companyTradeName
-        if self.exeName is not None: 
+        if self.primaryContentExe is not None: 
             # NOTE: THE WORKING DIRECTORY IS NOT SET FOR RUN PROGRAM!
             # THERE DOES NOT SEEM TO BE AN OPTION YET FOR THIS IN QT IFW   
-            programPath = "@TargetDir@/%s" % (self.exeName,)    
-            if util._isMacApp( self.exeName ):   
+            programPath = "@TargetDir@/%s" % (self.primaryContentExe,)    
+            if util._isMacApp( self.primaryContentExe ):   
                 self.RunProgram = util._LAUNCH_MACOS_APP_CMD 
                 if not isinstance( self.runProgramArgList, list ) :
                     self.runProgramArgList = []
@@ -305,17 +319,291 @@ class QtIfwPackageXml( _QtIfwXml ):
                       % (INSTALLER_DIR_PATH, self.pkgName) ) )     
 
 # -----------------------------------------------------------------------------
-class QtIfwPackageScript:
+@six.add_metaclass(ABCMeta)
+class _QtIfwScript:
     
-    __DIR_TMPLT  = "%s/packages/%s/meta"
-    __PATH_TMPLT = __DIR_TMPLT + "/%s"
-
     # an example for use down the line...
     __LINUX_GET_DISTRIBUTION = ( 
 """
         var IS_UBUNTU   = (systemInfo.productType === "ubuntu");
         var IS_OPENSUSE = (systemInfo.productType === "opensuse");             
 """ )
+
+    def __init__( self, fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
+                  script=None, scriptPath=None ) :
+        self.fileName = fileName
+        if scriptPath :
+            with open( scriptPath, 'rb' ) as f: self.script = f.read()
+        else : self.script = script  
+                                                    
+    def __str__( self ) : 
+        if not self.script: self._generate()
+        return self.script
+        
+    def write( self ):
+        pkgDir = self.dirPath()
+        if not isDir( pkgDir ): makeDir( pkgDir )
+        with open( self.path(), 'w' ) as f: 
+            f.write( str(self) ) 
+    
+    def debug( self ): print( str(self) )
+
+    @abstractmethod        
+    def _generate( self ) : """PURE VIRTUAL"""        
+        
+    @abstractmethod
+    def path( self )      : """PURE VIRTUAL""" 
+        
+    @abstractmethod
+    def dirPath( self )   : """PURE VIRTUAL"""     
+
+# -----------------------------------------------------------------------------
+
+class QtIfwControlScript( _QtIfwScript ):
+    
+    __DIR_TMPLT  = "%s/config"
+    __PATH_TMPLT = __DIR_TMPLT + "/%s"
+    
+    __PAGE_CALLBACK_FUNC_TMPLT = (
+"""    
+Controller.prototype.%sPageCallback = function() {
+    %s
+}\n
+""" )
+                    
+    __SILENT_CONSTRUCTOR_BODY = ( 
+"""
+    installer.setMessageBoxAutomaticAnswer("OverwriteTargetDirectory", QMessageBox.Yes);
+    installer.setMessageBoxAutomaticAnswer("stopProcessesForUpdates", QMessageBox.Ignore);        
+    installer.installationFinished.connect(function() {
+        gui.clickButton(buttons.NextButton);
+    });
+""" )
+    
+    __CLICK_BUTTON_TMPL       = "gui.clickButton(%s);"
+    __CLICK_BUTTON_DELAY_TMPL = "gui.clickButton(%s, %d);"
+
+    _NEXT_BUTTON   = "buttons.NextButton"
+    _BACK_BUTTON   = "buttons.BackButton"
+    _CANCEL_BUTTON = "buttons.CancelButton"
+    _FINISH_BUTTON = "buttons.FinishButton"
+    
+    @staticmethod        
+    def _getClickButton( button, delayMillis=None ):                
+        return ( 
+            QtIfwControlScript.__CLICK_BUTTON_DELAY_TMPL % (button, delayMillis)
+            if delayMillis else
+            QtIfwControlScript.__CLICK_BUTTON_TMPL % (button,) )
+            
+    def __init__( self,
+                  isAutoPilotMode=False,                    
+                  fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
+                  script=None, scriptPath=None ) :
+        _QtIfwScript.__init__( self, fileName, script, scriptPath )
+
+        self.isAutoPilotMode = isAutoPilotMode
+        
+        self.controllerConstructorBody = None
+        self.isAutoControllerConstructor = True
+                                                            
+        self.introductionPageCallbackBody = None
+        self.isAutoIntroductionPageCallback = True
+
+        self.targetDirectoryPageCallbackBody = None
+        self.isAutoTargetDirectoryPageCallback = True
+
+        self.componentSelectionPageCallbackBody = None
+        self.isAutoComponentSelectionPageCallback = True
+
+        self.licenseAgreementPageCallbackBody = None
+        self.isAutoLicenseAgreementPageCallback = True
+
+        self.startMenuDirectoryPageCallbackBody = None
+        self.isAutoStartMenuDirectoryPageCallback = True
+
+        self.readyForInstallationPageCallbackBody = None
+        self.isAutoReadyForInstallationPageCallback = True
+
+        self.performInstallationPageCallbackBody = None
+        self.isAutoPerformInstallationPageCallback = True
+        
+        self.finishedPageCallbackBody = None
+        self.isAutoFinishedPageCallback = True        
+                                                    
+    def __str__( self ) : 
+        if not self.script: self._generate()
+        return self.script
+            
+    def _generate( self ) :        
+        self.script = ""
+        
+        if self.isAutoControllerConstructor:
+            self.__genControllerConstructorBody()
+        self.script += ( "function Controller() {\n%s\n}\n" % 
+                         (self.controllerConstructorBody,) )
+        
+        if self.isAutoIntroductionPageCallback:
+            self.__genIntroductionPageCallbackBody()
+        if self.introductionPageCallbackBody:
+            self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
+                ("Introduction", self.introductionPageCallbackBody) )
+            
+        if self.isAutoTargetDirectoryPageCallback:
+            self.__genTargetDirectoryPageCallbackBody()
+        if self.targetDirectoryPageCallbackBody:
+            self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
+                ("TargetDirectory", self.targetDirectoryPageCallbackBody) )
+
+        if self.isAutoComponentSelectionPageCallback:
+            self.__genComponentSelectionPageCallbackBody()
+        if self.componentSelectionPageCallbackBody:
+            self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
+                ("ComponentSelection", self.componentSelectionPageCallbackBody) )
+
+        if self.isAutoLicenseAgreementPageCallback:
+            self.__genLicenseAgreementPageCallbackBody()
+        if self.licenseAgreementPageCallbackBody:
+            self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
+                ("LicenseAgreement", self.licenseAgreementPageCallbackBody) )
+
+        if self.isAutoStartMenuDirectoryPageCallback:
+            self.__genStartMenuDirectoryPageCallbackBody()
+        if self.startMenuDirectoryPageCallbackBody:
+            self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
+                ("StartMenuDirectory", self.startMenuDirectoryPageCallbackBody) )
+
+        if self.isAutoReadyForInstallationPageCallback:
+            self.__genReadyForInstallationPageCallbackBody()
+        if self.readyForInstallationPageCallbackBody:
+            self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
+                ("ReadyForInstallation", self.readyForInstallationPageCallbackBody) )
+
+        if self.isAutoPerformInstallationPageCallback:
+            self.__genPerformInstallationPageCallbackBody()
+        if self.performInstallationPageCallbackBody:
+            self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
+                ("PerformInstallation", self.performInstallationPageCallbackBody) )
+
+        if self.isAutoFinishedPageCallback:
+            self.__genFinishedPageCallbackBody()
+        if self.finishedPageCallbackBody:
+            self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
+                ("Finished", self.finishedPageCallbackBody) )
+        
+    def __genControllerConstructorBody( self ):
+        self.controllerConstructorBody = ""
+        if self.isAutoPilotMode :   
+            self.controllerConstructorBody += (
+                QtIfwControlScript.__SILENT_CONSTRUCTOR_BODY
+            )
+                 
+    def __genIntroductionPageCallbackBody( self ):
+        self.introductionPageCallbackBody = ""
+        if self.isAutoPilotMode :
+            self.introductionPageCallbackBody += ( 
+                QtIfwControlScript._getClickButton( 
+                    QtIfwControlScript._NEXT_BUTTON ) 
+            ) 
+        if self.introductionPageCallbackBody == "" :
+            self.introductionPageCallbackBody = None
+
+    def __genTargetDirectoryPageCallbackBody( self ):
+        self.targetDirectoryPageCallbackBody = ""
+        if self.isAutoPilotMode :
+            # TODO: auto target path logic (vs default)
+            """
+            gui.currentPageWidget().TargetDirectoryLineEdit.setText( "......" );
+            """
+            self.targetDirectoryPageCallbackBody += (
+                QtIfwControlScript._getClickButton( 
+                    QtIfwControlScript._NEXT_BUTTON ) 
+            ) 
+        if self.targetDirectoryPageCallbackBody == "" :
+            self.targetDirectoryPageCallbackBody = None
+
+    def __genComponentSelectionPageCallbackBody( self ):
+        self.componentSelectionPageCallbackBody = ""        
+        if self.isAutoPilotMode :
+            # TODO: auto component selection logic (vs default)
+            """
+            var widget = gui.currentPageWidget();
+            widget.deselectAll();
+            widget.selectComponent("......");
+            """
+            self.componentSelectionPageCallbackBody += ( 
+                QtIfwControlScript._getClickButton( 
+                    QtIfwControlScript._NEXT_BUTTON ) 
+            )
+        if self.componentSelectionPageCallbackBody == "" :
+            self.componentSelectionPageCallbackBody = None
+
+    def __genLicenseAgreementPageCallbackBody( self ):
+        self.licenseAgreementPageCallbackBody = ""
+        if self.isAutoPilotMode :            
+            self.licenseAgreementPageCallbackBody += (
+                "gui.currentPageWidget().AcceptLicenseRadioButton.setChecked(true);\n" + 
+                QtIfwControlScript._getClickButton( 
+                    QtIfwControlScript._NEXT_BUTTON ) 
+            ) 
+        if self.licenseAgreementPageCallbackBody == "" :
+            self.licenseAgreementPageCallbackBody = None
+
+    def __genStartMenuDirectoryPageCallbackBody( self ):
+        self.startMenuDirectoryPageCallbackBody = ""
+        if self.isAutoPilotMode :
+            self.startMenuDirectoryPageCallbackBody += ( 
+                QtIfwControlScript._getClickButton( 
+                    QtIfwControlScript._NEXT_BUTTON ) 
+            )
+        if self.startMenuDirectoryPageCallbackBody == "" :
+            self.startMenuDirectoryPageCallbackBody = None
+
+    def __genReadyForInstallationPageCallbackBody( self ):
+        self.readyForInstallationPageCallbackBody = ""
+        if self.isAutoPilotMode :
+            self.readyForInstallationPageCallbackBody += (
+                QtIfwControlScript._getClickButton( 
+                    QtIfwControlScript._NEXT_BUTTON ) 
+            )                
+        if self.readyForInstallationPageCallbackBody == "" :
+            self.readyForInstallationPageCallbackBody = None
+
+    def __genPerformInstallationPageCallbackBody( self ):
+        self.performInstallationPageCallbackBody = ""
+        if self.isAutoPilotMode :
+            self.performInstallationPageCallbackBody += (
+                QtIfwControlScript._getClickButton( 
+                    QtIfwControlScript._NEXT_BUTTON ) 
+            )
+        if self.performInstallationPageCallbackBody == "" :
+            self.performInstallationPageCallbackBody = None
+
+    def __genFinishedPageCallbackBody( self ):
+        self.finishedPageCallbackBody = ""
+        if self.isAutoPilotMode :
+            self.finishedPageCallbackBody += (                   
+                QtIfwControlScript._getClickButton( 
+                    QtIfwControlScript._FINISH_BUTTON ) 
+            )
+        if self.finishedPageCallbackBody == "" :
+            self.finishedPageCallbackBody = None
+            
+    def path( self ) :   
+        return joinPath( BUILD_SETUP_DIR_PATH, 
+            normpath( QtIfwControlScript.__PATH_TMPLT 
+                      % (INSTALLER_DIR_PATH, 
+                         self.fileName) ) ) 
+
+    def dirPath( self ) :   
+        return joinPath( BUILD_SETUP_DIR_PATH, 
+            normpath( QtIfwControlScript.__DIR_TMPLT 
+                      % (INSTALLER_DIR_PATH,) ) )     
+    
+# -----------------------------------------------------------------------------
+class QtIfwPackageScript( _QtIfwScript ):
+    
+    __DIR_TMPLT  = "%s/packages/%s/meta"
+    __PATH_TMPLT = __DIR_TMPLT + "/%s"
 
     __WIN_ADD_SHORTCUT_TMPLT = ( 
 """
@@ -421,12 +709,9 @@ class QtIfwPackageScript:
                   shortcuts=[],                   
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
-        self.pkgName  = pkgName
-        self.fileName = fileName
-        if scriptPath :
-            with open( scriptPath, 'rb' ) as f: self.script = f.read()
-        else : self.script = script  
+        _QtIfwScript.__init__( self, fileName, script, scriptPath )
 
+        self.pkgName  = pkgName
         self.shortcuts = shortcuts
 
         self.componentConstructorBody = None
@@ -525,14 +810,6 @@ class QtIfwPackageScript:
             normpath( QtIfwPackageScript.__DIR_TMPLT 
                       % (INSTALLER_DIR_PATH, self.pkgName) ) )     
     
-    def write( self ):
-        pkgDir = self.dirPath()
-        if not isDir( pkgDir ): makeDir( pkgDir )
-        with open( self.path(), 'w' ) as f: 
-            f.write( str(self) ) 
-    
-    def debug( self ): print( str(self) )
-
 # -----------------------------------------------------------------------------    
 class QtIfwShortcut:
     def __init__( self, productName="@ProductName@", 
@@ -644,7 +921,7 @@ def __initBuild( qtIfwConfig ) :
                         joinPath( destDir, p.exeName ) )            
     print( "Build directory created: %s" % (BUILD_SETUP_DIR_PATH,) )
 
-def __addInstallerResources( qtIfwConfig ) :    
+def __addInstallerResources( qtIfwConfig ) :        
     configXml = qtIfwConfig.configXml
     if configXml : 
         print( "Adding installer configuration resources..." )
@@ -655,7 +932,12 @@ def __addInstallerResources( qtIfwConfig ) :
             if isFile( iconFilePath ):
                 copyFile( iconFilePath,                       
                           joinPath( configXml.dirPath(), 
-                                    basename( configXml.iconFilePath ) ) )              
+                                    basename( configXml.iconFilePath ) ) )
+    ctrlScript = qtIfwConfig.controlScript
+    if ctrlScript :
+        print( "Adding installer control script..." )
+        ctrlScript.debug()
+        ctrlScript.write()                                      
     for p in qtIfwConfig.packages :
         if not isinstance( p, QtIfwPackage ) : continue
         pkgXml = p.pkgXml              

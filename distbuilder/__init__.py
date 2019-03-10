@@ -20,6 +20,7 @@ from distbuilder.qt_installer import \
     , mergeQtIfwPackages \
     , QtIfwConfig \
     , QtIfwConfigXml \
+    , QtIfwControlScript \
     , QtIfwPackage \
     , QtIfwPackageXml \
     , QtIfwPackageScript \
