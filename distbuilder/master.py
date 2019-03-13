@@ -94,11 +94,11 @@ class ConfigFactory:
             cfg.pyInstSpec = PyInstSpec( self.specFilePath )
         if IS_WINDOWS :
             cfg.versionInfo = WindowsExeVersionInfo()
-            ( verMajor, verMinor, verMicro, verBuild ) = self.version
-            cfg.versionInfo.major = verMajor
-            cfg.versionInfo.minor = verMinor
-            cfg.versionInfo.micro = verMicro
-            cfg.versionInfo.build = verBuild
+            ( cfg.versionInfo.major,
+              cfg.versionInfo.minor,
+              cfg.versionInfo.micro,
+              cfg.versionInfo.build
+            ) = self.__versionTuple()
             cfg.versionInfo.companyName = self.companyLegalName
             cfg.versionInfo.productName = self.productName
             cfg.versionInfo.description = self.description
@@ -180,10 +180,23 @@ class ConfigFactory:
                     script=self.ifwPkgScript, 
                     scriptPath=self.ifwPkgScriptPath )
         return script
-            
-    def __versionStr( self ):
-        return "%d.%d.%d.%d" % self.version
 
+    def __versionTuple( self ):        
+        try:
+            return( self.version if isinstance(self.version, tuple) 
+                    else tuple( self.version.split(".") ) ) 
+        except:
+            print "WARNING: version malformed or not defined!" 
+            return (0,0,0,0)
+                    
+    def __versionStr( self ):
+        try : 
+            return( self.version if isinstance(self.version, six.string_types) 
+                    else "%d.%d.%d.%d" % self.version )
+        except:
+            print "WARNING: version malformed or not defined!" 
+            return "0.0.0.0"
+        
     def __ifwPkgId( self ):
         if self.ifwPkgId : return self.ifwPkgId
         if self.cfgId : return self.cfgId
@@ -352,7 +365,8 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
             
         ifwConfig = self.configFactory.qtIfwConfig( packages=self.ifwPackages )
         self.onQtIfwConfig( ifwConfig )                
-        setupPath = buildInstaller( ifwConfig )
+        setupPath = buildInstaller( ifwConfig, 
+                                    self.configFactory.isSilentSetup )
         
         if self.isDesktopTarget :
             setupPath = moveToDesktop( setupPath )

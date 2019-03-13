@@ -19,6 +19,9 @@ QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
 __BIN_SUB_DIR = "bin"
 __QT_INSTALL_CREATOR_EXE_NAME = util.normBinaryName( "binarycreator" )
 
+__SILENT_SUFFIX = "_silent"
+__SILENT_WRAPPER_PY_NAME = "__silent-wrapper.py"
+
 __QT_WINDOWS_DEPLOY_EXE_NAME   = "windeployqt.exe"
 __QT_WINDOWS_DEPLOY_QML_SWITCH = "--qmldir"
 __MINGW_DLL_LIST = [
@@ -850,13 +853,14 @@ def mergeQtIfwPackages( pkgs, srcId, destId ):
     return destPkg
     
 # -----------------------------------------------------------------------------            
-def buildInstaller( qtIfwConfig ):
+def buildInstaller( qtIfwConfig, isSilent ):
     ''' returns setupExePath '''
     __validateConfig( qtIfwConfig )        
     __initBuild( qtIfwConfig )    
     __addInstallerResources( qtIfwConfig )     
     setupExePath = __build( qtIfwConfig )    
     __postBuild( qtIfwConfig )
+    if isSilent : __buildSilentWrapper( qtIfwConfig )
     return setupExePath
 
 # -----------------------------------------------------------------------------
@@ -1005,3 +1009,67 @@ def __postBuild( qtIfwConfig ):  # @UnusedVariable
         if not p.isTempSrc : continue
         if   p.srcDirPath and isDir(  p.srcDirPath): removeDir(  p.srcDirPath )
         elif p.srcExePath and isFile( p.srcExePath): removeFile( p.srcExePath )                    
+
+def __buildSilentWrapper( qtIfwConfig ) :
+    from distbuilder.master import PyToBinPackageProcess, ConfigFactory
+    
+    setupExeName   = util.normBinaryName( qtIfwConfig.setupExeName )    
+    wrapperExeName = splitExt(setupExeName)[0] + __SILENT_SUFFIX
+    wrapperPyName  = __SILENT_WRAPPER_PY_NAME
+    cfgXml         = qtIfwConfig.configXml
+                                               
+    f = configFactory  = ConfigFactory()
+    f.productName      = cfgXml.Name
+    f.description      = cfgXml.Name # don't have the exact description with this config
+    f.companyLegalName = cfgXml.Publisher    
+    f.binaryName       = wrapperExeName
+    f.isGui            = False        
+    f.entryPointPy     = __SILENT_WRAPPER_PY_NAME  
+    f.iconFilePath     = cfgXml.iconFilePath  
+    f.version          = cfgXml.Version 
+    
+    class BuildProcess( PyToBinPackageProcess ):            
+        def onInitialize( self ):
+            removeFromDir( wrapperPyName, THIS_DIR )
+            with open( absPath( wrapperPyName ), 'w' ) as f: 
+                f.write( _silentWrapperScript( setupExeName ) )  
+
+        def onPyInstConfig( self, cfg ):    
+            cfg.binaryFilePaths = [ absPath( setupExeName ) ]
+            
+        def onFinalize( self ):
+            removeFromDir( wrapperPyName, THIS_DIR )
+            removeFromDir( setupExeName, THIS_DIR )            
+            normSrcName = util.normBinaryName(wrapperExeName)
+            move( absPath( joinPath( wrapperExeName, normSrcName )), 
+                  absPath( setupExeName ) )
+                        
+    BuildProcess( configFactory ).run()
+    
+def _silentWrapperScript( setupExeName ) :
+    if IS_WINDOWS: return (
+"""        
+""").format( setupExeName )
+
+    if IS_LINUX : return (
+"""
+import sys, platform, subprocess, shlex
+try: from subprocess import DEVNULL 
+except ImportError:
+    import os
+    DEVNULL = open(os.devnull, 'wb')
+EXE_NAME = "{0}"
+WORK_DIR = sys._MEIPASS
+ARGS = ""
+try: subprocess.check_call( shlex.split("sudo apt-get install xvfb -y") )
+except: subprocess.check_call( shlex.split("sudo yum install Xvfb -y") )
+subprocess.check_call( shlex.split("sudo xvfb-run ./%s" % (EXE_NAME,)), 
+                       cwd=WORK_DIR, stdout=DEVNULL, stderr=DEVNULL ) 
+""").format( setupExeName )
+
+    if IS_MACOS : return (
+"""        
+""").format( setupExeName )
+ 
+        
+        
