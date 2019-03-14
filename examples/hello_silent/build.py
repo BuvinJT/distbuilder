@@ -10,7 +10,7 @@ f.version          = (1,0,0,0)
 f.sourceDir        = "../hello_world"
 f.entryPointPy     = "hello.py"  
 f.distResources    = ["LICENSE"]
-f.setupName        = "HelloWorldSilent"
+f.setupName        = "HelloWorldSilentSetup"
 f.isSilentSetup    = True
 
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )

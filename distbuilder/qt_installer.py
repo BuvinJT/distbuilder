@@ -19,8 +19,9 @@ QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
 __BIN_SUB_DIR = "bin"
 __QT_INSTALL_CREATOR_EXE_NAME = util.normBinaryName( "binarycreator" )
 
-__SILENT_SUFFIX = "_silent"
-__SILENT_WRAPPER_PY_NAME = "__silent-wrapper.py"
+__WRAPPER_SCRIPT_NAME = "__installer.py"
+__WRAPPER_INSTALLER_NAME = "wrapper" 
+__NESTED_INSTALLER_NAME  = "installer"
 
 __QT_WINDOWS_DEPLOY_EXE_NAME   = "windeployqt.exe"
 __QT_WINDOWS_DEPLOY_QML_SWITCH = "--qmldir"
@@ -376,6 +377,7 @@ Controller.prototype.%sPageCallback = function() {
                     
     __SILENT_CONSTRUCTOR_BODY = ( 
 """
+    installer.autoRejectMessageBoxes();
     installer.setMessageBoxAutomaticAnswer("OverwriteTargetDirectory", QMessageBox.Yes);
     installer.setMessageBoxAutomaticAnswer("stopProcessesForUpdates", QMessageBox.Ignore);        
     installer.installationFinished.connect(function() {
@@ -1014,8 +1016,11 @@ def __buildSilentWrapper( qtIfwConfig ) :
     from distbuilder.master import PyToBinPackageProcess, ConfigFactory
     
     setupExeName   = util.normBinaryName( qtIfwConfig.setupExeName )    
-    wrapperExeName = splitExt(setupExeName)[0] + __SILENT_SUFFIX
-    wrapperPyName  = __SILENT_WRAPPER_PY_NAME
+    wrapperExeName = __WRAPPER_INSTALLER_NAME
+    wrapperPyName  = __WRAPPER_SCRIPT_NAME
+    nestedExeName  = util.normBinaryName( __NESTED_INSTALLER_NAME )    
+    wrapperScript  = __silentWrapperScript( nestedExeName )
+        
     cfgXml         = qtIfwConfig.configXml
                                                
     f = configFactory  = ConfigFactory()
@@ -1024,52 +1029,93 @@ def __buildSilentWrapper( qtIfwConfig ) :
     f.companyLegalName = cfgXml.Publisher    
     f.binaryName       = wrapperExeName
     f.isGui            = False        
-    f.entryPointPy     = __SILENT_WRAPPER_PY_NAME  
+    f.entryPointPy     = wrapperPyName  
     f.iconFilePath     = cfgXml.iconFilePath  
     f.version          = cfgXml.Version 
     
     class BuildProcess( PyToBinPackageProcess ):            
         def onInitialize( self ):
-            removeFromDir( wrapperPyName, THIS_DIR )
+            renameInDir( (setupExeName, nestedExeName) )
+            removeFromDir( wrapperPyName )
             with open( absPath( wrapperPyName ), 'w' ) as f: 
-                f.write( _silentWrapperScript( setupExeName ) )  
+                f.write( wrapperScript )  
 
         def onPyInstConfig( self, cfg ):    
-            cfg.binaryFilePaths = [ absPath( setupExeName ) ]
+            cfg.binaryFilePaths = [ absPath( nestedExeName ) ]
             
         def onFinalize( self ):
-            removeFromDir( wrapperPyName, THIS_DIR )
-            removeFromDir( setupExeName, THIS_DIR )            
-            normSrcName = util.normBinaryName(wrapperExeName)
-            move( absPath( joinPath( wrapperExeName, normSrcName )), 
-                  absPath( setupExeName ) )
+            removeFromDir( wrapperPyName )
+            removeFromDir( nestedExeName )            
+            tmpDir = renameInDir( (wrapperExeName, "__" + wrapperExeName) )
+            normWrapperName = util.normBinaryName( wrapperExeName )            
+            moveToDir( joinPath( tmpDir, normWrapperName ) ) 
+            renameInDir( (normWrapperName, setupExeName) )
+            removeFromDir( tmpDir )
                         
     BuildProcess( configFactory ).run()
     
-def _silentWrapperScript( setupExeName ) :
-    if IS_WINDOWS: return (
-"""        
-""").format( setupExeName )
-
-    if IS_LINUX : return (
+def __silentWrapperScript( exeName ) :
+    """
+    Runs the exe from inside the PyInstaller MEIPASS directory,
+    with elevated privileges, and hidden from view.  
+    """
+    
+    COMMON_INIT = (
 """
-import sys, platform, subprocess, shlex
-try: from subprocess import DEVNULL 
-except ImportError:
-    import os
-    DEVNULL = open(os.devnull, 'wb')
-EXE_NAME = "{0}"
+import sys, os, glob, time
 WORK_DIR = sys._MEIPASS
-ARGS = ""
+EXE_NAME = "{0}"
+ARGS     = ""
+EXE_PATH = os.path.join( WORK_DIR, EXE_NAME )
+LOCK_FILE_PATTERN = "lockmyApp*.lock"
+""").format( exeName )
+
+    COMMON_CLEANUP = (
+""" 
+while glob.glob( LOCK_FILE_PATTERN ): pass
+while os.path.exists( EXE_PATH ): 
+    try: os.remove( EXE_PATH )
+    except: pass
+time.sleep(2)    
+""")
+        
+    if IS_WINDOWS: return (
+"""     
+{0}
+import ctypes
+shell32 = ctypes.windll.shell32        
+VERB    = "open" if shell32.IsUserAnAdmin() else "runas"
+SW_HIDE = 0 
+if sys.version_info[0]==2:
+    VERB     = unicode(VERB)
+    EXE_NAME = unicode(EXE_NAME)
+    WORK_DIR = unicode(WORK_DIR)
+    ARGS     = unicode(ARGS)    
+shell32.ShellExecuteW( None, VERB, EXE_NAME, ARGS, WORK_DIR, SW_HIDE )
+{1}
+""").format( COMMON_INIT, COMMON_CLEANUP )
+
+    if IS_LINUX : return ( 
+"""
+{0}    
+import subprocess, shlex
+try: from subprocess import DEVNULL 
+except ImportError: DEVNULL = open(os.devnull, 'wb')
 try: subprocess.check_call( shlex.split("sudo apt-get install xvfb -y") )
 except: subprocess.check_call( shlex.split("sudo yum install Xvfb -y") )
 subprocess.check_call( shlex.split("sudo xvfb-run ./%s" % (EXE_NAME,)), 
                        cwd=WORK_DIR, stdout=DEVNULL, stderr=DEVNULL ) 
-""").format( setupExeName )
+{1}
+""").format( COMMON_INIT, COMMON_CLEANUP )
 
-    if IS_MACOS : return (
-"""        
-""").format( setupExeName )
+    if IS_MACOS : return ( 
+"""
+{0}    
+import subprocess, shlex
+try: from subprocess import DEVNULL 
+except ImportError: DEVNULL = open(os.devnull, 'wb')
+{1}            
+""").format( COMMON_INIT, COMMON_CLEANUP )
  
         
         

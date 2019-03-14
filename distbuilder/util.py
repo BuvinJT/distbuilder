@@ -209,12 +209,13 @@ def moveToDesktop( path ): return __moveToDir( path, _userDesktopDirPath() )
 def copyToHomeDir( path ): return __copyToDir( path, _userHomeDirPath() )
 def moveToHomeDir( path ): return __moveToDir( path, _userHomeDirPath() )
 
-def copyToDir( srcPaths, destDirPath ):
+def copyToDir( srcPaths, destDirPath=None ):
     """ 
     Copy files OR directories to a given destination.
     The argument srcPaths may be a singular path (i.e. a string)
     or an iterable (i.e. a list or tuple).  
     """
+    if destDirPath is None : destDirPath=THIS_DIR
     if isinstance(srcPaths,list) or isinstance(srcPaths,tuple):
         destList=[]
         for src in srcPaths :
@@ -235,12 +236,13 @@ def __copyToDir( srcPath, destDirPath ):
     print( 'Copied "%s" to "%s"' % (srcPath, destPath) )
     return destPath
 
-def moveToDir( srcPaths, destDirPath ):
+def moveToDir( srcPaths, destDirPath=None ):
     """ 
     Move files OR directories to a given destination.
     The argument srcPaths may be a singular path (i.e. a string)
     or an iterable (i.e. a list or tuple).  
     """
+    if destDirPath is None : destDirPath=THIS_DIR
     if isinstance(srcPaths,list) or isinstance(srcPaths,tuple):
         destList=[]
         for src in srcPaths : 
@@ -260,12 +262,13 @@ def __moveToDir( srcPath, destDirPath ):
     print( 'Moved "%s" to "%s"' % (srcPath, destPath) )
     return destPath
 
-def removeFromDir( subPaths, parentDirPath ):
+def removeFromDir( subPaths, parentDirPath=None ):
     """ 
     Removes files OR directories from a given directory.
     The argument subPaths may be a singular path (i.e. a string)
     or an iterable collection (i.e. a list or tuple).  
     """
+    if parentDirPath is None : parentDirPath=THIS_DIR
     if isinstance(subPaths,list) or isinstance(subPaths,tuple):
         for subPath in subPaths : __moveToDir( subPath, parentDirPath )
     else: __removeFromDir( subPaths, parentDirPath )          
@@ -281,13 +284,16 @@ def __removeFromDir( subPath, parentDirPath ):
         removeDir( remPath )
         print( 'Removed "%s"' % (remPath,) )
 
-def renameInDir( namePairs, parentDirPath ):
+def renameInDir( namePairs, parentDirPath=None ):
     """ 
     Renames files OR directories in a given destination.
     The argument namePairs may be a singular tuple (oldName, newName)
     or an iterable (i.e. a list or tuple) of such tuple pairs.  
     """
-    if isinstance(namePairs,list) or isinstance(namePairs,tuple): 
+    if parentDirPath is None : parentDirPath=THIS_DIR
+    if isinstance(namePairs,tuple) and isinstance(namePairs[0],tuple): 
+        namePairs = list(namePairs)
+    if isinstance(namePairs,list): 
         destList=[]
         for pair in namePairs : 
             destList.append( __renameInDir( pair, parentDirPath ) )

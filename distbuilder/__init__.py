@@ -43,7 +43,10 @@ from distbuilder.opy_library import \
     , LibToBundle 
     
 from distbuilder.util import \
-      THIS_DIR \
+      IS_WINDOWS \
+    , IS_LINUX \
+    , IS_MACOS \
+    , THIS_DIR \
     , absPath \
     , exists \
     , isFile \
