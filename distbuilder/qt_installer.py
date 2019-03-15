@@ -1062,60 +1062,86 @@ def __silentWrapperScript( exeName ) :
     
     COMMON_INIT = (
 """
-import sys, os, glob, time
 WORK_DIR = sys._MEIPASS
 EXE_NAME = "{0}"
 ARGS     = ""
-EXE_PATH = os.path.join( WORK_DIR, EXE_NAME )
-LOCK_FILE_PATTERN = "lockmyApp*.lock"
 """).format( exeName )
-
-    COMMON_CLEANUP = (
-""" 
-while glob.glob( LOCK_FILE_PATTERN ): pass
-while os.path.exists( EXE_PATH ): 
-    try: os.remove( EXE_PATH )
-    except: pass
-time.sleep(2)    
-""")
         
     if IS_WINDOWS: return (
 """     
+import sys, os, glob, time, ctypes
+
 {0}
-import ctypes
-shell32 = ctypes.windll.shell32        
-VERB    = "open" if shell32.IsUserAnAdmin() else "runas"
-SW_HIDE = 0 
-if sys.version_info[0]==2:
-    VERB     = unicode(VERB)
-    EXE_NAME = unicode(EXE_NAME)
-    WORK_DIR = unicode(WORK_DIR)
-    ARGS     = unicode(ARGS)    
-shell32.ShellExecuteW( None, VERB, EXE_NAME, ARGS, WORK_DIR, SW_HIDE )
-{1}
-""").format( COMMON_INIT, COMMON_CLEANUP )
+
+def runInstaller():
+    shell32 = ctypes.windll.shell32        
+    VERB    = "open" if shell32.IsUserAnAdmin() else "runas"
+    SW_HIDE = 0 
+    if sys.version_info[0]==2:
+        VERB     = unicode(VERB)
+        EXE_NAME = unicode(EXE_NAME)
+        WORK_DIR = unicode(WORK_DIR)
+        ARGS     = unicode(ARGS)    
+    shell32.ShellExecuteW( None, VERB, EXE_NAME, ARGS, WORK_DIR, SW_HIDE )
+
+def cleanUp():
+    LOCK_FILE_PATTERN = "lockmyApp*.lock"
+    while glob.glob( LOCK_FILE_PATTERN ): pass
+    EXE_PATH = os.path.join( WORK_DIR, EXE_NAME )
+    while os.path.exists( EXE_PATH ): 
+        try: os.remove( EXE_PATH )
+        except: pass
+    time.sleep(2)    
+
+runInstaller()
+cleanUp()    
+
+""").format( COMMON_INIT )
 
     if IS_LINUX : return ( 
 """
-{0}    
 import subprocess, shlex
 try: from subprocess import DEVNULL 
 except ImportError: DEVNULL = open(os.devnull, 'wb')
-try: subprocess.check_call( shlex.split("sudo apt-get install xvfb -y") )
-except: subprocess.check_call( shlex.split("sudo yum install Xvfb -y") )
-subprocess.check_call( shlex.split("sudo xvfb-run ./%s" % (EXE_NAME,)), 
-                       cwd=WORK_DIR, stdout=DEVNULL, stderr=DEVNULL ) 
-{1}
-""").format( COMMON_INIT, COMMON_CLEANUP )
+
+{0}
+
+def runInstaller():
+    subprocess.check_call( shlex.split("sudo xvfb-run ./%s" % (EXE_NAME,)), 
+                           cwd=WORK_DIR, stdout=DEVNULL, stderr=DEVNULL ) 
+
+def installTempDependencies():    
+    cleanUpCmds=[]
+    try: 
+        subprocess.check_call( shlex.split("xvfb-run -h"),
+                               stdout=DEVNULL, stderr=DEVNULL )                                       
+    except:     
+        try: 
+            subprocess.check_call( shlex.split("sudo apt-get install xvfb -y") )
+            cleanUpCmds.append( "sudo apt-get remove xvfb -y" )
+        except: 
+            subprocess.check_call( shlex.split("sudo yum install Xvfb -y") )
+            cleanUpCmds.append( "sudo yum remove xvfb -y" )
+    return cleanUpCmds
+
+def cleanUp( cmds ):
+    for cmd in cmds: subprocess.check_call( shlex.split(cmd) )
+
+cleanUpCmds = installTempDependencies()
+runInstaller()
+cleanUp( cleanUpCmds )
+
+""").format( COMMON_INIT )
 
     if IS_MACOS : return ( 
 """
-{0}    
 import subprocess, shlex
 try: from subprocess import DEVNULL 
 except ImportError: DEVNULL = open(os.devnull, 'wb')
-{1}            
-""").format( COMMON_INIT, COMMON_CLEANUP )
+
+{0}    
+            
+""").format( COMMON_INIT )
  
         
         
