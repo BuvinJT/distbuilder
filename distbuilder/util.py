@@ -347,13 +347,19 @@ def __importByStr( moduleName, memberName=None ):
     except Exception as e: printExc( e )
 
 # -----------------------------------------------------------------------------
-def toZipFile( sourceDir, zipDest=None, removeScr=True ):
+def toZipFile( sourceDir, zipDest=None, removeScr=True, 
+               isWrapperDirIncluded=False ):
+    sourceDir = absPath( sourceDir )
     if zipDest is None :        
-        zipDest = sourceDir # make_archive add extension
+        zipDest = sourceDir # make_archive adds extension
     else:
         if isFile( zipDest ) : removeFile( zipDest )
         zipDest, _ = splitExt(zipDest)           
-    filePath = make_archive( zipDest, 'zip', sourceDir )
+    if isWrapperDirIncluded:
+        filePath = make_archive( zipDest, 'zip', 
+            dirPath( sourceDir ), basename( sourceDir ) )
+    else :       
+        filePath = make_archive( zipDest, 'zip', sourceDir )
     print( 'Created zip file: "%s"' % (filePath,) )    
     if removeScr :         
         removeDir( sourceDir )

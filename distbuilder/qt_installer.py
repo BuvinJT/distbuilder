@@ -20,8 +20,8 @@ __BIN_SUB_DIR = "bin"
 __QT_INSTALL_CREATOR_EXE_NAME = util.normBinaryName( "binarycreator" )
 
 __WRAPPER_SCRIPT_NAME = "__installer.py"
-__WRAPPER_INSTALLER_NAME = "wrapper" 
-__NESTED_INSTALLER_NAME  = "installer"
+__WRAPPER_INSTALLER_NAME = "wrapper-installer" 
+__NESTED_INSTALLER_NAME  = "hidden-installer"
 
 __QT_WINDOWS_DEPLOY_EXE_NAME   = "windeployqt.exe"
 __QT_WINDOWS_DEPLOY_QML_SWITCH = "--qmldir"
@@ -1020,7 +1020,7 @@ def __buildSilentWrapper( qtIfwConfig ) :
     
     srcSetupExeName   = util.normBinaryName( qtIfwConfig.setupExeName, isGui=True )    
     destSetupExeName  = util.normBinaryName( qtIfwConfig.setupExeName, isGui=IS_MACOS ) 
-    nestedExeName     = util.normBinaryName( __NESTED_INSTALLER_NAME,  isGui=True )    
+    nestedExeName     = util.normBinaryName( __NESTED_INSTALLER_NAME,  isGui=True )
     wrapperExeName    = __WRAPPER_INSTALLER_NAME
     wrapperPyName     = __WRAPPER_SCRIPT_NAME
     wrapperScript     = __silentWrapperScript( nestedExeName )
@@ -1040,34 +1040,41 @@ def __buildSilentWrapper( qtIfwConfig ) :
     class BuildProcess( PyToBinPackageProcess ):            
         def onInitialize( self ):
             renameInDir( (srcSetupExeName, nestedExeName) )
+            if IS_MACOS :               
+                self.__injectHidePropertyIntoApp( nestedExeName )
+                # a .app is a directory, so the "wrapper dir" must be peserved
+                self.__nestedZipPath = toZipFile( nestedExeName, 
+                                                  isWrapperDirIncluded=True ) 
             removeFromDir( wrapperPyName )
             with open( absPath( wrapperPyName ), 'w' ) as f: 
                 f.write( wrapperScript )  
-
+            
         def onPyInstConfig( self, cfg ):    
-            if IS_MACOS: cfg.dataFilePaths   = [ absPath( nestedExeName ) ]
+            if IS_MACOS: cfg.dataFilePaths   = [ self.__nestedZipPath ]
             else       : cfg.binaryFilePaths = [ absPath( nestedExeName ) ]
             
         def onFinalize( self ):
             removeFromDir( wrapperPyName )
             removeFromDir( nestedExeName ) 
+            removeFromDir( self.__nestedZipPath )
             # TODO : add a standard option to avoid needing this mess
             # of moving the binary out of the sub directory here           
             tmpDir = renameInDir( (wrapperExeName, "__" + wrapperExeName) )
             normWrapperName = util.normBinaryName( wrapperExeName, isGui=IS_MACOS ) 
             moveToDir( joinPath( tmpDir, normWrapperName ) ) 
-            renameInDir( (normWrapperName, destSetupExeName) )
             removeFromDir( tmpDir )
-   
-            # On macOS enabling LSUIElement in the .plist will prevent 
-            # showing the app icon in the dock when it is launched.  
-            # Unfornately, no analogous property seems to hide it from the screen!
-            if IS_MACOS :
-                ADD_PLIST_KEY_CMD = ( "/usr/libexec/PlistBuddy -c " +
-                    "'Add :LSUIElement bool true' {0}/Contents/Info.plist" ).format(
-                    destSetupExeName )
-                util._system( ADD_PLIST_KEY_CMD )        
-                        
+            renameInDir( (normWrapperName, destSetupExeName) )
+            if IS_MACOS : self.__injectHidePropertyIntoApp( destSetupExeName )
+                
+        # On macOS enabling LSUIElement in the .plist will prevent 
+        # showing the app icon in the dock when it is launched.  
+        # Unfornately, no analogous property seems to hide it from 
+        # the screen! (or least not this app, on recent versions of the os...)
+        def __injectHidePropertyIntoApp( self, appPath ):    
+            util._system( ( "/usr/libexec/PlistBuddy -c " +
+                "'Add :LSUIElement bool true' {0}/Contents/Info.plist" ).format(
+                absPath( appPath ) ) )
+                    
     BuildProcess( configFactory ).run()
     
 def __silentWrapperScript( exeName ) :
@@ -1151,33 +1158,46 @@ cleanUp( cleanUpCmds )
 
     if IS_MACOS : return ( 
 """
-import os, sys, subprocess, tempfile
+import os, sys, subprocess, zipfile, tempfile
 
-%s
+"""
++ COMMON_INIT +
+"""
+APP_PATH     = WORK_DIR + "/" + EXE_NAME    # os.path.join( WORK_DIR, EXE_NAME )
+ZIP_PATH     = APP_PATH + ".zip" 
+APP_BIN_DIR  = os.path.join( APP_PATH, "Contents/MacOS" )
 
-APP_PATH = os.path.join( WORK_DIR, EXE_NAME )
-APP_NAME = os.path.splitext( EXE_NAME )[0]
-    
-RUN_INSTALLER_APPLE_SCRIPT = (    
+PROCESS_NAME = os.path.splitext( EXE_NAME )[0]
+
+RUN_APP_OFF_SCREEN_SCRIPT = (    
 '''
-do shell script "open {0}"
+do shell script "open %s"
 set isMoved to false
-repeat until isMoved
-    tell application "System Events" to tell process "{1}"
+set attempts to 0
+repeat until isMoved or attempts = 25
+    tell application "System Events" to tell process "%s"
         try
             set position of front window to {-9999999, 9999999}
             set isMoved to true
         end try
+        set attempts to attempts + 1
     end tell
 end repeat
-''').format( APP_PATH, APP_NAME )
+''') % ( APP_PATH, PROCESS_NAME )
+
+def extractAppFromZip():
+    zipfile.ZipFile( ZIP_PATH, 'r' ).extractall( WORK_DIR )   
+    BIN_PATH = os.path.join( APP_BIN_DIR, os.listdir( APP_BIN_DIR )[0] )
+    os.chmod( BIN_PATH, 0o777 )
 
 def runAppleScript( script ):
     scriptPath = tempfile.mktemp( suffix='.scpt' )
     with open( scriptPath, 'w' ) as f : f.write( script )
-    subprocess.check_call( ['osascript', scriptPath] ) 
+    ret = subprocess.call( ['osascript', scriptPath] ) 
     os.remove( scriptPath )
+    if ret != 0 : raise RuntimeError( "AppleScript failed." )
 
-runAppleScript( RUN_INSTALLER_APPLE_SCRIPT )
+extractAppFromZip()
+runAppleScript( RUN_APP_OFF_SCREEN_SCRIPT )
 
-""") % ( COMMON_INIT, )
+""") 
