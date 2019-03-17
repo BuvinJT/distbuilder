@@ -1015,11 +1015,15 @@ def __postBuild( qtIfwConfig ):  # @UnusedVariable
 def __buildSilentWrapper( qtIfwConfig ) :
     from distbuilder.master import PyToBinPackageProcess, ConfigFactory
     
-    setupExeName   = util.normBinaryName( qtIfwConfig.setupExeName )    
-    wrapperExeName = __WRAPPER_INSTALLER_NAME
-    wrapperPyName  = __WRAPPER_SCRIPT_NAME
-    nestedExeName  = util.normBinaryName( __NESTED_INSTALLER_NAME )    
-    wrapperScript  = __silentWrapperScript( nestedExeName )
+    # On macOS, a "gui" .app must be build because that provides a .plist
+    # and an application we can best manipulate via AppleScript
+    
+    srcSetupExeName   = util.normBinaryName( qtIfwConfig.setupExeName, isGui=True )    
+    destSetupExeName  = util.normBinaryName( qtIfwConfig.setupExeName, isGui=IS_MACOS ) 
+    nestedExeName     = util.normBinaryName( __NESTED_INSTALLER_NAME,  isGui=True )    
+    wrapperExeName    = __WRAPPER_INSTALLER_NAME
+    wrapperPyName     = __WRAPPER_SCRIPT_NAME
+    wrapperScript     = __silentWrapperScript( nestedExeName )
         
     cfgXml         = qtIfwConfig.configXml
                                                
@@ -1028,29 +1032,41 @@ def __buildSilentWrapper( qtIfwConfig ) :
     f.description      = cfgXml.Name # don't have the exact description with this config
     f.companyLegalName = cfgXml.Publisher    
     f.binaryName       = wrapperExeName
-    f.isGui            = False        
+    f.isGui            = IS_MACOS       
     f.entryPointPy     = wrapperPyName  
     f.iconFilePath     = cfgXml.iconFilePath  
     f.version          = cfgXml.Version 
     
     class BuildProcess( PyToBinPackageProcess ):            
         def onInitialize( self ):
-            renameInDir( (setupExeName, nestedExeName) )
+            renameInDir( (srcSetupExeName, nestedExeName) )
             removeFromDir( wrapperPyName )
             with open( absPath( wrapperPyName ), 'w' ) as f: 
                 f.write( wrapperScript )  
 
         def onPyInstConfig( self, cfg ):    
-            cfg.binaryFilePaths = [ absPath( nestedExeName ) ]
+            if IS_MACOS: cfg.dataFilePaths   = [ absPath( nestedExeName ) ]
+            else       : cfg.binaryFilePaths = [ absPath( nestedExeName ) ]
             
         def onFinalize( self ):
             removeFromDir( wrapperPyName )
-            removeFromDir( nestedExeName )            
+            removeFromDir( nestedExeName ) 
+            # TODO : add a standard option to avoid needing this mess
+            # of moving the binary out of the sub directory here           
             tmpDir = renameInDir( (wrapperExeName, "__" + wrapperExeName) )
-            normWrapperName = util.normBinaryName( wrapperExeName )            
+            normWrapperName = util.normBinaryName( wrapperExeName, isGui=IS_MACOS ) 
             moveToDir( joinPath( tmpDir, normWrapperName ) ) 
-            renameInDir( (normWrapperName, setupExeName) )
+            renameInDir( (normWrapperName, destSetupExeName) )
             removeFromDir( tmpDir )
+   
+            # On macOS enabling LSUIElement in the .plist will prevent 
+            # showing the app icon in the dock when it is launched.  
+            # Unfornately, no analogous property seems to hide it from the screen!
+            if IS_MACOS :
+                ADD_PLIST_KEY_CMD = ( "/usr/libexec/PlistBuddy -c " +
+                    "'Add :LSUIElement bool true' {0}/Contents/Info.plist" ).format(
+                    destSetupExeName )
+                util._system( ADD_PLIST_KEY_CMD )        
                         
     BuildProcess( configFactory ).run()
     
@@ -1069,7 +1085,7 @@ ARGS     = ""
         
     if IS_WINDOWS: return (
 """     
-import sys, os, glob, time, ctypes
+import os, sys, glob, time, ctypes
 
 {0}
 
@@ -1100,7 +1116,7 @@ cleanUp()
 
     if IS_LINUX : return ( 
 """
-import subprocess, shlex
+import os, subprocess, shlex
 try: from subprocess import DEVNULL 
 except ImportError: DEVNULL = open(os.devnull, 'wb')
 
@@ -1135,13 +1151,33 @@ cleanUp( cleanUpCmds )
 
     if IS_MACOS : return ( 
 """
-import subprocess, shlex
-try: from subprocess import DEVNULL 
-except ImportError: DEVNULL = open(os.devnull, 'wb')
+import os, sys, subprocess, tempfile
 
-{0}    
-            
-""").format( COMMON_INIT )
- 
-        
-        
+%s
+
+APP_PATH = os.path.join( WORK_DIR, EXE_NAME )
+APP_NAME = os.path.splitext( EXE_NAME )[0]
+    
+RUN_INSTALLER_APPLE_SCRIPT = (    
+'''
+do shell script "open {0}"
+set isMoved to false
+repeat until isMoved
+    tell application "System Events" to tell process "{1}"
+        try
+            set position of front window to {-9999999, 9999999}
+            set isMoved to true
+        end try
+    end tell
+end repeat
+''').format( APP_PATH, APP_NAME )
+
+def runAppleScript( script ):
+    scriptPath = tempfile.mktemp( suffix='.scpt' )
+    with open( scriptPath, 'w' ) as f : f.write( script )
+    subprocess.check_call( ['osascript', scriptPath] ) 
+    os.remove( scriptPath )
+
+runAppleScript( RUN_INSTALLER_APPLE_SCRIPT )
+
+""") % ( COMMON_INIT, )

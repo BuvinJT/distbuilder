@@ -186,7 +186,7 @@ class ConfigFactory:
             return( self.version if isinstance(self.version, tuple) 
                     else tuple( self.version.split(".") ) ) 
         except:
-            print "WARNING: version malformed or not defined!" 
+            print( "WARNING: version attribute malformed or not defined!" ) 
             return (0,0,0,0)
                     
     def __versionStr( self ):
@@ -194,7 +194,7 @@ class ConfigFactory:
             return( self.version if isinstance(self.version, six.string_types) 
                     else "%d.%d.%d.%d" % self.version )
         except:
-            print "WARNING: version malformed or not defined!" 
+            print( "WARNING: version attribute malformed or not defined!" )
             return "0.0.0.0"
         
     def __ifwPkgId( self ):
