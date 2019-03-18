@@ -862,7 +862,7 @@ def buildInstaller( qtIfwConfig, isSilent ):
     __addInstallerResources( qtIfwConfig )     
     setupExePath = __build( qtIfwConfig )    
     __postBuild( qtIfwConfig )
-    if isSilent : __buildSilentWrapper( qtIfwConfig )
+    if isSilent : setupExePath = __buildSilentWrapper( qtIfwConfig )
     return setupExePath
 
 # -----------------------------------------------------------------------------
@@ -1013,13 +1013,14 @@ def __postBuild( qtIfwConfig ):  # @UnusedVariable
         elif p.srcExePath and isFile( p.srcExePath): removeFile( p.srcExePath )                    
 
 def __buildSilentWrapper( qtIfwConfig ) :
+    print( "Building silient wrapper executable...\n" )
     from distbuilder.master import PyToBinPackageProcess, ConfigFactory
     
     # On macOS, a "gui" .app must be build because that provides a .plist
     # and an application we can best manipulate via AppleScript
     
     srcSetupExeName   = util.normBinaryName( qtIfwConfig.setupExeName, isGui=True )    
-    destSetupExeName  = util.normBinaryName( qtIfwConfig.setupExeName, isGui=IS_MACOS ) 
+    destSetupExeName  = util.normBinaryName( qtIfwConfig.setupExeName, isGui=False ) 
     nestedExeName     = util.normBinaryName( __NESTED_INSTALLER_NAME,  isGui=True )
     wrapperExeName    = __WRAPPER_INSTALLER_NAME
     wrapperPyName     = __WRAPPER_SCRIPT_NAME
@@ -1032,7 +1033,7 @@ def __buildSilentWrapper( qtIfwConfig ) :
     f.description      = cfgXml.Name # don't have the exact description with this config
     f.companyLegalName = cfgXml.Publisher    
     f.binaryName       = wrapperExeName
-    f.isGui            = IS_MACOS       
+    f.isGui            = False       
     f.entryPointPy     = wrapperPyName  
     f.iconFilePath     = cfgXml.iconFilePath  
     f.version          = cfgXml.Version 
@@ -1060,11 +1061,11 @@ def __buildSilentWrapper( qtIfwConfig ) :
             # TODO : add a standard option to avoid needing this mess
             # of moving the binary out of the sub directory here           
             tmpDir = renameInDir( (wrapperExeName, "__" + wrapperExeName) )
-            normWrapperName = util.normBinaryName( wrapperExeName, isGui=IS_MACOS ) 
+            normWrapperName = util.normBinaryName( wrapperExeName, isGui=False ) 
             moveToDir( joinPath( tmpDir, normWrapperName ) ) 
             removeFromDir( tmpDir )
             renameInDir( (normWrapperName, destSetupExeName) )
-            if IS_MACOS : self.__injectHidePropertyIntoApp( destSetupExeName )
+            #if IS_MACOS : self.__injectHidePropertyIntoApp( destSetupExeName )
                 
         # On macOS enabling LSUIElement in the .plist will prevent 
         # showing the app icon in the dock when it is launched.  
@@ -1076,6 +1077,7 @@ def __buildSilentWrapper( qtIfwConfig ) :
                 absPath( appPath ) ) )
                     
     BuildProcess( configFactory ).run()
+    return absPath( destSetupExeName )
     
 def __silentWrapperScript( exeName ) :
     """
@@ -1158,7 +1160,9 @@ cleanUp( cleanUpCmds )
 
     if IS_MACOS : return ( 
 """
-import os, sys, subprocess, zipfile, tempfile
+import os, sys, subprocess, shlex, zipfile, tempfile
+try: from subprocess import DEVNULL 
+except ImportError: DEVNULL = open(os.devnull, 'wb')
 
 """
 + COMMON_INIT +
@@ -1167,8 +1171,12 @@ APP_PATH     = WORK_DIR + "/" + EXE_NAME    # os.path.join( WORK_DIR, EXE_NAME )
 ZIP_PATH     = APP_PATH + ".zip" 
 APP_BIN_DIR  = os.path.join( APP_PATH, "Contents/MacOS" )
 
+# failed experiment abandoned, but not purged yet...
+# (this only works by forcing the user into a manual 
+#  System Perferrences update, as Apple revoked the 
+#  only means of programmatically granting such...
+#  Plus, it's doesn't work "perfectly" anyway...) 
 PROCESS_NAME = os.path.splitext( EXE_NAME )[0]
-
 RUN_APP_OFF_SCREEN_SCRIPT = (    
 '''
 do shell script "open %s"
@@ -1197,7 +1205,13 @@ def runAppleScript( script ):
     os.remove( scriptPath )
     if ret != 0 : raise RuntimeError( "AppleScript failed." )
 
+def runInstaller():
+    # failed experiment abandoned 
+    #runAppleScript( RUN_APP_OFF_SCREEN_SCRIPT )
+    subprocess.check_call( shlex.split("sudo open -W %s" % (EXE_NAME,)), 
+                           cwd=WORK_DIR, stdout=DEVNULL, stderr=DEVNULL ) 
+
 extractAppFromZip()
-runAppleScript( RUN_APP_OFF_SCREEN_SCRIPT )
+runInstaller()
 
 """) 
