@@ -1055,9 +1055,9 @@ def __buildSilentWrapper( qtIfwConfig ) :
             else       : cfg.binaryFilePaths = [ absPath( nestedExeName ) ]
             
         def onFinalize( self ):
-            removeFromDir( wrapperPyName )
-            removeFromDir( nestedExeName ) 
-            removeFromDir( self.__nestedZipPath )
+            removeFromDir( wrapperPyName )            
+            removeFromDir( self.__nestedZipPath 
+                           if IS_MACOS else nestedExeName )
             # TODO : add a standard option to avoid needing this mess
             # of moving the binary out of the sub directory here           
             tmpDir = renameInDir( (wrapperExeName, "__" + wrapperExeName) )
