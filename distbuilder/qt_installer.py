@@ -585,11 +585,13 @@ Controller.prototype.%sPageCallback = function() {
 
     def __genFinishedPageCallbackBody( self ):
         self.finishedPageCallbackBody = ""
-        if self.isAutoPilotMode :
-            self.finishedPageCallbackBody += (                   
+        if self.isAutoPilotMode :                        
+            self.finishedPageCallbackBody += (
+                "var isRunIt = false;\n" +
+                "gui.currentPageWidget().RunItCheckBox.setChecked(isRunIt);\n" +                                   
                 QtIfwControlScript._getClickButton( 
                     QtIfwControlScript._FINISH_BUTTON ) 
-            )
+            )            
         if self.finishedPageCallbackBody == "" :
             self.finishedPageCallbackBody = None
             
