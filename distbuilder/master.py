@@ -293,6 +293,10 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
         
         self._pyInstConfig = None
         
+        # Results
+        self.binDir = None
+        self.binPath = None
+        
     def _body( self ):        
         
         if self.configFactory.isObfuscating :
@@ -319,14 +323,15 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
         self.onMakeSpec( spec )
         spec.debug()
             
-        binDir, binPath = buildExecutable( pyInstConfig=self._pyInstConfig, 
-                                           opyConfig=opyConfig )
+        self.binDir, self.binPath = (
+            buildExecutable( pyInstConfig=self._pyInstConfig, 
+                             opyConfig=opyConfig ) )
         if self.isTestingExe : 
-            run( binPath, self.exeTestArgs,
+            run( self.binPath, self.exeTestArgs,
                  isElevated=self.isElevatedTest, isDebug=True )
         
         if self.isZipped :
-            toZipFile( binDir, zipDest=None, removeScr=True )
+            toZipFile( self.binDir, zipDest=None, removeScr=True )
                     
     # Override these to further customize the build process once the 
     # ConfigFactory has produced each initial config object
@@ -353,6 +358,9 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
         self.isTestingInstall       = False
         self.isVerboseInstall       = False
         
+        # Results
+        self.setupPath = None
+        
     def _body( self ):        
 
         for p in self.pyToBinPkgProcesses :
@@ -361,19 +369,19 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
                 p.configFactory.qtIfwPackage( p._pyInstConfig, 
                                               isTempSrc=True )
             )
-        self.onPyToBinPkgsBuilt( self.ifwPackages )
+        self.onPyPackagesBuilt( self.ifwPackages )
             
         ifwConfig = self.configFactory.qtIfwConfig( packages=self.ifwPackages )
         self.onQtIfwConfig( ifwConfig )                
-        setupPath = buildInstaller( ifwConfig, 
-                                    self.configFactory.isSilentSetup )
+        self.setupPath = buildInstaller( ifwConfig, 
+                                         self.configFactory.isSilentSetup )
         
         if self.isDesktopTarget :
-            setupPath = moveToDesktop( setupPath )
+            self.setupPath = moveToDesktop( self.setupPath )
         elif self.isHomeDirTarget :
-            setupPath = moveToHomeDir( setupPath )    
+            self.setupPath = moveToHomeDir( self.setupPath )    
         if self.isTestingInstall : 
-            run( setupPath, 
+            run( self.setupPath, 
                  (QT_IFW_VERBOSE_SWITCH 
                  if self.isVerboseInstall else None),
                  isElevated=self.isElevatedTest )
@@ -381,7 +389,7 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
     # Override these to further customize the build process once the 
     # ConfigFactory has produced the initial config object
     def onInitialize( self ):             """VIRTUAL"""
-    def onPyToBinPkgsBuilt( self, pkgs ): """VIRTUAL"""
+    def onPyPackagesBuilt( self, pkgs ): """VIRTUAL"""
     def onQtIfwConfig( self, cfg ):       """VIRTUAL"""                
     def onFinalize( self ):               """VIRTUAL"""
     
@@ -398,7 +406,8 @@ class PyToBinInstallerProcess( _BuildInstallerProcess ):
                 self.__parent = parent
             def onOpyConfig( self, cfg ):    self.__parent.onOpyConfig( cfg )                    
             def onPyInstConfig( self, cfg ): self.__parent.onPyInstConfig( cfg )
-            def onMakeSpec( self, spec ):    self.__parent.onMakeSpec( spec )                       
+            def onMakeSpec( self, spec ):    self.__parent.onMakeSpec( spec )                   
+                                   
         prc = CallbackPyToBinPackageProcess( self, configFactory )
         self.onPyPackageProcess( prc )
             
@@ -430,14 +439,18 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
             def __init__( self, parent, key, configFactory ):
                 PyToBinPackageProcess.__init__( self, configFactory )
                 self.__parent = parent
-                self.__key    = key
+                self.__key    = key                 
+            def onInitialize( self ):
+                self.__parent.onPyPackageInitialize( self.__key )           
             def onOpyConfig( self, cfg ):    
                 self.__parent.onOpyConfig( self.__key, cfg )                    
             def onPyInstConfig( self, cfg ): 
                 self.__parent.onPyInstConfig( self.__key, cfg )
             def onMakeSpec( self, spec ):    
                 self.__parent.onMakeSpec( self.__key, spec )       
-
+            def onFinalize( self ):          
+                self.__parent.onPyPackageFinalize( self.__key )           
+    
         binPrcs = []
         for key, factory in six.iteritems( pyPkgConfigFactoryDict ) :        
             if factory is None :
@@ -459,9 +472,11 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
     def onInitialize( self ):                     """VIRTUAL"""        
     def onConfigFactory( self, key, factory ):    """VIRTUAL"""
     def onPyPackageProcess( self, key, prc ):     """VIRTUAL"""
+    def onPyPackageInitialize( self, key ):       """VIRTUAL"""
     def onOpyConfig( self, key, cfg ):            """VIRTUAL"""                    
     def onPyInstConfig( self, key, cfg ):         """VIRTUAL"""
-    def onMakeSpec( self, key, spec ):            """VIRTUAL"""   
-    def onPyToBinPkgsBuilt( self, pkgs ):         """VIRTUAL"""
+    def onMakeSpec( self, key, spec ):            """VIRTUAL"""
+    def onPyPackageFinalize( self, key ):         """VIRTUAL"""           
+    def onPyPackagesBuilt( self, pkgs ):          """VIRTUAL"""
     def onQtIfwConfig( self, cfg ):               """VIRTUAL"""                                                                
     def onFinalize( self ):                       """VIRTUAL"""

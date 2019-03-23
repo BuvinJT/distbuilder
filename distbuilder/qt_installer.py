@@ -1058,13 +1058,13 @@ def __buildSilentWrapper( qtIfwConfig ) :
             removeFromDir( wrapperPyName )            
             removeFromDir( self.__nestedZipPath 
                            if IS_MACOS else nestedExeName )
-            # TODO : add a standard option to avoid needing this mess
-            # of moving the binary out of the sub directory here           
-            tmpDir = renameInDir( (wrapperExeName, "__" + wrapperExeName) )
-            normWrapperName = util.normBinaryName( wrapperExeName, isGui=False ) 
-            moveToDir( joinPath( tmpDir, normWrapperName ) ) 
+            dirName = basename( self.binDir )
+            binName = basename( self.binPath )       
+            tmpDir = renameInDir( (dirName, "__" + dirName) )             
+            moveToDir( joinPath( tmpDir, binName ) ) 
             removeFromDir( tmpDir )
-            renameInDir( (normWrapperName, destSetupExeName) )
+            self.binPath = renameInDir( (binName, destSetupExeName) )
+            self.binDir = dirPath( self.binPath )            
             #if IS_MACOS : self.__injectHidePropertyIntoApp( destSetupExeName )
                 
         # On macOS enabling LSUIElement in the .plist will prevent 

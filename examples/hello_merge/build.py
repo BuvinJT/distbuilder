@@ -41,7 +41,7 @@ class BuildProcess( RobustInstallerProcess ):
         if key==TK_CONFIG_KEY:    
             cfg.external_modules.extend( [ 'tkinter', 'tkinter.ttk' ] )
             
-    def onPyToBinPkgsBuilt( self, pkgs ):
+    def onPyPackagesBuilt( self, pkgs ):
         comboPkg = mergeQtIfwPackages( pkgs, CLI_CONFIG_KEY, TK_CONFIG_KEY )
         comboPkg.pkgXml.DisplayName = "Hello World Examples"
         comboPkg.pkgXml.Description = "Tk and CLI Examples"
