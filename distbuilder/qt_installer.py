@@ -323,7 +323,13 @@ class QtIfwPackageXml( _QtIfwXml ):
 # -----------------------------------------------------------------------------
 @six.add_metaclass(ABCMeta)
 class _QtIfwScript:
-    
+
+    TRUE  = "true"
+    FALSE = "false"
+
+    RUN_PROGRAM_CMD_ARG = "run"
+    TARGET_DIR_CMD_ARG  = "target"
+        
     # an example for use down the line...
     __LINUX_GET_DISTRIBUTION = ( 
 """
@@ -331,6 +337,68 @@ class _QtIfwScript:
         var IS_OPENSUSE = (systemInfo.productType === "opensuse");             
 """ )
 
+    __LOG_TMPL = "console.log(%s);\n"
+    __DEBUG_POPUP_TMPL = ( 
+        'QMessageBox.information("debugbox", "Debug", ' +
+            '%s, QMessageBox.Ok );\n' )
+
+    __VALUE_TMPL      = "installer.value( %s, %s )"
+    __VALUE_LIST_TMPL = "installer.values( %s, %s )"
+
+    @staticmethod        
+    def _autoQuote( value, isAutoQuote ):                  
+        return '"%s"' % (value,) if isAutoQuote else value 
+
+    @staticmethod        
+    def log( msg, isAutoQuote=True ):                  
+        return _QtIfwScript.__LOG_TMPL % (
+            _QtIfwScript._autoQuote( msg, isAutoQuote ),)
+
+    @staticmethod        
+    def debugPopup( msg, isAutoQuote=True ):                  
+        return _QtIfwScript.__DEBUG_POPUP_TMPL % (
+            _QtIfwScript._autoQuote( msg, isAutoQuote ),)
+
+    @staticmethod        
+    def lookupValue( key, default="", isAutoQuote=True ):                  
+        return _QtIfwScript.__VALUE_TMPL % (
+            _QtIfwScript._autoQuote( key, isAutoQuote ),
+            _QtIfwScript._autoQuote( default, isAutoQuote ))
+
+    @staticmethod        
+    def lookupValueList( key, defaultList=[], isAutoQuote=True, 
+                          delimiter=None ):
+        defList=""
+        for v in defaultList: 
+            defList += _QtIfwScript._autoQuote( str(v), isAutoQuote )
+        defList = "[%s]" % defList            
+        if delimiter:
+            valScr = _QtIfwScript.lookupValue( key, isAutoQuote=True )
+            return ( '( %s=="" ? %s : %s.split("%s") )' % 
+                ( valScr, defList, valScr, delimiter ) )
+        return _QtIfwScript.__VALUE_LIST_TMPL % (
+            _QtIfwScript._autoQuote( key, isAutoQuote ),
+            defList )
+
+    @staticmethod        
+    def ifCmdLineArg( arg ):                  
+        return 'if( ' + _QtIfwScript.lookupValue( arg ) + '!="" )\n    '
+
+    @staticmethod        
+    def cmdLineArg( arg, default="" ):                  
+        return _QtIfwScript.lookupValue( arg, default )
+
+    @staticmethod        
+    def cmdLineSwitchArg( arg ):
+        return ( '(%s=="%s")' % 
+            ( _QtIfwScript.lookupValue( arg, isAutoQuote=True ),
+              _QtIfwScript.TRUE ) )
+
+    @staticmethod        
+    def _cmdLineListArg( arg, default=[] ):                  
+        return _QtIfwScript.lookupValueList( 
+            arg, default, delimiter="," )
+        
     def __init__( self, fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
         self.fileName = fileName
@@ -382,75 +450,27 @@ Controller.prototype.%sPageCallback = function() {
         gui.clickButton(buttons.NextButton);
     });
 """ )
-    
-    __LOG_TMPL = "console.log(%s);\n"
-    __DEBUG_POPUP_TMPL = ( 
-        'QMessageBox.information("debugbox", "Debug", ' +
-            '%s, QMessageBox.Ok );\n' )
-    
+        
     __CLICK_BUTTON_TMPL       = "gui.clickButton(%s);\n"
     __CLICK_BUTTON_DELAY_TMPL = "gui.clickButton(%s, %d);\n"
 
     __SET_CHECKBOX_STATE_TMPL = (
-        "gui.currentPageWidget().%s.setChecked(%s);" ); 
+        "gui.currentPageWidget().%s.setChecked(%s);" )
 
-    __VALUE_TMPL      = "installer.value( %s, %s )"
-    __VALUE_LIST_TMPL = "installer.values( %s, %s )"
-
-    _NEXT_BUTTON   = "buttons.NextButton"
-    _BACK_BUTTON   = "buttons.BackButton"
-    _CANCEL_BUTTON = "buttons.CancelButton"
-    _FINISH_BUTTON = "buttons.FinishButton"
+    __SET_TEXT_TMPL = (
+        "gui.currentPageWidget().%s.setText(%s)" )
     
-    _ACCEPT_EULA_RADIO_BUTTON = "AcceptLicenseRadioButton"
-    _RUN_PROGRAM_CHECKBOX = "RunItCheckBox"
+    NEXT_BUTTON   = "buttons.NextButton"
+    BACK_BUTTON   = "buttons.BackButton"
+    CANCEL_BUTTON = "buttons.CancelButton"
+    FINISH_BUTTON = "buttons.FinishButton"
+    
+    TARGET_DIR_EDIT_BOX       = "TargetDirectoryLineEdit"
+    ACCEPT_EULA_RADIO_BUTTON  = "AcceptLicenseRadioButton"
+    RUN_PROGRAM_CHECK_BOX     = "RunItCheckBox"
 
     @staticmethod        
-    def __autoQuote( value, isAutoQuote ):                  
-        return '"%s"' % (value,) if isAutoQuote else value 
-
-    @staticmethod        
-    def _log( msg, isAutoQuote=True ):                  
-        return QtIfwControlScript.__LOG_TMPL % (
-            QtIfwControlScript.__autoQuote( msg, isAutoQuote ),)
-
-    @staticmethod        
-    def _debugPopup( msg, isAutoQuote=True ):                  
-        return QtIfwControlScript.__DEBUG_POPUP_TMPL % (
-            QtIfwControlScript.__autoQuote( msg, isAutoQuote ),)
-
-    @staticmethod        
-    def _lookupValue( key, default="", isAutoQuote=True ):                  
-        return QtIfwControlScript.__VALUE_TMPL % (
-            QtIfwControlScript.__autoQuote( key, isAutoQuote ),
-            QtIfwControlScript.__autoQuote( default, isAutoQuote ))
-
-    @staticmethod        
-    def _lookupValueList( key, defaultList=[], isAutoQuote=True, 
-                          delimiter=None ):
-        defList=""
-        for v in defaultList: 
-            defList += QtIfwControlScript.__autoQuote( str(v), isAutoQuote )
-        defList = "[%s]" % defList            
-        if delimiter:
-            valScr = QtIfwControlScript._lookupValue( key, isAutoQuote=True )
-            return ( '( %s=="" ? %s : %s.split("%s") )' % 
-                ( valScr, defList, valScr, delimiter ) )
-        return QtIfwControlScript.__VALUE_LIST_TMPL % (
-            QtIfwControlScript.__autoQuote( key, isAutoQuote ),
-            defList )
-
-    @staticmethod        
-    def _cmdLineArg( arg, default="" ):                  
-        return QtIfwControlScript._lookupValue( arg, default )
-
-    @staticmethod        
-    def _cmdLineListArg( arg, default=[] ):                  
-        return QtIfwControlScript._lookupValueList( 
-            arg, default, delimiter="," )
-        
-    @staticmethod        
-    def _getClickButton( buttonName, delayMillis=None ):                
+    def clickButton( buttonName, delayMillis=None ):                
         return ( 
             QtIfwControlScript.__CLICK_BUTTON_DELAY_TMPL 
                 % (buttonName, delayMillis)
@@ -460,21 +480,25 @@ Controller.prototype.%sPageCallback = function() {
 
     # Note: checkbox controls also work on radio buttons
     @staticmethod        
-    def _getEnableCheckBox( checkboxName ):                
+    def enableCheckBox( checkboxName ):                
         return QtIfwControlScript.__SET_CHECKBOX_STATE_TMPL % ( 
-                checkboxName, "true" )
+                checkboxName, _QtIfwScript.TRUE )
 
     @staticmethod        
-    def _getDisableCheckBox( checkboxName ):                
+    def disableCheckBox( checkboxName ):                
         return QtIfwControlScript.__SET_CHECKBOX_STATE_TMPL % ( 
-                checkboxName, "false" )
+                checkboxName, _QtIfwScript.FALSE )
 
     @staticmethod        
-    def _getDynamicCheckBox( checkboxName, boolean ):                
+    def setCheckBox( checkboxName, boolean ):                
         return QtIfwControlScript.__SET_CHECKBOX_STATE_TMPL % ( 
                 checkboxName, boolean )
 
-            
+    @staticmethod        
+    def setText( controlName, text, isAutoQuote=True ):                
+        return QtIfwControlScript.__SET_TEXT_TMPL % ( 
+                controlName, _QtIfwScript._autoQuote( text, isAutoQuote ) )
+    
     def __init__( self,
                   isAutoPilotMode=False,                    
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
@@ -581,22 +605,27 @@ Controller.prototype.%sPageCallback = function() {
         self.introductionPageCallbackBody = ""
         if self.isAutoPilotMode :
             self.introductionPageCallbackBody += ( 
-                QtIfwControlScript._getClickButton( 
-                    QtIfwControlScript._NEXT_BUTTON ) 
+                QtIfwControlScript.clickButton( 
+                    QtIfwControlScript.NEXT_BUTTON ) 
             ) 
         if self.introductionPageCallbackBody == "" :
             self.introductionPageCallbackBody = None
 
     def __genTargetDirectoryPageCallbackBody( self ):
         self.targetDirectoryPageCallbackBody = ""
+        self.targetDirectoryPageCallbackBody += (
+            _QtIfwScript.ifCmdLineArg( 
+                _QtIfwScript.TARGET_DIR_CMD_ARG ) +
+                QtIfwControlScript.setText(
+                    QtIfwControlScript.TARGET_DIR_EDIT_BOX, 
+                    _QtIfwScript.cmdLineArg( 
+                        _QtIfwScript.TARGET_DIR_CMD_ARG ), 
+                    isAutoQuote=False ) 
+        )
         if self.isAutoPilotMode :
-            # TODO: auto target path logic (vs default)
-            """
-            gui.currentPageWidget().TargetDirectoryLineEdit.setText( "......" );
-            """
-            self.targetDirectoryPageCallbackBody += (
-                QtIfwControlScript._getClickButton( 
-                    QtIfwControlScript._NEXT_BUTTON ) 
+            self.targetDirectoryPageCallbackBody += (                                    
+                QtIfwControlScript.clickButton( 
+                    QtIfwControlScript.NEXT_BUTTON ) 
             ) 
         if self.targetDirectoryPageCallbackBody == "" :
             self.targetDirectoryPageCallbackBody = None
@@ -611,8 +640,8 @@ Controller.prototype.%sPageCallback = function() {
             widget.selectComponent("......");
             """
             self.componentSelectionPageCallbackBody += ( 
-                QtIfwControlScript._getClickButton( 
-                    QtIfwControlScript._NEXT_BUTTON ) 
+                QtIfwControlScript.clickButton( 
+                    QtIfwControlScript.NEXT_BUTTON ) 
             )
         if self.componentSelectionPageCallbackBody == "" :
             self.componentSelectionPageCallbackBody = None
@@ -621,10 +650,10 @@ Controller.prototype.%sPageCallback = function() {
         self.licenseAgreementPageCallbackBody = ""
         if self.isAutoPilotMode :            
             self.licenseAgreementPageCallbackBody += (
-                QtIfwControlScript._getEnableCheckBox( 
-                    QtIfwControlScript._ACCEPT_EULA_RADIO_BUTTON ) + 
-                QtIfwControlScript._getClickButton( 
-                    QtIfwControlScript._NEXT_BUTTON ) 
+                QtIfwControlScript.enableCheckBox( 
+                    QtIfwControlScript.ACCEPT_EULA_RADIO_BUTTON ) + 
+                QtIfwControlScript.clickButton( 
+                    QtIfwControlScript.NEXT_BUTTON ) 
             ) 
         if self.licenseAgreementPageCallbackBody == "" :
             self.licenseAgreementPageCallbackBody = None
@@ -633,8 +662,8 @@ Controller.prototype.%sPageCallback = function() {
         self.startMenuDirectoryPageCallbackBody = ""
         if self.isAutoPilotMode :
             self.startMenuDirectoryPageCallbackBody += ( 
-                QtIfwControlScript._getClickButton( 
-                    QtIfwControlScript._NEXT_BUTTON ) 
+                QtIfwControlScript.clickButton( 
+                    QtIfwControlScript.NEXT_BUTTON ) 
             )
         if self.startMenuDirectoryPageCallbackBody == "" :
             self.startMenuDirectoryPageCallbackBody = None
@@ -643,8 +672,8 @@ Controller.prototype.%sPageCallback = function() {
         self.readyForInstallationPageCallbackBody = ""
         if self.isAutoPilotMode :
             self.readyForInstallationPageCallbackBody += (
-                QtIfwControlScript._getClickButton( 
-                    QtIfwControlScript._NEXT_BUTTON ) 
+                QtIfwControlScript.clickButton( 
+                    QtIfwControlScript.NEXT_BUTTON ) 
             )                
         if self.readyForInstallationPageCallbackBody == "" :
             self.readyForInstallationPageCallbackBody = None
@@ -653,21 +682,26 @@ Controller.prototype.%sPageCallback = function() {
         self.performInstallationPageCallbackBody = ""
         if self.isAutoPilotMode :
             self.performInstallationPageCallbackBody += (
-                QtIfwControlScript._getClickButton( 
-                    QtIfwControlScript._NEXT_BUTTON ) 
+                QtIfwControlScript.clickButton( 
+                    QtIfwControlScript.NEXT_BUTTON ) 
             )
         if self.performInstallationPageCallbackBody == "" :
             self.performInstallationPageCallbackBody = None
 
     def __genFinishedPageCallbackBody( self ):
         self.finishedPageCallbackBody = ""
+        self.finishedPageCallbackBody += (                
+            _QtIfwScript.ifCmdLineArg( 
+                _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +               
+                QtIfwControlScript.setCheckBox( 
+                    QtIfwControlScript.RUN_PROGRAM_CHECK_BOX, 
+                        _QtIfwScript.cmdLineSwitchArg(
+                            _QtIfwScript.RUN_PROGRAM_CMD_ARG ) ) 
+        )
         if self.isAutoPilotMode :                        
-            self.finishedPageCallbackBody += (
-                "var isRunIt = false;\n" +
-                QtIfwControlScript._getDynamicCheckBox( 
-                    QtIfwControlScript._RUN_PROGRAM_CHECKBOX, "isRunIt" ) +                 
-                QtIfwControlScript._getClickButton( 
-                    QtIfwControlScript._FINISH_BUTTON ) 
+            self.finishedPageCallbackBody += (                                 
+                QtIfwControlScript.clickButton( 
+                    QtIfwControlScript.FINISH_BUTTON ) 
             )            
         if self.finishedPageCallbackBody == "" :
             self.finishedPageCallbackBody = None
