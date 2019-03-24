@@ -58,8 +58,6 @@ class QtIfwConfig:
         self.packages            = packages # list of QtIfwPackages or directory paths
         self.configXml           = configXml
         self.controlScript       = controlScript         
-        if self.controlScript and self.configXml: 
-            self.configXml.ControlScript = self.controlScript.fileName  
         
         self.setupExeName        = setupExeName
         # Qt paths (attempt to use environmental variables if not defined)
@@ -385,20 +383,97 @@ Controller.prototype.%sPageCallback = function() {
     });
 """ )
     
-    __CLICK_BUTTON_TMPL       = "gui.clickButton(%s);"
-    __CLICK_BUTTON_DELAY_TMPL = "gui.clickButton(%s, %d);"
+    __LOG_TMPL = "console.log(%s);\n"
+    __DEBUG_POPUP_TMPL = ( 
+        'QMessageBox.information("debugbox", "Debug", ' +
+            '%s, QMessageBox.Ok );\n' )
+    
+    __CLICK_BUTTON_TMPL       = "gui.clickButton(%s);\n"
+    __CLICK_BUTTON_DELAY_TMPL = "gui.clickButton(%s, %d);\n"
+
+    __SET_CHECKBOX_STATE_TMPL = (
+        "gui.currentPageWidget().%s.setChecked(%s);" ); 
+
+    __VALUE_TMPL      = "installer.value( %s, %s )"
+    __VALUE_LIST_TMPL = "installer.values( %s, %s )"
 
     _NEXT_BUTTON   = "buttons.NextButton"
     _BACK_BUTTON   = "buttons.BackButton"
     _CANCEL_BUTTON = "buttons.CancelButton"
     _FINISH_BUTTON = "buttons.FinishButton"
     
+    _ACCEPT_EULA_RADIO_BUTTON = "AcceptLicenseRadioButton"
+    _RUN_PROGRAM_CHECKBOX = "RunItCheckBox"
+
     @staticmethod        
-    def _getClickButton( button, delayMillis=None ):                
+    def __autoQuote( value, isAutoQuote ):                  
+        return '"%s"' % (value,) if isAutoQuote else value 
+
+    @staticmethod        
+    def _log( msg, isAutoQuote=True ):                  
+        return QtIfwControlScript.__LOG_TMPL % (
+            QtIfwControlScript.__autoQuote( msg, isAutoQuote ),)
+
+    @staticmethod        
+    def _debugPopup( msg, isAutoQuote=True ):                  
+        return QtIfwControlScript.__DEBUG_POPUP_TMPL % (
+            QtIfwControlScript.__autoQuote( msg, isAutoQuote ),)
+
+    @staticmethod        
+    def _lookupValue( key, default="", isAutoQuote=True ):                  
+        return QtIfwControlScript.__VALUE_TMPL % (
+            QtIfwControlScript.__autoQuote( key, isAutoQuote ),
+            QtIfwControlScript.__autoQuote( default, isAutoQuote ))
+
+    @staticmethod        
+    def _lookupValueList( key, defaultList=[], isAutoQuote=True, 
+                          delimiter=None ):
+        defList=""
+        for v in defaultList: 
+            defList += QtIfwControlScript.__autoQuote( str(v), isAutoQuote )
+        defList = "[%s]" % defList            
+        if delimiter:
+            valScr = QtIfwControlScript._lookupValue( key, isAutoQuote=True )
+            return ( '( %s=="" ? %s : %s.split("%s") )' % 
+                ( valScr, defList, valScr, delimiter ) )
+        return QtIfwControlScript.__VALUE_LIST_TMPL % (
+            QtIfwControlScript.__autoQuote( key, isAutoQuote ),
+            defList )
+
+    @staticmethod        
+    def _cmdLineArg( arg, default="" ):                  
+        return QtIfwControlScript._lookupValue( arg, default )
+
+    @staticmethod        
+    def _cmdLineListArg( arg, default=[] ):                  
+        return QtIfwControlScript._lookupValueList( 
+            arg, default, delimiter="," )
+        
+    @staticmethod        
+    def _getClickButton( buttonName, delayMillis=None ):                
         return ( 
-            QtIfwControlScript.__CLICK_BUTTON_DELAY_TMPL % (button, delayMillis)
+            QtIfwControlScript.__CLICK_BUTTON_DELAY_TMPL 
+                % (buttonName, delayMillis)
             if delayMillis else
-            QtIfwControlScript.__CLICK_BUTTON_TMPL % (button,) )
+            QtIfwControlScript.__CLICK_BUTTON_TMPL 
+                % (buttonName,) )
+
+    # Note: checkbox controls also work on radio buttons
+    @staticmethod        
+    def _getEnableCheckBox( checkboxName ):                
+        return QtIfwControlScript.__SET_CHECKBOX_STATE_TMPL % ( 
+                checkboxName, "true" )
+
+    @staticmethod        
+    def _getDisableCheckBox( checkboxName ):                
+        return QtIfwControlScript.__SET_CHECKBOX_STATE_TMPL % ( 
+                checkboxName, "false" )
+
+    @staticmethod        
+    def _getDynamicCheckBox( checkboxName, boolean ):                
+        return QtIfwControlScript.__SET_CHECKBOX_STATE_TMPL % ( 
+                checkboxName, boolean )
+
             
     def __init__( self,
                   isAutoPilotMode=False,                    
@@ -546,7 +621,8 @@ Controller.prototype.%sPageCallback = function() {
         self.licenseAgreementPageCallbackBody = ""
         if self.isAutoPilotMode :            
             self.licenseAgreementPageCallbackBody += (
-                "gui.currentPageWidget().AcceptLicenseRadioButton.setChecked(true);\n" + 
+                QtIfwControlScript._getEnableCheckBox( 
+                    QtIfwControlScript._ACCEPT_EULA_RADIO_BUTTON ) + 
                 QtIfwControlScript._getClickButton( 
                     QtIfwControlScript._NEXT_BUTTON ) 
             ) 
@@ -588,7 +664,8 @@ Controller.prototype.%sPageCallback = function() {
         if self.isAutoPilotMode :                        
             self.finishedPageCallbackBody += (
                 "var isRunIt = false;\n" +
-                "gui.currentPageWidget().RunItCheckBox.setChecked(isRunIt);\n" +                                   
+                QtIfwControlScript._getDynamicCheckBox( 
+                    QtIfwControlScript._RUN_PROGRAM_CHECKBOX, "isRunIt" ) +                 
                 QtIfwControlScript._getClickButton( 
                     QtIfwControlScript._FINISH_BUTTON ) 
             )            
@@ -929,8 +1006,13 @@ def __initBuild( qtIfwConfig ) :
                         joinPath( destDir, p.exeName ) )            
     print( "Build directory created: %s" % (BUILD_SETUP_DIR_PATH,) )
 
-def __addInstallerResources( qtIfwConfig ) :        
+def __addInstallerResources( qtIfwConfig ) :
     configXml = qtIfwConfig.configXml
+    ctrlScript = qtIfwConfig.controlScript
+    
+    if ctrlScript and configXml: 
+        configXml.ControlScript = ctrlScript.fileName         
+            
     if configXml : 
         print( "Adding installer configuration resources..." )
         configXml.debug()
@@ -941,7 +1023,6 @@ def __addInstallerResources( qtIfwConfig ) :
                 copyFile( iconFilePath,                       
                           joinPath( configXml.dirPath(), 
                                     basename( configXml.iconFilePath ) ) )
-    ctrlScript = qtIfwConfig.controlScript
     if ctrlScript :
         print( "Adding installer control script..." )
         ctrlScript.debug()
