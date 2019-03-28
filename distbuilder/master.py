@@ -65,18 +65,20 @@ class ConfigFactory:
         self.setupName     = DEFAULT_SETUP_NAME
         self.ifwDefDirPath = None        
         self.ifwPackages   = None
-        
-        self.ifwCntrlScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
-        self.ifwCntrlScript     = None
+                
+        self.ifwCntrlScript     = None                
+        self.ifwCntrlScriptText = None
         self.ifwCntrlScriptPath = None
+        self.ifwCntrlScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
 
         self.ifwPkgId         = None
         self.ifwPkgName       = None
         self.ifwPkgNamePrefix = "com"        
-       
-        self.ifwPkgScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
-        self.ifwPkgScript     = None
+           
+        self.ifwPkgScript     = None           
+        self.ifwPkgScriptText = None
         self.ifwPkgScriptPath = None        
+        self.ifwPkgScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
         
         self.pkgSrcDirPath    = None
        
@@ -135,14 +137,15 @@ class ConfigFactory:
         return xml
 
     def qtIfwControlScript( self ) :
+        if self.ifwCntrlScript : return self.ifwCntrlScript 
         if( not self.isSilentSetup and
-            self.ifwCntrlScript is None and 
+            self.ifwCntrlScriptText is None and 
             self.ifwCntrlScriptPath is None ):
             return None     
         return QtIfwControlScript(
                 isAutoPilotMode = self.isSilentSetup,
                 fileName=self.ifwCntrlScriptName,
-                script=self.ifwCntrlScript, 
+                script=self.ifwCntrlScriptText, 
                 scriptPath=self.ifwCntrlScriptPath )
         
     def qtIfwPackage( self, pyInstConfig=None, isTempSrc=False ):
@@ -164,6 +167,7 @@ class ConfigFactory:
                 self.__versionStr(), self.ifwPkgScriptName )
     
     def qtIfwPackageScript( self, pyInstConfig=None ) :
+        if self.ifwPkgScript : return self.ifwPkgScript
         self.__pkgPyInstConfig = pyInstConfig
         pngIconResPath = ( self.__pkgPyInstConfig._pngIconResPath
             if IS_LINUX and self.__pkgPyInstConfig is not None
@@ -177,7 +181,7 @@ class ConfigFactory:
         script = QtIfwPackageScript( self.__ifwPkgName(), 
                     shortcuts=[ defShortcut ],
                     fileName=self.ifwPkgScriptName,
-                    script=self.ifwPkgScript, 
+                    script=self.ifwPkgScriptText, 
                     scriptPath=self.ifwPkgScriptPath )
         return script
 

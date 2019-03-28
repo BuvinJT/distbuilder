@@ -324,11 +324,17 @@ class QtIfwPackageXml( _QtIfwXml ):
 @six.add_metaclass(ABCMeta)
 class _QtIfwScript:
 
+    TAB   = "    " 
     TRUE  = "true"
     FALSE = "false"
-
-    RUN_PROGRAM_CMD_ARG = "run"
-    TARGET_DIR_CMD_ARG  = "target"
+    
+    TARGET_DIR_CMD_ARG     = "target"
+    START_MENU_DIR_CMD_ARG = "startmenu"    
+    ACCEPT_EULA_CMD_ARG    = "accept"
+    INSTALL_LIST_CMD_ARG   = "install"
+    INCLUDE_LIST_CMD_ARG   = "include"
+    EXCLUDE_LIST_CMD_ARG   = "exclude"
+    RUN_PROGRAM_CMD_ARG    = "run"
         
     # an example for use down the line...
     __LINUX_GET_DISTRIBUTION = ( 
@@ -357,7 +363,7 @@ class _QtIfwScript:
     @staticmethod        
     def debugPopup( msg, isAutoQuote=True ):                  
         return _QtIfwScript.__DEBUG_POPUP_TMPL % (
-            _QtIfwScript._autoQuote( msg, isAutoQuote ),)
+             _QtIfwScript._autoQuote( msg, isAutoQuote ),) 
 
     @staticmethod        
     def lookupValue( key, default="", isAutoQuote=True ):                  
@@ -395,7 +401,7 @@ class _QtIfwScript:
               _QtIfwScript.TRUE ) )
 
     @staticmethod        
-    def _cmdLineListArg( arg, default=[] ):                  
+    def cmdLineListArg( arg, default=[] ):                  
         return _QtIfwScript.lookupValueList( 
             arg, default, delimiter="," )
         
@@ -406,7 +412,7 @@ class _QtIfwScript:
             with open( scriptPath, 'rb' ) as f: self.script = f.read()
         else : self.script = script  
                                                     
-    def __str__( self ) : 
+    def __str__( self ) :
         if not self.script: self._generate()
         return self.script
         
@@ -455,19 +461,20 @@ Controller.prototype.%sPageCallback = function() {
     __CLICK_BUTTON_DELAY_TMPL = "gui.clickButton(%s, %d);\n"
 
     __SET_CHECKBOX_STATE_TMPL = (
-        "gui.currentPageWidget().%s.setChecked(%s);" )
+        "gui.currentPageWidget().%s.setChecked(%s);\n" )
 
     __SET_TEXT_TMPL = (
-        "gui.currentPageWidget().%s.setText(%s)" )
+        "gui.currentPageWidget().%s.setText(%s);\n" )
     
     NEXT_BUTTON   = "buttons.NextButton"
     BACK_BUTTON   = "buttons.BackButton"
     CANCEL_BUTTON = "buttons.CancelButton"
     FINISH_BUTTON = "buttons.FinishButton"
     
-    TARGET_DIR_EDIT_BOX       = "TargetDirectoryLineEdit"
-    ACCEPT_EULA_RADIO_BUTTON  = "AcceptLicenseRadioButton"
-    RUN_PROGRAM_CHECK_BOX     = "RunItCheckBox"
+    TARGET_DIR_EDITBOX       = "TargetDirectoryLineEdit"
+    START_MENU_DIR_EDITBOX   = "StartMenuPathLineEdit"
+    ACCEPT_EULA_RADIO_BUTTON = "AcceptLicenseRadioButton"
+    RUN_PROGRAM_CHECKBOX     = "RunItCheckBox"
 
     @staticmethod        
     def clickButton( buttonName, delayMillis=None ):                
@@ -533,11 +540,7 @@ Controller.prototype.%sPageCallback = function() {
         
         self.finishedPageCallbackBody = None
         self.isAutoFinishedPageCallback = True        
-                                                    
-    def __str__( self ) : 
-        if not self.script: self._generate()
-        return self.script
-            
+                                                                
     def _generate( self ) :        
         self.script = ""
         
@@ -616,15 +619,15 @@ Controller.prototype.%sPageCallback = function() {
         self.targetDirectoryPageCallbackBody += (
             _QtIfwScript.ifCmdLineArg( 
                 _QtIfwScript.TARGET_DIR_CMD_ARG ) +
-                QtIfwControlScript.setText(
-                    QtIfwControlScript.TARGET_DIR_EDIT_BOX, 
+                _QtIfwScript.TAB + QtIfwControlScript.setText(
+                    QtIfwControlScript.TARGET_DIR_EDITBOX, 
                     _QtIfwScript.cmdLineArg( 
                         _QtIfwScript.TARGET_DIR_CMD_ARG ), 
                     isAutoQuote=False ) 
         )
         if self.isAutoPilotMode :
             self.targetDirectoryPageCallbackBody += (                                    
-                QtIfwControlScript.clickButton( 
+                _QtIfwScript.TAB + QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
             ) 
         if self.targetDirectoryPageCallbackBody == "" :
@@ -632,13 +635,37 @@ Controller.prototype.%sPageCallback = function() {
 
     def __genComponentSelectionPageCallbackBody( self ):
         self.componentSelectionPageCallbackBody = ""        
+        self.componentSelectionPageCallbackBody += (
+            "var page = gui.currentPageWidget();\n" +            
+            '    ' + _QtIfwScript.ifCmdLineArg( 
+                _QtIfwScript.INSTALL_LIST_CMD_ARG ) + 
+            '    {\n' +
+            '        var comps = ' +
+                    _QtIfwScript.cmdLineListArg( 
+                        _QtIfwScript.INSTALL_LIST_CMD_ARG ) + ';\n' +
+            '        if( comps[0]="all" )\n'
+            '            page.selectAll();\n' +
+            '        else {\n' +
+            '            page.deselectAll();\n' +
+            '            for( i=0; i < comps.length; i++ ) \n' +
+            '                page.selectComponent( comps[i].trim() );\n' +
+            '        }\n' +                         
+            '    }\n' +
+            '    else {\n' +            
+            '        var includes = ' +
+                        _QtIfwScript.cmdLineListArg( 
+                            _QtIfwScript.INCLUDE_LIST_CMD_ARG ) + ';\n' +
+            '        for( i=0; i < includes.length; i++ ) \n' +
+            '            page.selectComponent( includes[i].trim() );\n' +
+            '\n' +
+            '        var excludes = ' +
+                        _QtIfwScript.cmdLineListArg( 
+                            _QtIfwScript.EXCLUDE_LIST_CMD_ARG ) + ';\n' +
+            '        for( i=0; i < excludes.length; i++ ) \n' +
+            '            page.deselectComponent( excludes[i].trim() );\n' +
+            '    }\n' 
+        )
         if self.isAutoPilotMode :
-            # TODO: auto component selection logic (vs default)
-            """
-            var widget = gui.currentPageWidget();
-            widget.deselectAll();
-            widget.selectComponent("......");
-            """
             self.componentSelectionPageCallbackBody += ( 
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
@@ -647,19 +674,39 @@ Controller.prototype.%sPageCallback = function() {
             self.componentSelectionPageCallbackBody = None
 
     def __genLicenseAgreementPageCallbackBody( self ):
-        self.licenseAgreementPageCallbackBody = ""
+        self.licenseAgreementPageCallbackBody = ""        
         if self.isAutoPilotMode :            
             self.licenseAgreementPageCallbackBody += (
                 QtIfwControlScript.enableCheckBox( 
-                    QtIfwControlScript.ACCEPT_EULA_RADIO_BUTTON ) + 
-                QtIfwControlScript.clickButton( 
+                    QtIfwControlScript.ACCEPT_EULA_RADIO_BUTTON ) +                 
+                _QtIfwScript.TAB + QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
-            ) 
+            )
+        else:
+            self.licenseAgreementPageCallbackBody += (                        
+                _QtIfwScript.ifCmdLineArg( 
+                    _QtIfwScript.ACCEPT_EULA_CMD_ARG ) +  
+                    _QtIfwScript.TAB +             
+                    QtIfwControlScript.setCheckBox( 
+                        QtIfwControlScript.ACCEPT_EULA_RADIO_BUTTON, 
+                            _QtIfwScript.cmdLineSwitchArg(
+                                _QtIfwScript.ACCEPT_EULA_CMD_ARG ) ) 
+            )                         
         if self.licenseAgreementPageCallbackBody == "" :
             self.licenseAgreementPageCallbackBody = None
 
     def __genStartMenuDirectoryPageCallbackBody( self ):
-        self.startMenuDirectoryPageCallbackBody = ""
+        self.startMenuDirectoryPageCallbackBody = ""       
+        self.startMenuDirectoryPageCallbackBody += (
+            _QtIfwScript.ifCmdLineArg( 
+                _QtIfwScript.START_MENU_DIR_CMD_ARG ) +
+                _QtIfwScript.TAB + 
+                QtIfwControlScript.setText(
+                    QtIfwControlScript.START_MENU_DIR_EDITBOX, 
+                    _QtIfwScript.cmdLineArg( 
+                        _QtIfwScript.START_MENU_DIR_CMD_ARG ), 
+                    isAutoQuote=False ) 
+        )        
         if self.isAutoPilotMode :
             self.startMenuDirectoryPageCallbackBody += ( 
                 QtIfwControlScript.clickButton( 
@@ -693,8 +740,8 @@ Controller.prototype.%sPageCallback = function() {
         self.finishedPageCallbackBody += (                
             _QtIfwScript.ifCmdLineArg( 
                 _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +               
-                QtIfwControlScript.setCheckBox( 
-                    QtIfwControlScript.RUN_PROGRAM_CHECK_BOX, 
+                _QtIfwScript.TAB + QtIfwControlScript.setCheckBox( 
+                    QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
                         _QtIfwScript.cmdLineSwitchArg(
                             _QtIfwScript.RUN_PROGRAM_CMD_ARG ) ) 
         )
@@ -837,11 +884,7 @@ class QtIfwPackageScript( _QtIfwScript ):
         
         self.componentCreateOperationsBody = None
         self.isAutoComponentCreateOperations = True
-                                            
-    def __str__( self ) : 
-        if not self.script: self._generate()
-        return self.script
-            
+                                                        
     def _generate( self ) :        
         self.script = ""
         if self.isAutoComponentConstructor:
