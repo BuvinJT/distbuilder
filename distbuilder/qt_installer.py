@@ -335,6 +335,7 @@ class _QtIfwScript:
     INCLUDE_LIST_CMD_ARG   = "include"
     EXCLUDE_LIST_CMD_ARG   = "exclude"
     RUN_PROGRAM_CMD_ARG    = "run"
+    AUTO_PILOT_CMD_ARG     = "auto"
         
     # an example for use down the line...
     __LINUX_GET_DISTRIBUTION = ( 
@@ -387,17 +388,25 @@ class _QtIfwScript:
             defList )
 
     @staticmethod        
-    def ifCmdLineArg( arg ):                  
-        return 'if( ' + _QtIfwScript.lookupValue( arg ) + '!="" )\n    '
+    def ifCmdLineArg( arg, isMultiLine=False ):   
+        return 'if( %s!="" )%s\n%s' % (
+            _QtIfwScript.lookupValue( arg ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
     @staticmethod        
-    def cmdLineArg( arg, default="" ):                  
+    def ifCmdLineSwitch( arg, isMultiLine=False ):
+        return 'if( %s=="%s" )%s\n%s' % (
+            _QtIfwScript.lookupValue( arg ), _QtIfwScript.TRUE,
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+
+    @staticmethod        
+    def cmdLineArg( arg, default="" ):
         return _QtIfwScript.lookupValue( arg, default )
 
     @staticmethod        
     def cmdLineSwitchArg( arg ):
         return ( '(%s=="%s")' % 
-            ( _QtIfwScript.lookupValue( arg, isAutoQuote=True ),
+            ( _QtIfwScript.lookupValue( arg ),
               _QtIfwScript.TRUE ) )
 
     @staticmethod        
@@ -507,12 +516,9 @@ Controller.prototype.%sPageCallback = function() {
                 controlName, _QtIfwScript._autoQuote( text, isAutoQuote ) )
     
     def __init__( self,
-                  isAutoPilotMode=False,                    
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
         _QtIfwScript.__init__( self, fileName, script, scriptPath )
-
-        self.isAutoPilotMode = isAutoPilotMode
         
         self.controllerConstructorBody = None
         self.isAutoControllerConstructor = True
@@ -598,44 +604,34 @@ Controller.prototype.%sPageCallback = function() {
                 ("Finished", self.finishedPageCallbackBody) )
         
     def __genControllerConstructorBody( self ):
-        self.controllerConstructorBody = ""
-        if self.isAutoPilotMode :   
-            self.controllerConstructorBody += (
-                QtIfwControlScript.__SILENT_CONSTRUCTOR_BODY
-            )
+        self.controllerConstructorBody = (        
+            _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
+            "{\n" + QtIfwControlScript.__SILENT_CONSTRUCTOR_BODY + "}\n" 
+            ) 
                  
     def __genIntroductionPageCallbackBody( self ):
-        self.introductionPageCallbackBody = ""
-        if self.isAutoPilotMode :
-            self.introductionPageCallbackBody += ( 
+        self.introductionPageCallbackBody = (
+            _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +             
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
             ) 
-        if self.introductionPageCallbackBody == "" :
-            self.introductionPageCallbackBody = None
 
     def __genTargetDirectoryPageCallbackBody( self ):
-        self.targetDirectoryPageCallbackBody = ""
-        self.targetDirectoryPageCallbackBody += (
+        self.targetDirectoryPageCallbackBody = (
             _QtIfwScript.ifCmdLineArg( 
                 _QtIfwScript.TARGET_DIR_CMD_ARG ) +
                 _QtIfwScript.TAB + QtIfwControlScript.setText(
                     QtIfwControlScript.TARGET_DIR_EDITBOX, 
                     _QtIfwScript.cmdLineArg( 
                         _QtIfwScript.TARGET_DIR_CMD_ARG ), 
-                    isAutoQuote=False ) 
-        )
-        if self.isAutoPilotMode :
-            self.targetDirectoryPageCallbackBody += (                                    
-                _QtIfwScript.TAB + QtIfwControlScript.clickButton( 
+                    isAutoQuote=False ) +
+            _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
+                QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
             ) 
-        if self.targetDirectoryPageCallbackBody == "" :
-            self.targetDirectoryPageCallbackBody = None
 
     def __genComponentSelectionPageCallbackBody( self ):
-        self.componentSelectionPageCallbackBody = ""        
-        self.componentSelectionPageCallbackBody += (
+        self.componentSelectionPageCallbackBody = (
             "var page = gui.currentPageWidget();\n" +            
             '    ' + _QtIfwScript.ifCmdLineArg( 
                 _QtIfwScript.INSTALL_LIST_CMD_ARG ) + 
@@ -663,41 +659,33 @@ Controller.prototype.%sPageCallback = function() {
                             _QtIfwScript.EXCLUDE_LIST_CMD_ARG ) + ';\n' +
             '        for( i=0; i < excludes.length; i++ ) \n' +
             '            page.deselectComponent( excludes[i].trim() );\n' +
-            '    }\n' 
-        )
-        if self.isAutoPilotMode :
-            self.componentSelectionPageCallbackBody += ( 
+            '    }\n' +
+            _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
             )
-        if self.componentSelectionPageCallbackBody == "" :
-            self.componentSelectionPageCallbackBody = None
 
     def __genLicenseAgreementPageCallbackBody( self ):
-        self.licenseAgreementPageCallbackBody = ""        
-        if self.isAutoPilotMode :            
-            self.licenseAgreementPageCallbackBody += (
+        self.licenseAgreementPageCallbackBody = (
+            _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
+            '{\n' +                        
                 QtIfwControlScript.enableCheckBox( 
                     QtIfwControlScript.ACCEPT_EULA_RADIO_BUTTON ) +                 
                 _QtIfwScript.TAB + QtIfwControlScript.clickButton( 
-                    QtIfwControlScript.NEXT_BUTTON ) 
-            )
-        else:
-            self.licenseAgreementPageCallbackBody += (                        
+                    QtIfwControlScript.NEXT_BUTTON ) + 
+            '    }\nelse{\n' +
                 _QtIfwScript.ifCmdLineArg( 
                     _QtIfwScript.ACCEPT_EULA_CMD_ARG ) +  
                     _QtIfwScript.TAB +             
                     QtIfwControlScript.setCheckBox( 
                         QtIfwControlScript.ACCEPT_EULA_RADIO_BUTTON, 
                             _QtIfwScript.cmdLineSwitchArg(
-                                _QtIfwScript.ACCEPT_EULA_CMD_ARG ) ) 
+                                _QtIfwScript.ACCEPT_EULA_CMD_ARG ) ) +
+            '    }'                      
             )                         
-        if self.licenseAgreementPageCallbackBody == "" :
-            self.licenseAgreementPageCallbackBody = None
 
     def __genStartMenuDirectoryPageCallbackBody( self ):
-        self.startMenuDirectoryPageCallbackBody = ""       
-        self.startMenuDirectoryPageCallbackBody += (
+        self.startMenuDirectoryPageCallbackBody = (
             _QtIfwScript.ifCmdLineArg( 
                 _QtIfwScript.START_MENU_DIR_CMD_ARG ) +
                 _QtIfwScript.TAB + 
@@ -705,53 +693,38 @@ Controller.prototype.%sPageCallback = function() {
                     QtIfwControlScript.START_MENU_DIR_EDITBOX, 
                     _QtIfwScript.cmdLineArg( 
                         _QtIfwScript.START_MENU_DIR_CMD_ARG ), 
-                    isAutoQuote=False ) 
-        )        
-        if self.isAutoPilotMode :
-            self.startMenuDirectoryPageCallbackBody += ( 
+                    isAutoQuote=False ) +
+            _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +                 
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
             )
-        if self.startMenuDirectoryPageCallbackBody == "" :
-            self.startMenuDirectoryPageCallbackBody = None
 
     def __genReadyForInstallationPageCallbackBody( self ):
-        self.readyForInstallationPageCallbackBody = ""
-        if self.isAutoPilotMode :
-            self.readyForInstallationPageCallbackBody += (
+        self.readyForInstallationPageCallbackBody = (
+            _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
             )                
-        if self.readyForInstallationPageCallbackBody == "" :
-            self.readyForInstallationPageCallbackBody = None
 
     def __genPerformInstallationPageCallbackBody( self ):
-        self.performInstallationPageCallbackBody = ""
-        if self.isAutoPilotMode :
-            self.performInstallationPageCallbackBody += (
+        self.performInstallationPageCallbackBody = (
+            _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +            
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
             )
-        if self.performInstallationPageCallbackBody == "" :
-            self.performInstallationPageCallbackBody = None
 
     def __genFinishedPageCallbackBody( self ):
-        self.finishedPageCallbackBody = ""
-        self.finishedPageCallbackBody += (                
+        self.finishedPageCallbackBody = (                
             _QtIfwScript.ifCmdLineArg( 
                 _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +               
                 _QtIfwScript.TAB + QtIfwControlScript.setCheckBox( 
                     QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
                         _QtIfwScript.cmdLineSwitchArg(
-                            _QtIfwScript.RUN_PROGRAM_CMD_ARG ) ) 
-        )
-        if self.isAutoPilotMode :                        
-            self.finishedPageCallbackBody += (                                 
+                            _QtIfwScript.RUN_PROGRAM_CMD_ARG ) ) + 
+            _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.FINISH_BUTTON ) 
             )            
-        if self.finishedPageCallbackBody == "" :
-            self.finishedPageCallbackBody = None
             
     def path( self ) :   
         return joinPath( BUILD_SETUP_DIR_PATH, 
@@ -1207,7 +1180,9 @@ def __buildSilentWrapper( qtIfwConfig ) :
                 self.__nestedZipPath = toZipFile( nestedExeName, 
                                                   isWrapperDirIncluded=True ) 
             removeFromDir( wrapperPyName )
-            with open( absPath( wrapperPyName ), 'w' ) as f: 
+            with open( absPath( wrapperPyName ), 'w' ) as f:
+                print( "Generating silent wrapper script:\n" ) 
+                print( wrapperScript )
                 f.write( wrapperScript )  
             
         def onPyInstConfig( self, cfg ):    
@@ -1249,8 +1224,8 @@ def __silentWrapperScript( exeName ) :
 """
 WORK_DIR = sys._MEIPASS
 EXE_NAME = "{0}"
-ARGS     = ""
-""").format( exeName )
+ARGS     = ["{1}"]
+""").format( exeName, ("%s=true" % (_QtIfwScript.AUTO_PILOT_CMD_ARG,)) )
         
     if IS_WINDOWS: return (
 """     
@@ -1292,8 +1267,10 @@ except ImportError: DEVNULL = open(os.devnull, 'wb')
 {0}
 
 def runInstaller():
-    subprocess.check_call( shlex.split("sudo xvfb-run ./%s" % (EXE_NAME,)), 
-                           cwd=WORK_DIR, stdout=DEVNULL, stderr=DEVNULL ) 
+    cmdList = shlex.split("sudo xvfb-run ./%s" % (EXE_NAME,))
+    cmdList.extend( ARGS )
+    subprocess.check_call( cmdList, cwd=WORK_DIR, 
+                           stdout=DEVNULL, stderr=DEVNULL ) 
 
 def installTempDependencies():    
     cleanUpCmds=[]
@@ -1333,13 +1310,13 @@ APP_BIN_DIR  = os.path.join( APP_PATH, "Contents/MacOS" )
 
 # failed experiment abandoned, but not purged yet...
 # (this only works by forcing the user into a manual 
-#  System Perferrences update, as Apple revoked the 
+#  System Preferences update, as Apple revoked the 
 #  only means of programmatically granting such...
 #  Plus, it's doesn't work "perfectly" anyway...) 
 PROCESS_NAME = os.path.splitext( EXE_NAME )[0]
 RUN_APP_OFF_SCREEN_SCRIPT = (    
 '''
-do shell script "open %s"
+do shell script "open %s %s"
 set isMoved to false
 set attempts to 0
 repeat until isMoved or attempts = 25
@@ -1351,7 +1328,7 @@ repeat until isMoved or attempts = 25
         set attempts to attempts + 1
     end tell
 end repeat
-''') % ( APP_PATH, PROCESS_NAME )
+''') % ( APP_PATH, " ".join(ARGS), PROCESS_NAME )
 
 def extractAppFromZip():
     zipfile.ZipFile( ZIP_PATH, 'r' ).extractall( WORK_DIR )   
@@ -1368,9 +1345,11 @@ def runAppleScript( script ):
 def runInstaller():
     # failed experiment abandoned 
     #runAppleScript( RUN_APP_OFF_SCREEN_SCRIPT )
-    subprocess.check_call( shlex.split("sudo open -W %s" % (EXE_NAME,)), 
-                           cwd=WORK_DIR, stdout=DEVNULL, stderr=DEVNULL ) 
-
+    cmdList = shlex.split("sudo xvfb-run ./%s" % (EXE_NAME,))
+    cmdList.extend( ARGS )
+    subprocess.check_call( cmdList, cwd=WORK_DIR, 
+                           stdout=DEVNULL, stderr=DEVNULL ) 
+    
 extractAppFromZip()
 runInstaller()
 

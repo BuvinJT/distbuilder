@@ -143,7 +143,6 @@ class ConfigFactory:
             self.ifwCntrlScriptPath is None ):
             return None     
         return QtIfwControlScript(
-                isAutoPilotMode = self.isSilentSetup,
                 fileName=self.ifwCntrlScriptName,
                 script=self.ifwCntrlScriptText, 
                 scriptPath=self.ifwCntrlScriptPath )
