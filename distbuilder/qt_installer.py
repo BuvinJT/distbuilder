@@ -324,10 +324,23 @@ class QtIfwPackageXml( _QtIfwXml ):
 @six.add_metaclass(ABCMeta)
 class _QtIfwScript:
 
-    TAB   = "    " 
+    TAB         = "    "
+    NEW_LINE    = "\n" 
+    END_LINE    = ";\n"
+    START_BLOCK = "{\n"
+    END_BLOCK   = "}\n"
+    
     TRUE  = "true"
     FALSE = "false"
     
+    PATH_SEP = '"\\\\"' if IS_WINDOWS else '"/"'  
+    
+    MAINTENANCE_TOOL_NAME  = '"%s"' % ( 
+        util.normBinaryName( "maintenancetool" ) )
+        
+    TARGET_DIR_KEY         = "TargetDir"
+    PRODUCT_NAME_KEY       = "ProductName"
+        
     TARGET_DIR_CMD_ARG     = "target"
     START_MENU_DIR_CMD_ARG = "startmenu"    
     ACCEPT_EULA_CMD_ARG    = "accept"
@@ -351,6 +364,8 @@ class _QtIfwScript:
 
     __VALUE_TMPL      = "installer.value( %s, %s )"
     __VALUE_LIST_TMPL = "installer.values( %s, %s )"
+
+    __FILE_EXITS_TMPL = "installer.fileExists( %s )"
 
     @staticmethod        
     def _autoQuote( value, isAutoQuote ):                  
@@ -388,6 +403,14 @@ class _QtIfwScript:
             defList )
 
     @staticmethod        
+    def targetDir(): 
+        return _QtIfwScript.lookupValue( _QtIfwScript.TARGET_DIR_KEY )
+
+    @staticmethod        
+    def productName(): 
+        return _QtIfwScript.lookupValue( _QtIfwScript.PRODUCT_NAME_KEY )
+    
+    @staticmethod        
     def ifCmdLineArg( arg, isMultiLine=False ):   
         return 'if( %s!="" )%s\n%s' % (
             _QtIfwScript.lookupValue( arg ),
@@ -413,6 +436,17 @@ class _QtIfwScript:
     def cmdLineListArg( arg, default=[] ):                  
         return _QtIfwScript.lookupValueList( 
             arg, default, delimiter="," )
+
+    @staticmethod        
+    def fileExists( path, isAutoQuote=True ):                  
+        return _QtIfwScript.__FILE_EXITS_TMPL % (
+            _QtIfwScript._autoQuote( path, isAutoQuote ),) 
+
+    @staticmethod        
+    def ifFileExists( path, isAutoQuote=True, isMultiLine=False ):   
+        return 'if( %s )%s\n%s' % (
+            _QtIfwScript.fileExists( path, isAutoQuote ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
         
     def __init__( self, fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
@@ -455,8 +489,9 @@ Controller.prototype.%sPageCallback = function() {
     %s
 }\n
 """ )
-                    
-    __SILENT_CONSTRUCTOR_BODY = ( 
+     
+    __AUTO_PILOT_CONSTRUCTOR_BODY = (
+    _QtIfwScript.debugPopup( 'targetExists() ? "installed" : "not installed" ', isAutoQuote=False ) +                
 """
     installer.autoRejectMessageBoxes();
     installer.setMessageBoxAutomaticAnswer("OverwriteTargetDirectory", QMessageBox.Yes);
@@ -519,6 +554,9 @@ Controller.prototype.%sPageCallback = function() {
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
         _QtIfwScript.__init__( self, fileName, script, scriptPath )
+
+        self.controllerGlobals = None
+        self.isAutoGlobals = True
         
         self.controllerConstructorBody = None
         self.isAutoControllerConstructor = True
@@ -549,6 +587,9 @@ Controller.prototype.%sPageCallback = function() {
                                                                 
     def _generate( self ) :        
         self.script = ""
+        
+        if self.isAutoGlobals: self.__genGlobals()
+        if self.controllerGlobals: self.script += self.controllerGlobals
         
         if self.isAutoControllerConstructor:
             self.__genControllerConstructorBody()
@@ -602,11 +643,40 @@ Controller.prototype.%sPageCallback = function() {
         if self.finishedPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
                 ("Finished", self.finishedPageCallbackBody) )
+
+    def __genGlobals( self ):
+        self.controllerGlobals = (
+            'function maintenceToolExists( dir ) ' + _QtIfwScript.START_BLOCK +
+                _QtIfwScript.TAB + 'return ' + 
+                _QtIfwScript.fileExists( "dir + " + _QtIfwScript.PATH_SEP + " + " +
+                    _QtIfwScript.MAINTENANCE_TOOL_NAME, isAutoQuote=False ) +
+                _QtIfwScript.END_LINE + 
+            _QtIfwScript.END_BLOCK + _QtIfwScript.NEW_LINE +
+            'function defaultTargetExists() ' + _QtIfwScript.START_BLOCK +
+                _QtIfwScript.TAB + 'return maintenceToolExists( ' + 
+                    _QtIfwScript.targetDir() + ' )' + _QtIfwScript.END_LINE +  
+            _QtIfwScript.END_BLOCK + _QtIfwScript.NEW_LINE +
+            'function cmdLineTargetExists() ' + _QtIfwScript.START_BLOCK +            
+                _QtIfwScript.TAB + 'return maintenceToolExists( ' + 
+                    _QtIfwScript.cmdLineArg( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
+                    ' )' + _QtIfwScript.END_LINE +
+            _QtIfwScript.END_BLOCK + _QtIfwScript.NEW_LINE +
+            'function targetExists() ' + _QtIfwScript.START_BLOCK +
+                _QtIfwScript.TAB + _QtIfwScript.ifCmdLineArg( 
+                    _QtIfwScript.TARGET_DIR_CMD_ARG ) +
+                (2*_QtIfwScript.TAB) + 'return cmdLineTargetExists()' + 
+                    _QtIfwScript.END_LINE +
+                _QtIfwScript.TAB + 'return defaultTargetExists()' +  
+                    _QtIfwScript.END_LINE +                    
+            _QtIfwScript.END_BLOCK + _QtIfwScript.NEW_LINE                         
+            )
         
     def __genControllerConstructorBody( self ):
-        self.controllerConstructorBody = (        
-            _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
-            "{\n" + QtIfwControlScript.__SILENT_CONSTRUCTOR_BODY + "}\n" 
+        self.controllerConstructorBody = (
+            _QtIfwScript.ifCmdLineSwitch( 
+                _QtIfwScript.AUTO_PILOT_CMD_ARG, isMultiLine=True ) +
+            QtIfwControlScript.__AUTO_PILOT_CONSTRUCTOR_BODY + 
+            _QtIfwScript.END_BLOCK  
             ) 
                  
     def __genIntroductionPageCallbackBody( self ):
@@ -1094,7 +1164,6 @@ def __addInstallerResources( qtIfwConfig ) :
         if p.othContentPaths is not None : __addOtherFiles( p )     
         if p.isQtCppExe : __addQtCppDependencies( qtIfwConfig, p )        
             
-
 def __addOtherFiles( package ) :    
     print( "Adding additional files..." )
     destPath = package.contentDirPath()            
