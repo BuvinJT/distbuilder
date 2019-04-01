@@ -645,6 +645,16 @@ Controller.prototype.%sPageCallback = function() {
                 ("Finished", self.finishedPageCallbackBody) )
 
     def __genGlobals( self ):
+        """
+        NOTE: 
+        On Windows, to get the path to the maintanence tool,
+        run this statement against cmd /c (set as stdin?)
+        
+        for /f "delims=" %i in ('REG QUERY HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\ /s /f "Hello World CLI Example" /t REG_SZ /c /e ^| find "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\"') do @SET uninstall_key=%i & for /f "tokens=2*" %a in ('REG QUERY %uninstall_key% /v "UninstallString" ^| find "UninstallString"') do @echo %b
+               
+        path = installer.execute( "cmd', ["c"], stdin );
+         
+        """
         self.controllerGlobals = (
             'function maintenceToolExists( dir ) ' + _QtIfwScript.START_BLOCK +
                 _QtIfwScript.TAB + 'return ' + 
