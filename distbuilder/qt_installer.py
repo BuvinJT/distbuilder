@@ -491,6 +491,9 @@ Controller.prototype.%sPageCallback = function() {
 """ )
      
     __AUTO_PILOT_CONSTRUCTOR_BODY = (
+    'var paths = maintenanceToolPaths()\n' +
+    'for( i=0; i < paths.length; i++ ) ' +    
+        _QtIfwScript.debugPopup( 'paths[i]', isAutoQuote=False ) +
     _QtIfwScript.debugPopup( 'targetExists() ? "installed" : "not installed" ', isAutoQuote=False ) +                
 """
     installer.autoRejectMessageBoxes();
@@ -645,40 +648,77 @@ Controller.prototype.%sPageCallback = function() {
                 ("Finished", self.finishedPageCallbackBody) )
 
     def __genGlobals( self ):
-        """
-        NOTE: 
-        On Windows, to get the path to the maintanence tool,
-        run this statement against cmd /c (set as stdin?)
-        
-        for /f "delims=" %i in ('REG QUERY HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\ /s /f "Hello World CLI Example" /t REG_SZ /c /e ^| find "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\"') do @SET uninstall_key=%i & for /f "tokens=2*" %a in ('REG QUERY %uninstall_key% /v "UninstallString" ^| find "UninstallString"') do @echo %b
-               
-        path = installer.execute( "cmd', ["c"], stdin );
-         
-        """
-        self.controllerGlobals = (
-            'function maintenceToolExists( dir ) ' + _QtIfwScript.START_BLOCK +
-                _QtIfwScript.TAB + 'return ' + 
+        NEW = _QtIfwScript.NEW_LINE
+        END = _QtIfwScript.END_LINE
+        TAB = _QtIfwScript.TAB
+        SBLK =_QtIfwScript.START_BLOCK
+        EBLK =_QtIfwScript.END_BLOCK
+        self.controllerGlobals = ""
+        if IS_WINDOWS :
+            """
+            To query to the Windows registry for uninstall strings registered by
+            QtIFW for a program of a given name, this example command works when 
+            run directly on the command prompt. 
+                         
+            cmd.exe /k "@echo off & for /f delims^=^ eol^= %i in ('REG QUERY HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\ /s /f "Hello Packages Example" /t REG_SZ /c /e ^| find "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\"') do ( for /f "tokens=2*" %a in ('REG QUERY %i /v "UninstallString" ^| find "UninstallString"') do echo %b )"
+            
+            Unfortunately, it only seemed to be 
+            possible to run this via an stdin pipe with the QtIFW execute function, 
+            rather than passing it as a direct cmd argument.
+            
+            Note the regQueryUninstallKeys string is defined below with 
+            multiple levels of escape. Reviewing the resulting script maybe easier
+            for initial debugging than doing so in the Python.
+            """            
+            regQueryUninstallKeys = '@echo off & for /f delims^=^ eol^= %i in (\\\'REG QUERY HKCU\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\ /s /f \\"" + installer.value("ProductName") + "\\" /t REG_SZ /c /e ^| find \\"HKEY_CURRENT_USER\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\\\"\\\') do ( for /f \\"tokens=2*\\" %a in (\\\'REG QUERY %i /v \\"UninstallString\\" ^| find \\"UninstallString\\"\\\') do echo %b )\\n'          
+            self.controllerGlobals += (
+            '// returns null if no installation is registered OR an array,' + NEW +
+            '// accounting for the fact that, while unlikely,' + NEW +
+            '// it is possible to have multiple installations of the product' + NEW +
+            '// (with different paths to them)' + NEW +
+            'function maintenanceToolPaths() ' + SBLK +
+                TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
+                (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +
+                TAB + ('var regQuery = "%s"' % (regQueryUninstallKeys,) ) + END +
+                TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("Registry query failed.")' + END +
+                TAB + '// remove the first line (which is a command echo)' + NEW +
+                TAB + '// remove blank lines & convert an empty array to null' + NEW +                
+                TAB + 'var retArr = result[0].split(\"\\n\")' + END +
+                TAB + 'try{ retArr.splice(0, 1)' + END + EBLK +
+                TAB + 'catch(e){ throw new Error("Registry query failed.")' + END + EBLK +
+                TAB + 'for( i=0; i < retArr.length; i++ )' + SBLK + 
+                (2*TAB) + 'if( retArr[i].trim()==\"\" ) retArr.splice(i, 1)' + END + EBLK +
+                TAB + 'return retArr.length == 0 ? null : retArr' + END +                  
+            EBLK + NEW +
+            'function isOsRegisteredProgram() ' + SBLK +
+                TAB + 'return maintenanceToolPaths() != null' + END + 
+            EBLK + NEW                                              
+            )            
+        self.controllerGlobals += (
+            'function maintenanceToolExists( dir ) ' + SBLK +
+                TAB + 'return ' + 
                 _QtIfwScript.fileExists( "dir + " + _QtIfwScript.PATH_SEP + " + " +
-                    _QtIfwScript.MAINTENANCE_TOOL_NAME, isAutoQuote=False ) +
-                _QtIfwScript.END_LINE + 
-            _QtIfwScript.END_BLOCK + _QtIfwScript.NEW_LINE +
-            'function defaultTargetExists() ' + _QtIfwScript.START_BLOCK +
-                _QtIfwScript.TAB + 'return maintenceToolExists( ' + 
-                    _QtIfwScript.targetDir() + ' )' + _QtIfwScript.END_LINE +  
-            _QtIfwScript.END_BLOCK + _QtIfwScript.NEW_LINE +
-            'function cmdLineTargetExists() ' + _QtIfwScript.START_BLOCK +            
-                _QtIfwScript.TAB + 'return maintenceToolExists( ' + 
+                    _QtIfwScript.MAINTENANCE_TOOL_NAME, isAutoQuote=False ) + END + 
+            EBLK + NEW +
+            'function defaultTargetExists() ' + SBLK +
+                TAB + 'return maintenanceToolExists( ' + 
+                    _QtIfwScript.targetDir() + ' )' + END +  
+            EBLK + NEW +
+            'function cmdLineTargetExists() ' + SBLK +            
+                TAB + 'return maintenanceToolExists( ' + 
                     _QtIfwScript.cmdLineArg( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
-                    ' )' + _QtIfwScript.END_LINE +
-            _QtIfwScript.END_BLOCK + _QtIfwScript.NEW_LINE +
-            'function targetExists() ' + _QtIfwScript.START_BLOCK +
-                _QtIfwScript.TAB + _QtIfwScript.ifCmdLineArg( 
+                    ' )' + END +
+            EBLK + NEW +
+            'function targetExists() ' + SBLK +
+              ( TAB + "if( isOsRegisteredProgram() ) return true" + END 
+                if IS_WINDOWS else "") +
+                TAB + _QtIfwScript.ifCmdLineArg( 
                     _QtIfwScript.TARGET_DIR_CMD_ARG ) +
-                (2*_QtIfwScript.TAB) + 'return cmdLineTargetExists()' + 
-                    _QtIfwScript.END_LINE +
-                _QtIfwScript.TAB + 'return defaultTargetExists()' +  
-                    _QtIfwScript.END_LINE +                    
-            _QtIfwScript.END_BLOCK + _QtIfwScript.NEW_LINE                         
+                (2*TAB) + 'return cmdLineTargetExists()' + END +
+                TAB + 'return defaultTargetExists()' + END +                    
+            EBLK + NEW                         
             )
         
     def __genControllerConstructorBody( self ):
