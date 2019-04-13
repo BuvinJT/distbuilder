@@ -341,14 +341,22 @@ class _QtIfwScript:
     TARGET_DIR_KEY         = "TargetDir"
     PRODUCT_NAME_KEY       = "ProductName"
         
-    TARGET_DIR_CMD_ARG     = "target"
-    START_MENU_DIR_CMD_ARG = "startmenu"    
-    ACCEPT_EULA_CMD_ARG    = "accept"
-    INSTALL_LIST_CMD_ARG   = "install"
-    INCLUDE_LIST_CMD_ARG   = "include"
-    EXCLUDE_LIST_CMD_ARG   = "exclude"
-    RUN_PROGRAM_CMD_ARG    = "run"
-    AUTO_PILOT_CMD_ARG     = "auto"
+    TARGET_DIR_CMD_ARG        = "target"
+    START_MENU_DIR_CMD_ARG    = "startmenu"    
+    ACCEPT_EULA_CMD_ARG       = "accept"
+    INSTALL_LIST_CMD_ARG      = "install"
+    INCLUDE_LIST_CMD_ARG      = "include"
+    EXCLUDE_LIST_CMD_ARG      = "exclude"
+    RUN_PROGRAM_CMD_ARG       = "run"
+    AUTO_PILOT_CMD_ARG        = "auto"
+    TARGET_EXISTS_OPT_CMD_ARG = "onexist"
+    TARGET_EXISTS_OPT_FAIL    = "fail"
+    TARGET_EXISTS_OPT_REMOVE  = "remove"
+    TARGET_EXISTS_OPT_PROMPT  = "prompt"
+    ERR_LOG_PATH_CMD_ARG      = "errlog"
+    ERR_LOG_DEFAULT_PATH      = ( 
+        "%temp%\\\\installer.err" if IS_WINDOWS else
+        "/tmp/installer.err" ) # /tmp is supposedly guaranteed to exist, though it's not secure
         
     # an example for use down the line...
     __LINUX_GET_DISTRIBUTION = ( 
@@ -489,19 +497,13 @@ Controller.prototype.%sPageCallback = function() {
     %s
 }\n
 """ )
-     
+
     __AUTO_PILOT_CONSTRUCTOR_BODY = (
-    'var paths = maintenanceToolPaths()\n' +
-    'for( i=0; i < paths.length; i++ ) ' +    
-        _QtIfwScript.debugPopup( 'paths[i]', isAutoQuote=False ) +
-    _QtIfwScript.debugPopup( 'targetExists() ? "installed" : "not installed" ', isAutoQuote=False ) +                
-"""
-    installer.autoRejectMessageBoxes();
-    installer.setMessageBoxAutomaticAnswer("OverwriteTargetDirectory", QMessageBox.Yes);
-    installer.setMessageBoxAutomaticAnswer("stopProcessesForUpdates", QMessageBox.Ignore);        
+"""    
     installer.installationFinished.connect(function() {
         gui.clickButton(buttons.NextButton);
     });
+    managePriorInstallation();
 """ )
         
     __CLICK_BUTTON_TMPL       = "gui.clickButton(%s);\n"
@@ -653,7 +655,39 @@ Controller.prototype.%sPageCallback = function() {
         TAB = _QtIfwScript.TAB
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK
-        self.controllerGlobals = ""
+        self.controllerGlobals = (
+            'function clearErrorLog() ' + SBLK +
+                TAB + 'var path = ' + _QtIfwScript.cmdLineArg( 
+                    _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
+                    _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END + 
+                TAB + 'var deleteCmd = "' +
+                    ('del \\"" + path + "\\" /q' if IS_WINDOWS else
+                     'rm \\"" + path + "\\"' ) + '\\n"' + END +                                        
+                TAB + 'var result = installer.execute( ' +
+                    ('"cmd.exe", ["/k"], deleteCmd' if IS_WINDOWS else
+                     '"sh", [deleteCmd]' ) + ' )' + END +             
+                TAB + 'if( result[1] != 0 || ' + 
+                    _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                (2*TAB) + 'throw new Error("Clear error log failed.")' + END +                                        
+            EBLK + NEW +                           
+            'function writeErrorLog( msg ) ' + SBLK +
+                TAB + 'var path = ' + _QtIfwScript.cmdLineArg( 
+                    _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
+                    _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END +                
+                TAB + 'var writeCmd = "' +
+                    'echo " + msg + " > \\"" + path + "\\"' + '\\n"' + END +                                        
+                TAB + 'var result = installer.execute( ' +
+                    ('"cmd.exe", ["/k"], writeCmd' if IS_WINDOWS else
+                     '"sh", [writeCmd]' ) + ' )' + END +                
+                TAB + 'if( result[1] != 0 || !' + 
+                    _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                (2*TAB) + 'throw new Error("Write error log failed.")' + END +                                        
+            EBLK + NEW +                                                 
+            'function silentAbort( msg ) ' + SBLK +
+                TAB + 'writeErrorLog( msg )' + END +
+                TAB + 'throw new Error( msg )' + END +                    
+            EBLK + NEW                 
+        )        
         if IS_WINDOWS :
             """
             To query to the Windows registry for uninstall strings registered by
@@ -718,11 +752,27 @@ Controller.prototype.%sPageCallback = function() {
                     _QtIfwScript.TARGET_DIR_CMD_ARG ) +
                 (2*TAB) + 'return cmdLineTargetExists()' + END +
                 TAB + 'return defaultTargetExists()' + END +                    
-            EBLK + NEW                         
+            EBLK + NEW +
+            'function managePriorInstallation() ' + SBLK +
+              TAB + "if( targetExists() ) " + SBLK +
+              (2*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
+                    _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
+              (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_FAIL + '":' + NEW +
+                  (3*TAB) + 'silentAbort("This program is already installed.")' + END + 
+              (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_REMOVE + '":' + NEW + 
+                  (3*TAB) + _QtIfwScript.debugPopup( 'remove...' ) +
+                  (3*TAB) + 'break' + END +
+              (2*TAB) + 'default:' + NEW +
+                  (3*TAB) + _QtIfwScript.debugPopup( 'prompt...' ) +
+                  (3*TAB) + 'break' + END +                  
+                    EBLK +           
+              EBLK +                         
+            EBLK + NEW                                                              
             )
         
     def __genControllerConstructorBody( self ):
         self.controllerConstructorBody = (
+            'clearErrorLog();\n' +
             _QtIfwScript.ifCmdLineSwitch( 
                 _QtIfwScript.AUTO_PILOT_CMD_ARG, isMultiLine=True ) +
             QtIfwControlScript.__AUTO_PILOT_CONSTRUCTOR_BODY + 
