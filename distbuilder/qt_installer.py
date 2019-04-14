@@ -365,11 +365,24 @@ class _QtIfwScript:
         var IS_OPENSUSE = (systemInfo.productType === "opensuse");             
 """ )
 
+    OK     = "QMessageBox.Yes"
+    YES    = "QMessageBox.Yes" 
+    NO     = "QMessageBox.No"
+    CANCEL = "QMessageBox.Cancel"
+
     __LOG_TMPL = "console.log(%s);\n"
     __DEBUG_POPUP_TMPL = ( 
         'QMessageBox.information("debugbox", "Debug", ' +
             '%s, QMessageBox.Ok );\n' )
 
+    __YES_NO_POPUP_TMPL = ( 
+        'var %s = QMessageBox.question("yesnobox", "%s", ' +
+            '"%s", QMessageBox.Yes|QMessageBox.No );\n' )                                  
+                                  
+    __YES_NO_CANCEL_POPUP_TMPL = ( 
+        'var %s = QMessageBox.question("yesnocancelbox", "%s", ' +
+            '"%s", QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel );\n' )
+    
     __VALUE_TMPL      = "installer.value( %s, %s )"
     __VALUE_LIST_TMPL = "installer.values( %s, %s )"
 
@@ -444,6 +457,46 @@ class _QtIfwScript:
     def cmdLineListArg( arg, default=[] ):                  
         return _QtIfwScript.lookupValueList( 
             arg, default, delimiter="," )
+
+    @staticmethod        
+    def yesNoPopup( msg, title="Question", resultVar="result" ):                  
+        return _QtIfwScript.__YES_NO_POPUP_TMPL % ( title, msg, resultVar ) 
+
+    # returns a full line, including the result var declaration
+    @staticmethod        
+    def yesNoCancelPopup( msg, title="Question", resultVar="result" ):                  
+        return _QtIfwScript.__YES_NO_CANCEL_POPUP_TMPL % ( 
+            resultVar, title, msg ) 
+
+    @staticmethod        
+    def ifYesNoPopup( msg, title="Question", resultVar="result", 
+                      isMultiLine=False ):                  
+        return ( 
+            _QtIfwScript.TAB + _QtIfwScript.yesNoPopup( msg, title, resultVar ) +
+            _QtIfwScript.TAB + 'if( %s == QMessageBox.Yes )%s\n%s' % (
+            resultVar, ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) ) )
+
+    @staticmethod        
+    def switchYesNoCancelPopup( msg, title="Question", resultVar="result", 
+                                onYes="", onNo="", onCancel="" ):
+        TAB = _QtIfwScript.TAB                 
+        NEW = _QtIfwScript.NEW_LINE
+        END = _QtIfwScript.END_LINE
+        BREAK = 'break' + END      
+        return ( 
+            TAB + _QtIfwScript.yesNoCancelPopup( msg, title, resultVar ) +
+            (TAB + 'switch( %s )' + _QtIfwScript.START_BLOCK + 
+             TAB + 'case ' + _QtIfwScript.YES + ':' + NEW +
+             (2*TAB) + '%s' + NEW +
+             (2*TAB) + BREAK +
+             TAB + 'case ' + _QtIfwScript.NO + ':' + NEW +
+             (2*TAB) + '%s' + NEW + 
+             (2*TAB) + BREAK +
+             TAB + 'case ' + _QtIfwScript.CANCEL + ':' + NEW +
+             (2*TAB) + '%s' + NEW +
+             (2*TAB) + BREAK +             
+             TAB + _QtIfwScript.END_BLOCK ) % 
+            ( resultVar, onYes, onNo, onCancel ) )
 
     @staticmethod        
     def fileExists( path, isAutoQuote=True ):                  
@@ -660,28 +713,43 @@ Controller.prototype.%sPageCallback = function() {
                 TAB + 'var path = ' + _QtIfwScript.cmdLineArg( 
                     _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
                     _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END + 
-                TAB + 'var deleteCmd = "' +
-                    ('del \\"" + path + "\\" /q' if IS_WINDOWS else
-                     'rm \\"" + path + "\\"' ) + '\\n"' + END +                                        
+                TAB + 'var deleteCmd = "' +                    
+                    ('echo off && del \\"" + path + "\\" /q' if IS_WINDOWS else
+                     'rm \\"" + path + "\\"' ) + '\\n' +
+                     'echo " + path + "\\n"' + END +                                                                                                
                 TAB + 'var result = installer.execute( ' +
                     ('"cmd.exe", ["/k"], deleteCmd' if IS_WINDOWS else
                      '"sh", [deleteCmd]' ) + ' )' + END +             
-                TAB + 'if( result[1] != 0 || ' + 
-                    _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-                (2*TAB) + 'throw new Error("Clear error log failed.")' + END +                                        
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("Clear error log failed.")' + END +
+                TAB + 'try' + SBLK +
+                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
+                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+                TAB + 'catch(e){ path = "";' + EBLK +                
+                TAB + 'if( path=="" || ' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                (2*TAB) + 'throw new Error("Clear error log failed. (file exists)")' + END +
+                TAB + _QtIfwScript.log( '"Cleared error log: " + path', isAutoQuote=False ) +                                                                                                                                        
             EBLK + NEW +                           
             'function writeErrorLog( msg ) ' + SBLK +
                 TAB + 'var path = ' + _QtIfwScript.cmdLineArg( 
                     _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
                     _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END +                
                 TAB + 'var writeCmd = "' +
-                    'echo " + msg + " > \\"" + path + "\\"' + '\\n"' + END +                                        
+                    ('echo off && ' if IS_WINDOWS else '') +
+                     'echo " + msg + " > \\"" + path + "\\"' + '\\n' + 
+                     'echo " + path + "\\n"' + END +                                        
                 TAB + 'var result = installer.execute( ' +
                     ('"cmd.exe", ["/k"], writeCmd' if IS_WINDOWS else
                      '"sh", [writeCmd]' ) + ' )' + END +                
-                TAB + 'if( result[1] != 0 || !' + 
-                    _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-                (2*TAB) + 'throw new Error("Write error log failed.")' + END +                                        
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("Write error log failed.")' + END +
+                TAB + 'try' + SBLK +
+                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
+                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+                TAB + 'catch(e){ path = "";' + EBLK +
+                TAB + 'if( path=="" || !' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                (2*TAB) + 'throw new Error("Write error log failed. (file does not exists)")' + END +
+                TAB + _QtIfwScript.log( '"Wrote error log to: " + path', isAutoQuote=False ) +                                                                                                
             EBLK + NEW +                                                 
             'function silentAbort( msg ) ' + SBLK +
                 TAB + 'writeErrorLog( msg )' + END +
@@ -753,6 +821,9 @@ Controller.prototype.%sPageCallback = function() {
                 (2*TAB) + 'return cmdLineTargetExists()' + END +
                 TAB + 'return defaultTargetExists()' + END +                    
             EBLK + NEW +
+            'function removeTarget() ' + SBLK +
+                TAB + _QtIfwScript.debugPopup( 'removing...' ) +                    
+            EBLK + NEW +            
             'function managePriorInstallation() ' + SBLK +
               TAB + "if( targetExists() ) " + SBLK +
               (2*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
@@ -760,12 +831,20 @@ Controller.prototype.%sPageCallback = function() {
               (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_FAIL + '":' + NEW +
                   (3*TAB) + 'silentAbort("This program is already installed.")' + END + 
               (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_REMOVE + '":' + NEW + 
-                  (3*TAB) + _QtIfwScript.debugPopup( 'remove...' ) +
+                  (3*TAB) + 'removeTarget()' + END +
                   (3*TAB) + 'break' + END +
               (2*TAB) + 'default:' + NEW +
-                  (3*TAB) + _QtIfwScript.debugPopup( 'prompt...' ) +
+                  (2*TAB) + _QtIfwScript.switchYesNoCancelPopup(  
+                  'This program is already installed. ' +
+                  'Would you like to uninstall it first?', 
+                  title='Uninstall first?', 
+                  resultVar="uninstallChoice", 
+                  onYes='removeTarget();', 
+                  onNo="// proceed without action...",
+                  onCancel='silentAbort("This program is already installed.");'
+                  ) +
                   (3*TAB) + 'break' + END +                  
-                    EBLK +           
+                  EBLK +           
               EBLK +                         
             EBLK + NEW                                                              
             )
