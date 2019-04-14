@@ -357,6 +357,9 @@ class _QtIfwScript:
     ERR_LOG_DEFAULT_PATH      = ( 
         "%temp%\\\\installer.err" if IS_WINDOWS else
         "/tmp/installer.err" ) # /tmp is supposedly guaranteed to exist, though it's not secure
+    
+    __IS_INSTALLER   = "installer.isInstaller()"
+    __IS_UNINSTALLER = "installer.isUninstaller()"
         
     # an example for use down the line...
     __LINUX_GET_DISTRIBUTION = ( 
@@ -459,6 +462,18 @@ class _QtIfwScript:
             arg, default, delimiter="," )
 
     @staticmethod        
+    def ifInstalling( isMultiLine=False ):
+        return 'if( %s )%s\n%s' % (
+            _QtIfwScript.__IS_INSTALLER,
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+
+    @staticmethod        
+    def ifUninstalling( isMultiLine=False ):
+        return 'if( %s )%s\n%s' % (
+            _QtIfwScript.__IS_UNINSTALLER,
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+
+    @staticmethod        
     def yesNoPopup( msg, title="Question", resultVar="result" ):                  
         return _QtIfwScript.__YES_NO_POPUP_TMPL % ( title, msg, resultVar ) 
 
@@ -555,9 +570,10 @@ Controller.prototype.%sPageCallback = function() {
 """    
     installer.installationFinished.connect(function() {
         gui.clickButton(buttons.NextButton);
-    });
-    managePriorInstallation();
-""" )
+    });    
+""" + 
+    _QtIfwScript.ifInstalling() + 'managePriorInstallation();'
+)
         
     __CLICK_BUTTON_TMPL       = "gui.clickButton(%s);\n"
     __CLICK_BUTTON_DELAY_TMPL = "gui.clickButton(%s, %d);\n"
@@ -799,10 +815,13 @@ Controller.prototype.%sPageCallback = function() {
             EBLK + NEW                                              
             )            
         self.controllerGlobals += (
+            'function toMaintenanceToolPath( dir ) ' + SBLK +
+                TAB + 'return dir + ' + _QtIfwScript.PATH_SEP + ' + ' +
+                    _QtIfwScript.MAINTENANCE_TOOL_NAME + END + 
+            EBLK + NEW +            
             'function maintenanceToolExists( dir ) ' + SBLK +
-                TAB + 'return ' + 
-                _QtIfwScript.fileExists( "dir + " + _QtIfwScript.PATH_SEP + " + " +
-                    _QtIfwScript.MAINTENANCE_TOOL_NAME, isAutoQuote=False ) + END + 
+                TAB + 'return ' + _QtIfwScript.fileExists( 
+                    'toMaintenanceToolPath( dir )', isAutoQuote=False ) + END + 
             EBLK + NEW +
             'function defaultTargetExists() ' + SBLK +
                 TAB + 'return maintenanceToolExists( ' + 
@@ -814,27 +833,47 @@ Controller.prototype.%sPageCallback = function() {
                     ' )' + END +
             EBLK + NEW +
             'function targetExists() ' + SBLK +
-              ( TAB + "if( isOsRegisteredProgram() ) return true" + END 
-                if IS_WINDOWS else "") +
+                (TAB + 'if( isOsRegisteredProgram() ) return true' + END 
+                if IS_WINDOWS else '') +
                 TAB + _QtIfwScript.ifCmdLineArg( 
                     _QtIfwScript.TARGET_DIR_CMD_ARG ) +
                 (2*TAB) + 'return cmdLineTargetExists()' + END +
                 TAB + 'return defaultTargetExists()' + END +                    
             EBLK + NEW +
             'function removeTarget() ' + SBLK +
-                TAB + _QtIfwScript.debugPopup( 'removing...' ) +                    
-            EBLK + NEW +            
+                TAB + 'var exeResult' + END +
+                (TAB + 'var regPaths = maintenanceToolPaths()' + END + 
+                 TAB + 'if( regPaths != null )' + SBLK +
+                (2*TAB) + 'for( i=0; i < regPaths.length; i++ )' + NEW +
+                    (3*TAB) + 'exeResult = ' +
+                        'installer.execute( regPaths[i] )' + END + 
+                TAB + EBLK
+                if IS_WINDOWS else '') +
+                TAB + _QtIfwScript.ifCmdLineArg( 
+                    _QtIfwScript.TARGET_DIR_CMD_ARG ) +
+                TAB + 'exeResult = ' +
+                        'installer.execute( toMaintenanceToolPath( ' +
+                        _QtIfwScript.cmdLineArg( 
+                    _QtIfwScript.TARGET_DIR_CMD_ARG ) + ' ) )' + END +
+                TAB + 'else ' + NEW +                        
+                (2*TAB) + 'exeResult = ' +
+                        'installer.execute( toMaintenanceToolPath( ' +
+                        _QtIfwScript.targetDir() + ' ) )' + END +
+                TAB + 'if( targetExists() ) ' + NEW +
+                (2*TAB) + 'silentAbort("Failed to removed the program.")' + END +
+                TAB + _QtIfwScript.log('Successfully removed the program.') +                         
+            EBLK + NEW +
             'function managePriorInstallation() ' + SBLK +
-              TAB + "if( targetExists() ) " + SBLK +
-              (2*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
+                TAB + "if( targetExists() ) " + SBLK +
+                (2*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
                     _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
-              (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_FAIL + '":' + NEW +
-                  (3*TAB) + 'silentAbort("This program is already installed.")' + END + 
-              (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_REMOVE + '":' + NEW + 
-                  (3*TAB) + 'removeTarget()' + END +
-                  (3*TAB) + 'break' + END +
-              (2*TAB) + 'default:' + NEW +
-                  (2*TAB) + _QtIfwScript.switchYesNoCancelPopup(  
+                (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_FAIL + '":' + NEW +
+                    (3*TAB) + 'silentAbort("This program is already installed.")' + END + 
+                (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_REMOVE + '":' + NEW + 
+                    (3*TAB) + 'removeTarget()' + END +
+                    (3*TAB) + 'break' + END +
+                (2*TAB) + 'default:' + NEW +
+                    (2*TAB) + _QtIfwScript.switchYesNoCancelPopup(  
                   'This program is already installed. ' +
                   'Would you like to uninstall it first?', 
                   title='Uninstall first?', 
@@ -845,7 +884,7 @@ Controller.prototype.%sPageCallback = function() {
                   ) +
                   (3*TAB) + 'break' + END +                  
                   EBLK +           
-              EBLK +                         
+                EBLK +                         
             EBLK + NEW                                                              
             )
         
