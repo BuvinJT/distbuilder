@@ -775,7 +775,17 @@ Controller.prototype.%s = function(){
             (2*TAB) + 'cmd += (" " + args[i])' + END +
             TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
             TAB + 'return installer.execute( binPath, args )' + END +
-            EBLK + NEW +                                       
+            EBLK + NEW +
+            'function sleep( seconds ) ' + SBLK +
+            TAB + 'var sleepCmd = "' +  # note Batch timeout doesn't work in a "non-interactive" shell, but this ping kludge does!                 
+                ('ping 192.0.2.1 -n 1 -w " + seconds + "000"' if IS_WINDOWS else
+                 'sleep " + seconds' ) + '+ "\\n"' + END +                                                                                                
+            TAB + 'var result = installer.execute( ' +
+                ('"cmd.exe", ["/k"], sleepCmd' if IS_WINDOWS else
+                 '"sh", [sleepCmd]' ) + ' )' + END +             
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("Sleep operation failed.")' + END +
+            EBLK + NEW +                                                                                          
             'function clearErrorLog() ' + SBLK +
                 TAB + 'var path = ' + _QtIfwScript.cmdLineArg( 
                     _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
@@ -886,12 +896,23 @@ Controller.prototype.%s = function(){
                     ' )' + END +
             EBLK + NEW +
             'function targetExists() ' + SBLK +
-                (TAB + 'if( isOsRegisteredProgram() ) return true' + END 
+                (TAB + 'if( isOsRegisteredProgram() ) ' + SBLK +
+                 (2*TAB)  + _QtIfwScript.log('The program is OS registered.') +
+                 (2*TAB) + 'return true' + END + 
+                TAB + EBLK                  
                 if IS_WINDOWS else '') +
                 TAB + _QtIfwScript.ifCmdLineArg( 
-                    _QtIfwScript.TARGET_DIR_CMD_ARG ) +
-                (2*TAB) + 'return cmdLineTargetExists()' + END +
-                TAB + 'return defaultTargetExists()' + END +                    
+                    _QtIfwScript.TARGET_DIR_CMD_ARG, isMultiLine=True ) +
+                    'if( cmdLineTargetExists() )'  + SBLK +
+                        (3*TAB) + _QtIfwScript.log('The command line specified target exists.') +
+                        (3*TAB) + 'return true' + END +
+                    (2*TAB) + EBLK +
+                TAB + EBLK +
+                TAB + 'if( defaultTargetExists() )'  + SBLK +
+                TAB + _QtIfwScript.log('The default target exists.') +
+                (2*TAB) + 'return true' + END +                
+                TAB + EBLK +                   
+                TAB + 'return false' + END +                 
             EBLK + NEW +
             'function removeTarget() ' + SBLK +
                 TAB + 'var args=[ "-v", ' +                     
@@ -915,14 +936,18 @@ Controller.prototype.%s = function(){
                 TAB + 'else ' + NEW +                        
                 (2*TAB) + 'exeResult = execute( toMaintenanceToolPath( ' +
                         _QtIfwScript.targetDir() + ' ), args )' + END +
-                TAB + '// The MaintenanceTool is not removed until a moment or two has elapsed...' + NEW +
-                TAB + '// A sleep function would be useful here...' + NEW +
-                TAB + 'for( existCheck=0; existCheck < 50; existCheck++ ) ' + SBLK +
+                TAB + '// The MaintenanceTool is not removed until a moment\n' + 
+                TAB + '// or two has elapsed after it was closed...' + NEW +
+                TAB + _QtIfwScript.log('Verifying uninstall...') +                
+                TAB + 'var MAX_CHECKS=3' + END  +
+                TAB + 'for( var existCheck=0; existCheck < MAX_CHECKS; existCheck++ ) ' + SBLK +
                 (2*TAB) + 'if( !targetExists() ) break' + END +
+                (2*TAB) + _QtIfwScript.log('Waiting for uninstall to finish...') +                
+                (2*TAB) + 'sleep( 1 )' + END +                
                 TAB + EBLK +
-                TAB + 'if( targetExists() ) ' + END +
+                TAB + 'if( targetExists() ) ' + NEW +
                 (2*TAB) + 'silentAbort("Failed to removed the program.")' + END +
-                TAB + _QtIfwScript.log('Successfully removed the program.') +                         
+                TAB + _QtIfwScript.log('Successfully removed the program.') +
             EBLK + NEW +
             'function managePriorInstallation() ' + SBLK +
                 TAB + "if( targetExists() ) " + SBLK +
