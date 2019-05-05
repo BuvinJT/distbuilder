@@ -73,6 +73,7 @@ setup (
           "six"           # Forced as a prerequisite too
 		, "PyInstaller"   
 		, "opy_distbuilder"  
+        , "argparse"
 	],
 	include_package_data=True, # extra files defined in MANIFEST.in
     cmdclass = CMD_CLASSES

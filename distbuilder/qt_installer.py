@@ -337,7 +337,8 @@ class _QtIfwScript:
     
     MAINTENANCE_TOOL_NAME  = '"%s"' % ( 
         util.normBinaryName( "maintenancetool" ) )
-        
+    
+    VERBOSE_CMD_SWITCH_ARG = "-v"    
     TARGET_DIR_KEY         = "TargetDir"
     PRODUCT_NAME_KEY       = "ProductName"
     
@@ -1588,6 +1589,7 @@ def __buildSilentWrapper( qtIfwConfig ) :
         def onPyInstConfig( self, cfg ):    
             if IS_MACOS: cfg.dataFilePaths   = [ self.__nestedZipPath ]
             else       : cfg.binaryFilePaths = [ absPath( nestedExeName ) ]
+            cfg.isAutoElevated = True # Windows only feature
             
         def onFinalize( self ):
             removeFromDir( wrapperPyName )            
@@ -1616,51 +1618,128 @@ def __buildSilentWrapper( qtIfwConfig ) :
     
 def __silentWrapperScript( exeName ) :
     """
-    Runs the exe from inside the PyInstaller MEIPASS directory,
-    with elevated privileges, and hidden from view.  
+    Runs the IFW exe from inside the PyInstaller MEIPASS directory,
+    with elevated privileges, hidden from view, gathering
+    stdout, stderr, and other logged communications.  
+    Note: On Windows, the wrapper is auto-elevated via PyInstaller.
     """
     
     COMMON_INIT = (
 """
-WORK_DIR = sys._MEIPASS
-EXE_NAME = "{0}"
-ARGS     = ["{1}"]
-""").format( exeName, ("%s=true" % (_QtIfwScript.AUTO_PILOT_CMD_ARG,)) )
+import os, sys, subprocess, argparse
+
+SUCCESS=0
+FAILURE=1
+
+WORK_DIR         = sys._MEIPASS
+EXE_NAME         = "{0}"
+EXE_PATH         = os.path.join( WORK_DIR, EXE_NAME )
+IFW_ERR_LOG_NAME = "installer.err"
+IFW_ERR_LOG_PATH = os.path.join( WORK_DIR, IFW_ERR_LOG_NAME )
+
+VERBOSE_SWITCH = "{4}"
+
+def wrapperArgs():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--verbose', help='verbose mode', 
+                        action='store_true', default=False)
+    parser.add_argument('-f', '--force', help='force installation', 
+                        action='store_true', default=False)
+    return parser.parse_args()
+
+def toIwfArgs( wrapperArgs ):
+    # silent install always uses:
+    #     auto pilot mode
+    #     client defined error log path
+    #     run at end disabled
+    args = ["{1}", ("{2}=%s" % IFW_ERR_LOG_NAME), "{3}"] 
+    if wrapperArgs.verbose : args.append( VERBOSE_SWITCH )    
+    args.append( "{5}={6}" if wrapperArgs.force else "{5}={7}" )
+    return args
+
+ARGS       = toIwfArgs( wrapperArgs() )  
+IS_VERBOSE = VERBOSE_SWITCH in ARGS
+""").format( exeName 
+    , ("%s=true" % (_QtIfwScript.AUTO_PILOT_CMD_ARG,))
+    , _QtIfwScript.ERR_LOG_PATH_CMD_ARG    
+    , ("%s=false" % (_QtIfwScript.RUN_PROGRAM_CMD_ARG,))
+    , _QtIfwScript.VERBOSE_CMD_SWITCH_ARG
+    , _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG
+    , _QtIfwScript.TARGET_EXISTS_OPT_REMOVE
+    , _QtIfwScript.TARGET_EXISTS_OPT_FAIL       
+)
         
     if IS_WINDOWS: return (
 """     
-import os, sys, glob, time, ctypes
-
+import glob, time 
+from subprocess import Popen, PIPE, STARTUPINFO, STARTF_USESHOWWINDOW
 {0}
 
+def main():        
+    removeIfwErrLog() 
+    exitCode = runInstaller()
+    cleanUp()        
+    if exitCode==SUCCESS: print( "Success!" )    
+    return exitCode
+
 def runInstaller():
-    shell32 = ctypes.windll.shell32        
-    VERB    = "open" if shell32.IsUserAnAdmin() else "runas"
-    SW_HIDE = 0 
-    if sys.version_info[0]==2:
-        VERB     = unicode(VERB)
-        EXE_NAME = unicode(EXE_NAME)
-        WORK_DIR = unicode(WORK_DIR)
-        ARGS     = unicode(ARGS)    
-    shell32.ShellExecuteW( None, VERB, EXE_NAME, ARGS, WORK_DIR, SW_HIDE )
+    processStartupInfo = STARTUPINFO()
+    processStartupInfo.dwFlags |= STARTF_USESHOWWINDOW 
+    process = Popen( [EXE_PATH] + ARGS, cwd=WORK_DIR,
+                     shell=False,
+                     startupinfo=processStartupInfo,                                                                
+                     universal_newlines=True,
+                     stdout=PIPE, stderr=PIPE )
+                                                     
+    if IS_VERBOSE :
+        POLL_DELAY_SECS = 0.1
+        while process.poll() is None:
+            sys.stdout.write( process.stdout.read() )
+            sys.stderr.write( process.stderr.read() )
+            time.sleep( POLL_DELAY_SECS )
+        sys.stdout.write( process.stdout.read() )
+        sys.stderr.write( process.stderr.read() )
+    else : process.wait()    
+    
+    # use error log existence to set an exit code, 
+    # since IFW doesn't support such currently  
+    if os.path.exists( IFW_ERR_LOG_PATH ):
+        with open( IFW_ERR_LOG_PATH ) as f:
+            sys.stderr.write( f.read() )
+        return FAILURE
+    return process.returncode
+
+def removeIfwErrLog(): 
+    if os.path.exists( IFW_ERR_LOG_PATH ):
+        os.remove( IFW_ERR_LOG_PATH )
 
 def cleanUp():
-    LOCK_FILE_PATTERN = "lockmyApp*.lock"
-    while glob.glob( LOCK_FILE_PATTERN ): pass
-    EXE_PATH = os.path.join( WORK_DIR, EXE_NAME )
+    IFW_LOCK_FILE_PATTERN = "lockmyApp*.lock"
+    PY_INST_FILE_RELEASE_DELAY_SECS = 2
+
+    # Wait for IFW to release its lock       
+    while glob.glob(  IFW_LOCK_FILE_PATTERN ): pass
+    
+    # For some reason, PyInstaller won't delete the IFW exe,
+    # so that must be forced. It might still be OS locked at  
+    # this point, and thus take a few attempts... 
     while os.path.exists( EXE_PATH ): 
         try: os.remove( EXE_PATH )
         except: pass
-    time.sleep(2)    
+    
+    removeIfwErrLog()
+                                
+    # this ugly pause causes the PyInstaller temp directory  
+    # auto removal to work more reliably
+    time.sleep( PY_INST_FILE_RELEASE_DELAY_SECS )    
 
-runInstaller()
-cleanUp()    
-
+sys.exit( main() )
+    
 """).format( COMMON_INIT )
 
     if IS_LINUX : return ( 
 """
-import os, subprocess, shlex
+import shlex
 try: from subprocess import DEVNULL 
 except ImportError: DEVNULL = open(os.devnull, 'wb')
 
@@ -1697,7 +1776,7 @@ cleanUp( cleanUpCmds )
 
     if IS_MACOS : return ( 
 """
-import os, sys, subprocess, shlex, zipfile, tempfile
+import shlex, zipfile, tempfile
 try: from subprocess import DEVNULL 
 except ImportError: DEVNULL = open(os.devnull, 'wb')
 
