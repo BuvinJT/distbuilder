@@ -1557,10 +1557,14 @@ def __buildSilentWrapper( qtIfwConfig ) :
     destSetupExeName  = util.normBinaryName( qtIfwConfig.setupExeName, isGui=False ) 
     nestedExeName     = util.normBinaryName( __NESTED_INSTALLER_NAME,  isGui=True )
     wrapperExeName    = __WRAPPER_INSTALLER_NAME
-    wrapperPyName     = __WRAPPER_SCRIPT_NAME
-    wrapperScript     = __silentWrapperScript( nestedExeName )
+    wrapperPyName     = __WRAPPER_SCRIPT_NAME    
+    componentList     = [ (package.pkgXml.Default,
+                           package.pkgXml.pkgName, 
+                           package.pkgXml.DisplayName) 
+                           for package in qtIfwConfig.packages ]            
+    wrapperScript     = __silentWrapperScript( nestedExeName, componentList )
         
-    cfgXml         = qtIfwConfig.configXml
+    cfgXml            = qtIfwConfig.configXml
                                                
     f = configFactory  = ConfigFactory()
     f.productName      = cfgXml.Name
@@ -1616,7 +1620,7 @@ def __buildSilentWrapper( qtIfwConfig ) :
     BuildProcess( configFactory ).run()
     return absPath( destSetupExeName )
     
-def __silentWrapperScript( exeName ) :
+def __silentWrapperScript( exeName, componentList ) :
     """
     Runs the IFW exe from inside the PyInstaller MEIPASS directory,
     with elevated privileges, hidden from view, gathering
@@ -1624,12 +1628,42 @@ def __silentWrapperScript( exeName ) :
     Note: On Windows, the wrapper is auto-elevated via PyInstaller.
     """
     
+    componentsRepr     = "[]"
+    componentsEpilogue = "" 
+    componentsPrefix   = ""
+    if len(componentList) > 1 :
+        componentsRepr = ""
+        idLen = 0 
+        for (_, compId, _ ) in componentList :
+            componentsRepr += ( ("" if componentsRepr=="" else ", ")  
+                              + ("'%s'" % (compId,)) )            
+            if len( compId ) > idLen : idLen = len( compId )
+            prefix = ".".join( compId.split(".")[:-1] ) + "."
+            if componentsPrefix=="" : componentsPrefix = prefix
+            elif prefix != componentsPrefix: componentsPrefix=None
+        componentsRepr = "[ " + componentsRepr + " ]"            
+        componentsPrefixLen = (0 if componentsPrefix is None 
+                               else len(componentsPrefix) )
+        lineLen = 79
+        defLen = 5
+        idLen = idLen - componentsPrefixLen + 2        
+        nameLen = lineLen - defLen - idLen   
+        lnFormat = '{0:>%s}{1:<%s}{2:<%s}\n' % ( defLen, idLen, nameLen )
+        componentsEpilogue = ( "Components:\n" + 
+            lnFormat.format("Def ", "Id", "Name\n" ) ) 
+        for (isDef, compId, name ) in componentList :
+            default = "* " if isDef else ""
+            if componentsPrefixLen : compId = compId[componentsPrefixLen:]
+            componentsEpilogue += lnFormat.format( default, compId, name ) 
+    
     COMMON_INIT = (
 """
 import os, sys, subprocess, argparse
 
 SUCCESS=0
 FAILURE=1
+
+IS_WINDOWS = {10}
 
 WORK_DIR         = sys._MEIPASS
 EXE_NAME         = "{0}"
@@ -1639,12 +1673,37 @@ IFW_ERR_LOG_PATH = os.path.join( WORK_DIR, IFW_ERR_LOG_NAME )
 
 VERBOSE_SWITCH = "{4}"
 
+components = {14}
+componentsEpilogue = ( 
+'''{15}'''
+)
+componentsPrefix = "{16}"
+
 def wrapperArgs():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--verbose', help='verbose mode', 
-                        action='store_true', default=False)
-    parser.add_argument('-f', '--force', help='force installation', 
-                        action='store_true', default=False)
+    parser = argparse.ArgumentParser( epilog=componentsEpilogue,
+                formatter_class=argparse.RawTextHelpFormatter )
+                
+    parser.add_argument( '-v', '--verbose', default=False,
+                         help='verbose mode', 
+                         action='store_true' )
+    parser.add_argument( '-f', '--force', default=False, 
+                         help='force installation (uninstall prior first)', 
+                         action='store_true' )
+    parser.add_argument( '-t', '--target', default=None,
+                         help='target directory' )
+                         
+    if IS_WINDOWS :                          
+        parser.add_argument( '-m', '--startmenu', default=None,  
+                             help='start menu directory' )
+                             
+    if len(components) > 0 :                             
+        parser.add_argument( '-c', '--components', nargs='*', default=[],
+                             help='component ids to install (space delimited list)' )
+        parser.add_argument( '-i', '--include', nargs='*', default=[],
+                             help='component ids to include (space delimited list)' )
+        parser.add_argument( '-e', '--exclude', nargs='*', default=[],
+                             help='component ids to exclude (space delimited list)' )  
+                                                        
     return parser.parse_args()
 
 def toIwfArgs( wrapperArgs ):
@@ -1653,8 +1712,26 @@ def toIwfArgs( wrapperArgs ):
     #     client defined error log path
     #     run at end disabled
     args = ["{1}", ("{2}=%s" % IFW_ERR_LOG_NAME), "{3}"] 
+
     if wrapperArgs.verbose : args.append( VERBOSE_SWITCH )    
     args.append( "{5}={6}" if wrapperArgs.force else "{5}={7}" )
+    if wrapperArgs.target is not None : 
+        args.append( "{8}=%s" % (wrapperArgs.target,) )
+    if wrapperArgs.target is not None : 
+        args.append( "{9}=%s" % (wrapperArgs.startmenu,) )
+    
+    def appendComponentArg( wrapperArg, ifwArg ):     
+        if len(wrapperArg) > 0:
+            comps = ["%s%s" % (componentsPrefix,c) for c in wrapperArg]
+            for id in comps:
+                if id not in components: 
+                    sys.stderr.write( "Invalid component id: %s" % (id,) )
+                    sys.exit( FAILURE )
+            args.append( "%s=%s" % (ifwArg, ",".join(comps)) )
+    appendComponentArg( wrapperArgs.components, "{11}" )
+    appendComponentArg( wrapperArgs.include,    "{12}" )
+    appendComponentArg( wrapperArgs.exclude,    "{13}" )
+
     return args
 
 ARGS       = toIwfArgs( wrapperArgs() )  
@@ -1667,6 +1744,15 @@ IS_VERBOSE = VERBOSE_SWITCH in ARGS
     , _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG
     , _QtIfwScript.TARGET_EXISTS_OPT_REMOVE
     , _QtIfwScript.TARGET_EXISTS_OPT_FAIL       
+    , _QtIfwScript.TARGET_DIR_CMD_ARG
+    , _QtIfwScript.START_MENU_DIR_CMD_ARG 
+    , IS_WINDOWS
+    , _QtIfwScript.INSTALL_LIST_CMD_ARG 
+    , _QtIfwScript.INCLUDE_LIST_CMD_ARG
+    , _QtIfwScript.EXCLUDE_LIST_CMD_ARG
+    , componentsRepr
+    , componentsEpilogue
+    , componentsPrefix
 )
         
     if IS_WINDOWS: return (
