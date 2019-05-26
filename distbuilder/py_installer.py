@@ -336,15 +336,13 @@ VSVersionInfo(
         s = s.replace( "VER_BUILD", str(self.build) )                
         s = s.replace( "COMPANY_NAME_COPYRIGHT", 
             self.companyName[:-1] if self.companyName.endswith(".") 
-            else self.companyName )
+            else self.companyName ) # (handle "Company Inc.")
         s = s.replace( "PRODUCT_NAME_INTERNAL", 
             self.productName.lower().replace( " ", "_" ) )                
         s = s.replace( "COMPANY_NAME",  self.companyName )        
         s = s.replace( "PRODUCT_NAME",  self.productName )
         s = s.replace( "PRODUCT_DESCR", self.description )
-        s = s.replace( "EXE_NAME",     
-            self.exeName if self.companyName.endswith(".exe")
-            else self.exeName + ".exe" )                
+        s = s.replace( "EXE_NAME", util.normBinaryName( self.exeName ) )                
         return s 
     
     def write( self ):
