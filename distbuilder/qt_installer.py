@@ -336,7 +336,7 @@ class _QtIfwScript:
     PATH_SEP = '"\\\\"' if IS_WINDOWS else '"/"'  
     
     MAINTENANCE_TOOL_NAME  = '"%s"' % ( 
-        util.normBinaryName( "maintenancetool" ) )
+        util.normBinaryName( "maintenancetool", isGui=True ) )
     
     VERBOSE_CMD_SWITCH_ARG = "-v"    
     TARGET_DIR_KEY         = "TargetDir"
@@ -779,11 +779,11 @@ Controller.prototype.%s = function(){
             EBLK + NEW +
             'function sleep( seconds ) ' + SBLK +
             TAB + 'var sleepCmd = "' +  # note Batch timeout doesn't work in a "non-interactive" shell, but this ping kludge does!                 
-                ('ping 192.0.2.1 -n 1 -w " + seconds + "000"' if IS_WINDOWS else
-                 'sleep " + seconds' ) + '+ "\\n"' + END +                                                                                                
+                ('ping 192.0.2.1 -n 1 -w " + seconds + "000\\n"' if IS_WINDOWS else
+                 'sleep " + seconds' ) + END +                                                                                                
             TAB + 'var result = installer.execute( ' +
                 ('"cmd.exe", ["/k"], sleepCmd' if IS_WINDOWS else
-                 '"sh", [sleepCmd]' ) + ' )' + END +             
+                 '"sh", ["-c", sleepCmd]' ) + ' )' + END +             
             TAB + 'if( result[1] != 0 ) ' + NEW +
             (2*TAB) + 'throw new Error("Sleep operation failed.")' + END +
             EBLK + NEW +                                                                                          
@@ -792,12 +792,12 @@ Controller.prototype.%s = function(){
                     _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
                     _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END + 
                 TAB + 'var deleteCmd = "' +                    
-                    ('echo off && del \\"" + path + "\\" /q' if IS_WINDOWS else
-                     'rm \\"" + path + "\\"' ) + '\\n' +
-                     'echo " + path + "\\n"' + END +                                                                                                
+                    ('echo off && del \\"" + path + "\\" /q\\necho " + path + "\\n"' 
+                     if IS_WINDOWS else
+                     'rm \\"" + path + "\\"; echo " + path' ) + END +                                                                                                
                 TAB + 'var result = installer.execute( ' +
                     ('"cmd.exe", ["/k"], deleteCmd' if IS_WINDOWS else
-                     '"sh", [deleteCmd]' ) + ' )' + END +             
+                     '"sh", ["-c", deleteCmd]' ) + ' )' + END +             
                 TAB + 'if( result[1] != 0 ) ' + NEW +
                 (2*TAB) + 'throw new Error("Clear error log failed.")' + END +
                 TAB + 'try' + SBLK +
@@ -813,12 +813,15 @@ Controller.prototype.%s = function(){
                     _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
                     _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END +                
                 TAB + 'var writeCmd = "' +
-                    ('echo off && ' if IS_WINDOWS else '') +
-                     'echo " + msg + " > \\"" + path + "\\"' + '\\n' + 
-                     'echo " + path + "\\n"' + END +                                        
+                    ('echo off && '
+                     'echo " + msg + " > \\"" + path + "\\"\n'
+                     'echo " + path + "\\n"' 
+                     if IS_WINDOWS else
+                     'echo " + msg + " > \\"" + path + "\\";'
+                     'echo " + path' ) + END +      
                 TAB + 'var result = installer.execute( ' +
                     ('"cmd.exe", ["/k"], writeCmd' if IS_WINDOWS else
-                     '"sh", [writeCmd]' ) + ' )' + END +                
+                     '"sh", ["-c", writeCmd]' ) + ' )' + END +                
                 TAB + 'if( result[1] != 0 ) ' + NEW +
                 (2*TAB) + 'throw new Error("Write error log failed.")' + END +
                 TAB + 'try' + SBLK +
@@ -834,22 +837,20 @@ Controller.prototype.%s = function(){
                 TAB + 'throw new Error( msg )' + END +                    
             EBLK + NEW                 
         )        
-        if IS_WINDOWS :
-            """
-            To query to the Windows registry for uninstall strings registered by
-            QtIFW for a program of a given name, this example command works when 
-            run directly on the command prompt. 
-                         
-            cmd.exe /k "@echo off & for /f delims^=^ eol^= %i in ('REG QUERY HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\ /s /f "Hello Packages Example" /t REG_SZ /c /e ^| find "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\"') do ( for /f "tokens=2*" %a in ('REG QUERY %i /v "UninstallString" ^| find "UninstallString"') do echo %b )"
-            
-            Unfortunately, it only seemed to be 
-            possible to run this via an stdin pipe with the QtIFW execute function, 
-            rather than passing it as a direct cmd argument.
-            
-            Note the regQueryUninstallKeys string is defined below with 
-            multiple levels of escape. Reviewing the resulting script maybe easier
-            for initial debugging than doing so in the Python.
-            """            
+        if IS_WINDOWS : 
+            # To query to the Windows registry for uninstall strings registered by
+            # QtIFW for a program of a given name, this example command works when 
+            # run directly on the command prompt. 
+            #             
+            # cmd.exe /k "@echo off & for /f delims^=^ eol^= %i in ('REG QUERY HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\ /s /f "Hello Packages Example" /t REG_SZ /c /e ^| find "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\"') do ( for /f "tokens=2*" %a in ('REG QUERY %i /v "UninstallString" ^| find "UninstallString"') do echo %b )"
+            #
+            # Unfortunately, it only seemed to be 
+            # possible to run this via an stdin pipe with the QtIFW execute function, 
+            # rather than passing it as a direct cmd argument.
+            #
+            # Note the regQueryUninstallKeys string is defined below with 
+            # multiple levels of escape. Reviewing the resulting QScript maybe easier
+            # for initial debugging than doing so in this Python layer.                
             regQueryUninstallKeys = '@echo off & for /f delims^=^ eol^= %i in (\\\'REG QUERY HKCU\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\ /s /f \\"" + installer.value("ProductName") + "\\" /t REG_SZ /c /e ^| find \\"HKEY_CURRENT_USER\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\\\"\\\') do ( for /f \\"tokens=2*\\" %a in (\\\'REG QUERY %i /v \\"UninstallString\\" ^| find \\"UninstallString\\"\\\') do echo %b )\\n'          
             self.controllerGlobals += (
             '// returns null if no installation is registered OR an array,' + NEW +
@@ -916,6 +917,7 @@ Controller.prototype.%s = function(){
                 TAB + 'return false' + END +                 
             EBLK + NEW +
             'function removeTarget() ' + SBLK +
+                TAB + _QtIfwScript.log('Removing existing installation...') +  
                 TAB + 'var args=[ "-v", ' +                     
                     '"' + _QtIfwScript.AUTO_PILOT_CMD_ARG + '=' +
                     _QtIfwScript.TRUE + '" ' + 
@@ -927,9 +929,10 @@ Controller.prototype.%s = function(){
                  TAB + 'if( regPaths != null )' + SBLK +
                 (2*TAB) + 'for( i=0; i < regPaths.length; i++ )' + NEW +
                     (3*TAB) + 'exeResult = execute( regPaths[i], args )' + END + 
-                TAB + EBLK
-                if IS_WINDOWS else '') +
-                TAB + 'else ' + _QtIfwScript.ifCmdLineArg( 
+                TAB + EBLK +
+                TAB + 'else '
+                if IS_WINDOWS else TAB) +
+                _QtIfwScript.ifCmdLineArg( 
                     _QtIfwScript.TARGET_DIR_CMD_ARG ) +
                     'exeResult = execute( toMaintenanceToolPath( ' +
                         _QtIfwScript.cmdLineArg( 
@@ -939,7 +942,7 @@ Controller.prototype.%s = function(){
                         _QtIfwScript.targetDir() + ' ), args )' + END +
                 TAB + '// The MaintenanceTool is not removed until a moment\n' + 
                 TAB + '// or two has elapsed after it was closed...' + NEW +
-                TAB + _QtIfwScript.log('Verifying uninstall...') +                
+                TAB + _QtIfwScript.log('Verifying uninstall...') +    
                 TAB + 'var MAX_CHECKS=3' + END  +
                 TAB + 'for( var existCheck=0; existCheck < MAX_CHECKS; existCheck++ ) ' + SBLK +
                 (2*TAB) + 'if( !targetExists() ) break' + END +
@@ -1687,7 +1690,7 @@ def wrapperArgs():
                          help='verbose mode', 
                          action='store_true' )
     parser.add_argument( '-f', '--force', default=False, 
-                         help='force installation (uninstall prior first)', 
+                         help='force installation (uninstall existing installation)', 
                          action='store_true' )
     parser.add_argument( '-t', '--target', default=None,
                          help='target directory' )
@@ -1717,20 +1720,23 @@ def toIwfArgs( wrapperArgs ):
     args.append( "{5}={6}" if wrapperArgs.force else "{5}={7}" )
     if wrapperArgs.target is not None : 
         args.append( "{8}=%s" % (wrapperArgs.target,) )
-    if wrapperArgs.target is not None : 
-        args.append( "{9}=%s" % (wrapperArgs.startmenu,) )
     
-    def appendComponentArg( wrapperArg, ifwArg ):     
-        if len(wrapperArg) > 0:
-            comps = ["%s%s" % (componentsPrefix,c) for c in wrapperArg]
-            for id in comps:
-                if id not in components: 
-                    sys.stderr.write( "Invalid component id: %s" % (id,) )
-                    sys.exit( FAILURE )
-            args.append( "%s=%s" % (ifwArg, ",".join(comps)) )
-    appendComponentArg( wrapperArgs.components, "{11}" )
-    appendComponentArg( wrapperArgs.include,    "{12}" )
-    appendComponentArg( wrapperArgs.exclude,    "{13}" )
+    if IS_WINDOWS :      
+        if wrapperArgs.startmenu is not None : 
+            args.append( "{9}=%s" % (wrapperArgs.startmenu,) )
+    
+    if len(components) > 0 : 
+        def appendComponentArg( wrapperArg, ifwArg ):     
+            if len(wrapperArg) > 0:
+                comps = ["%s%s" % (componentsPrefix,c) for c in wrapperArg]
+                for id in comps:
+                    if id not in components: 
+                        sys.stderr.write( "Invalid component id: %s" % (id,) )
+                        sys.exit( FAILURE )
+                args.append( "%s=%s" % (ifwArg, ",".join(comps)) )
+        appendComponentArg( wrapperArgs.components, "{11}" )
+        appendComponentArg( wrapperArgs.include,    "{12}" )
+        appendComponentArg( wrapperArgs.exclude,    "{13}" )
 
     return args
 
@@ -1862,9 +1868,9 @@ cleanUp( cleanUpCmds )
 
     if IS_MACOS : return ( 
 """
-import shlex, zipfile, tempfile
-try: from subprocess import DEVNULL 
-except ImportError: DEVNULL = open(os.devnull, 'wb')
+from subprocess import Popen, PIPE
+import zipfile, tempfile
+import time
 
 """
 + COMMON_INIT +
@@ -1873,11 +1879,16 @@ APP_PATH     = WORK_DIR + "/" + EXE_NAME    # os.path.join( WORK_DIR, EXE_NAME )
 ZIP_PATH     = APP_PATH + ".zip" 
 APP_BIN_DIR  = os.path.join( APP_PATH, "Contents/MacOS" )
 
-# failed experiment abandoned, but not purged yet...
-# (this only works by forcing the user into a manual 
-#  System Preferences update, as Apple revoked the 
+# Failed experiment to hide the gui abandoned, but not 
+# purged entirely from the code just yet...
+# Note, this is for a .app, not the non-gui unix binary
+# I went back to using once this did not work...
+# This CAN hide teh gui, but it only works by forcing 
+#  the user into a manual 
+#  System Preferences update, as damn Apple revoked the 
 #  only means of programmatically granting such...
-#  Plus, it's doesn't work "perfectly" anyway...) 
+#  Plus, it's doesn't work "perfectly" anyway...
+#    (i.e. a corner of the screen can still be glimpsed) 
 PROCESS_NAME = os.path.splitext( EXE_NAME )[0]
 RUN_APP_OFF_SCREEN_SCRIPT = (    
 '''
@@ -1897,9 +1908,10 @@ end repeat
 
 def extractAppFromZip():
     zipfile.ZipFile( ZIP_PATH, 'r' ).extractall( WORK_DIR )   
-    BIN_PATH = os.path.join( APP_BIN_DIR, os.listdir( APP_BIN_DIR )[0] )
-    os.chmod( BIN_PATH, 0o777 )
-
+    binPath = os.path.join( APP_BIN_DIR, os.listdir( APP_BIN_DIR )[0] )
+    os.chmod( binPath, 0o777 )
+    return binPath
+    
 def runAppleScript( script ):
     scriptPath = tempfile.mktemp( suffix='.scpt' )
     with open( scriptPath, 'w' ) as f : f.write( script )
@@ -1907,15 +1919,32 @@ def runAppleScript( script ):
     os.remove( scriptPath )
     if ret != 0 : raise RuntimeError( "AppleScript failed." )
 
-def runInstaller():
+def runInstaller( binPath ):
     # failed experiment abandoned 
     #runAppleScript( RUN_APP_OFF_SCREEN_SCRIPT )
-    cmdList = shlex.split("sudo xvfb-run ./%s" % (EXE_NAME,))
-    cmdList.extend( ARGS )
-    subprocess.check_call( cmdList, cwd=WORK_DIR, 
-                           stdout=DEVNULL, stderr=DEVNULL ) 
+    process = Popen( [ "sudo", binPath ] + ARGS, cwd=WORK_DIR,
+                     shell=False,
+                     universal_newlines=True,
+                     stdout=PIPE, stderr=PIPE )
+                                                     
+    if IS_VERBOSE :
+        POLL_DELAY_SECS = 0.1
+        while process.poll() is None:
+            sys.stdout.write( process.stdout.read() )
+            sys.stderr.write( process.stderr.read() )
+            time.sleep( POLL_DELAY_SECS )
+        sys.stdout.write( process.stdout.read() )
+        sys.stderr.write( process.stderr.read() )
+    else : process.wait()    
     
-extractAppFromZip()
-runInstaller()
+    # use error log existence to set an exit code, 
+    # since IFW doesn't support such currently  
+    if os.path.exists( IFW_ERR_LOG_PATH ):
+        with open( IFW_ERR_LOG_PATH ) as f:
+            sys.stderr.write( f.read() + "\n" )
+        return FAILURE
+    return process.returncode
+
+sys.exit( runInstaller( extractAppFromZip() ) )
 
 """) 
