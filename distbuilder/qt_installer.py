@@ -1658,10 +1658,171 @@ def __silentWrapperScript( exeName, componentList ) :
             default = "* " if isDef else ""
             if componentsPrefixLen : compId = compId[componentsPrefixLen:]
             componentsEpilogue += lnFormat.format( default, compId, name ) 
+
+    if IS_WINDOWS: 
+        imports = (
+"""     
+from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW
+import glob, time 
+""" )
+        
+        helpers = ""
+        preProcess = ""
+
+        createInstallerProcess = (
+"""    
+    processStartupInfo = STARTUPINFO()
+    processStartupInfo.dwFlags |= STARTF_USESHOWWINDOW 
+    process = Popen( [EXE_PATH] + ARGS, cwd=WORK_DIR,
+                     shell=False,
+                     startupinfo=processStartupInfo,                                                                
+                     universal_newlines=True,
+                     stdout=PIPE, stderr=PIPE )
+""" )
+                                                     
+        cleanUp = (
+"""     
+    IFW_LOCK_FILE_PATTERN = "lockmyApp*.lock"
+    PY_INST_FILE_RELEASE_DELAY_SECS = 2
+
+    # Wait for IFW to release its lock       
+    while glob.glob(  IFW_LOCK_FILE_PATTERN ): pass
     
-    COMMON_INIT = (
+    # For some reason, PyInstaller won't delete the IFW exe,
+    # so that must be forced. It might still be OS locked at  
+    # this point, and thus take a few attempts... 
+    while os.path.exists( EXE_PATH ): 
+        try: os.remove( EXE_PATH )
+        except: pass
+    
+    removeIfwErrLog()
+                                
+    # this ugly pause causes the PyInstaller temp directory  
+    # auto removal to work more reliably
+    time.sleep( PY_INST_FILE_RELEASE_DELAY_SECS )        
+""" )
+    
+    if IS_MACOS :  
+        imports = (
+"""     
+import zipfile, tempfile
+import time
+""" )
+
+        helpers = (
+"""
+APP_PATH     = WORK_DIR + "/" + EXE_NAME    # os.path.join( WORK_DIR, EXE_NAME )
+ZIP_PATH     = APP_PATH + ".zip" 
+APP_BIN_DIR  = os.path.join( APP_PATH, "Contents/MacOS" )
+BIN_PATH     = ""
+
+def extractBinFromZip():
+    global BIN_PATH
+    zipfile.ZipFile( ZIP_PATH, 'r' ).extractall( WORK_DIR )   
+    BIN_PATH = os.path.join( APP_BIN_DIR, os.listdir( APP_BIN_DIR )[0] )
+    os.chmod( BIN_PATH, 0o777 )    
+
+# Failed experiment to hide the gui abandoned, but not 
+# purged entirely from the code just yet...
+# Note, this is for a .app, not the non-gui unix binary
+# I went back to using once this did not work...
+# This CAN hide teh gui, but it only works by forcing 
+#  the user into a manual 
+#  System Preferences update, as damn Apple revoked the 
+#  only means of programmatically granting such...
+#  Plus, it's doesn't work "perfectly" anyway...
+#    (i.e. a corner of the screen can still be glimpsed) 
+PROCESS_NAME = os.path.splitext( EXE_NAME )[0]
+RUN_APP_OFF_SCREEN_SCRIPT = (    
+'''
+do shell script "open %s %s"
+set isMoved to false
+set attempts to 0
+repeat until isMoved or attempts = 25
+    tell application "System Events" to tell process "%s"
+        try
+            set position of front window to {-9999999, 9999999}
+            set isMoved to true
+        end try
+        set attempts to attempts + 1
+    end tell
+end repeat
+''') % ( APP_PATH, " ".join(ARGS), PROCESS_NAME )
+    
+def runAppleScript( script ):
+    scriptPath = tempfile.mktemp( suffix='.scpt' )
+    with open( scriptPath, 'w' ) as f : f.write( script )
+    ret = subprocess.call( ['osascript', scriptPath] ) 
+    os.remove( scriptPath )
+    if ret != 0 : raise RuntimeError( "AppleScript failed." )
+""")
+    
+        preProcess = (
+"""
+    extractBinFromZip()
+""")
+
+        createInstallerProcess = (
+"""    
+    process = Popen( [ "sudo", BIN_PATH ] + ARGS, cwd=WORK_DIR,
+                     shell=False,
+                     universal_newlines=True,
+                     stdout=PIPE, stderr=PIPE )
+""")                                                     
+
+        cleanUp = (
+"""            
+    removeIfwErrLog()
+""" )
+
+    if IS_LINUX : 
+        imports = (
+"""
+import shlex
+""")
+
+        helpers = (
+"""
+cleanup_CMDS=[]
+def installTempDependencies():    
+    global CLEANUP_CMDS
+    try: 
+        subprocess.check_call( shlex.split("xvfb-run -h"),
+                               stdout=DEVNULL, stderr=DEVNULL )                                       
+    except:     
+        try: 
+            subprocess.check_call( shlex.split("sudo apt-get install xvfb -y") )
+            CLEANUP_CMDS.append( "sudo apt-get remove xvfb -y" )
+        except: 
+            subprocess.check_call( shlex.split("sudo yum install Xvfb -y") )
+            CLEANUP_CMDS.append( "sudo yum remove xvfb -y" )
+""")
+
+        preProcess = (
+"""
+    installTempDependencies()
+""")
+
+        createInstallerProcess = (
+"""
+    process = Popen( [ "sudo", "xvfb-run", "./%s" % (EXE_NAME,) ] + ARGS, 
+                     cwd=WORK_DIR,
+                     shell=False,
+                     universal_newlines=True,
+                     stdout=PIPE, stderr=PIPE )
+""")
+
+        cleanUp = (
+"""
+    for cmd in CLEANUP_CMDS: subprocess.check_call( shlex.split(cmd) )
+    removeIfwErrLog()
+""")       
+
+    return (
 """
 import os, sys, subprocess, argparse
+from subprocess import Popen, PIPE
+{17}
 
 SUCCESS=0
 FAILURE=1
@@ -1681,6 +1842,22 @@ componentsEpilogue = (
 '''{15}'''
 )
 componentsPrefix = "{16}"
+
+ARGS = []
+IS_VERBOSE = False
+
+{18}
+
+def main():        
+    global ARGS, IS_VERBOSE
+    ARGS = toIwfArgs( wrapperArgs() )  
+    IS_VERBOSE = VERBOSE_SWITCH in ARGS
+    removeIfwErrLog() 
+    {19}
+    exitCode = runInstaller()
+    cleanUp()        
+    print( "Success!" if exitCode==SUCCESS else "Failure!" )    
+    return exitCode
 
 def wrapperArgs():
     parser = argparse.ArgumentParser( epilog=componentsEpilogue,
@@ -1740,48 +1917,8 @@ def toIwfArgs( wrapperArgs ):
 
     return args
 
-ARGS       = toIwfArgs( wrapperArgs() )  
-IS_VERBOSE = VERBOSE_SWITCH in ARGS
-""").format( exeName 
-    , ("%s=true" % (_QtIfwScript.AUTO_PILOT_CMD_ARG,))
-    , _QtIfwScript.ERR_LOG_PATH_CMD_ARG    
-    , ("%s=false" % (_QtIfwScript.RUN_PROGRAM_CMD_ARG,))
-    , _QtIfwScript.VERBOSE_CMD_SWITCH_ARG
-    , _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG
-    , _QtIfwScript.TARGET_EXISTS_OPT_REMOVE
-    , _QtIfwScript.TARGET_EXISTS_OPT_FAIL       
-    , _QtIfwScript.TARGET_DIR_CMD_ARG
-    , _QtIfwScript.START_MENU_DIR_CMD_ARG 
-    , IS_WINDOWS
-    , _QtIfwScript.INSTALL_LIST_CMD_ARG 
-    , _QtIfwScript.INCLUDE_LIST_CMD_ARG
-    , _QtIfwScript.EXCLUDE_LIST_CMD_ARG
-    , componentsRepr
-    , componentsEpilogue
-    , componentsPrefix
-)
-        
-    if IS_WINDOWS: return (
-"""     
-import glob, time 
-from subprocess import Popen, PIPE, STARTUPINFO, STARTF_USESHOWWINDOW
-{0}
-
-def main():        
-    removeIfwErrLog() 
-    exitCode = runInstaller()
-    cleanUp()        
-    if exitCode==SUCCESS: print( "Success!" )    
-    return exitCode
-
 def runInstaller():
-    processStartupInfo = STARTUPINFO()
-    processStartupInfo.dwFlags |= STARTF_USESHOWWINDOW 
-    process = Popen( [EXE_PATH] + ARGS, cwd=WORK_DIR,
-                     shell=False,
-                     startupinfo=processStartupInfo,                                                                
-                     universal_newlines=True,
-                     stdout=PIPE, stderr=PIPE )
+{20}
                                                      
     if IS_VERBOSE :
         POLL_DELAY_SECS = 0.1
@@ -1801,150 +1938,34 @@ def runInstaller():
         return FAILURE
     return process.returncode
 
+def cleanUp():
+{21}
+
 def removeIfwErrLog(): 
     if os.path.exists( IFW_ERR_LOG_PATH ):
         os.remove( IFW_ERR_LOG_PATH )
 
-def cleanUp():
-    IFW_LOCK_FILE_PATTERN = "lockmyApp*.lock"
-    PY_INST_FILE_RELEASE_DELAY_SECS = 2
-
-    # Wait for IFW to release its lock       
-    while glob.glob(  IFW_LOCK_FILE_PATTERN ): pass
-    
-    # For some reason, PyInstaller won't delete the IFW exe,
-    # so that must be forced. It might still be OS locked at  
-    # this point, and thus take a few attempts... 
-    while os.path.exists( EXE_PATH ): 
-        try: os.remove( EXE_PATH )
-        except: pass
-    
-    removeIfwErrLog()
-                                
-    # this ugly pause causes the PyInstaller temp directory  
-    # auto removal to work more reliably
-    time.sleep( PY_INST_FILE_RELEASE_DELAY_SECS )    
-
 sys.exit( main() )
-    
-""").format( COMMON_INIT )
-
-    if IS_LINUX : return ( 
-"""
-import shlex
-try: from subprocess import DEVNULL 
-except ImportError: DEVNULL = open(os.devnull, 'wb')
-
-{0}
-
-def runInstaller():
-    cmdList = shlex.split("sudo xvfb-run ./%s" % (EXE_NAME,))
-    cmdList.extend( ARGS )
-    subprocess.check_call( cmdList, cwd=WORK_DIR, 
-                           stdout=DEVNULL, stderr=DEVNULL ) 
-
-def installTempDependencies():    
-    cleanUpCmds=[]
-    try: 
-        subprocess.check_call( shlex.split("xvfb-run -h"),
-                               stdout=DEVNULL, stderr=DEVNULL )                                       
-    except:     
-        try: 
-            subprocess.check_call( shlex.split("sudo apt-get install xvfb -y") )
-            cleanUpCmds.append( "sudo apt-get remove xvfb -y" )
-        except: 
-            subprocess.check_call( shlex.split("sudo yum install Xvfb -y") )
-            cleanUpCmds.append( "sudo yum remove xvfb -y" )
-    return cleanUpCmds
-
-def cleanUp( cmds ):
-    for cmd in cmds: subprocess.check_call( shlex.split(cmd) )
-
-cleanUpCmds = installTempDependencies()
-runInstaller()
-cleanUp( cleanUpCmds )
-
-""").format( COMMON_INIT )
-
-    if IS_MACOS : return ( 
-"""
-from subprocess import Popen, PIPE
-import zipfile, tempfile
-import time
-
-"""
-+ COMMON_INIT +
-"""
-APP_PATH     = WORK_DIR + "/" + EXE_NAME    # os.path.join( WORK_DIR, EXE_NAME )
-ZIP_PATH     = APP_PATH + ".zip" 
-APP_BIN_DIR  = os.path.join( APP_PATH, "Contents/MacOS" )
-
-# Failed experiment to hide the gui abandoned, but not 
-# purged entirely from the code just yet...
-# Note, this is for a .app, not the non-gui unix binary
-# I went back to using once this did not work...
-# This CAN hide teh gui, but it only works by forcing 
-#  the user into a manual 
-#  System Preferences update, as damn Apple revoked the 
-#  only means of programmatically granting such...
-#  Plus, it's doesn't work "perfectly" anyway...
-#    (i.e. a corner of the screen can still be glimpsed) 
-PROCESS_NAME = os.path.splitext( EXE_NAME )[0]
-RUN_APP_OFF_SCREEN_SCRIPT = (    
-'''
-do shell script "open %s %s"
-set isMoved to false
-set attempts to 0
-repeat until isMoved or attempts = 25
-    tell application "System Events" to tell process "%s"
-        try
-            set position of front window to {-9999999, 9999999}
-            set isMoved to true
-        end try
-        set attempts to attempts + 1
-    end tell
-end repeat
-''') % ( APP_PATH, " ".join(ARGS), PROCESS_NAME )
-
-def extractAppFromZip():
-    zipfile.ZipFile( ZIP_PATH, 'r' ).extractall( WORK_DIR )   
-    binPath = os.path.join( APP_BIN_DIR, os.listdir( APP_BIN_DIR )[0] )
-    os.chmod( binPath, 0o777 )
-    return binPath
-    
-def runAppleScript( script ):
-    scriptPath = tempfile.mktemp( suffix='.scpt' )
-    with open( scriptPath, 'w' ) as f : f.write( script )
-    ret = subprocess.call( ['osascript', scriptPath] ) 
-    os.remove( scriptPath )
-    if ret != 0 : raise RuntimeError( "AppleScript failed." )
-
-def runInstaller( binPath ):
-    # failed experiment abandoned 
-    #runAppleScript( RUN_APP_OFF_SCREEN_SCRIPT )
-    process = Popen( [ "sudo", binPath ] + ARGS, cwd=WORK_DIR,
-                     shell=False,
-                     universal_newlines=True,
-                     stdout=PIPE, stderr=PIPE )
-                                                     
-    if IS_VERBOSE :
-        POLL_DELAY_SECS = 0.1
-        while process.poll() is None:
-            sys.stdout.write( process.stdout.read() )
-            sys.stderr.write( process.stderr.read() )
-            time.sleep( POLL_DELAY_SECS )
-        sys.stdout.write( process.stdout.read() )
-        sys.stderr.write( process.stderr.read() )
-    else : process.wait()    
-    
-    # use error log existence to set an exit code, 
-    # since IFW doesn't support such currently  
-    if os.path.exists( IFW_ERR_LOG_PATH ):
-        with open( IFW_ERR_LOG_PATH ) as f:
-            sys.stderr.write( f.read() + "\n" )
-        return FAILURE
-    return process.returncode
-
-sys.exit( runInstaller( extractAppFromZip() ) )
-
-""") 
+""").format( exeName 
+    , ("%s=true" % (_QtIfwScript.AUTO_PILOT_CMD_ARG,))
+    , _QtIfwScript.ERR_LOG_PATH_CMD_ARG    
+    , ("%s=false" % (_QtIfwScript.RUN_PROGRAM_CMD_ARG,))
+    , _QtIfwScript.VERBOSE_CMD_SWITCH_ARG
+    , _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG
+    , _QtIfwScript.TARGET_EXISTS_OPT_REMOVE
+    , _QtIfwScript.TARGET_EXISTS_OPT_FAIL       
+    , _QtIfwScript.TARGET_DIR_CMD_ARG
+    , _QtIfwScript.START_MENU_DIR_CMD_ARG 
+    , IS_WINDOWS
+    , _QtIfwScript.INSTALL_LIST_CMD_ARG 
+    , _QtIfwScript.INCLUDE_LIST_CMD_ARG
+    , _QtIfwScript.EXCLUDE_LIST_CMD_ARG
+    , componentsRepr
+    , componentsEpilogue
+    , componentsPrefix
+    , imports
+    , helpers
+    , preProcess
+    , createInstallerProcess
+    , cleanUp
+)
