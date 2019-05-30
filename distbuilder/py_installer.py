@@ -453,7 +453,7 @@ def buildExecutable( name=None, entryPointPy=None,
             if not exists( destDir ): makeDir( destDir )
             try: copyFile( src, dest ) 
             except Exception as e: printExc( e )
-        elif exists:
+        elif isDir( src ):
             try: copyDir( src, dest ) 
             except Exception as e: printExc( e )
         else:
