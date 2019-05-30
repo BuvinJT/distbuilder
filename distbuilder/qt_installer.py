@@ -1663,7 +1663,7 @@ def __silentWrapperScript( exeName, componentList ) :
         imports = (
 """     
 from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW
-import glob, time 
+import glob
 """ )
         
         helpers = ""
@@ -1706,7 +1706,6 @@ import glob, time
         imports = (
 """     
 import zipfile, tempfile
-import time
 """ )
 
         helpers = (
@@ -1779,11 +1778,13 @@ def runAppleScript( script ):
         imports = (
 """
 import shlex
+try: from subprocess import DEVNULL 
+except ImportError: DEVNULL = open(os.devnull, 'wb')
 """)
 
         helpers = (
 """
-cleanup_CMDS=[]
+CLEANUP_CMDS=[]
 def installTempDependencies():    
     global CLEANUP_CMDS
     try: 
@@ -1820,7 +1821,7 @@ def installTempDependencies():
 
     return (
 """
-import os, sys, subprocess, argparse
+import os, sys, time, argparse, subprocess
 from subprocess import Popen, PIPE
 {17}
 
