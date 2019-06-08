@@ -32,8 +32,21 @@ class PyInstallerConfig:
         #
         # Note a user can assign a value to this attribute directly
         # when this default fails to meet their needs.
-        if IS_WINDOWS :
-            # resolves multi-python version environments
+        #
+        # -----------------------------------------------------------
+        # TODO: Fix glitch on multi-python version environments
+        #       (Watch build output which displays the py version used 
+        #        by PyInstaller) 
+        #  
+        # On Linux & Mac this runs a bash script that uses a specific
+        # Python binary for the build process.  That bin path could be 
+        # overwritten... 
+        #
+        # On Windows, this kicks off an exe within the current Python
+        #   context directory (need to confirm that is respecting the 
+        #   context too!) 
+        # -----------------------------------------------------------
+        if IS_WINDOWS :            
             p = util._pythonScriptsPath( PYINST_BIN_NAME )
         elif IS_LINUX :
             p = util._usrBinPath( PYINST_BIN_NAME )

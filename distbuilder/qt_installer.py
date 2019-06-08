@@ -1784,19 +1784,68 @@ except ImportError: DEVNULL = open(os.devnull, 'wb')
 
         helpers = (
 """
+PKG_MGR_ERR_MSG = "No compatible package manager installed."
+
+TEMP_PKG_DEPENDENCIES = { 
+      "xvfb"       : [ "xvfb", "Xvfb" ]
+    , "fontconfig" : [ "fontconfig", "libfontconfig1" ]
+}
+
+def packageAliases( pkg ):
+    return TEMP_PKG_DEPENDENCIES.get( pkg, [pkg] ) 
+
+def isPackageManagerInstalled( prog ):    
+    try: 
+        subprocess.check_call( [prog, "--help"], 
+            stdout=DEVNULL, stderr=DEVNULL )
+        return True                                                              
+    except: return False     
+def isAptInstalled():  return isPackageManagerInstalled( "apt" )   
+def isDpkgInstalled(): return isPackageManagerInstalled( "dpkg" )
+def isYumInstalled():  return isPackageManagerInstalled( "yum" )
+def isRpmInstalled():  return isPackageManagerInstalled( "rpm" )
+
+def isPackageInstalled( pkg ):
+    if   isDpkgInstalled() : cmd = ["dpkg", "-l"]
+    elif isRpmInstalled()  : cmd = ["rpm",  "-q"]
+    else : raise RuntimeError( PKG_MGR_ERR_MSG )     
+    aliases = packageAliases( pkg )
+    for alias in aliases:    
+        try:
+            subprocess.check_call( cmd + [alias], 
+                stdout=DEVNULL, stderr=DEVNULL )
+            return True                                                              
+        except: pass     
+    return False
+
+def installPackage( pkg ):
+    if   isAptInstalled(): 
+        inCmd = ["sudo", "apt-get", "install", "-y"]   
+        rmCmd = ["sudo", "apt-get", "remove",  "-y"]
+    elif isYumInstalled(): 
+        inCmd = ["sudo", "yum", "install", "-y"]
+        rmCmd = ["sudo", "yum", "remove",  "-y"]
+    else : raise RuntimeError( PKG_MGR_ERR_MSG )     
+    aliases = packageAliases( pkg )
+    for alias in aliases:
+        cmd = inCmd + [alias]            
+        try:            
+            subprocess.check_call( cmd, 
+                stdout=DEVNULL, stderr=DEVNULL )
+            if IS_VERBOSE:
+                print( ' '.join( cmd ) ) 
+                print( "Installed dependency: %s" % (alias,) )
+            return rmCmd + [alias]                                                              
+        except: pass     
+    raise RuntimeError( 
+        "Failed to install dependency: %s" % (pkg,) ) 
+
 CLEANUP_CMDS=[]
 def installTempDependencies():    
     global CLEANUP_CMDS
-    try: 
-        subprocess.check_call( shlex.split("xvfb-run -h"),
-                               stdout=DEVNULL, stderr=DEVNULL )                                       
-    except:     
-        try: 
-            subprocess.check_call( shlex.split("sudo apt-get install xvfb -y") )
-            CLEANUP_CMDS.append( "sudo apt-get remove xvfb -y" )
-        except: 
-            subprocess.check_call( shlex.split("sudo yum install Xvfb -y") )
-            CLEANUP_CMDS.append( "sudo yum remove xvfb -y" )
+    for pkg in TEMP_PKG_DEPENDENCIES.keys() :
+        if not isPackageInstalled( pkg ):
+            CLEANUP_CMDS.append( installPackage( pkg ) )    
 """)
 
         preProcess = (
@@ -1815,7 +1864,9 @@ def installTempDependencies():
 
         cleanUp = (
 """
-    for cmd in CLEANUP_CMDS: subprocess.check_call( shlex.split(cmd) )
+    for cmd in CLEANUP_CMDS:
+        if IS_VERBOSE: print( ' '.join( cmd ) ) 
+        subprocess.check_call( cmd )         
     removeIfwErrLog()
 """)       
 
