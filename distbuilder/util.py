@@ -14,7 +14,7 @@ from shutil import rmtree as removeDir, move, make_archive, \
     copytree as copyDir, copyfile as copyFile   # @UnusedImport
 import platform
 from tempfile import gettempdir
-from subprocess import Popen, list2cmdline, \
+from subprocess import Popen, list2cmdline, check_output, \
     PIPE, STDOUT
 import traceback
 from distutils.sysconfig import get_python_lib
@@ -99,7 +99,8 @@ def run( binPath, args=[],
         if isinstance(args,list): args = list2cmdline(args)
         elif args is None: args=""
         elevate = "" if not isElevated or IS_WINDOWS else "sudo"  
-        pwdCmd = "" if IS_WINDOWS or isMacApp else "./"
+        if IS_WINDOWS or isMacApp : pwdCmd = ""
+        else : pwdCmd = "./" if wrkDir==binDir else ""
         cmd = ('%s %s%s %s' % (elevate, pwdCmd, fileName, args)).strip()
         _system( cmd, wrkDir )
     
@@ -120,17 +121,26 @@ if IS_WINDOWS :
     from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW
     __BATCH_ONE_LINER_STARTUPINFO = STARTUPINFO()
     __BATCH_ONE_LINER_STARTUPINFO.dwFlags |= STARTF_USESHOWWINDOW 
-
+ 
 def _system( cmd, wrkDir=None ):
     if wrkDir is not None:
         initWrkDir = getcwd()
         print( 'cd "%s"' % (wrkDir,) )
-        chdir( wrkDir  )
+        chdir( wrkDir )
     cmd = __scrubSystemCmd( cmd )        
     print( cmd )
     system( cmd ) 
     print('')
     if wrkDir is not None: chdir( initWrkDir )
+
+def _subProcessStdOut( cmd, asCleanLines=False ): 
+    stdOut = check_output( cmd )    
+    if PY3 : stdOut = stdOut.decode(encoding='windows-1252')
+    if asCleanLines :
+        lines = stdOut.split('\n')
+        lines = [l.strip() for l in lines if l.strip()]
+        return lines      
+    else : return stdOut.strip()
 
 def __scrubSystemCmd( cmd ):
     """

@@ -14,7 +14,8 @@ from distbuilder.py_installer import \
     , WindowsExeVersionInfo
     
 from distbuilder.qt_installer import \
-      buildInstaller \
+      installQtIfw \
+    , buildInstaller \
     , findQtIfwPackage \
     , removeQtIfwPackage \
     , mergeQtIfwPackages \

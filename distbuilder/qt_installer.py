@@ -19,6 +19,9 @@ QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
 __BIN_SUB_DIR = "bin"
 __QT_INSTALL_CREATOR_EXE_NAME = util.normBinaryName( "binarycreator" )
 
+__QT_IFW_AUTO_INSTALL_PY_SCRIPT_NAME = "__distbuilder-qt-ifw.py"
+__QT_IFW_AUTO_INSTALL_Q_SCRIPT_NAME = "__distbuilder-qt-ifw.qs"
+
 __WRAPPER_SCRIPT_NAME = "__installer.py"
 __WRAPPER_INSTALLER_NAME = "wrapper-installer" 
 __NESTED_INSTALLER_NAME  = "hidden-installer"
@@ -1362,6 +1365,20 @@ class QtIfwShortcut:
         self.isAppShortcut     = True
         self.isDesktopShortcut = False
 
+# -----------------------------------------------------------------------------            
+def installQtIfw( installerPath, targetPath=None ):
+    if targetPath is None: 
+        qtDefaultDir = joinPath( util._userHomeDirPath(), "Qt" )
+        ifwVer = __QtIfwInstallerVersion( installerPath )
+        dirName = "QtIFW" if ifwVer is None else "QtIFW-%s" % (ifwVer,)
+        targetPath = joinPath( qtDefaultDir, dirName ) 
+    ifwQScriptPath = __generateQtIfwInstallerQScript()
+    ifwPyScriptPath = __generateQtIfwInstallPyScript( 
+        installerPath, targetPath, ifwQScriptPath )    
+    runPy( ifwPyScriptPath )
+    removeFile( ifwPyScriptPath )
+    removeFile( ifwQScriptPath )
+
 # -----------------------------------------------------------------------------                   
 def findQtIfwPackage( pkgs, pkgId ):        
     for p in pkgs: 
@@ -1565,7 +1582,7 @@ def __buildSilentWrapper( qtIfwConfig ) :
                            package.pkgXml.pkgName, 
                            package.pkgXml.DisplayName) 
                            for package in qtIfwConfig.packages ]            
-    wrapperScript     = __silentWrapperScript( nestedExeName, componentList )
+    wrapperScript     = __silentQtIfwScript( nestedExeName, componentList )
         
     cfgXml            = qtIfwConfig.configXml
                                                
@@ -1623,7 +1640,9 @@ def __buildSilentWrapper( qtIfwConfig ) :
     BuildProcess( configFactory ).run()
     return absPath( destSetupExeName )
     
-def __silentWrapperScript( exeName, componentList ) :
+def __silentQtIfwScript( exeName, componentList=[],
+                         isQtIfwInstaller=False, scriptPath=None,
+                         wrkDir=None, targetDir=None) :
     """
     Runs the IFW exe from inside the PyInstaller MEIPASS directory,
     with elevated privileges, hidden from view, gathering
@@ -1725,7 +1744,7 @@ def extractBinFromZip():
 # purged entirely from the code just yet...
 # Note, this is for a .app, not the non-gui unix binary
 # I went back to using once this did not work...
-# This CAN hide teh gui, but it only works by forcing 
+# This CAN hide the gui, but it only works by forcing 
 #  the user into a manual 
 #  System Preferences update, as damn Apple revoked the 
 #  only means of programmatically granting such...
@@ -1870,7 +1889,69 @@ def installTempDependencies():
     removeIfwErrLog()
 """)       
 
-    return (
+    if isQtIfwInstaller :
+        return (
+"""
+import os, sys, time, argparse, subprocess
+from subprocess import Popen, PIPE
+{3}
+
+SUCCESS=0
+FAILURE=1
+
+IS_WINDOWS = {4}
+
+WORK_DIR         = "{1}"
+EXE_NAME         = "{0}"
+EXE_PATH         = os.path.join( WORK_DIR, EXE_NAME )
+
+ARGS = ["-v","--script", "{2}", "target={9}"]
+IS_VERBOSE = True
+
+{5}
+
+def main():        
+    {6}
+    exitCode = runInstaller()
+    cleanUp()        
+    print( "Success!" if exitCode==SUCCESS else "Failure!" )    
+    return exitCode
+
+def runInstaller():
+{7}
+                                                     
+    if IS_VERBOSE :
+        POLL_DELAY_SECS = 0.1
+        while process.poll() is None:
+            sys.stdout.write( process.stdout.read() )
+            sys.stderr.write( process.stderr.read() )
+            time.sleep( POLL_DELAY_SECS )
+        sys.stdout.write( process.stdout.read() )
+        sys.stderr.write( process.stderr.read() )
+    else : process.wait()    
+
+    return process.returncode
+
+def cleanUp():
+{8}
+
+def removeIfwErrLog(): pass
+
+sys.exit( main() )
+""").format( 
+      exeName 
+    , wrkDir
+    , scriptPath 
+    , imports             
+    , IS_WINDOWS  
+    , helpers
+    , preProcess
+    , createInstallerProcess
+    , cleanUp
+    , targetDir
+)
+    else:
+        return (
 """
 import os, sys, time, argparse, subprocess
 from subprocess import Popen, PIPE
@@ -2021,3 +2102,79 @@ sys.exit( main() )
     , createInstallerProcess
     , cleanUp
 )
+
+def __generateQtIfwInstallPyScript( installerPath, targetPath, ifwScriptPath ):
+    installerDir, installerName = splitPath( installerPath ) 
+    script = __silentQtIfwScript( 
+        installerName, isQtIfwInstaller=True, 
+        scriptPath=ifwScriptPath, wrkDir=installerDir,
+        targetDir=targetPath )    
+    filePath = joinPath( tempDirPath(), __QT_IFW_AUTO_INSTALL_PY_SCRIPT_NAME )
+    #print( "Generating Python Script: %s" % (filePath,) )
+    #print( "\n%s\n" % (script,) )
+    with open( filePath, 'w' ) as f: f.write( script ) 
+    return filePath 
+            
+def __generateQtIfwInstallerQScript() :
+    script = (
+"""
+function Controller() {
+    installer.installationFinished.connect(this, Controller.prototype.onInstallFinished);
+    installer.uninstallationFinished.connect(this, Controller.prototype.onUninstallFinished);
+}
+    
+Controller.prototype.IntroductionPageCallback = function() {
+    gui.clickButton(buttons.NextButton);
+}
+    
+Controller.prototype.TargetDirectoryPageCallback = function() {
+    if( installer.value( "target", "" )!="" )
+        gui.currentPageWidget().TargetDirectoryLineEdit.setText(installer.value( "target", "" ));
+    gui.clickButton(buttons.NextButton);
+}
+    
+Controller.prototype.ComponentSelectionPageCallback = function() {
+    gui.clickButton(buttons.NextButton);
+}
+    
+Controller.prototype.LicenseAgreementPageCallback = function() {
+    gui.currentPageWidget().AcceptLicenseRadioButton.setChecked(true);
+    gui.clickButton(buttons.NextButton);
+}
+    
+Controller.prototype.StartMenuDirectoryPageCallback = function() {
+    gui.clickButton(buttons.NextButton);
+}
+    
+Controller.prototype.ReadyForInstallationPageCallback = function() {
+    gui.clickButton(buttons.NextButton);
+}
+    
+Controller.prototype.PerformInstallationPageCallback = function() {
+    gui.clickButton(buttons.NextButton);
+}
+    
+Controller.prototype.FinishedPageCallback = function() {
+    gui.clickButton(buttons.FinishButton);
+}
+
+Controller.prototype.onInstallFinished = function(){
+    gui.clickButton(buttons.NextButton);
+}
+
+Controller.prototype.onUninstallFinished = function(){
+    gui.clickButton(buttons.NextButton);
+}
+""")
+    filePath = joinPath( tempDirPath(), __QT_IFW_AUTO_INSTALL_Q_SCRIPT_NAME )
+    #print( "Generating QScript: %s" % (filePath,) )
+    #print( "\n%s\n" % (script,) )
+    with open( filePath, 'w' ) as f: f.write( script ) 
+    return filePath 
+
+def __QtIfwInstallerVersion( installerPath ):
+    version = util._subProcessStdOut( 
+        [installerPath, "--framework-version"] )
+    # TODO: validate expected format returned, return None if bad
+    return version    
+    
