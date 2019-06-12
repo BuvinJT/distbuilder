@@ -1367,6 +1367,9 @@ class QtIfwShortcut:
 
 # -----------------------------------------------------------------------------            
 def installQtIfw( installerPath, targetPath=None ):
+    isLocal, path = util._isLocalPath( installerPath )    
+    installerPath = path if isLocal else download( installerPath )
+    if IS_LINUX and not isLocal: util.chmod( installerPath, 0o755 )
     if targetPath is None: 
         qtDefaultDir = joinPath( util._userHomeDirPath(), "Qt" )
         ifwVer = __QtIfwInstallerVersion( installerPath )
@@ -1378,6 +1381,7 @@ def installQtIfw( installerPath, targetPath=None ):
     runPy( ifwPyScriptPath )
     removeFile( ifwPyScriptPath )
     removeFile( ifwQScriptPath )
+    if not isLocal: removeFile( installerPath )
 
 # -----------------------------------------------------------------------------                   
 def findQtIfwPackage( pkgs, pkgId ):        

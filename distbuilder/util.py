@@ -1,10 +1,10 @@
-# Standard Libraries
 from six import PY2, PY3  # @UnusedImport
+from six.moves import urllib
 from sys import argv, stdout, stderr, exit, \
     executable as PYTHON_PATH
 from os import system, remove as removeFile, \
     getcwd, chdir, walk, \
-    getenv, listdir, makedirs as makeDir, rename # @UnusedImport   
+    chmod, getenv, listdir, makedirs as makeDir, rename # @UnusedImport   
 from os.path import exists, isfile as isFile, \
     dirname as dirPath, normpath, realpath, isabs, \
     join as joinPath, split as splitPath, splitext as splitExt, \
@@ -464,3 +464,23 @@ def printExc( e, isDetailed=False, isFatal=False ):
     if isFatal: exit(1)
             
 # -----------------------------------------------------------------------------           
+def download( url, saveToPath=None ):
+    print( "Downloading: %s..." % (url,) )
+    download._priorPct = 0
+    def __ondownLoadProgress( blockCount, blockSize, fileSize ):
+        if fileSize != -1: 
+            pct = int(100 * ((blockCount*blockSize) / fileSize))
+            if pct - download._priorPct >= 10 :
+                download._priorPct = pct 
+                stdout.write( "Done!\n" if pct==100 else 
+                              "{0}%...".format( pct ) )
+                stdout.flush() 
+    localPath, _ = urllib.request.urlretrieve( url, saveToPath, 
+                                               __ondownLoadProgress )
+    print( "Saved to: %s" % (localPath,) )    
+    return localPath
+
+def _isLocalPath( path ):
+    scheme,_,path,_,_ = urllib.parse.urlsplit( path )
+    isLocal = scheme=="file" or scheme=="" 
+    return isLocal, path 

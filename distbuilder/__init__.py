@@ -85,4 +85,5 @@ from distbuilder.util import \
     , sitePackagePath \
     , printErr \
     , printExc \
-    , halt
+    , halt \
+    , download
