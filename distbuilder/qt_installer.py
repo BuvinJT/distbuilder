@@ -8,19 +8,28 @@ from abc import ABCMeta, abstractmethod
 
 BUILD_SETUP_DIR_PATH = absPath( "build_setup" )
 INSTALLER_DIR_PATH = "installer"
+
+QT_IFW_DEFAULT_VERSION = "3.1.1"
+QT_IFW_DOWNLOAD_URL_BASE = "https://download.qt.io/official_releases/qt-installer-framework"
+QT_IFW_DOWNLOAD_FILE_WINDOWS = "QtInstallerFramework-win-x86.exe"
+QT_IFW_DOWNLOAD_FILE_MACOS   = "QtInstallerFramework-mac-x64.dmg"
+QT_IFW_DOWNLOAD_FILE_LINUX   = "QtInstallerFramework-linux-x64.run"
+__QT_IFW_DOWNLOAD_URL_TMPLT = "%s/%s/%s"
+
+QT_IFW_DIR_ENV_VAR = "QT_IFW_DIR"
+QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
+
 DEFAULT_SETUP_NAME = util.normBinaryName( "setup" )
 DEFAULT_QT_IFW_SCRIPT_NAME = "installscript.qs"
 
 QT_IFW_VERBOSE_SWITCH = '-v'
 
-QT_IFW_DIR_ENV_VAR = "QT_IFW_DIR"
-QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
-
 __BIN_SUB_DIR = "bin"
-__QT_INSTALL_CREATOR_EXE_NAME = util.normBinaryName( "binarycreator" )
+__QT_IFW_UNINSTALL_EXE_NAME = util.normBinaryName( "Uninstaller" )
+__QT_IFW_CREATOR_EXE_NAME = util.normBinaryName( "binarycreator" )
 
-__QT_IFW_AUTO_INSTALL_PY_SCRIPT_NAME = "__distbuilder-qt-ifw.py"
-__QT_IFW_AUTO_INSTALL_Q_SCRIPT_NAME = "__distbuilder-qt-ifw.qs"
+__QT_IFW_AUTO_INSTALL_PY_SCRIPT_NAME = "__db-install-qt-ifw.py"
+__QT_IFW_AUTO_INSTALL_Q_SCRIPT_NAME = "__db-unattended-qt-ifw.qs"
 
 __WRAPPER_SCRIPT_NAME = "__installer.py"
 __WRAPPER_INSTALLER_NAME = "wrapper-installer" 
@@ -1366,23 +1375,55 @@ class QtIfwShortcut:
         self.isDesktopShortcut = False
 
 # -----------------------------------------------------------------------------            
-def installQtIfw( installerPath, targetPath=None ):
+def installQtIfw( installerPath=None, version=None, targetPath=None ):    
+    if installerPath is None :        
+        if   IS_WINDOWS : fileName = QT_IFW_DOWNLOAD_FILE_WINDOWS
+        elif IS_LINUX   : fileName = QT_IFW_DOWNLOAD_FILE_LINUX
+        elif IS_MACOS   : fileName = QT_IFW_DOWNLOAD_FILE_MACOS
+        if version is None: version = QT_IFW_DEFAULT_VERSION 
+        installerPath = ( __QT_IFW_DOWNLOAD_URL_TMPLT % 
+            (QT_IFW_DOWNLOAD_URL_BASE, version, fileName) )
     isLocal, path = util._isLocalPath( installerPath )    
     installerPath = path if isLocal else download( installerPath )
     if IS_LINUX and not isLocal: util.chmod( installerPath, 0o755 )
     if targetPath is None: 
-        qtDefaultDir = joinPath( util._userHomeDirPath(), "Qt" )
-        ifwVer = __QtIfwInstallerVersion( installerPath )
-        dirName = "QtIFW" if ifwVer is None else "QtIFW-%s" % (ifwVer,)
-        targetPath = joinPath( qtDefaultDir, dirName ) 
+        version = __QtIfwInstallerVersion( installerPath )
+        targetPath = __defaultQtIfwPath( version ) 
+        print( "targetPath: %s" % (targetPath,) )   
+    if isFile( __qtIfwCreatorPath( targetPath ) ):
+        raise Exception( "A copy of QtIFW is already installed in: %s" 
+                         % (targetPath,) )                             
     ifwQScriptPath = __generateQtIfwInstallerQScript()
     ifwPyScriptPath = __generateQtIfwInstallPyScript( 
         installerPath, targetPath, ifwQScriptPath )    
     runPy( ifwPyScriptPath )
     removeFile( ifwPyScriptPath )
     removeFile( ifwQScriptPath )
-    if not isLocal: removeFile( installerPath )
+    if not isLocal: removeFile( installerPath )    
+    return targetPath if isFile( __qtIfwCreatorPath( targetPath ) ) else None
 
+def unInstallQtIfw( qtIfwPath=None, version=None ):
+    if qtIfwPath is None : qtIfwPath = __defaultQtIfwPath( version )
+    uninstallerPath = joinPath( qtIfwPath, __QT_IFW_UNINSTALL_EXE_NAME )
+    if isFile( uninstallerPath ):
+        raise  Exception( "The QtIFW uninstaller path cannot be resolved" )                             
+    #TODO: finish!
+
+def __defaultQtIfwPath( version=QT_IFW_DEFAULT_VERSION, isVerified=False ):
+    qtDefaultDir = joinPath( util._userHomeDirPath(), "Qt" )    
+    subDirName = "QtIFW" if version is None else "QtIFW-%s" % (version,)
+    qtIfwDir = joinPath( qtDefaultDir, subDirName )     
+    if not isVerified : return qtIfwDir    
+    return qtIfwDir if isFile( __qtIfwCreatorPath( qtIfwDir ) ) else None
+    
+def __defaultQtIfwCreatorPath( version=QT_IFW_DEFAULT_VERSION ):
+    return __qtIfwCreatorPath( __defaultQtIfwPath( version ) )
+
+def __qtIfwCreatorPath( qtIfwDir ):
+    creatorPath = joinPath( qtIfwDir, 
+        joinPath( __BIN_SUB_DIR, __QT_IFW_CREATOR_EXE_NAME ) )
+    return creatorPath if isFile( creatorPath ) else None
+    
 # -----------------------------------------------------------------------------                   
 def findQtIfwPackage( pkgs, pkgId ):        
     for p in pkgs: 
@@ -1437,11 +1478,15 @@ def __validateConfig( qtIfwConfig ):
                 raise Exception( "Package Source exe path is not valid" )    
         elif not isDir(p.srcDirPath) :        
             raise Exception( "Package Source directory path is not valid" )
-    # required Qt utility paths 
+    # resolve or install required utility paths 
     if qtIfwConfig.qtIfwDirPath is None:
         qtIfwConfig.qtIfwDirPath = getenv( QT_IFW_DIR_ENV_VAR )    
+    if qtIfwConfig.qtIfwDirPath is None:
+        qtIfwConfig.qtIfwDirPath = __defaultQtIfwPath( isVerified=True )
+    if qtIfwConfig.qtIfwDirPath is None:
+        qtIfwConfig.qtIfwDirPath = installQtIfw()                    
     if( qtIfwConfig.qtIfwDirPath is None or
-        not isDir(qtIfwConfig.qtIfwDirPath) ):        
+        not isFile( __qtIfwCreatorPath( qtIfwConfig.qtIfwDirPath ) ) ):        
         raise Exception( "Valid Qt IFW directory path required" )
     for p in qtIfwConfig.packages :
         if not isinstance( p, QtIfwPackage ) : continue
@@ -1549,11 +1594,10 @@ def __addQtCppDependencies( qtIfwConfig, package ) :
 
 def __build( qtIfwConfig ) :
     print( "Building installer using Qt IFW...\n" )
-    qtUtilityPath = joinPath( qtIfwConfig.qtIfwDirPath, 
-        joinPath( __BIN_SUB_DIR, __QT_INSTALL_CREATOR_EXE_NAME ) )
+    creatorPath = __qtIfwCreatorPath( qtIfwConfig.qtIfwDirPath )
     setupExePath = joinPath( THIS_DIR, 
                              util.normBinaryName( qtIfwConfig.setupExeName ) )
-    cmd = '%s %s "%s"' % ( qtUtilityPath, str(qtIfwConfig), setupExePath )
+    cmd = '%s %s "%s"' % ( creatorPath, str(qtIfwConfig), setupExePath )
     util._system( cmd )  
     setupExePath = normBinaryName( setupExePath, 
                                    isPathPreserved=True, isGui=True )

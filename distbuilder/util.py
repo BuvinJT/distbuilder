@@ -5,7 +5,7 @@ from sys import argv, stdout, stderr, exit, \
 from os import system, remove as removeFile, \
     getcwd, chdir, walk, \
     chmod, getenv, listdir, makedirs as makeDir, rename # @UnusedImport   
-from os.path import exists, isfile as isFile, \
+from os.path import exists, isfile, \
     dirname as dirPath, normpath, realpath, isabs, \
     join as joinPath, split as splitPath, splitext as splitExt, \
     expanduser, \
@@ -396,8 +396,12 @@ def _normIconName( path, isPathPreserved=False ):
                         
 def _isMacApp( path ): return IS_MACOS and splitExt(path)[1]==".app"
 
-# -----------------------------------------------------------------------------      
-def isDir( path ): return exists(path) and not isFile(path)
+# ----------------------------------------------------------------------------- 
+def isFile( path ): 
+    return path is not None and isfile( path )       
+
+def isDir( path ): 
+    return path is not None and exists( path ) and not isFile( path )
 
 def absPath( relativePath, basePath=None ):
     if isabs( relativePath ): return relativePath
