@@ -28,8 +28,9 @@ __BIN_SUB_DIR = "bin"
 __QT_IFW_UNINSTALL_EXE_NAME = util.normBinaryName( "Uninstaller" )
 __QT_IFW_CREATOR_EXE_NAME = util.normBinaryName( "binarycreator" )
 
-__QT_IFW_AUTO_INSTALL_PY_SCRIPT_NAME = "__db-install-qt-ifw.py"
-__QT_IFW_AUTO_INSTALL_Q_SCRIPT_NAME = "__db-unattended-qt-ifw.qs"
+__QT_IFW_AUTO_INSTALL_PY_SCRIPT_NAME   = "__db-install-qt-ifw.py"
+__QT_IFW_AUTO_UNINSTALL_PY_SCRIPT_NAME = "__db-uninstall-qt-ifw.py"
+__QT_IFW_UNATTENDED_SCRIPT_NAME    = "__db-unattended-qt-ifw.qs"
 
 __WRAPPER_SCRIPT_NAME = "__installer.py"
 __WRAPPER_INSTALLER_NAME = "wrapper-installer" 
@@ -1391,25 +1392,40 @@ def installQtIfw( installerPath=None, version=None, targetPath=None ):
         targetPath = __defaultQtIfwPath( version ) 
         print( "targetPath: %s" % (targetPath,) )   
     if isFile( __qtIfwCreatorPath( targetPath ) ):
+        if not isLocal: removeFile( installerPath )
         raise Exception( "A copy of QtIFW is already installed in: %s" 
                          % (targetPath,) )                             
     ifwQScriptPath = __generateQtIfwInstallerQScript()
-    ifwPyScriptPath = __generateQtIfwInstallPyScript( 
-        installerPath, targetPath, ifwQScriptPath )    
+    ifwPyScriptPath = __generateQtIfwInstallPyScript(                                    
+        installerPath, ifwQScriptPath, targetPath )    
     runPy( ifwPyScriptPath )
     removeFile( ifwPyScriptPath )
     removeFile( ifwQScriptPath )
-    if not isLocal: removeFile( installerPath )    
-    return targetPath if isFile( __qtIfwCreatorPath( targetPath ) ) else None
+    if not isLocal: removeFile( installerPath )
+    isSuccess = isFile( __qtIfwCreatorPath( targetPath ) )
+    print( "QtIFW successfully installed!" if isSuccess else
+           "QtIFW FAILED to install!" )    
+    return targetPath if isSuccess else None
 
-def unInstallQtIfw( qtIfwPath=None, version=None ):
-    if qtIfwPath is None : qtIfwPath = __defaultQtIfwPath( version )
-    uninstallerPath = joinPath( qtIfwPath, __QT_IFW_UNINSTALL_EXE_NAME )
-    if isFile( uninstallerPath ):
+def unInstallQtIfw( qtIfwDirPath=None, version=None ):
+    if qtIfwDirPath is None: qtIfwDirPath = getenv( QT_IFW_DIR_ENV_VAR )    
+    if qtIfwDirPath is None: qtIfwDirPath = __defaultQtIfwPath( version )
+    uninstallerPath = joinPath( qtIfwDirPath, __QT_IFW_UNINSTALL_EXE_NAME )
+    if not isFile( uninstallerPath ):
         raise  Exception( "The QtIFW uninstaller path cannot be resolved" )                             
-    #TODO: finish!
+    ifwQScriptPath = __generateQtIfwInstallerQScript()
+    ifwPyScriptPath = __generateQtIfwInstallPyScript(        
+        uninstallerPath, ifwQScriptPath, isInstaller=False )    
+    runPy( ifwPyScriptPath )
+    removeFile( ifwPyScriptPath )
+    removeFile( ifwQScriptPath )
+    isSuccess = not isFile( uninstallerPath )
+    print( "QtIFW successfully uninstalled!" if isSuccess else
+           "QtIFW FAILED to uninstall!" )    
+    return isSuccess
 
 def __defaultQtIfwPath( version=QT_IFW_DEFAULT_VERSION, isVerified=False ):
+    if version is None: version=QT_IFW_DEFAULT_VERSION
     qtDefaultDir = joinPath( util._userHomeDirPath(), "Qt" )    
     subDirName = "QtIFW" if version is None else "QtIFW-%s" % (version,)
     qtIfwDir = joinPath( qtDefaultDir, subDirName )     
@@ -1689,7 +1705,9 @@ def __buildSilentWrapper( qtIfwConfig ) :
     return absPath( destSetupExeName )
     
 def __silentQtIfwScript( exeName, componentList=[],
-                         isQtIfwInstaller=False, scriptPath=None,
+                         isQtIfwInstaller=False,
+                         isQtIfwUnInstaller=False,
+                         scriptPath=None,
                          wrkDir=None, targetDir=None) :
     """
     Runs the IFW exe from inside the PyInstaller MEIPASS directory,
@@ -1937,7 +1955,7 @@ def installTempDependencies():
     removeIfwErrLog()
 """)       
 
-    if isQtIfwInstaller :
+    if isQtIfwInstaller or isQtIfwUnInstaller :
         return (
 """
 import os, sys, time, argparse, subprocess
@@ -1953,7 +1971,7 @@ WORK_DIR         = "{1}"
 EXE_NAME         = "{0}"
 EXE_PATH         = os.path.join( WORK_DIR, EXE_NAME )
 
-ARGS = ["-v","--script", "{2}", "target={9}"]
+ARGS = ["-v","--script", "{2}" {9}]
 IS_VERBOSE = True
 
 {5}
@@ -1996,7 +2014,7 @@ sys.exit( main() )
     , preProcess
     , createInstallerProcess
     , cleanUp
-    , targetDir
+    , (', "target=%s"' % (targetDir,)) if isQtIfwInstaller else ""
 )
     else:
         return (
@@ -2151,13 +2169,18 @@ sys.exit( main() )
     , cleanUp
 )
 
-def __generateQtIfwInstallPyScript( installerPath, targetPath, ifwScriptPath ):
+def __generateQtIfwInstallPyScript( installerPath, ifwScriptPath, 
+                                    targetPath=None,
+                                    isInstaller=True ):
     installerDir, installerName = splitPath( installerPath ) 
     script = __silentQtIfwScript( 
-        installerName, isQtIfwInstaller=True, 
+        installerName, 
+        isQtIfwInstaller=isInstaller, isQtIfwUnInstaller=(not isInstaller), 
         scriptPath=ifwScriptPath, wrkDir=installerDir,
         targetDir=targetPath )    
-    filePath = joinPath( tempDirPath(), __QT_IFW_AUTO_INSTALL_PY_SCRIPT_NAME )
+    filePath = joinPath( tempDirPath(), 
+        __QT_IFW_AUTO_INSTALL_PY_SCRIPT_NAME if isInstaller else
+        __QT_IFW_AUTO_UNINSTALL_PY_SCRIPT_NAME )
     #print( "Generating Python Script: %s" % (filePath,) )
     #print( "\n%s\n" % (script,) )
     with open( filePath, 'w' ) as f: f.write( script ) 
@@ -2214,7 +2237,7 @@ Controller.prototype.onUninstallFinished = function(){
     gui.clickButton(buttons.NextButton);
 }
 """)
-    filePath = joinPath( tempDirPath(), __QT_IFW_AUTO_INSTALL_Q_SCRIPT_NAME )
+    filePath = joinPath( tempDirPath(), __QT_IFW_UNATTENDED_SCRIPT_NAME )
     #print( "Generating QScript: %s" % (filePath,) )
     #print( "\n%s\n" % (script,) )
     with open( filePath, 'w' ) as f: f.write( script ) 

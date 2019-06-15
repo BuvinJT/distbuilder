@@ -15,6 +15,7 @@ from distbuilder.py_installer import \
     
 from distbuilder.qt_installer import \
       installQtIfw \
+    , unInstallQtIfw \
     , buildInstaller \
     , findQtIfwPackage \
     , removeQtIfwPackage \
