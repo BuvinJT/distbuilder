@@ -14,5 +14,5 @@ f.setupName        = "HelloWorldSilentSetup"
 f.isSilentSetup    = True
 
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
-p.isTestingInstall = True
+p.isAutoTestInstall = True
 p.run()       

@@ -30,7 +30,9 @@ from distbuilder.qt_installer import \
     , QtIfwShortcut \
     , DEFAULT_SETUP_NAME \
     , DEFAULT_QT_IFW_SCRIPT_NAME \
-    , QT_IFW_VERBOSE_SWITCH
+    , QT_IFW_VERBOSE_SWITCH \
+    , _SILENT_FORCED_ARGS \
+    , _LOUD_FORCED_ARGS
 
 # -----------------------------------------------------------------------------       
 class ConfigFactory:
@@ -66,7 +68,7 @@ class ConfigFactory:
         self.ifwDefDirPath = None        
         self.ifwPackages   = None
                 
-        self.ifwCntrlScript     = None                
+        self.ifwCntrlScript     = None # None=Default False=Exclude                
         self.ifwCntrlScriptText = None
         self.ifwCntrlScriptPath = None
         self.ifwCntrlScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
@@ -138,7 +140,7 @@ class ConfigFactory:
 
     def qtIfwControlScript( self ) :
         if self.ifwCntrlScript : return self.ifwCntrlScript 
-        if( not self.isSilentSetup and
+        if( self.ifwCntrlScript == False and
             self.ifwCntrlScriptText is None and 
             self.ifwCntrlScriptPath is None ):
             return None     
@@ -357,9 +359,9 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
         self.isDesktopTarget     = isDesktopTarget
         self.isHomeDirTarget     = isHomeDirTarget
         
-        self.isElevatedTest         = False       
-        self.isTestingInstall       = False
-        self.isVerboseInstall       = False
+        self.isTestingInstall       = False        
+        self.isAutoTestInstall      = False
+        self.isVerboseTestInstall   = True
         
         # Results
         self.setupPath = None
@@ -383,16 +385,20 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
             self.setupPath = moveToDesktop( self.setupPath )
         elif self.isHomeDirTarget :
             self.setupPath = moveToHomeDir( self.setupPath )    
-        if self.isTestingInstall : 
-            run( self.setupPath, 
-                 (QT_IFW_VERBOSE_SWITCH 
-                 if self.isVerboseInstall else None),
-                 isElevated=self.isElevatedTest )
+        if self.isTestingInstall or self.isAutoTestInstall:            
+            verboseArgs = ( 
+                [QT_IFW_VERBOSE_SWITCH] if self.isVerboseTestInstall else [] )       
+            autoArgs = ( 
+                ( _SILENT_FORCED_ARGS if self.configFactory.isSilentSetup else
+                  _LOUD_FORCED_ARGS ) 
+                if self.isAutoTestInstall else [] )
+            run( self.setupPath, verboseArgs + autoArgs,
+                 isElevated=self.isAutoTestInstall )
         
     # Override these to further customize the build process once the 
     # ConfigFactory has produced the initial config object
     def onInitialize( self ):             """VIRTUAL"""
-    def onPyPackagesBuilt( self, pkgs ): """VIRTUAL"""
+    def onPyPackagesBuilt( self, pkgs ):  """VIRTUAL"""
     def onQtIfwConfig( self, cfg ):       """VIRTUAL"""                
     def onFinalize( self ):               """VIRTUAL"""
     

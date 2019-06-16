@@ -23,6 +23,8 @@ DEFAULT_SETUP_NAME = util.normBinaryName( "setup" )
 DEFAULT_QT_IFW_SCRIPT_NAME = "installscript.qs"
 
 QT_IFW_VERBOSE_SWITCH = '-v'
+_SILENT_FORCED_ARGS = ["-f"]
+_LOUD_FORCED_ARGS   = ["auto=true", "onexist=remove"]
 
 __BIN_SUB_DIR = "bin"
 __QT_IFW_UNINSTALL_EXE_NAME = util.normBinaryName( "Uninstaller" )
