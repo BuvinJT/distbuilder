@@ -436,7 +436,9 @@ def _userDesktopDirPath():
     if IS_WINDOWS : 
         return __getFolderPathByCSIDL( __CSIDL_DESKTOP_DIRECTORY )
     elif IS_LINUX or IS_MACOS :
-        return normpath( joinPath( _userHomeDirPath(), DESKTOP_DIR_NAME ) )
+        home = _userHomeDirPath()
+        desktop = normpath( joinPath( home, DESKTOP_DIR_NAME ) )
+        return desktop if isDir(desktop) else home
     raise Exception( __NOT_SUPPORTED_MSG )        
             
 def __getFolderPathByCSIDL( csidl ):
