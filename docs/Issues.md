@@ -23,6 +23,7 @@ Linux:
 
 * Ubuntu 16.04  
 * Ubuntu 18.04  
+* CentOS 7.6 (minimal)
 
 OS Language:  
 
@@ -37,12 +38,14 @@ PyInstaller:
 Qt Installer Framework:  
 
 * 2.0.5
-* 3.0.6  
+* 3.0.6
+* 3.1.1    
 
 Pip:  
 
 * 8.x  
 * 18.x  
+* 19.x  
 
 Opy distbuilder:  
 

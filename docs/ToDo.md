@@ -3,38 +3,43 @@
  
 ## High Priority
 
-* Test QtIFW use on terminals / non-gui Linux distros like CentOS 
-(silent installs / noninteractive). Look into options for producing such 
-explictly (maybe a PyInstaller wrapper?) so the user does not have to pass a 
-switch. 
+* Fix six dependency auto-install glitch (not fully resolved after all!)
 
-* Test (and develop as needed) QtIFW packges for Qt C++ exes, 
-to confirm auto dependency collection (include QML based projects).
+* Resolve cross PyInstaller versions glitch on multi-py version environments
+  (Linux/Mac issue only?). 
 
-## Moderate Priority
+* Provide backwards compatible PyInstaller builds for old OS versions
+  to address known complications e.g. GCC .so dynamic linkage problems 
+  (or at least document issue / suggested solutions).  
 
-* Continue to expand upon the documentation, especially with
-regard to the high level classes and the various configuration options.
+* Finish run elevated logic. 
 
-* Test (and develop as needed) QtIFW packges which: 
+* Further develop the Qt IFW script generation features.
+	* Directory creation on target (e.g. user data directories)		
+	* Windows Registry functions     
+
+* Test on more Linux distros
+
+* Test (and develop as needed) QtIFW packages which: 
 	* do not install shortcuts
 	* are not enabled for install by default
 	* contain only "data" (no exe)
 
-* Test on more Linux distros
+## Moderate Priority
+
+* Test (and develop as needed) QtIFW packages for Qt C++ exes, 
+to confirm auto dependency collection (include QML based projects).
 
 * Further develop external library bundling (for Opy), making such 
 more automated and less work for the user (e.g. finding external library 
 sources locally and/or downloading them with pip...)
 			
-* Continue to improve and stablize the Opy library and its beta features.
+* Continue to improve and stabilize the Opy library and its beta features.
+
+* Continue to expand upon the documentation, especially with
+regard to the high level classes and the various configuration options.
 
 ## Low Priority
-
-* Add additional examples.
-
-* Add documentation/examples on sys._MEIPASS and resource bundling 
-with PyInstaller. 
 
 * Add option for appending platform suffix onto installer file names. 
 
@@ -43,18 +48,11 @@ with PyInstaller.
 * Add all yet to be provided elements for the various Qt IFW 
 XML config classes.  
 
-* Add Qt IFW silent install and uninstall functions. 
-(For repetitive testing and debugging.)  
-
-* Further develop the Qt IFW script generation features. 
+* Add tarball alternative to zip packaging.
 
 * Add QtIFW "online" installer features.
 
-* Add tarball alternative to zip packaging.
-
-* Add the option to build projects outside of the build script directory.  
-
-* Finish run elevated logic. 
+* Add additional examples.
 
 ## Wish List		
 
@@ -68,6 +66,9 @@ which PyInstaller simply lacks (e.g. COM server dll creation).
 * Add setuptools / distutil wrappers an as alternative to pip.  
 
 * Add git integration to commit and push versions.
+
+* Add the option to build projects outside of the build script directory 
+e.g. in temp.  
 
 * Add PyPi integration to publish releases.
 

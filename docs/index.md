@@ -8,16 +8,22 @@ the [Qt Installer Framework](http://doc.qt.io/qtinstallerframework),
 [Opy](https://pypi.org/project/opy-distbuilder/) (Obfuscator for Python), 
 [pip](https://pypi.org/project/pip/), and more.  
 
+This library works on both Python 2 and 3.  Its primary intention is for use 
+with Python programs, but it can in fact be employed for bundling all sorts of 
+software (including a notable secondary focus on Qt C++).  It has been tested 
+on recent versions of Windows, macOS, and on multiple Linux distros. It features
+the ability to build installers which work in both gui and non-gui contexts.   
+
 See the [Quick Start Guide](QuickStart.md) for instructions on installation 
 and getting started with the tool.
 
-For a more thorough explanation of how to use the 
-library, refer to [High Level Classes](HighLevel.md) and then
+For a more thorough explanation of how to use the library, refer to 
+[High Level Classes](HighLevel.md).  Then, as needed, move on to 
 [Low Level Classes And Functions](LowLevel.md).
 	
 If you wish to contribute, please refer to the [To-Do List](ToDo.md) 
 for a collection of desired tasks to be completed and the priority 
-they have been designated.
+they have been currently designated.
 	
 ## Important Notes
 
