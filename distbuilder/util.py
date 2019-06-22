@@ -163,6 +163,8 @@ def _escapePath( path ):
     return( path if __SPACE not in path else        
             __batchOneLinerOutput( __BATCH_ESCAPE_PATH_TMPLT.format(path) ) )    
 
+def _normEscapePath( path ): return normpath( path ).replace( "\\", "\\\\" ) 
+
 def __batchOneLinerOutput( batch ):
     cmd = __BATCH_ONE_LINER_TMPLT.format( batch )
     p = Popen( __BATCH_RUN_AND_RETURN_CMD, shell=False, 
@@ -384,7 +386,7 @@ def normBinaryName( path, isPathPreserved=False, isGui=False ):
         return "%s%s" % (base, _MACOS_APP_EXT)      
     if IS_WINDOWS: return base + (".exe" if ext=="" else ext)
     return base 
-                        
+                            
 def _normIconName( path, isPathPreserved=False ):    
     if not isPathPreserved : path = basename( path )
     base, _ = splitExt( path )
@@ -470,7 +472,7 @@ def printExc( e, isDetailed=False, isFatal=False ):
     if isFatal: exit(1)
             
 # -----------------------------------------------------------------------------           
-def download( url, saveToPath=None ):
+def download( url, saveToPath=None, preserveName=True ):
     print( "Downloading: %s..." % (url,) )
     download._priorPct = 0
     def __ondownLoadProgress( blockCount, blockSize, fileSize ):
@@ -481,6 +483,11 @@ def download( url, saveToPath=None ):
                 stdout.write( "Done!\n" if pct==100 else 
                               "{0}%...".format( pct ) )
                 stdout.flush() 
+    if saveToPath is None and preserveName:
+        downloadDir = tempDirPath()
+        downloadName = basename( urllib.parse.urlsplit( url )[2] )
+        removeFromDir( downloadName, downloadDir )            
+        saveToPath = joinPath( downloadDir, downloadName )
     localPath, _ = urllib.request.urlretrieve( url, saveToPath, 
                                                __ondownLoadProgress )
     print( "Saved to: %s" % (localPath,) )    

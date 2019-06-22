@@ -30,9 +30,9 @@ __BIN_SUB_DIR = "bin"
 __QT_IFW_UNINSTALL_EXE_NAME = util.normBinaryName( "Uninstaller" )
 __QT_IFW_CREATOR_EXE_NAME = util.normBinaryName( "binarycreator" )
 
-__QT_IFW_AUTO_INSTALL_PY_SCRIPT_NAME   = "__db-install-qt-ifw.py"
-__QT_IFW_AUTO_UNINSTALL_PY_SCRIPT_NAME = "__db-uninstall-qt-ifw.py"
-__QT_IFW_UNATTENDED_SCRIPT_NAME    = "__db-unattended-qt-ifw.qs"
+__QT_IFW_AUTO_INSTALL_PY_SCRIPT_NAME   = "__distb-install-qt-ifw.py"
+__QT_IFW_AUTO_UNINSTALL_PY_SCRIPT_NAME = "__distb-uninstall-qt-ifw.py"
+__QT_IFW_UNATTENDED_SCRIPT_NAME    = "__distb-unattended-qt-ifw.qs"
 
 __WRAPPER_SCRIPT_NAME = "__installer.py"
 __WRAPPER_INSTALLER_NAME = "wrapper-installer" 
@@ -1766,7 +1766,20 @@ import glob
                      universal_newlines=True,
                      stdout=PIPE, stderr=PIPE )
 """ )
-                                                     
+
+    if isQtIfwInstaller :
+        cleanUp = (
+"""     
+    # Wait for IFW to release its lock       
+    IFW_LOCK_FILE_PATTERN = "lockmyApp*.lock"    
+    while glob.glob(  IFW_LOCK_FILE_PATTERN ): pass    
+""" )
+    elif isQtIfwUnInstaller:
+        cleanUp = (
+"""     
+    pass
+""" )
+    else :                                                         
         cleanUp = (
 """     
     IFW_LOCK_FILE_PATTERN = "lockmyApp*.lock"
@@ -2008,15 +2021,16 @@ def removeIfwErrLog(): pass
 sys.exit( main() )
 """).format( 
       exeName 
-    , wrkDir
-    , scriptPath 
+    , util._normEscapePath(wrkDir)
+    , util._normEscapePath(scriptPath) 
     , imports             
     , IS_WINDOWS  
     , helpers
     , preProcess
     , createInstallerProcess
     , cleanUp
-    , (', "target=%s"' % (targetDir,)) if isQtIfwInstaller else ""
+    , ( (', "target=%s"' % (util._normEscapePath(targetDir),)) 
+        if isQtIfwInstaller else "" )
 )
     else:
         return (
@@ -2097,11 +2111,11 @@ def toIwfArgs( wrapperArgs ):
     if wrapperArgs.verbose : args.append( VERBOSE_SWITCH )    
     args.append( "{5}={6}" if wrapperArgs.force else "{5}={7}" )
     if wrapperArgs.target is not None : 
-        args.append( "{8}=%s" % (wrapperArgs.target,) )
+        args.append( "{8}=%s" % (wrapperArgs.target.replace("\\","/"),) )
     
     if IS_WINDOWS :      
         if wrapperArgs.startmenu is not None : 
-            args.append( "{9}=%s" % (wrapperArgs.startmenu,) )
+            args.append( "{9}=%s" % (wrapperArgs.startmenu.replace("\\","/"),) )
     
     if len(components) > 0 : 
         def appendComponentArg( wrapperArg, ifwArg ):     
