@@ -12,22 +12,20 @@
   to address known complications e.g. GCC .so dynamic linkage problems 
   (or at least document issue / suggested solutions).  
 
-* Finish run elevated logic. 
-
 * Further develop the Qt IFW script generation features.
 	* Directory creation on target (e.g. user data directories)		
 	* Windows Registry functions     
 
-* Test on more Linux distros
+* TEST on more Linux distros
 
-* Test (and develop as needed) QtIFW packages which: 
+* TEST (and develop as needed) QtIFW packages which: 
 	* do not install shortcuts
 	* are not enabled for install by default
 	* contain only "data" (no exe)
 
 ## Moderate Priority
 
-* Test (and develop as needed) QtIFW packages for Qt C++ exes, 
+* TEST (and develop as needed) QtIFW packages for Qt C++ exes, 
 to confirm auto dependency collection (include QML based projects).
 
 * Further develop external library bundling (for Opy), making such 

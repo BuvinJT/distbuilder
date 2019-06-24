@@ -3,7 +3,7 @@ from six.moves import urllib
 from sys import argv, stdout, stderr, exit, \
     executable as PYTHON_PATH
 from os import system, remove as removeFile, \
-    getcwd, chdir, walk, \
+    fdopen, getcwd, chdir, walk, \
     chmod, getenv, listdir, makedirs as makeDir, rename # @UnusedImport   
 from os.path import exists, isfile, \
     dirname as dirPath, normpath, realpath, isabs, \
@@ -13,12 +13,13 @@ from os.path import exists, isfile, \
 from shutil import rmtree as removeDir, move, make_archive, \
     copytree as copyDir, copyfile as copyFile   # @UnusedImport
 import platform
-from tempfile import gettempdir
+from tempfile import gettempdir, mkstemp
 from subprocess import Popen, list2cmdline, check_output, \
     PIPE, STDOUT
 import traceback
 from distutils.sysconfig import get_python_lib
 import inspect  # @UnusedImport
+from time import sleep
 
 # -----------------------------------------------------------------------------   
 __plat = platform.system()
@@ -64,10 +65,32 @@ __NOT_SUPPORTED_MSG = ( "Sorry this operation is not supported " +
 # -----------------------------------------------------------------------------  
 def run( binPath, args=[], 
          wrkDir=None, isElevated=False, isDebug=False ):
-    # TODO: finish isElevated logic (for windows, in debug mode...)    
+    
+    def __printCmd( binPath, args, wrkDir ):
+        cmdList = [binPath]
+        if isinstance(args,list): cmdList.extend( args )
+        elif args is not None: cmdList.append( args )    
+        print( 'cd "%s"' % (wrkDir,) )
+        print( list2cmdline(cmdList) )
+
+    def __printRetCode( retCode ):
+        stdout.write( "\nReturn code: %d\n" % (retCode,) )
+        stdout.flush()    
+            
     binDir, fileName = splitPath( binPath )   
     if wrkDir is None : wrkDir = binDir
     isMacApp = _isMacApp( binPath )
+    
+    # Handle elevated sub processes in Windows
+    if IS_WINDOWS and isElevated:
+        __printCmd( binPath, args, wrkDir )
+        retCode, output = __windowsElevated( binPath, args, wrkDir )
+        stdout.write( output ) 
+        stdout.flush()
+        if isDebug : __printRetCode( retCode )        
+        return
+    
+    # "Debug" mode    
     if isDebug :
         if isMacApp:                
             binPath = __INTERNAL_MACOS_APP_BINARY_TMPLT % (
@@ -77,32 +100,32 @@ def run( binPath, args=[],
         cmdList = [binPath]
         if isinstance(args,list): cmdList.extend( args )
         elif args is not None: cmdList.append( args )    
-        print( 'cd "%s"' % (wrkDir,) )
-        print( list2cmdline(cmdList) )
+        __printCmd( binPath, args, wrkDir )
         p = Popen( cmdList, cwd=wrkDir, shell=False, 
                    stdout=PIPE, stderr=STDOUT, bufsize=1 )
         while p.poll() is None:
             stdout.write( p.stdout.readline() if PY2 else 
                           p.stdout.readline().decode() )
             stdout.flush()
-        stdout.write( "\nReturn code: %d\n" % (p.returncode,) )
-        stdout.flush()    
-    else :     
-        if isMacApp:     
-            newArgs = [ __LAUNCH_MACOS_APP_NEW_SWITCH
-                      , __LAUNCH_MACOS_APP_BLOCK_SWITCH 
-                      , fileName
-            ]
-            if isinstance( args, list ): newArgs.extend( args ) 
-            args=newArgs
-            binPath = fileName = _LAUNCH_MACOS_APP_CMD
-        if isinstance(args,list): args = list2cmdline(args)
-        elif args is None: args=""
-        elevate = "" if not isElevated or IS_WINDOWS else "sudo"  
-        if IS_WINDOWS or isMacApp : pwdCmd = ""
-        else : pwdCmd = "./" if wrkDir==binDir else ""
-        cmd = ('%s %s%s %s' % (elevate, pwdCmd, fileName, args)).strip()
-        _system( cmd, wrkDir )
+        __printRetCode( p.returncode )
+        return 
+    
+    # All other run conditions...    
+    if isMacApp:     
+        newArgs = [ __LAUNCH_MACOS_APP_NEW_SWITCH
+                  , __LAUNCH_MACOS_APP_BLOCK_SWITCH 
+                  , fileName
+        ]
+        if isinstance( args, list ): newArgs.extend( args ) 
+        args=newArgs
+        binPath = fileName = _LAUNCH_MACOS_APP_CMD
+    if isinstance(args,list): args = list2cmdline(args)
+    elif args is None: args=""
+    elevate = "" if not isElevated or IS_WINDOWS else "sudo"  
+    if IS_WINDOWS or isMacApp : pwdCmd = ""
+    else : pwdCmd = "./" if wrkDir==binDir else ""
+    cmd = ('%s %s%s %s' % (elevate, pwdCmd, fileName, args)).strip()
+    _system( cmd, wrkDir )
     
 def runPy( pyPath, args=[], isElevated=False ):
     wrkDir, fileName = splitPath( pyPath )
@@ -172,6 +195,55 @@ def __batchOneLinerOutput( batch ):
                stdin=PIPE, stdout=PIPE, stderr=PIPE )    
     # pipe cmd to stdin, return stderr, minus a trailing newline
     return p.communicate( cmd )[1].rstrip()  
+            
+def __windowsElevated( exePath, args=[], wrkDir=None, isVisible=True ):
+                
+    def __writeTempBatch( exePath, args=[], wrkDir=None ):
+        batFd, batPath = mkstemp( ".bat" )
+        retFd, retPath = mkstemp( ".ret" )
+        outFd, outPath = mkstemp( ".out" )
+        with fdopen( batFd, 'w' ) as f:
+            f.write( '@echo off\n' )
+            if wrkDir: f.write( 'cd "{0}"\n'.format( wrkDir ) )
+            f.write( '"{0}" {1} > "{2}" 2>&1\n'.format(
+                        exePath, " ".join(args), outPath ) )
+            f.write( 'echo %errorlevel% > "{0}"'.format( retPath )  )
+        # "touch" these files to "reserve" them    
+        with fdopen( retFd, 'w' ) as f: pass
+        with fdopen( outFd, 'w' ) as f: pass
+        return (batPath, retPath, outPath)
+    
+    def __runBatchElevated( batPath, isVisible ):
+        import ctypes
+        VERB = "runas"
+        SW_SHOWNORMAL=1
+        SW_HIDE=0        
+        SW_CODE = SW_SHOWNORMAL if isVisible else SW_HIDE
+        if PY2:
+            VERB = unicode(VERB)
+            batPath = unicode(batPath)
+        hwd = ctypes.windll.shell32.ShellExecuteW( 
+            None, VERB, batPath, None, None, SW_CODE )
+        return int(hwd) > 32 # check if launched elevated    
+    
+    def __getBatchResults( retPath, outPath ):
+        FREQ_SECONDS = 0.25
+        retCode = ""
+        while retCode=="" :
+            sleep( FREQ_SECONDS )
+            with open( retPath, 'r' ) as f: retCode = f.read().strip()         
+        with open( outPath, 'r' ) as f: output = f.read()
+        return int( retCode ), output
+
+    def __removeTempFiles( filePaths ): 
+        for p in filePaths: removeFile( p ) 
+            
+    (batPath, retPath, outPath) = __writeTempBatch( exePath, args, wrkDir )
+    isRun = __runBatchElevated( batPath, isVisible )
+    retCode, output = ( 
+        __getBatchResults( retPath, outPath ) if isRun else (None,None) )
+    __removeTempFiles( (batPath, retPath, outPath) )
+    return retCode, output
             
 # -----------------------------------------------------------------------------
 def collectDirs( srcDirPaths, destDirPath ):
