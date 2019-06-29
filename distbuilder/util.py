@@ -82,12 +82,15 @@ def run( binPath, args=[],
     isMacApp = _isMacApp( binPath )
     
     # Handle elevated sub processes in Windows
-    if IS_WINDOWS and isElevated:
+    if IS_WINDOWS and isElevated and not __windowsIsElevated():        
         __printCmd( binPath, args, wrkDir )
-        retCode, output = __windowsElevated( binPath, args, wrkDir )
-        stdout.write( output ) 
-        stdout.flush()
-        if isDebug : __printRetCode( retCode )        
+        isRun, retCode, output = __windowsElevated( 
+            binPath, args, wrkDir, isDebug )
+        if isRun:
+            if output:
+                stdout.write( output ) 
+                stdout.flush()
+            if retCode : __printRetCode( retCode )        
         return
     
     # "Debug" mode    
@@ -137,13 +140,16 @@ __SCRUB_CMD_TMPL = "{0}{1}"
 __DBL_QUOTE      = '"'
 __SPACE          = ' '
 __ESC_SPACE      = '\\ '
-if IS_WINDOWS :        
+if IS_WINDOWS :
+    import ctypes        
+    from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW
     __BATCH_RUN_AND_RETURN_CMD = ["cmd","/K"] # simply assuming cmd is on the system path... 
     __BATCH_ONE_LINER_TMPLT    = "{0} 1>&2\n" # the newline triggers execution when piped in via stdin
-    __BATCH_ESCAPE_PATH_TMPLT  = 'for %A in ("{0}") do @echo %~sA' 
-    from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW
+    __BATCH_ESCAPE_PATH_TMPLT  = 'for %A in ("{0}") do @echo %~sA'     
     __BATCH_ONE_LINER_STARTUPINFO = STARTUPINFO()
     __BATCH_ONE_LINER_STARTUPINFO.dwFlags |= STARTF_USESHOWWINDOW 
+    __SW_SHOWNORMAL=1
+    __SW_HIDE=0        
  
 def _system( cmd, wrkDir=None ):
     if wrkDir is not None:
@@ -195,9 +201,47 @@ def __batchOneLinerOutput( batch ):
                stdin=PIPE, stdout=PIPE, stderr=PIPE )    
     # pipe cmd to stdin, return stderr, minus a trailing newline
     return p.communicate( cmd )[1].rstrip()  
-            
-def __windowsElevated( exePath, args=[], wrkDir=None, isVisible=True ):
+
+def __windowsIsElevated():
+    return ctypes.windll.shell32.IsUserAnAdmin()
+
+# returns  (isRun, retCode, output)            
+def __windowsElevated( exePath, args=[], wrkDir=None, 
+                       isRealTimeDebug=True, isVisible=True ):
+
+    def __realTimeDebug( exePath, args, wrkDir ):
+        verb = "runas"
+        pyPath = PYTHON_PATH
+        binPathArg = "'%s'" % (_normEscapePath(exePath),)
+        argsArg= '[ %s ]' % (','.join(
+            ["'%s'" % (_normEscapePath(a),) for a in args]),)
+        wrkDirArg="'%s'" % (wrkDir,) if wrkDir else "None" 
+        isElevatedArg="True"
+        isDebugArg="True" 
+        args =( '-c "'
+            'from distbuilder import run;'
+            'from six.moves import input;'
+            'run( %s, args=%s, wrkDir=%s, isElevated=%s, isDebug=%s );'            
+            'input( \'Press the <ENTER> key to exit...\' )'
+            '"'
+            % ( binPathArg, argsArg, wrkDirArg, isElevatedArg, isDebugArg ) )
+        if PY2:
+            verb = unicode(verb)
+            pyPath = unicode(pyPath)
+            args = unicode(args)    
+        hwd = ctypes.windll.shell32.ShellExecuteW( 
+            None, verb, pyPath, args, None, __SW_SHOWNORMAL )
+        isRun = int(hwd) > 32 # check if launched elevated    
+        return (isRun, None, None)
                 
+    def __postRunInlineDebug( exePath, args, wrkDir, isVisible ):
+        (batPath, retPath, outPath) = __writeTempBatch( exePath, args, wrkDir )
+        isRun = __runBatchElevated( batPath, isVisible )
+        retCode, output = ( 
+            __getBatchResults( retPath, outPath ) if isRun else (None,None) )
+        __removeTempFiles( (batPath, retPath, outPath) )
+        return (isRun, retCode, output)
+
     def __writeTempBatch( exePath, args=[], wrkDir=None ):
         batFd, batPath = mkstemp( ".bat" )
         retFd, retPath = mkstemp( ".ret" )
@@ -212,18 +256,15 @@ def __windowsElevated( exePath, args=[], wrkDir=None, isVisible=True ):
         with fdopen( retFd, 'w' ) as f: pass
         with fdopen( outFd, 'w' ) as f: pass
         return (batPath, retPath, outPath)
-    
+            
     def __runBatchElevated( batPath, isVisible ):
-        import ctypes
-        VERB = "runas"
-        SW_SHOWNORMAL=1
-        SW_HIDE=0        
-        SW_CODE = SW_SHOWNORMAL if isVisible else SW_HIDE
+        verb = "runas"
         if PY2:
-            VERB = unicode(VERB)
+            verb = unicode(verb)
             batPath = unicode(batPath)
         hwd = ctypes.windll.shell32.ShellExecuteW( 
-            None, VERB, batPath, None, None, SW_CODE )
+            None, verb, batPath, None, None, 
+            __SW_SHOWNORMAL if isVisible else __SW_HIDE )
         return int(hwd) > 32 # check if launched elevated    
     
     def __getBatchResults( retPath, outPath ):
@@ -237,14 +278,12 @@ def __windowsElevated( exePath, args=[], wrkDir=None, isVisible=True ):
 
     def __removeTempFiles( filePaths ): 
         for p in filePaths: removeFile( p ) 
-            
-    (batPath, retPath, outPath) = __writeTempBatch( exePath, args, wrkDir )
-    isRun = __runBatchElevated( batPath, isVisible )
-    retCode, output = ( 
-        __getBatchResults( retPath, outPath ) if isRun else (None,None) )
-    __removeTempFiles( (batPath, retPath, outPath) )
-    return retCode, output
-            
+
+    if isRealTimeDebug:
+        return __realTimeDebug( exePath, args, wrkDir )
+    else :
+        return __postRunInlineDebug( exePath, args, wrkDir, isVisible )       
+                            
 # -----------------------------------------------------------------------------
 def collectDirs( srcDirPaths, destDirPath ):
     """ Move a list of directories into a common parent directory """
