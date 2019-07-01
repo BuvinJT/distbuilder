@@ -13,7 +13,7 @@ from os.path import exists, isfile, \
 from shutil import rmtree as removeDir, move, make_archive, \
     copytree as copyDir, copyfile as copyFile   # @UnusedImport
 import platform
-from tempfile import gettempdir, mkstemp
+from tempfile import gettempdir, mkstemp, mktemp
 from subprocess import Popen, list2cmdline, check_output, \
     PIPE, STDOUT
 import traceback
@@ -44,8 +44,6 @@ OPT_LOCAL_BIN_DIR  = "/opt/local/bin"
 # Shockingly platform independent 
 # (though can vary by os language and configuration...)
 DESKTOP_DIR_NAME   = "Desktop"
-# Windows Desktop actual resolution key
-__CSIDL_DESKTOP_DIRECTORY = 16
 
 # strictly Apple
 _MACOS_APP_EXT                     = ".app"
@@ -62,9 +60,34 @@ _LINUX_ICON_EXT   = ".png"
 __NOT_SUPPORTED_MSG = ( "Sorry this operation is not supported " +
                         "this for this platform!" )
 
+__SCRUB_CMD_TMPL = "{0}{1}"
+__DBL_QUOTE      = '"'
+__SPACE          = ' '
+__ESC_SPACE      = '\\ '
+__NEWLINE        = '\n'
+if IS_WINDOWS :
+    import ctypes        
+    from ctypes import wintypes
+    from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW
+    __CSIDL_DESKTOP_DIRECTORY = 16    
+    __BATCH_RUN_AND_RETURN_CMD = ["cmd","/K"] # simply assuming cmd is on the system path... 
+    __BATCH_ONE_LINER_TMPLT    = "{0} 1>&2\n" # the newline triggers execution when piped in via stdin
+    __BATCH_ESCAPE_PATH_TMPLT  = 'for %A in ("{0}") do @echo %~sA'     
+    __BATCH_ONE_LINER_STARTUPINFO = STARTUPINFO()
+    __BATCH_ONE_LINER_STARTUPINFO.dwFlags |= STARTF_USESHOWWINDOW 
+    __SW_SHOWNORMAL=1
+    __SW_HIDE=0        
+    __SHARED_RET_CODE_PREFIX= "__SHARED_RET_CODE:"
+    __SHARED_RET_CODE_TMPLT = __SHARED_RET_CODE_PREFIX + "%d" 
+
 # -----------------------------------------------------------------------------  
 def run( binPath, args=[], 
          wrkDir=None, isElevated=False, isDebug=False ):
+    _run( binPath, args, wrkDir, isElevated, isDebug )
+         
+def _run( binPath, args=[], 
+         wrkDir=None, isElevated=False, 
+         isDebug=False, sharedFilePath=None ):
     
     def __printCmd( binPath, args, wrkDir ):
         cmdList = [binPath]
@@ -84,13 +107,8 @@ def run( binPath, args=[],
     # Handle elevated sub processes in Windows
     if IS_WINDOWS and isElevated and not __windowsIsElevated():        
         __printCmd( binPath, args, wrkDir )
-        isRun, retCode, output = __windowsElevated( 
-            binPath, args, wrkDir, isDebug )
-        if isRun:
-            if output:
-                stdout.write( output ) 
-                stdout.flush()
-            if retCode : __printRetCode( retCode )        
+        retCode = __windowsElevated( binPath, args, wrkDir )
+        if isDebug and retCode is not None : __printRetCode( retCode )  
         return
     
     # "Debug" mode    
@@ -103,14 +121,22 @@ def run( binPath, args=[],
         cmdList = [binPath]
         if isinstance(args,list): cmdList.extend( args )
         elif args is not None: cmdList.append( args )    
-        __printCmd( binPath, args, wrkDir )
+        __printCmd( binPath, args, wrkDir )        
+        sharedFile = ( 
+            _WindowsSharedFile( isProducer=True, filePath=sharedFilePath )
+            if sharedFilePath else None )
         p = Popen( cmdList, cwd=wrkDir, shell=False, 
                    stdout=PIPE, stderr=STDOUT, bufsize=1 )
         while p.poll() is None:
-            stdout.write( p.stdout.readline() if PY2 else 
-                          p.stdout.readline().decode() )
-            stdout.flush()
-        __printRetCode( p.returncode )
+            line = p.stdout.readline() if PY2 else p.stdout.readline().decode()
+            if sharedFile: sharedFile.write( line )
+            else:
+                stdout.write( line )
+                stdout.flush()
+        if sharedFile :
+            sharedFile.write( __SHARED_RET_CODE_TMPLT % (p.returncode,) )
+            sharedFile.close()
+        else : __printRetCode( p.returncode )
         return 
     
     # All other run conditions...    
@@ -135,21 +161,6 @@ def runPy( pyPath, args=[], isElevated=False ):
     pyArgs = [fileName]
     if isinstance(args,list): pyArgs.extend( args )
     run( PYTHON_PATH, pyArgs, wrkDir, isElevated, isDebug=False )
-
-__SCRUB_CMD_TMPL = "{0}{1}"
-__DBL_QUOTE      = '"'
-__SPACE          = ' '
-__ESC_SPACE      = '\\ '
-if IS_WINDOWS :
-    import ctypes        
-    from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW
-    __BATCH_RUN_AND_RETURN_CMD = ["cmd","/K"] # simply assuming cmd is on the system path... 
-    __BATCH_ONE_LINER_TMPLT    = "{0} 1>&2\n" # the newline triggers execution when piped in via stdin
-    __BATCH_ESCAPE_PATH_TMPLT  = 'for %A in ("{0}") do @echo %~sA'     
-    __BATCH_ONE_LINER_STARTUPINFO = STARTUPINFO()
-    __BATCH_ONE_LINER_STARTUPINFO.dwFlags |= STARTF_USESHOWWINDOW 
-    __SW_SHOWNORMAL=1
-    __SW_HIDE=0        
  
 def _system( cmd, wrkDir=None ):
     if wrkDir is not None:
@@ -206,10 +217,9 @@ def __windowsIsElevated():
     return ctypes.windll.shell32.IsUserAnAdmin()
 
 # returns  (isRun, retCode, output)            
-def __windowsElevated( exePath, args=[], wrkDir=None, 
-                       isRealTimeDebug=True, isVisible=True ):
+def __windowsElevated( exePath, args=[], wrkDir=None ):
 
-    def __realTimeDebug( exePath, args, wrkDir ):
+    def __runElevated( exePath, args, wrkDir, sharedFilePath ):
         verb = "runas"
         pyPath = PYTHON_PATH
         binPathArg = "'%s'" % (_normEscapePath(exePath),)
@@ -217,73 +227,48 @@ def __windowsElevated( exePath, args=[], wrkDir=None,
             ["'%s'" % (_normEscapePath(a),) for a in args]),)
         wrkDirArg="'%s'" % (wrkDir,) if wrkDir else "None" 
         isElevatedArg="True"
-        isDebugArg="True" 
+        isDebugArg="True"        
+        sharedFilePathArg = "'%s'" % (_normEscapePath(sharedFilePath),)
         args =( '-c "'
-            'from distbuilder import run;'
-            'from six.moves import input;'
-            'run( %s, args=%s, wrkDir=%s, isElevated=%s, isDebug=%s );'            
-            'input( \'Press the <ENTER> key to exit...\' )'
+            'from distbuilder import _run;'
+            '_run( %s, args=%s, wrkDir=%s, isElevated=%s, '
+            'isDebug=%s, sharedFilePath=%s );'            
             '"'
-            % ( binPathArg, argsArg, wrkDirArg, isElevatedArg, isDebugArg ) )
+            % ( binPathArg, argsArg, wrkDirArg, isElevatedArg, 
+                isDebugArg, sharedFilePathArg ) )
         if PY2:
             verb = unicode(verb)
             pyPath = unicode(pyPath)
             args = unicode(args)    
         hwd = ctypes.windll.shell32.ShellExecuteW( 
-            None, verb, pyPath, args, None, __SW_SHOWNORMAL )
-        isRun = int(hwd) > 32 # check if launched elevated    
-        return (isRun, None, None)
-                
-    def __postRunInlineDebug( exePath, args, wrkDir, isVisible ):
-        (batPath, retPath, outPath) = __writeTempBatch( exePath, args, wrkDir )
-        isRun = __runBatchElevated( batPath, isVisible )
-        retCode, output = ( 
-            __getBatchResults( retPath, outPath ) if isRun else (None,None) )
-        __removeTempFiles( (batPath, retPath, outPath) )
-        return (isRun, retCode, output)
-
-    def __writeTempBatch( exePath, args=[], wrkDir=None ):
-        batFd, batPath = mkstemp( ".bat" )
-        retFd, retPath = mkstemp( ".ret" )
-        outFd, outPath = mkstemp( ".out" )
-        with fdopen( batFd, 'w' ) as f:
-            f.write( '@echo off\n' )
-            if wrkDir: f.write( 'cd "{0}"\n'.format( wrkDir ) )
-            f.write( '"{0}" {1} > "{2}" 2>&1\n'.format(
-                        exePath, " ".join(args), outPath ) )
-            f.write( 'echo %errorlevel% > "{0}"'.format( retPath )  )
-        # "touch" these files to "reserve" them    
-        with fdopen( retFd, 'w' ) as f: pass
-        with fdopen( outFd, 'w' ) as f: pass
-        return (batPath, retPath, outPath)
-            
-    def __runBatchElevated( batPath, isVisible ):
-        verb = "runas"
-        if PY2:
-            verb = unicode(verb)
-            batPath = unicode(batPath)
-        hwd = ctypes.windll.shell32.ShellExecuteW( 
-            None, verb, batPath, None, None, 
-            __SW_SHOWNORMAL if isVisible else __SW_HIDE )
+            None, verb, pyPath, args, None, __SW_HIDE )
         return int(hwd) > 32 # check if launched elevated    
     
-    def __getBatchResults( retPath, outPath ):
-        FREQ_SECONDS = 0.25
-        retCode = ""
-        while retCode=="" :
-            sleep( FREQ_SECONDS )
-            with open( retPath, 'r' ) as f: retCode = f.read().strip()         
-        with open( outPath, 'r' ) as f: output = f.read()
-        return int( retCode ), output
+    def __getResults( sharedFilePath ):
+        POLL_FREQ_SECONDS = 0.25
+        sharedFile = _WindowsSharedFile( isProducer=False, 
+                                         filePath=sharedFilePath)
+        retCode = None
+        while retCode is None :
+            sleep( POLL_FREQ_SECONDS )
+            chunk = sharedFile.read()
+            if chunk is None: continue
+            if __SHARED_RET_CODE_PREFIX in chunk:
+                parts = chunk.split( __SHARED_RET_CODE_PREFIX )
+                chunk = parts[0]
+                try: retCode = int( parts[1] )
+                except: retCode = -1                
+            stdout.write( chunk ) 
+            stdout.flush()                    
+        sharedFile.close()    
+        return retCode 
 
-    def __removeTempFiles( filePaths ): 
-        for p in filePaths: removeFile( p ) 
+    sharedFilePath = _reserveTempFile()
+    isRun = __runElevated( exePath, args, wrkDir, sharedFilePath )
+    retCode = __getResults( sharedFilePath ) if isRun else None
+    removeFile( sharedFilePath )
+    return retCode
 
-    if isRealTimeDebug:
-        return __realTimeDebug( exePath, args, wrkDir )
-    else :
-        return __postRunInlineDebug( exePath, args, wrkDir, isVisible )       
-                            
 # -----------------------------------------------------------------------------
 def collectDirs( srcDirPaths, destDirPath ):
     """ Move a list of directories into a common parent directory """
@@ -523,6 +508,15 @@ def absPath( relativePath, basePath=None ):
 
 def tempDirPath(): return gettempdir()
 
+# mktemp returns a temp file path, but doesn't create it.
+# Thus, it is possible in theory for second process
+# to create a file at that path before such can be done
+# by the first.  This mitigates that possibility...   
+def _reserveTempFile( suffix="" ):
+    fd, path = mkstemp( suffix )
+    with fdopen( fd, 'w' ) as _: pass
+    return path
+
 # -----------------------------------------------------------------------------                          
 def _pythonPath( relativePath ):    
     return normpath( joinPath( PY_DIR, relativePath ) )
@@ -555,9 +549,8 @@ def _userDesktopDirPath():
     raise Exception( __NOT_SUPPORTED_MSG )        
             
 def __getFolderPathByCSIDL( csidl ):
-    import ctypes.wintypes    
     SHGFP_TYPE_CURRENT = 0   # Get current, not default value
-    buf = ctypes.create_unicode_buffer( ctypes.wintypes.MAX_PATH )
+    buf = ctypes.create_unicode_buffer( wintypes.MAX_PATH )
     ctypes.windll.shell32.SHGetFolderPathW( 
         None, csidl, None, SHGFP_TYPE_CURRENT, buf )
     return buf.value 
@@ -608,3 +601,93 @@ def _isLocalPath( path ):
     scheme,_,path,_,_ = urllib.parse.urlsplit( path )
     isLocal = scheme=="file" or scheme=="" 
     return isLocal, path 
+
+# -----------------------------------------------------------------------------           
+if IS_WINDOWS :
+    class _WindowsSharedFile:
+        
+        __byref        = ctypes.byref
+        __DWORD        = wintypes.DWORD
+        __CreateFileW  = ctypes.windll.Kernel32.CreateFileW
+        __CloseHandle  = ctypes.windll.Kernel32.CloseHandle
+        __WriteFile    = ctypes.windll.Kernel32.WriteFile
+        __ReadFile     = ctypes.windll.Kernel32.ReadFile
+        __GetLastError = ctypes.windll.Kernel32.GetLastError       
+        
+        __GENERIC_READ         = 0x80000000 
+        __GENERIC_WRITE        = 0x40000000 
+        __FILE_SHARE_READ      = 0x00000001 
+        __FILE_SHARE_WRITE     = 0x00000002 
+        __CREATE_ALWAYS        = 2 
+        __OPEN_EXISTING        = 3 
+        __INVALID_HANDLE_VALUE = wintypes.HANDLE(-1).value
+        __DEFAULT_CHUNK_SIZE   = 1024
+             
+        def __init__( self, isProducer=True, filePath=None ) :
+            self.isProducer = isProducer 
+            self.filePath = filePath # using "hidden" file stream to mitigate data visibility 
+            self.chunkSize = _WindowsSharedFile.__DEFAULT_CHUNK_SIZE
+            if isProducer :
+                if self.filePath is None: self.filePath = mktemp()
+                dwDesiredAccess = _WindowsSharedFile.__GENERIC_WRITE  
+                dwCreationDisposition = _WindowsSharedFile.__CREATE_ALWAYS
+            else :
+                if not isFile( self.filePath ) :
+                    raise Exception( "Shared file does not exist: %s" 
+                                     % (self.filePath,) )
+                dwDesiredAccess = _WindowsSharedFile.__GENERIC_READ
+                dwCreationDisposition = _WindowsSharedFile.__OPEN_EXISTING            
+            self.__handle = _WindowsSharedFile.__CreateFileW(
+               unicode(self.filePath) if PY2 else self.filePath,               
+               dwDesiredAccess,   
+               _WindowsSharedFile.__FILE_SHARE_READ | 
+               _WindowsSharedFile.__FILE_SHARE_WRITE, # allow concurrent r/w by another process (it seems that both must be enabled for cross process concurrent access)
+               None,            # security attributes
+               dwCreationDisposition,
+               0,               # additional flags
+               None             # template file handle
+            )
+            if not self.isOpen():
+                raise Exception( "Cannot open %s" % (self.filePath,) )        
+    
+        def isOpen( self ):
+            return self.__handle != _WindowsSharedFile.__INVALID_HANDLE_VALUE
+                   
+        def close( self ):
+            if not self.isOpen: return
+            _WindowsSharedFile.__CloseHandle( self.__handle )
+            self.__handle = _WindowsSharedFile.__INVALID_HANDLE_VALUE
+    
+        def remove( self ):
+            self.close()
+            if isFile( self.filePath ): removeFile( self.filePath )
+                                            
+        def write( self, data ):
+            if not self.isProducer or not self.isOpen():
+                raise Exception( "Cannot write to shared file" ) 
+            if PY3: data=str(data).encode()
+            bytesToWrite = _WindowsSharedFile.__DWORD( len(data) ) 
+            bytesWritten = _WindowsSharedFile.__DWORD()
+            _WindowsSharedFile.__WriteFile( 
+                self.__handle, data, bytesToWrite,
+                _WindowsSharedFile.__byref(bytesWritten), None )       
+            if bytesToWrite.value != bytesWritten.value : 
+                raise Exception( "Error writing to shared file" ) 
+    
+        def read( self ):
+            if self.isProducer or not self.isOpen():
+                raise Exception( "Cannot read from shared file" )         
+            data = ""
+            chunk = ctypes.create_string_buffer( self.chunkSize )
+            bytesToRead = _WindowsSharedFile.__DWORD( self.chunkSize ) 
+            bytesRead   = _WindowsSharedFile.__DWORD()            
+            while True:
+                _WindowsSharedFile.__ReadFile( self.__handle,  
+                    _WindowsSharedFile.__byref(chunk), bytesToRead,
+                    _WindowsSharedFile.__byref(bytesRead), None )  
+                if bytesRead.value==0: break
+                #data += ( eval("%s.decode()" % (chunk.value.decode(),)) 
+                #          if PY3 else chunk.value )
+                data += chunk.value.decode() if PY3 else chunk.value                            
+            return None if data=="" else data
+    

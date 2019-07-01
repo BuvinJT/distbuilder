@@ -76,6 +76,7 @@ from distbuilder.util import \
     , copyToHomeDir \
     , collectDirs \
     , mergeDirs \
+    , _run \
     , run \
     , runPy \
     , toZipFile \
