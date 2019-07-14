@@ -27,7 +27,7 @@ _SILENT_FORCED_ARGS = ["-f"]
 _LOUD_FORCED_ARGS   = ["auto=true", "onexist=remove"]
 
 __BIN_SUB_DIR = "bin"
-__QT_IFW_UNINSTALL_EXE_NAME = util.normBinaryName( "Uninstaller" )
+__QT_IFW_UNINSTALL_EXE_NAME = util.normBinaryName( "Uninstaller", isGui=True )
 __QT_IFW_CREATOR_EXE_NAME = util.normBinaryName( "binarycreator" )
 
 __QT_IFW_AUTO_INSTALL_PY_SCRIPT_NAME   = "__distb-install-qt-ifw.py"
@@ -1389,6 +1389,14 @@ def installQtIfw( installerPath=None, version=None, targetPath=None ):
     isLocal, path = util._isLocalPath( installerPath )    
     installerPath = path if isLocal else download( installerPath )
     if IS_LINUX and not isLocal: util.chmod( installerPath, 0o755 )
+    if IS_MACOS and util._isDmg( installerPath ) :
+        dmgPath = installerPath
+        isDmgMount, mountPath, _, binPath = util._macMountDmg( dmgPath ) 
+        if binPath is None:
+            if isDmgMount: util._macUnMountDmg( mountPath ) 
+            raise Exception( "Qt IWF installer binary not found." )
+        installerPath = binPath  
+    else : isDmgMount = False        
     if targetPath is None: 
         version = __QtIfwInstallerVersion( installerPath )
         targetPath = __defaultQtIfwPath( version ) 
@@ -1403,7 +1411,11 @@ def installQtIfw( installerPath=None, version=None, targetPath=None ):
     runPy( ifwPyScriptPath )
     removeFile( ifwPyScriptPath )
     removeFile( ifwQScriptPath )
-    if not isLocal: removeFile( installerPath )
+    if IS_MACOS: 
+        if isDmgMount: 
+            util._macUnMountDmg( mountPath ) 
+            if not isLocal: removeFile( dmgPath )
+    elif not isLocal: removeFile( installerPath )    
     isSuccess = isFile( __qtIfwCreatorPath( targetPath ) )
     print( "QtIFW successfully installed!" if isSuccess else
            "QtIFW FAILED to install!" )    
@@ -1413,7 +1425,7 @@ def unInstallQtIfw( qtIfwDirPath=None, version=None ):
     if qtIfwDirPath is None: qtIfwDirPath = getenv( QT_IFW_DIR_ENV_VAR )    
     if qtIfwDirPath is None: qtIfwDirPath = __defaultQtIfwPath( version )
     uninstallerPath = joinPath( qtIfwDirPath, __QT_IFW_UNINSTALL_EXE_NAME )
-    if not isFile( uninstallerPath ):
+    if not exists( uninstallerPath ): # maybe a file or a directory, i.e. .app is a dir
         raise  Exception( "The QtIFW uninstaller path cannot be resolved" )                             
     ifwQScriptPath = __generateQtIfwInstallerQScript()
     ifwPyScriptPath = __generateQtIfwInstallPyScript(        
@@ -1803,12 +1815,29 @@ import glob
 """ )
     
     if IS_MACOS :  
-        imports = (
+        if isQtIfwInstaller:
+            imports    = ""
+            helpers = (
+"""
+BIN_PATH     = WORK_DIR + "/" + EXE_NAME    # os.path.join( WORK_DIR, EXE_NAME )
+""") 
+            preProcess = ""
+        elif isQtIfwUnInstaller:
+            imports    = ""
+            helpers = (
+"""
+APP_PATH     = WORK_DIR + "/" + EXE_NAME    # os.path.join( WORK_DIR, EXE_NAME )
+APP_BIN_DIR  = os.path.join( APP_PATH, "Contents/MacOS" )
+BIN_PATH     = os.path.join( APP_BIN_DIR, os.listdir( APP_BIN_DIR )[0] )
+""") 
+            preProcess = ""            
+        else :     
+            imports = (
 """     
 import zipfile, tempfile
 """ )
 
-        helpers = (
+            helpers = (
 """
 APP_PATH     = WORK_DIR + "/" + EXE_NAME    # os.path.join( WORK_DIR, EXE_NAME )
 ZIP_PATH     = APP_PATH + ".zip" 
@@ -1855,12 +1884,13 @@ def runAppleScript( script ):
     os.remove( scriptPath )
     if ret != 0 : raise RuntimeError( "AppleScript failed." )
 """)
-    
-        preProcess = (
+
+            preProcess = (
 """
     extractBinFromZip()
 """)
 
+            
         createInstallerProcess = (
 """    
     process = Popen( [ "sudo", BIN_PATH ] + ARGS, cwd=WORK_DIR,

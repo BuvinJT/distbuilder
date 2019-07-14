@@ -2,14 +2,14 @@ from six import PY2, PY3  # @UnusedImport
 from six.moves import urllib
 from sys import argv, stdout, stderr, exit, \
     executable as PYTHON_PATH
-from os import system, remove as removeFile, \
+from os import system, sep as PATH_DELIM, remove as removeFile, \
     fdopen, getcwd, chdir, walk, \
     chmod, getenv, listdir, makedirs as makeDir, rename # @UnusedImport   
 from os.path import exists, isfile, \
     dirname as dirPath, normpath, realpath, isabs, \
     join as joinPath, split as splitPath, splitext as splitExt, \
     expanduser, \
-    basename, pathsep, relpath      # @UnusedImport
+    basename, relpath      # @UnusedImport
 from shutil import rmtree as removeDir, move, make_archive, \
     copytree as copyDir, copyfile as copyFile   # @UnusedImport
 import platform
@@ -237,9 +237,9 @@ def __windowsElevated( exePath, args=[], wrkDir=None ):
             % ( binPathArg, argsArg, wrkDirArg, isElevatedArg, 
                 isDebugArg, sharedFilePathArg ) )
         if PY2:
-            verb = unicode(verb)
-            pyPath = unicode(pyPath)
-            args = unicode(args)    
+            verb = unicode(verb)      # @UndefinedVariable
+            pyPath = unicode(pyPath)  # @UndefinedVariable
+            args = unicode(args)      # @UndefinedVariable   
         hwd = ctypes.windll.shell32.ShellExecuteW( 
             None, verb, pyPath, args, None, __SW_HIDE )
         return int(hwd) > 32 # check if launched elevated    
@@ -638,7 +638,7 @@ if IS_WINDOWS :
                 dwDesiredAccess = _WindowsSharedFile.__GENERIC_READ
                 dwCreationDisposition = _WindowsSharedFile.__OPEN_EXISTING            
             self.__handle = _WindowsSharedFile.__CreateFileW(
-               unicode(self.filePath) if PY2 else self.filePath,               
+               unicode(self.filePath) if PY2 else self.filePath,    # @UndefinedVariable            
                dwDesiredAccess,   
                _WindowsSharedFile.__FILE_SHARE_READ | 
                _WindowsSharedFile.__FILE_SHARE_WRITE, # allow concurrent r/w by another process (it seems that both must be enabled for cross process concurrent access)
@@ -691,3 +691,40 @@ if IS_WINDOWS :
                 data += chunk.value.decode() if PY3 else chunk.value                            
             return None if data=="" else data
     
+# ----------------------------------------------------------------------------- 
+if IS_MACOS :
+    
+    def _isDmg( filePath ):    
+        try: return splitExt( filePath )[1].lower() == ".dmg"
+        except : return False
+        
+    # returns: isNewMount, mountPath, appPath (or None),  binPath (or None) 
+    def _macMountDmg( dmgPath ):    
+        def _toRet( isNew, mountPath, appPath, binPath ): 
+            return ( isNew, mountPath,
+                appPath if isFile( appPath ) else None, 
+                binPath if isFile( binPath ) else None )
+        #example mount path:
+        #   /Volumes/QtInstallerFramework-mac-x64/QtInstallerFramework-mac-x64.app/Contents/MacOS/QtInstallerFramework-mac-x64              
+        dmgBaseName = splitExt( basename( dmgPath ) )[0]
+        mountPath = joinPath( PATH_DELIM, joinPath( "Volumes", dmgBaseName ) )
+        appPath = joinPath( mountPath, "%s.app" % (dmgBaseName,) )
+        binPath = __INTERNAL_MACOS_APP_BINARY_TMPLT % (
+                  normBinaryName( appPath, isPathPreserved=True, isGui=True )
+                , normBinaryName( appPath, isPathPreserved=False, isGui=False )  
+            )   
+        if isDir( mountPath ) : 
+            return _toRet( False, mountPath, appPath, binPath )
+        _system( 'hdiutil mount "%s"' % (dmgPath,) )
+        if isDir( mountPath ) : 
+            return _toRet( True, mountPath, appPath, binPath )
+        raise Exception( "Failed to mount %s to %s" % (dmgPath, mountPath) )
+    
+    # returns: t/f unmounted an existing path     
+    def _macUnMountDmg( mountPath ):    
+        if not exists( mountPath ) : return False
+        _system( 'hdiutil unmount "%s"' % (mountPath,) )
+        if not exists( mountPath ) : return True
+        raise Exception( "Failed to unmount %s" % (mountPath) )
+        
+        
