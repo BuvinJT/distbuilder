@@ -7,7 +7,6 @@ f.companyLegalName = "Some Company Inc."
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
 f.version          = (1,0,0,0)
 f.setupName        = "HelloPackagesSetup"
-f.isSilentSetup = True 
 
 TK_CONFIG_KEY  = "tk"
 CLI_CONFIG_KEY = "cli"

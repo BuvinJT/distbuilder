@@ -9,7 +9,7 @@ from os.path import exists, isfile, \
     dirname as dirPath, normpath, realpath, isabs, \
     join as joinPath, split as splitPath, splitext as splitExt, \
     expanduser, \
-    basename, relpath      # @UnusedImport
+    basename, relpath, pathsep      # @UnusedImport
 from shutil import rmtree as removeDir, move, make_archive, \
     copytree as copyDir, copyfile as copyFile   # @UnusedImport
 import platform
