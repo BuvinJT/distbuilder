@@ -89,8 +89,8 @@ def _run( binPath, args=[],
          wrkDir=None, isElevated=False, 
          isDebug=False, sharedFilePath=None ):
     
-    def __printCmd( binPath, args, wrkDir ):
-        cmdList = [binPath]
+    def __printCmd( elevate, binPath, args, wrkDir ):
+        cmdList = [elevate, binPath]
         if isinstance(args,list): cmdList.extend( args )
         elif args is not None: cmdList.append( args )    
         print( 'cd "%s"' % (wrkDir,) )
@@ -106,7 +106,7 @@ def _run( binPath, args=[],
     
     # Handle elevated sub processes in Windows
     if IS_WINDOWS and isElevated and not __windowsIsElevated():        
-        __printCmd( binPath, args, wrkDir )
+        __printCmd( "", binPath, args, wrkDir )
         retCode = __windowsElevated( binPath, args, wrkDir )
         if isDebug and retCode is not None : __printRetCode( retCode )  
         return
@@ -121,7 +121,11 @@ def _run( binPath, args=[],
         cmdList = [binPath]
         if isinstance(args,list): cmdList.extend( args )
         elif args is not None: cmdList.append( args )    
-        __printCmd( binPath, args, wrkDir )        
+        if not IS_WINDOWS and isElevated:
+            elevate = "sudo"
+            cmdList = [elevate] + cmdList
+        else: elevate = ""      
+        __printCmd( elevate, binPath, args, wrkDir )        
         sharedFile = ( 
             _WindowsSharedFile( isProducer=True, filePath=sharedFilePath )
             if sharedFilePath else None )
