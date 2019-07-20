@@ -30,21 +30,18 @@ class PyInstallerConfig:
         # based primarily upon pyInstaller documentation, with little 
         # tweaks based on real world observations. 
         #
+        # Windows, the "pyInstaller path" maybe a compiled .exe, 
+        # or a .py script. On Mac and Linux, when it is not a .py,
+        # the is still a py script  with no extension, but a shebang 
+        # binding it to a hard coded interpreter path.  This detail 
+        # is taken into acoount, to override that shebang, 
+        # forcing pyInstaller to run within the same Python context
+        # as distbuilder, resolving any cross ups on machines
+        # with multiple versions of Python installed.   
+        #
         # Note a user can assign a value to this attribute directly
         # when this default fails to meet their needs.
         #
-        # -----------------------------------------------------------
-        # TODO: Fix glitch on multi-python version environments
-        #       (Watch build output which displays the py version used 
-        #        by PyInstaller) 
-        #  
-        # On Linux & Mac this runs a bash script that uses a specific
-        # Python binary for the build process.  That bin path could be 
-        # overwritten... 
-        #
-        # On Windows, this kicks off an exe within the current Python
-        #   context directory (need to confirm that is respecting the 
-        #   context too!) 
         # -----------------------------------------------------------
         if IS_WINDOWS :            
             p = util._pythonScriptsPath( PYINST_BIN_NAME )
@@ -518,10 +515,15 @@ def makePyInstSpec( pyInstConfig, opyConfig=None ):
     
 # -----------------------------------------------------------------------------    
 def __runPyInstaller( pyInstConfig, isMakeSpec=False ) :   
+    # See comments in PyInstallerConfig __init__ regarding
+    # these paths and run contexts.   
     progPath = ( pyInstConfig.pyInstallerMakeSpecPath if isMakeSpec else
                  pyInstConfig.pyInstallerPath )    
-    _, ext = splitExt( progPath )    
-    runAsScriptPrefix = '"%s" ' % (PYTHON_PATH,) if ext.lower()==PY_EXT else ""           
+    if IS_WINDOWS :
+        _, ext = splitExt( progPath )    
+        isPyScript = ext.lower()==PY_EXT
+    else : isPyScript = True       
+    runAsScriptPrefix = '"%s" ' % (PYTHON_PATH,) if isPyScript else ""           
     args = pyInstConfig.toArgs( isMakeSpec )
     util._system( '%s"%s" %s' % (runAsScriptPrefix, progPath, args) )   
 

@@ -5,9 +5,6 @@
 
 * Fix six dependency auto-install glitch (not fully resolved after all!)
 
-* Resolve cross PyInstaller versions glitch on multi-py version environments
-  (Linux/Mac issue only?). 
-
 * Provide backwards compatible PyInstaller builds for old OS versions
   to address known complications e.g. GCC .so dynamic linkage problems 
   (or at least document issue / suggested solutions).  
