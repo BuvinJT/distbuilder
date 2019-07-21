@@ -1,44 +1,5 @@
 from setuptools import setup
 
-# Override standard setuptools commands. 
-# Enforce the order of dependency installation
-#-------------------------------------------------
-PREREQS = [ "six" ]
-
-from setuptools.command.install import install
-from setuptools.command.develop import develop
-from setuptools.command.egg_info import egg_info
-
-def requires( packages ): 
-    from os import system
-    from sys import executable as PYTHON_PATH
-    from pkg_resources import require
-    require( "pip" )
-    CMD_TMPLT = '"' + PYTHON_PATH + '" -m pip install %s'
-    for pkg in packages: system( CMD_TMPLT % (pkg,) )   	
-
-class OrderedInstall( install ):
-    def run( self ):
-        requires( PREREQS )
-        install.run( self )        
-        
-class OrderedDevelop( develop ):
-    def run( self ):
-        requires( PREREQS )
-        develop.run( self )        
-        
-class OrderedEggInfo( egg_info ):
-    def run( self ):
-        requires( PREREQS )
-        egg_info.run( self )        
-
-CMD_CLASSES = { 
-     "install" : OrderedInstall
-   , "develop" : OrderedDevelop
-   , "egg_info": OrderedEggInfo 
-}        
-#-------------------------------------------------
-
 # get __version__ and readme
 exec( open('distbuilder/_version.py').read() ) 
 with open( "README.md", "r" ) as f: readme = f.read()
@@ -76,5 +37,4 @@ setup (
         , "argparse"
 	],
 	include_package_data=True, # extra files defined in MANIFEST.in
-    cmdclass = CMD_CLASSES
 )

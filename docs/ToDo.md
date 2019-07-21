@@ -3,8 +3,6 @@
  
 ## High Priority
 
-* Fix six dependency auto-install glitch (not fully resolved after all!)
-
 * Provide backwards compatible PyInstaller builds for old OS versions
   to address known complications e.g. GCC .so dynamic linkage problems 
   (or at least document issue / suggested solutions).  
