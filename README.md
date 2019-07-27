@@ -1,10 +1,10 @@
 # Distribution Builder (distbuilder)  
 ![distbuilder logo](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png)
 
-This is an open source (GPLv3) Python library. 
-"Distribution Builder" is a wrapper for other libraries and 
-tools including PyInstaller, the Qt Installer Framework, Opy 
-(Obfuscator for Python), PIP, and more.  
+"Distribution Builder" (distbuilder) is an open source Python library. 
+It is a "meta tool", which wraps and combines other related libraries and utilities 
+including PyInstaller, the Qt Installer Framework, Opy (Obfuscator for Python), 
+PIP, and more.  
 
 ## Online documentation
 

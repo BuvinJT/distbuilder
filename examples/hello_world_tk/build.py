@@ -16,6 +16,7 @@ f.setupName        = "HelloWorldTkSetup"
 class BuildProcess( PyToBinInstallerProcess ):
     def onOpyConfig( self, cfg ):    
         cfg.external_modules.extend( [ 'tkinter', 'tkinter.ttk' ] )
+    #def onPyPackageProcess( self, prc ): prc.isTestingExe = True        
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
 p.run()       
