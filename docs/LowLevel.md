@@ -400,7 +400,7 @@ within the *pkgs* argument with the id supplied by *pkgId*.
 Merges the [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
 objects within the *pkgs* argument with the ids supplied by 
 *srcId* and *destId*.  "Merging" entails a recurvise 
-directory merge of the source into the targe via [mergeDirs](#mergeDirs)
+directory merge of the source into the target via [mergeDirs](#mergeDirs)
 as well as combining the [QtIfwShortcut](ConfigClasses.md#qtifwshortcut)    
 list nested inside the [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript)
 objects.	

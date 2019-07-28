@@ -127,6 +127,7 @@ Attributes & default values:
     binPath = None
         
 "Virtual" configuration functions to optionally override:  
+(Note the order shown is that in which these functions are invoked)
 
     onInitialize()    
 	onOpyConfig( cfg )                    
@@ -226,7 +227,7 @@ will be generated and passed here.  You may then config the details of such.
 
 This class employs the more advanced option of running PyInstaller against
 a "spec" file.  After initial processing of the [PyInstallerConfig](ConfigClasses.md#pyinstallerconfig)
-object, a [PyInstSpec](ConfigClasses.md#pyinstspec) object (with a corrspdong temp
+object, a [PyInstSpec](ConfigClasses.md#pyinstspec) object (with a corresponding temp
 spec file) will be generated.  The `onMakeSpec` function allows a final manipulation
 of that prior to running the PyInstaller process.    
 
@@ -256,7 +257,7 @@ This process is basically a simplified version of a
 if you need to build an installable distribution which does NOT involve
 a Python to binary conversion process (e.g. packaging binaries
 produced in another language with some other compiler), or if
-you have more comprehensive needs such as producing multiple Python dervived 
+you have more comprehensive needs such as producing multiple Python derived 
 binaries or installable "packages" bundled together. 
   
 Constructor:
@@ -274,11 +275,12 @@ Attributes & default values:
     isDesktopTarget = False
     isHomeDirTarget = False
             
-    isTestingInstall = False
-    isVerboseInstall = False
-	isElevatedTest   = False       
+    isTestingInstall     = False
+    isAutoTestInstall    = False
+    isVerboseTestInstall = True
         
 "Virtual" configuration functions to override:  
+(Note the order shown is that in which these functions are invoked)
 
 	onInitialize()   
 	onPyPackageProcess( prc )
@@ -296,12 +298,64 @@ Examples:
 	
 [Hello World Tk Example](QuickStart.md#hello-world-tk-example)        
 [Hello Silent Example](QuickStart.md#hello-silent-example)
+                                               
+#### configFactory, name 
 
+See the documentation for these attributes as provided for the 
+[PyToBinPackageProcess](#PyToBinPackageProcess) class.  
+    
+#### isDesktopTarget, isHomeDirTarget 
+
+Set either of these to `True`, to have the final installer that is produced 
+moved to either of these respective locations in the end.  
+If neither are `True`, the installer is simply left in the build directory.
+If both are `True`, priority is given to `isDesktopTarget`.  
+         
+#### isTestingInstall, isAutoTestInstall, isVerboseTestInstall  
+
+Upon building the installer (and moving it to a target directory if so
+directed), the installer will be launched when either `isTestingInstall`,
+or `isAutoTestInstall` is enabled. The `isVerboseTestInstall` option controls
+the level of debugging output logged to the console during the installation.
+
+The `isTestingInstall` simply launches the installer. in contrast, `isAutoTestInstall`
+runs it in "auto pilot" mode.  Note that there is not an "elevated privileges" option
+as such is to built-in requirement for silent installers (i.e. the auto elevate 
+themselves), and "loud"/gui installers have their own internal controls for this. 
+
+#### onInitialize(), onFinalize()   
+
+See the documentation for these functions as provided for the 
+[PyToBinPackageProcess](#PyToBinPackageProcess) class.  
+
+#### onOpyConfig( cfg ), onPyInstConfig( cfg ), onMakeSpec( spec ), 
+
+See the documentation for these functions as provided for the 
+[PyToBinPackageProcess](#PyToBinPackageProcess) class.  
+
+#### onPyPackageProcess( prc )
+
+As stated in the overview, this class generates and employs its own 
+[PyToBinPackageProcess](#PyToBinPackageProcess) object. Upon doing so, it
+passes that object through this function, where you can manipulate it as
+needed for your implementation.  
+
+#### onQtIfwConfig( cfg )              
+
+After building a "package" from the Python source, QtIFW is employed to build
+installer for deploying that content.  Those tasks are driven by a master   
+[QtIfwConfig](ConfigClasses.md#qtifwconfig) object.  A collection of related
+sub components are nested inside of that (e.g. [QtIfwPackage](ConfigClasses.md#qtifwpackage)).
+
+Before running the process to build the installer, that master config object
+is passed through this function, where you can manipulate it as needed for your 
+implementation.  
+	
 ### RobustInstallerProcess
 
 A RobustInstallerProcess is the most advanced and intricate of these processes.  
 It exposes details of the build process that [PyToBinInstallerProcess](#PyToBinInstallerProcess) 
-insultates from the user.  In addition to providing access to more nitty gritty details,   
+insulates from the user.  In addition to providing access to more nitty gritty details,   
 this class is primarily intended for use when you need to produce multiple binaries 
 from Python scripts and/or multiple installable "packages" bundled together.  
 This class is also useful for building an installer which does NOT involve
@@ -352,11 +406,12 @@ Attributes & default values:
     isDesktopTarget = False
     isHomeDirTarget = False
             
-    isTestingInstall = False
-    isVerboseInstall = False
-	isElevatedTest   = False       
+    isTestingInstall     = False
+    isAutoTestInstall    = False
+    isVerboseTestInstall = True
         
 "Virtual" configuration functions to override:  
+(Note the order shown is that in which these functions are invoked)
 
 	onInitialize()   
     onConfigFactory( key, factory )
@@ -379,3 +434,96 @@ Examples:
 [Hello Packages Example](QuickStart.md#hello-packages-example)        
 [Hello Merge Example](QuickStart.md#hello-merge-example)
 
+#### configFactory, name 
+
+See the documentation for these attributes as provided for the 
+[PyToBinPackageProcess](#PyToBinPackageProcess) class.  
+
+Note `configFactory` == "Master Config Factory" for this class. 
+See the class overview for an explanation of what that means.
+
+#### pyToBinPkgProcesses, ifwPackages          
+
+While technically exposed for access by an implementation,
+**it is not generally advised that you directly modify these attributes**.
+
+The `pyToBinPkgProcesses` list will be generated for you.  If you 
+need to manipulate a given sub process definition before its use, 
+it is recommended that you do so via `onPyPackageProcess( key, prc )`.
+If you wish to manipulate the packages after they have all been 
+built, that should normally be done via `onPyPackagesBuilt( pkgs )`.   
+
+The `ifwPackages` attribute should normally be defined prior to
+creating this class, and simply be passed to its constructor. 
+See the class overview for an explanation of how this attribute
+is used.
+        
+#### isDesktopTarget, isHomeDirTarget 
+
+See the documentation for these attributes as provided for the 
+[PyToBinInstallerProcess](#PyToBinInstallerProcess) class.  
+
+#### isTestingInstall, isAutoTestInstall, isVerboseTestInstall  
+
+See the documentation for these attributes as provided for the 
+[PyToBinInstallerProcess](#PyToBinInstallerProcess) class.  
+
+#### onInitialize(), onFinalize()   
+
+See the documentation for these functions as provided for the 
+[PyToBinPackageProcess](#PyToBinPackageProcess) class.  
+
+Note these are to be used in relation to the *master* process.  
+
+#### onPyPackageInitialize( key ), onPyPackageFinalize( key )
+
+These functions are anlaougs to `onInitialize()` and `onFinalize()`.
+They are, however, invoked around each [PyToBinPackageProcess](#PyToBinPackageProcess) 
+this *master* process runs.
+
+A `key` argument is provided to supply a means by which to identifiy the package being built
+upon on the given invocation of these functions.  The keys passed here align with
+those defined in the `pyPkgConfigFactoryDict` argument passed to the constructor.
+
+#### onConfigFactory( key, factory )
+
+This function receives a clone of the "Master Config Factory" for each entry in
+the "Py Package Config Factories" dictionary that has a value set to `None`.
+
+A `key` argument is provided to supply a means by which to identify the Factory 
+being configured upon on the given invocation of this function.  The keys passed 
+here align with those defined in the `pyPkgConfigFactoryDict` argument passed to 
+the constructor.
+
+See the class overview for an explanation of how this is used.
+
+#### onOpyConfig( key, cfg ), onPyInstConfig( key, cfg ), onMakeSpec( key, spec ) 
+
+See the documentation for these functions as provided for the 
+[PyToBinPackageProcess](#PyToBinPackageProcess) class.  
+
+In addition to the standard object passed through these functions, a `key`
+is provided to supply a means by which to identify the package being built
+upon on the given invocation of these functions.  The keys passed here align with
+those defined in the `pyPkgConfigFactoryDict` argument passed to the constructor.
+
+#### onPyPackageProcess( key, prc )
+
+See the documentation for this function as provided for the 
+[PyToBinInstallerProcess](#PyToBinInstallerProcess) class.  
+
+In addition to the standard object passed through this function, a `key`
+is provided to supply a means by which to identify the package being built
+upon on the given invocation of this function.  The keys passed here align with 
+those defined in the `pyPkgConfigFactoryDict` argument passed to the constructor.
+
+#### onPyPackagesBuilt( pkgs )
+
+After ALL of the Python packages have been built, this function is invoked
+prior to running the installer building process.  The `pkgs` parameter this 
+recieves is the list of corresponding [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
+objects which have been generated.
+
+This function maybe used to manipulate the packages before the final send off
+to QtIFW.  See [QtIfwPackage list manipulation](QuickStart.md#qtifwpackage-list-manipulation) 
+for details, utility functions, and ideas surrounding how this can be applied. 
