@@ -5,22 +5,22 @@
 
 ### Easy installation (via PIP)
 
-Standard installation should be as simple as executing the following 
-on your terminal / command prompt: 
-
-	python -m pip install distbuilder
-
-Or, based upon your environment, even just:
+Depending upon your computer's configuration, installation may be as simple 
+as executing the following on your terminal / command prompt:
 
 	pip install distbuilder
 
-Within some environments, you may need to run the installation
-with elevated rights, e.g. by prefixing the command with `sudo`.
+Alternatively, you might need to use the "long version" of that:  
+
+	python -m pip install distbuilder
+ 
+Within some environments, it may necessary to run pip installations
+with elevated privileges, e.g. by prefixing the command with `sudo`.
 
 ### From source installation
 
 To install from the raw source instead (useful if you want a 
-cutting edge alpha release), you may perform a Git clone from 
+"cutting edge" alpha release), you may perform a Git clone from 
 `https://github.com/BuvinJT/distbuilder.git`, 
 or otherwise download the repository in a "flat" manner 
 from the [GitHub](https://github.com/BuvinJT/distbuilder) page.
@@ -28,7 +28,8 @@ from the [GitHub](https://github.com/BuvinJT/distbuilder) page.
 With a local copy of the full source, on Windows you may be able
 to simply run `install.bat` (or `install3.bat`). 
 On Mac or Linux, you may use the counterpart `install.sh` 
-(or `install3.sh`) instead.
+(or `install3.sh`) instead.  Those scripts are found in the repo's
+root.
 
 If you encounter failures with those scripts, you probably need to 
 tweak them slightly for your environment.  Before attempting that, 
@@ -40,6 +41,15 @@ change to the directory containing the source, then execute:
     (Don't miss the period at the end!)
 
 ## Pre-Requisites
+
+### Python 2.7 or Newer
+
+If you don't have [Python](https://www.python.org/) installed, you'll 
+need to start there!
+
+While it *may* be possible to run distbuilder on versions of Python predating v.2.7,  
+this is not a supported condition. It recommended that you use v.3.x if possible, since
+Python 2 is now officially "dead" to begin with... 
 
 ### Pip
 
@@ -82,10 +92,10 @@ accessible via:
 Additionally, the "Qt Installer Framework"
 is recommended.  This component is not a hard
 requirement, but is *strongly recommended*, so 
-that you may employ the distbuilder installer
-creation features.
+that you may employ the installer creating features
+offered by distbuilder.
 
-When you use the distbuilder features that require 
+When you use the library's features which require 
 this external utility, it will be **automatically installed** 
 for you, if it is not already present on the system (or 
 cannot be found).
@@ -102,14 +112,15 @@ Once manually installed, the best way to integrate it
 with distbuilder is to define an environmental
 variable named `QT_IFW_DIR` and the set value
 for that equal to the directory where you 
-installed the utility. Note, it also possible to
+installed the utility. See [QtIFW issues](Issues.md#qt-installer-framework-issues)  
+for help with that.  Note, it also possible to
 supply the path within your implementation script. 
-Again, refer to [Installers](LowLevel.md#installers) 
+Refer to [Installers](LowLevel.md#installers) 
 for more details on such. 
       
 ## Implementation Overview
 
-The standard way the library is intended to be used is by
+The "standard" way distbuilder is intended to be used is by
 adding a `build.py` script to the root directory of the
 project you wish to distribute. (Note: the file may have 
 any name of your choice - "build.py" is merely a 
@@ -138,11 +149,12 @@ example.
 
 ## Hello World Example
 
-The Hello World Example is a demonstration of using the `PyToBinPackageProcess`
-class. This is one of most straightforward, and typical use cases for the library.  
+The Hello World Example is a demonstration of using the 
+[PyToBinPackageProcess](HighLevel.md#py-to-bin-package-process) class. 
+This is one of most straightforward, and typical use cases for the library.  
 
 If you did not download the full source for the library (inclusive of the examples) 
-you may download/copy the following files directly from GitHub into a local directory.  
+you may download/copy the following files directly from GitHub into a local directory. 
 It is recommended that you place them in a directory named `hello_world`.   
 
 Example program: [hello.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/hello.py)
@@ -155,7 +167,7 @@ Start by confirming you can run the program script in the "natural" manner:
 
 	python hello.py
 
-It doesn't do much...  It simply writes "Hello World!" to the console.
+Don't expect it to do much...  It simply writes "Hello World!" to the console.
 
 Now, run the build script:
 
@@ -167,12 +179,15 @@ The build script should achieve the following:
 - bundles the example resource (license file) into a directory with the binary
 - compresses the distribution into a simple zip file (left in the same directory as the source)
 	
-Having witnessed that function, review the `build.py` script for yourself.  It should be 
-self-explanatory for a moderately seasoned Python developer.  
+Having witnessed that function, review the [build.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/build.py)
+ script for yourself.  It should be self-explanatory for a moderately 
+ seasoned Python developer.  
 
 ## Hello World Tk Example
 
 This next example is a more comprehensive version of the first Hello World.
+It is a demonstration of using the 
+[PyToBinInstallerProcess](HighLevel.md#py-to-bin-installer-process) class.
 
 *Note: This example requires the standard Python [TKinter](https://tkdocs.com/tutorial/install.html) 
 library	be installed.*
@@ -204,7 +219,7 @@ Now, run the build script:
 The build script should achieve the following:
 
 - obfuscates the code (to mitigate the risk of reverse engineering) 
-- converts the obfuscation to a stand-alone executable
+- converts the obfuscated version of the source to a stand-alone executable
 - builds a full installer with the executable bundled into it
 - moves the installer to your desktop (for convenience)
 - launches the installer (for testing)
@@ -213,9 +228,9 @@ Proceed through the installer, and then run the program
 to confirm it works.  
 
 Having witnessed everything function, review the 
-`build.py` script. The script is a simple example, but 
-covers a good portion of the "core" distbuilder 
-features.
+[build.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/build.py) 
+script. The script is a simple example, but covers a good portion of the 
+"core" distbuilder features.
 
 ### Extended feature demo: "debug mode"
 
@@ -226,29 +241,80 @@ Now, locate the following commented out line in the Hello World Tk build script:
 Uncomment that, and run the build process again.  In the 
 middle of the process, the standalone binary will be run 
 for you in "debug" mode.  Upon closing the program, the 
-rest of the build process will continue.
+rest of the build process will continue.  
 
-The most astute observer may notice (on Windows or Mac) 
+This code demonstrates a design pattern employed by the "high level" 
+process classes in distbuilder.  That pattern is for a high level 
+class to generate a "configuration object", or a lower level "process 
+object", automatically set it up for the client implementation,
+and then "pass it through" an overridable function where you may
+access such and revise it for your own needs prior to its use.  
+
+So, what's the point of setting `prc.isTestingExe = True` ?
+The most astute observer may notice (on Windows or Mac, but not Linux...) 
 that the stdout/err messages (seen by clicking the "Hello Tkinter" 
 button when running the raw .py script) are not produced on the terminal
-by the standalone version of the program when it is launched in the 
+by the *standalone version* of the program when it is launched in the 
 normal manner.  That is due to a feature of PyInstaller (and/or by additional platform
 details regarding standard output streams) to "swallow" console 
 messages produced by gui applications. That may be desired behavior for a 
 public release, but it may be also be highly counterproductive for debugging, 
-since there are times when the stand-alone version may require specialized
-coding to make it work correctly in that context vs as a basic .py script. 
-As such, distbuilder has included a solution for this, as demonstrated here. 
-Refer to [Testing](LowLevel.md#testing) for more details.    
+since there are times when the standalone version may require specialized
+coding to make it work correctly in that context compared to how it did as a 
+basic .py script. As such, distbuilder has included a solution for this, as 
+demonstrated here. Refer to [Testing](LowLevel.md#testing) for more details.    
+
+## Hello Silent Example
+
+It is another demonstration of using the 
+[PyToBinInstallerProcess](HighLevel.md#py-to-bin-installer-process) class.
+
+Hello Silent demonstrates how one can use distbuilder to build "silent" installers. 
+These do not require user interactions for them to complete their tasks.  Instead, 
+they run automatically, while having the same flexible options present in the gui 
+installers made available via command line arguments.
+
+"Silent" installers built by distbuilder provide a very important additional feature.  
+They are able to be run in **non-gui contexts**, such as on "headless servers".
+Silent installers are, of course, also desirable (on any platform) for mass 
+installation purposes such as when a network administrator needs to install the 
+same program on countless workstations. 
+
+Building a silent installer requires nothing more than setting the 
+`isSilentSetup` configuration option to `True`.  As such, you can easily define a 
+full blown packaging and installation process that could be run in Windows (for example) 
+using an interactive graphical interface, AND could also be used on a CentOS server 
+(for example), with nothing but a terminal interface available. 
+You would only have to toggle the `isSilentSetup` option before running the build script!
+
+This example expects that you have already downloaded and ran the first example 
+(Hello World). That must be present in the testing environment within a directory 
+adjacent to where you place the next file.  That first directory must be 
+named `hello_world` for this "master" script (which draws upon that) to function.
+
+You may download/copy the example file directly from GitHub 
+(into a `hello_silent` directory):   
+
+Build script: [build.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_silent/build.py)
+
+Upon building the silent installer, the demo is set to test "Auto Installation" of it. 
+With that enabled, it will run the installer with the command line argument to 
+"force installation". If run more than once, that option will cause it to uninstall 
+any prior existing installation rather than exiting with an error, as it would do  
+by default when a conflict was detected.
+
+Refer to [Installers](LowLevel.md#installers) for more details on silent installers.
 
 ## Hello Packages Example
 
-The Hello Packages Example demonstrates one way that you can generate
-and then "combine" multiple "packages" into a single installer with a single
-build process.  In this case, those become separate components which may be 
-installed selectively by the user. 
+The Hello Packages Example is a demonstration of using the 
+[RobustInstallerProcess](HighLevel.md#robust-installer-process) class.
+It demonstrates a way that you can generate and then "combine" multiple 
+"packages" into a single installer with a single build process.  
+In this case, those become separate components which may be 
+installed *selectively* by the end user. 
 
-This example requires that the first examples 
+This example requires that both of the first examples 
 (Hello World & Hello World Tk) be present in the testing environment 
 within directories adjacent to a third directory where you place the next file.
 Those first two must be named `hello_world` and `hello_world_tk` for this
@@ -261,12 +327,15 @@ Build script: [build.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/m
 
 ## Hello Merge Example
 
-Similar to the Hello Packages Example, Hello Merge demonstrates 
-how you can "merge" multiple "packages" into a single package within
-an installer.  The content of the two programs, which worked independently,  
-become one component which may NOT be installed selectively by the user. 
+This is another demonstration of using the 
+[RobustInstallerProcess](HighLevel.md#robust-installer-process) class.
 
-This example also requires that the first examples 
+Similar to the Hello Packages Example, Hello Merge demonstrates 
+how you can "merge" multiple "packages" into a *single package* within
+an installer.  The content of the two programs, which worked independently,  
+become one component which may *NOT* be installed selectively by the user. 
+
+This example requires that both of the first examples 
 (Hello World & Hello World Tk) be present in the testing environment 
 within directories adjacent to a third directory where you place the next file.
 Those first two must be named `hello_world` and `hello_world_tk` for this
@@ -277,44 +346,10 @@ You may download/copy the example file directly from GitHub
 
 Build script: [build.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_merge/build.py)
 
-## Hello Silent Example
-
-Hello Silent demonstrates how one can build "silent" installers, which do not
-require user interactions for them to complete their tasks.  Instead, they run
-automatically, while having the same flexible installation options made available
-via command line arguments provided at the time they are launched.
-
-"Silent" installers built by distbuilder provide a very important additional feature
-implicitly.  Such are able to be run in **non-gui contexts**, such as on "headless servers".
-Silent installers are also, of course, desirable for mass installation purposes
-such as when a network administrator needs to install the same program on countless 
-workstations for which they are responsible. 
-
-Building a silent installer requires nothing more than setting the `isSilent` configuration
-option to `True`.  As such, you can easily define a full blown packaging and installation
-process that could be run in Windows (for example) using an interactive graphical interface,
-AND could also be used on a CentOS server (for example), with nothing but a terminal interface
-available.  Just toggle the isSilent option in the build script!
-
-This example is akin to Hello Packages and Hello Merge, in that it expects you already 
-downloaded and ran the first example (Hello World). That must be present in the testing 
-environment within a directory adjacent to where you place the next file.
-The first directory must be named `hello_world` for this "master" script to function.
-
-You may download/copy the example file directly from GitHub 
-(into a `hello_silent` directory):   
-
-Build script: [build.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_silent/build.py)
-
-Upon building the silent installer, the demo is set to test "Auto Installation" of it. With that enabled, it will
-automatically passing the command line argument to "force installation".  Running the installer with that option
-will cause it to uninstall and existing installation (if encountered) rather than exiting with an error, as is 
-the default behavior.
-
-Refer to [Installers](LowLevel.md#installers) for more details on silent installers.
-
 ## Learn More  
 
 For a more thorough explanation of how to use the 
-library, refer to [High Level Classes](HighLevel.md) and then
-[Low Level Classes And Functions](LowLevel.md).
+library, continue on to [High Level Classes](HighLevel.md) next. 
+Then, review [Configuration Classes](ConfigClasses.md#configuration-classes) 
+and/or [Low Level Classes And Functions](LowLevel.md) for even more 
+details.

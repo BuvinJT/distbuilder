@@ -227,7 +227,9 @@ Complex example:
  	myLib = {'name':'MyLib', 'opyConfig':opyCfg, 'pipConfig':pipCfg } 	
  	installLibraries( 'six', myLib )
             
-    uninstallLibrary( name )
+### uninstallLibrary
+	
+	uninstallLibrary( name )
 
 **Returns: None**
 

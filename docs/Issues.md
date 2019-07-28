@@ -111,7 +111,7 @@ Reference Manual for more details on viewing such.
 
 ### Setting `QT_IFW_DIR` 
 
-To use the Qt Installer Framework integration, it is 
+To use the Qt Installer Framework integration (manually), it is 
 recommended to you set the `QT_IFW_DIR` environmental 
 variable on a *permanent* (non-volatile) basis (so it
 doesn't have to set every time you want to use it). This 
