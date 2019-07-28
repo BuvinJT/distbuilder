@@ -65,10 +65,6 @@ Attributes & default values:
     ifwPkgScriptName = "installscript.qs"
     
     pkgSrcDirPath    = None
-   
-    self.__pkgPyInstConfig = None
-    
-    pkgSrcDirPath    = None
 
 Object creation functions:
      
@@ -85,6 +81,50 @@ Cloning:
 
     newFactory = ConfigFactory.copy( instance )
     
+#### cfgId                                              
+
+Useful to distinguish between multiple ConfigFactory objects, as
+are often employed by a [RobustInstallerProcess](#RobustInstallerProcess). 
+
+#### productName, description
+
+The name and description for the product on the whole, or a sub component
+withit (based upon the context of the factory object is used).  Such
+will appear as "brandings" upon a executable and/or as labels/details within 
+installer menus.  
+
+#### companyTradeName, companyLegalName       
+
+Akin to `productName` and `description` attributes.  
+
+Note the `companyTradeName` will be used in standard labels, directory names, shortcuts, etc.
+as produced by the process employing the ConfigFactory.  In contrast, `companyLegalName`
+will appear within copy rights, EULAs, and the like where this alternate value is 
+called for.  
+
+#### isObfuscating, opyBundleLibs, opyPatches
+
+#### binaryName, version, isGui           
+
+#### sourceDir, entryPointPy
+
+#### specFilePath, iconFilePath
+
+#### distResources        
+
+#### setupName, isSilentSetup
+
+#### ifwDefDirPath, ifwPackages
+
+#### ifwCntrlScript, ifwCntrlScriptText, ifwCntrlScriptPath, ifwCntrlScriptName
+
+#### ifwPkgId, ifwPkgName, ifwPkgNamePrefix         
+   
+#### ifwPkgScript, ifwPkgScriptText, ifwPkgScriptPath, ifwPkgScriptName
+
+#### pkgSrcDirPath
+
+    
 ## Process Classes
 
 Many build scripts will follow the same essential
@@ -92,14 +132,24 @@ logic flow, to produce analogous distributions.
 As such, using high-level "process classes" can prevent 
 having multiple implementation scripts be virtual 
 duplicates of one another, each containing a fair volume 
-of code.  
+of code which employs the "low level" functions in the
+library.  
+
+Distbuilder currently provides three high-level "process classes",
+each more powerful (and complex) then the prior:
+ 
+- [PyToBinPackageProcess](#PyToBinPackageProcess)
+- [PyToBinInstallerProcess](#PyToBinInstallerProcess)
+- [RobustInstallerProcess](#RobustInstallerProcess)
 
 ### PyToBinPackageProcess
 
-This process class converts a program written with Python
+This "simple" process class converts a program written in Python
 scripts into a stand-alone executable binary.  It additionally
-has built-in options for employing obfuscation, for testing the 
-resulting product, and for primitive "bundling" into an archive.  
+has built-in options for employing code obfuscation, for testing the 
+resulting product, for "resource bundling", and for packaging into 
+an archive file.
+ 
 The process uses a [ConfigFactory](#configfactory) to automatically 
 produce the config objects it requires, but allows a client to modify
 those objects before they are implemented by defining a derived class 
@@ -210,8 +260,8 @@ By installing all of your dependencies here, you make your project and build
 script far more portable across machines / environments. Refer to the 
 documentation on these useful utility functions for this purpose:
    
-[installLibrary](LowLevel.md#installlibrary)
-[installLibraries](LowLevel.md#installlibraries)
+- [installLibrary](LowLevel.md#installlibrary)
+- [installLibraries](LowLevel.md#installlibraries)
 	
 #### onOpyConfig( cfg )                  
 
@@ -242,10 +292,10 @@ stage: `binDir`, `binPath`.
         
 ### PyToBinInstallerProcess
 
-A PyToBinInstallerProcess process contains a 
+A PyToBinInstallerProcess process *contains* a 
 [PyToBinPackageProcess](#PyToBinPackageProcess)
 within it, and thus provides the full functionality of that to begin with.    
-In addition, however, rolls the product of that lower level process within
+In addition, however, it rolls the product of that lower level process within
 a full fledged installer.  Like the other process classes, this uses a
 [ConfigFactory](#configfactory) to automatically produce the config 
 objects it requires, but allows a client to modify those objects before 
@@ -253,7 +303,7 @@ they are implemented by defining a derived class and overriding certain
 functions as needed for this purpose.       
 
 This process is basically a simplified version of a
-[RobustInstallerProcess](#RobustInstallerProcess).  Use that class instead
+[RobustInstallerProcess](#RobustInstallerProcess).  Use *that* class instead
 if you need to build an installable distribution which does NOT involve
 a Python to binary conversion process (e.g. packaging binaries
 produced in another language with some other compiler), or if
@@ -368,24 +418,24 @@ uses a "Master Config Factory", plus a dictionary containing multiple
 independent (non-Python related) "Qt IFW Packages".
   
 The "Master Config Factory" is used to define the top level "wrapper" installer.
-For each element in "Py Package Config Factories" dictionary, a "package" is created
+For each element in the "Py Package Config Factories" dictionary, a "package" is created
 from a Python script.  Those entries are sub components within the whole, built using
-separate instances of a [PyToBinInstallerProcess](#PyToBinInstallerProcess).
+separate instances of a [PyToBinPackageProcess](#PyToBinPackageProcess).
 
 If a value in the "Py Package Config Factories" dictionary is set to `None`, one will 
-be generated for it, by *cloning* the master config.  That cloned Config Factory will 
+be generated for it, by *cloning* the master config.  That cloned ConfigFactory will 
 then be passed to the overridable function `onConfigFactory( key, factory )`.  Within
 that, your implementation my modify the object, but it will not have to start from
 "scratch" because whatever common attributes might be shared between the master and 
 the sub components will already be defined.  
 
-The other notable attribute of this class is the a list of "Qt IFW Packages".
-Item in this list may be dynamic [QtIfwPackage](ConfigClasses.md#qtifwpackage) objects,
-or be simple strings defining relative paths to QtIFW packages that are defined
-as external resources, in the traditional (hard coded, contented containing) IFW manner.
+The other notable attribute of this class is the list of "Qt IFW Packages".
+Items in this list may be dynamic [QtIfwPackage](ConfigClasses.md#qtifwpackage) objects,
+or be simple strings defining relative paths to QtIFW packages which are defined
+as external resources, in the traditional (hard coded, content containing) IFW manner.
 Using this class attribute, you may build installers with packages containing 
-other programs that are not Python related, or may be comprised perhaps of optional 
-resources that the end user might selectively install.  
+other programs that are not Python related, or may be comprised of optional 
+resources that the end user might wish to selectively install.  
     
 Constructor:
 
