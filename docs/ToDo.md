@@ -4,9 +4,12 @@
 ## High Priority
 
 * Provide backwards compatible PyInstaller builds for old OS versions
-  to address known complications e.g. GCC .so dynamic linkage problems 
-  (or at least document issue / suggested solutions).  
-
+  to address known complications e.g. GCC .so dynamic linkage:
+   
+   Refer to:
+    
+   https://pythonhosted.org/PyInstaller/usage.html#making-linux-apps-forward-compatible
+   
 * Further develop the Qt IFW script generation features.
 	* Directory creation on target (e.g. user data directories)		
 	* Windows Registry functions     
@@ -48,6 +51,16 @@ XML config classes.
 * Add additional examples.
 
 ## Wish List		
+
+* Automate builds for multiple environments / platforms
+
+   Pyinstaller referrence:
+   
+   https://pythonhosted.org/PyInstaller/usage.html#supporting-multiple-python-environments
+   
+   https://pythonhosted.org/PyInstaller/usage.html#supporting-multiple-operating-systems
+
+* Add auto conversion of alternate icon formats, so a project only needs one file for such.
 
 * Add a Py2Exe wrapper as alternative to PyInstaller.
 

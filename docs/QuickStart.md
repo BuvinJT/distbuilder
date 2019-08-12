@@ -83,7 +83,8 @@ Or, via the direct git clone url:
 BRANCH: opy_distbuilder
 	
 The most recent (development) commits, however, are 
-accessible via:   
+accessible at the development [Git Hub Page](https://github.com/BuvinJT/Opy)
+or directly via git using:   
 
 `https://github.com/BuvinJT/Opy.git`		
 

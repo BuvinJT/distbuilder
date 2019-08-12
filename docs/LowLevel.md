@@ -1,7 +1,7 @@
 # Low Level Classes And Functions 
 ![distbuilder logo](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png)
 
-## Stand-Alone Executables 
+## Stand Alone Executables 
 
 ### buildExecutable
         
@@ -83,10 +83,31 @@ invoke the makePyInstSpec function:
       	                    
 ## Executable Obfuscation
 
-PyInstaller is a truly amazing utility, but it has a significant
-inherent weakness... it is possible reverse engineer the binaries 
-it produces to extract the original source code! Distribution Builder 
-has a core built-in feature to mitigate this risk for you: *code obfuscation*.
+Code [obfuscation](https://en.wikipedia.org/wiki/Obfuscation_(software) 
+is the process of **rewriting** normal, human readbale code, into a form which
+is very difficult (well, *ideally* impossible) to read, yet still executes 
+in exactly the same manner when run through the target translator (or compiler).   
+The reason one would want to do this to is to protect properiatary work,
+while sharing source code.  
+
+[Opy for Distribution Builder](https://pypi.org/project/opy-distbuilder/)
+is an obfuscation library for Python.  It can be used for protecting source 
+that will be shared directly, or as an additional layer of protection behind 
+binaries built with PyInstaller.  
+
+Why would you need to obfuscate when compiling binaries?  Aren't they implictly protected?
+Well you don't litterally "compile" when using PyInstaller.  Your
+code is still somewhat exposed.  If you go looking for it, you will not have to work overly 
+hard to find guides on the web about hacking PyInstaller binaries... For starters, 
+simply read this - straight from the horse's mouth: 
+[PyInstaller Docs: Hiding The Source Code](https://pyinstaller.readthedocs.io/en/stable/operating-mode.html#hiding-the-source-code)
+
+While Opy does not protect your code as well as real compilation does, it's better
+than nothing!  The obfuscation process is "lossy", so while the end result still
+functions as desired, Opy inheritantly destroys the clear text original names for 
+functions, classes, objects, etc.  A hacker might still figure out some "secret"
+after putting in a good deal of effort, but no one can't just walk away with 
+your body of the work on the whole.    
 
 ### obfuscatePy
  
@@ -246,7 +267,7 @@ See https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support
 ## Obfuscation Features 
 
 The Opy Library contains an [OpyConfig](#opyconfig) class, which has been extended
-by this library (and aliased with the same name).  The revised /
+by the distbuilder library (and aliased with the same name).  The revised /
 extended class contains attributes for patching the obfuscation and
 for bundling the source of external libraries (so that they too maybe 
 obfuscated). This new configuration type has the notable additions:
@@ -255,7 +276,7 @@ obfuscated). This new configuration type has the notable additions:
     bundleLibs 
     sourceDir
 
-Patching:
+### OpyPatch
 
 Opy is not perfect.  It has known bugs, and can require a bit of 
 effort in order to define a "perfect" configuration for it. In the 
@@ -263,10 +284,9 @@ event you are struggling to make it work exactly as desired, an
 "easy out" has been provided by way of "patching" the results. If 
 you have already determined exactly which files/lines/bugs
 you are encountering, you may simply define a list of "OpyPatch"
-objects for the configuration.  They will be applied at the end 
-of the process to fix any problems. An [OpyPatch](#opypatch) is created via:
-
-### OpyPatch
+objects for the configuration.  They will be applied at the **end** 
+of the process (i.e. to the **obfuscated** code) to fix any problems. 
+An [OpyPatch](#opypatch) is created via:
 
     OpyPatch( relPath, patches, parentDir=OBFUS_DIR_PATH )
     
@@ -282,14 +302,14 @@ on that line (to just swap out an identifier typically).
 parentDir: An (optional) path to use a directory other 
 than the standard obfuscation results path. 
 
+### LibToBundle
+
 Library Bundling:
          
 The sourceDir defaults to THIS_DIR.  If bundleLibs is defined, it is 
 used in combination with sourceDir to create a "staging directory".
 The bundleLibs attributes may be either None or a list of     
 "LibToBundle" objects. [LibToBundle](#libtobundle) objects maybe created via: 
-
-### LibToBundle
 
     LibToBundle( name, localDirPath=None, pipConfig=None, 
                  isObfuscated=False )
