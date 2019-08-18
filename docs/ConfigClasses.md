@@ -182,6 +182,10 @@ Convenience functions:
     setDefaultTitle()    
     setDefaultPaths()
 
+## QtIfwControlScript
+
+TODO: Fill in
+
 ## QtIfwPackage
 
 Objects of this type define the packages with an installer.

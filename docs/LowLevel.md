@@ -399,6 +399,10 @@ interface...).
     package source content directory should be deleted 
     after successfully building the installer.   
 
+### Silent Installers
+
+TODO: FILLIN
+
 ### QtIfwPackage list manipulation
 
 These functions are useful within an overridden version of
