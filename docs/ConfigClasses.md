@@ -184,7 +184,197 @@ Convenience functions:
 
 ## QtIfwControlScript
 
-TODO: Fill in
+QtIWF installers may have a "Control Script" and/or a collection of "Package Scripts".
+The "Control Script" is intended to dictate how the installer *interface*  behaves, and
+other high level logic pertaining to the installer itself. In contrast, "Package Scripts"
+are intended for applying custom logic to manipulate a target environment when installing 
+a given package.  See [QtIfwPackageScript](#qtifwpackageScript) for more info. 
+
+The QtIfwControlScript class provides an abstraction layer for QtIfw script
+generation.  QtIfw scripts are written in "QScript", a spin off from JavaScript with
+additional custom objects and methods for this context. Using this abstracion,
+you can achieve a great many custom behaviors without having to learn much about 
+the language yourself.
+
+The way this class works, in summary, is that you may provide an optional script 
+as a raw string, or a path to script you wish to load directly.  If specificied, 
+those resources act as a *base*, from which you may continue to add on to.
+
+Along with being able to add your own custom functions to use as "helpers"
+a QtIWF Control script is driven by the framework which calls functions of
+specific names, if they exist, in order to apply custom coding during a given
+event.  A QtIfwControlScript object has a pair of attributes related to each such 
+event in the framework.  One is a boolean, dictating whether to auto generate this 
+event handler using a set of fixed, builtin logic provided by distbuilder to add a 
+fair amount of additional features to your installers "for free".  The other attribute 
+in ecah pair is the body of the function (which is normally auto generated).   
+  
+When the `write()` function is invoked, the actual script file to be embedded 
+in the installer is generated from the attributes.  Prior to calling that, you
+may switch off the various auto generate options, and supply your own function
+definition from scratch.
+
+If you wish to use the bulk of the "free" / standard add on logic, but then customize 
+that the program flow should be to call `_generate()` first, which will define the 
+function bodies using the auto generate options. Once that is done, you may disable 
+select auto generates, and then directly add on to, or manipulate the event handling 
+function bodies.  
+
+A large number of abstract, static "helper" functions have been provided which you may
+use to build your logic.  Otherwise, you may certainly just add QScript snippets
+directly in the raw.       
+
+Constructor:                
+
+	QtIfwControlScript( fileName="installscript.qs",                  
+                  		script=None, scriptPath=None ) :
+
+Attributes & default values:                                               
+    
+	controllerGlobals = None
+    isAutoGlobals = True
+        
+    controllerConstructorBody = None
+    isAutoControllerConstructor = True
+                                                            
+    introductionPageCallbackBody = None
+    isAutoIntroductionPageCallback = True
+
+    targetDirectoryPageCallbackBody = None
+    isAutoTargetDirectoryPageCallback = True
+
+    componentSelectionPageCallbackBody = None
+    isAutoComponentSelectionPageCallback = True
+
+    licenseAgreementPageCallbackBody = None
+    isAutoLicenseAgreementPageCallback = True
+
+    startMenuDirectoryPageCallbackBody = None
+    isAutoStartMenuDirectoryPageCallback = True
+
+    readyForInstallationPageCallbackBody = None
+    isAutoReadyForInstallationPageCallback = True
+
+    performInstallationPageCallbackBody = None
+    isAutoPerformInstallationPageCallback = True
+        
+    finishedPageCallbackBody = None
+    isAutoFinishedPageCallback = True        
+
+Object Methods:
+    
+    write()
+    debug()
+    	 
+	path()
+	dirPath()   
+
+	registerAutoPilotSlot( signalName, slotName, slotBody )
+
+    _generate()
+    
+Static Constants :
+
+    TAB         
+    NEW_LINE     
+    END_LINE    
+    START_BLOCK 
+    END_BLOCK   
+    
+    TRUE  
+    FALSE 
+    
+    PATH_SEP   
+    
+    MAINTENANCE_TOOL_NAME  
+    
+    VERBOSE_CMD_SWITCH_ARG     
+    TARGET_DIR_KEY         
+    PRODUCT_NAME_KEY       
+    
+    ERR_LOG_PATH_CMD_ARG   
+    ERR_LOG_DEFAULT_PATH   
+
+    TARGET_DIR_CMD_ARG        
+    START_MENU_DIR_CMD_ARG        
+    ACCEPT_EULA_CMD_ARG       
+    INSTALL_LIST_CMD_ARG      
+    INCLUDE_LIST_CMD_ARG      
+    EXCLUDE_LIST_CMD_ARG      
+    RUN_PROGRAM_CMD_ARG       
+    AUTO_PILOT_CMD_ARG        
+    
+    TARGET_EXISTS_OPT_CMD_ARG 
+    TARGET_EXISTS_OPT_FAIL    
+    TARGET_EXISTS_OPT_REMOVE  
+    TARGET_EXISTS_OPT_PROMPT  
+    
+    MAINTAIN_MODE_CMD_ARG        
+    MAINTAIN_MODE_OPT_ADD_REMOVE 
+    MAINTAIN_MODE_OPT_UPDATE         
+    MAINTAIN_MODE_OPT_REMOVE_ALL 
+        
+    OK     
+    YES     
+    NO     
+    CANCEL 
+
+    NEXT_BUTTON 
+    BACK_BUTTON 
+    CANCEL_BUTTON
+    FINISH_BUTTON
+    
+    TARGET_DIR_EDITBOX       
+    START_MENU_DIR_EDITBOX   
+    ACCEPT_EULA_RADIO_BUTTON 
+    RUN_PROGRAM_CHECKBOX     
+
+Static Functions:      
+                                                   
+    log( msg, isAutoQuote=True )            
+    debugPopup( msg, isAutoQuote=True )
+                      
+    setValue( key, value, isAutoQuote=True )          
+     
+    lookupValue( key, default="", isAutoQuote=True )            
+    lookupValueList( key, defaultList=[], isAutoQuote=True, 
+                     delimiter=None )
+                          
+    targetDir()
+    productName() 
+    
+    cmdLineArg( arg, default="" )
+    cmdLineSwitchArg( arg )
+    cmdLineListArg( arg, default=[] )
+    ifCmdLineArg( arg, isNegated=False, isMultiLine=False, )  
+    ifCmdLineSwitch( arg, isNegated=False, isMultiLine=False )
+                      
+    ifInstalling( isMultiLine=False )
+    ifMaintenanceTool( isMultiLine=False )
+    
+    yesNoPopup( msg, title="Question", resultVar="result" )             
+    yesNoCancelPopup( msg, title="Question", resultVar="result" )                  
+    switchYesNoCancelPopup( msg, title="Question", resultVar="result", 
+                            onYes="", onNo="", onCancel="" )
+    ifYesNoPopup( msg, title="Question", resultVar="result", 
+                 isMultiLine=False )
+
+    fileExists( path, isAutoQuote=True )
+    ifFileExists( path, isAutoQuote=True, isMultiLine=False )   
+                              
+    currentPageWidget()                
+    assignPageWidgetVar( varName="page" )                
+   
+    setText( controlName, text, isAutoQuote=True )
+    
+    clickButton( buttonName, delayMillis=None )                
+
+    	(Note: checkbox controls also work on radio buttons)
+	enableCheckBox( checkboxName )                
+    disableCheckBox( checkboxName )               
+    setCheckBox( checkboxName, boolean )
+                   
+    _autoQuote( value, isAutoQuote )
 
 ## QtIfwPackage
 
@@ -256,20 +446,23 @@ Attributes & default values:
 
 ## QtIfwPackageScript
 
-Objects of this type are used to dynamically generate
-a script used by a QtIFW package. Scripts are able
-to perform the most sophisticated customizations
-for an installer. 
+QtIWF installers may have a "Control Script" and/or a collection of "Package Scripts".
+The "Control Script" is intended to dictate how the installer *interface*  behaves, and
+other high level logic pertaining to the installer itself. In contrast, "Package Scripts"
+are intended for applying custom logic to manipulate a target environment when installing 
+a given package. See [QtIfwControlScript](#qtifwcontrolscript) for more info. 
 
-For maximum flexibility, you may directly define the 
-entire script, by setting the "script" attribute.  Or,
-you specify a source to an external file instead.  Also,
-you may always delegate scripts to a traditional QtIFW 
-definition.
+Objects of the type `QtIfwPackageScript` are used to dynamically generate
+a script used by a QtIFW package. Scripts are able to perform the most sophisticated 
+customizations for an installer. 
 
-This class currently has very limited functionality,
-but in the future more options will be provided for
-automating the generation common script directives.  
+For maximum flexibility, you may directly define the entire script via a raw string, 
+by setting the "script" attribute.  Or, you specify a source to an external file instead.  Also,
+In additional You may always delegate scripts to a traditional QtIFW definition.
+
+This class works in an analagous manner to [QtIfwControlScript](#qtifwcontrolscript).
+Please refer to the that documentation for an explanation of how use these script
+objects in general. 
 
 Note that [QtIfwShortcut](#qtifwpackageshortcut) objects
 are used for the `shortcuts` attribute of this class.
@@ -296,6 +489,75 @@ Attributes & default values:
     
     componentCreateOperationsBody = None
     isAutoComponentCreateOperations = True        
+
+Static Constants :
+
+    TAB         
+    NEW_LINE     
+    END_LINE    
+    START_BLOCK 
+    END_BLOCK   
+    
+    TRUE  
+    FALSE 
+    
+    PATH_SEP   
+    
+    MAINTENANCE_TOOL_NAME  
+    
+    VERBOSE_CMD_SWITCH_ARG     
+    TARGET_DIR_KEY         
+    PRODUCT_NAME_KEY       
+    
+    ERR_LOG_PATH_CMD_ARG   
+    ERR_LOG_DEFAULT_PATH   
+
+    AUTO_PILOT_CMD_ARG        
+        
+    MAINTAIN_MODE_CMD_ARG        
+    MAINTAIN_MODE_OPT_ADD_REMOVE 
+    MAINTAIN_MODE_OPT_UPDATE         
+    MAINTAIN_MODE_OPT_REMOVE_ALL 
+        
+    OK     
+    YES     
+    NO     
+    CANCEL 
+
+Static Functions:      
+                                                   
+    log( msg, isAutoQuote=True )            
+    debugPopup( msg, isAutoQuote=True )
+                      
+    setValue( key, value, isAutoQuote=True )          
+     
+    lookupValue( key, default="", isAutoQuote=True )            
+    lookupValueList( key, defaultList=[], isAutoQuote=True, 
+                     delimiter=None )
+                          
+    targetDir()
+    productName() 
+    
+    cmdLineArg( arg, default="" )
+    cmdLineSwitchArg( arg )
+    cmdLineListArg( arg, default=[] )
+    ifCmdLineArg( arg, isNegated=False, isMultiLine=False, )  
+    ifCmdLineSwitch( arg, isNegated=False, isMultiLine=False )
+                      
+    ifInstalling( isMultiLine=False )
+    ifMaintenanceTool( isMultiLine=False )
+    
+    yesNoPopup( msg, title="Question", resultVar="result" )             
+    yesNoCancelPopup( msg, title="Question", resultVar="result" )                  
+    switchYesNoCancelPopup( msg, title="Question", resultVar="result", 
+                            onYes="", onNo="", onCancel="" )
+    ifYesNoPopup( msg, title="Question", resultVar="result", 
+                 isMultiLine=False )
+
+    fileExists( path, isAutoQuote=True )
+    ifFileExists( path, isAutoQuote=True, isMultiLine=False )   
+                                                 
+    _autoQuote( value, isAutoQuote )
                                                    
 ## QtIfwShortcut
 
