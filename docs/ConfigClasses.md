@@ -10,12 +10,14 @@ Many of these can be generated for you using the
 
 Objects of this type define *optional* details for building 
 binaries from .py scripts using the PyInstaller utility 
-invoked via the buildExecutable function. 
+invoked via the [buildExecutable](LowLevel.md#buildexecutable) function 
+(which maybe employed by higher level  
+[Process Classes](HighLevel.md#process-classes) under the hood).
 
 Note that if a [PyInstSpec](#pyinstspec) attribute is provided for one of 
-these objects, the  build settings contained within such will **override** 
-any that conflict with those supplied via the other attributes set directly 
-in the object.  PyInstSpec objects may be created by supplying 
+these objects, the  build settings contained within that will **override** 
+any which conflict with those specified via the attributes set directly 
+on the PyInstallerConfig object.  PyInstSpec objects may be created by supplying 
 a traditional (perhaps legacy) spec file definition, or you may wish to 
 generate one with distbuilder via the makePyInstSpec() function.  
 In either case, you may also opt to dynamically manipulate the spec via 
@@ -116,21 +118,29 @@ Attributes & default values:
 
 ## QtIfwConfig 
 
-Objects of this type define the details for building 
-an installer using the QtIFW utility invoked via the
-buildInstaller function. 
+Objects of this type provide the highest level definition of 
+a QtIFW installer configuration to use for building 
+an installer via the 
+[buildInstaller](LowLevel.md#buildinstaller) function
+(which maybe employed by higher level  
+[Process Classes](HighLevel.md#process-classes) under the hood).
 
 Constructor: 
 
     QtIfwConfig( installerDefDirPath=None,
                  packages=None,
-                 configXml=None, 
+                 configXml=None,
+                 controlScript=None, 
                  setupExeName="setup" ) 
-                     
+                                                    
 Attributes & default values:                                               
 
+	installerDefDirPath = None
+
 	packages            = None <list of QtIfwPackages OR directory paths>
-	configXml           = None        
+	configXml           = None	
+	controlScript       = None
+	        
 	setupExeName        = "setup"
 	
 	<Qt paths (attempt to use environmental variables if not defined)>
@@ -144,44 +154,56 @@ Attributes & default values:
 ## QtIfwConfigXml 
 
 Objects of this type define the contents of a QtIFW 
-config.xml which will be dynamically generated 
-when invoking the buildInstaller function. This file 
-represents the highest level definition of a QtIFW 
-installer, containing information such as the product 
-name and version. Most of the attributes in these 
-objects correspond directly to the name of tags 
-added to config.xml.  Attributes with None values
-will not be written, otherwise they will be.
+`config.xml` which will be dynamically generated 
+when invoking the [buildInstaller](LowLevel.md#buildinstaller) function. 
+
+The `config.xml` file represents the highest level definition 
+of a QtIFW installer, containing information such as the product 
+name and version. Most of the attributes in this 
+class correspond directly to the name of the tags added to the xml file.  
+Attributes set to `None` values will not be written, otherwise they will be.
 
 Constructor:                
 
-    QtIfwConfigXml( name, exeName, version, publisher,
-                    iconFilePath=None, isGui=True,
-                    companyTradeName=None ) 
+    QtIfwConfigXml( name, version, publisher,
+                  	iconFilePath=None, 
+                  	controlScriptName=None,
+                  	primaryContentExe=None,
+                  	isGuiPrimaryContentExe=True,
+                  	companyTradeName=None ) 
 
 Attributes:    
 
-    exeName (used indirectly w/ isGui)
+    primaryContentExe (used indirectly w/ isGui)
     iconFilePath  (used indirectly)
     companyTradeName (used indirectly)
+    
     Name                     
     Version                  
     Publisher                
     InstallerApplicationIcon  (icon base name, i.e. omit extension)
+    ControlScript  
     Title                    
     TargetDir                
     StartMenuDir             
     RunProgram               
-    RunProgramDescription    
+    RunProgramDescription
+        
     runProgramArgList  (used indirectly)
-    otherElements (open end dictionary of key/value pairs to inject)
-
-Convenience functions:
+    
+    otherElements (open ended dictionary of key/value pairs to inject)
+    
+Functions:
 
     setDefaultVersion()
     setDefaultTitle()    
     setDefaultPaths()
+    
+    addCustomTags( root ) 
 
+    path()   
+    dirPath() 
+       
 ## QtIfwControlScript
 
 QtIWF installers may have a "Control Script" and/or a collection of "Package Scripts".
@@ -417,15 +439,19 @@ Attributes:
 	isMingwExe     = False
 	qmlScrDirPath  = None  <for QML projects only>   
  
+Functions:      
+
+    contentDirPath() 
+ 
 ## QtIfwPackageXml
 
-Objects of this type define the a QtIFW package.xml 
+Objects of this type define the a QtIFW `package.xml` 
 file which will be dynamically generated 
 when invoking the buildInstaller function. This file
 defines a component within the installer which maybe
 selected by the user to install. Most of the attributes 
 in these objects correspond directly to the name of tags 
-added to package.xml. Attributes with None values
+added to the xml. Attributes set to `None` values
 will not be written, otherwise they will be.
 
 Constructor:       
@@ -444,6 +470,11 @@ Attributes & default values:
 	Default       = True
 	ReleaseDate   = date.today()
 
+Functions:      
+
+	path()
+    dirPath() 
+    
 ## QtIfwPackageScript
 
 QtIWF installers may have a "Control Script" and/or a collection of "Package Scripts".
@@ -472,7 +503,6 @@ Constructor:
 	QtIfwPackageScript( pkgName, 
 					    shortcuts=[], 
 						fileName="installscript.qs", 
-                        exeName=None, isGui=True, 
                         script=None, scriptPath=None )
                   
 Attributes & default values:      
@@ -656,7 +686,7 @@ Attributes:
     path    
     patches 
     
-Convenience functions:
+Functions:
 
     obfuscatePath( obfuscatedFileDict )        
     apply()

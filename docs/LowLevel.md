@@ -359,45 +359,88 @@ tool is with a Qt C++ program, it is equally usable for a Python
 program (especially if using "Qt for Python", and a QML driven 
 interface...).  
 
+### installQtIfw    
+ 
+When the QtIFW utlity is required for use by the library 
+(i.e. when [buildInstaller](#buildInstaller) is invoked), 
+an attempt will be made to resolve the path to it via a collection 
+of methods.  First, if a [QtIfwConfig](#qtifwconfig) object is provided
+which specificies a path via the `qtIfwDirPath` attribute, that will be 
+employed.  Second, if there is an environmental varibale defined named
+`QT_IFW_DIR`, that path will be applied.  Next, a default directory 
+where the utility would typically be installed will be checked to see if
+that exists.  If none of these found, distbuilder will simply download 
+the program an install it for you in that "default" location, 
+using the [download](#download) function and this `installQtIfw` function. 
+
+If you wish to take control of such yourself, or simply download QtIFW
+directly for someother purpose, this function provides the means.   
+ 
+    installQtIfw( installerPath=None, version=None, targetPath=None )
+
+**Returns**: the absolute path to the directory where the utlility was 
+successfully installed.
+
+**installerPath**: (Optional) The path to the QtIFW installer to be run. 
+This may either be a **local** path or a **url** to a location on the web.
+If ommited, the `version` argument will be used to dynamically resolve
+the url.
+
+**version**: (Optional) The version of QtIFW desired.  This should be provided
+as a string e.g. "3.1.1".  If `installerPath` is ommited, this argument 
+will be used to dynamically resolve the url.  If this argument is also ommited,
+a default version will be selected automatically.
+
+**targetPath**: (Optional) The target directory for installation.  If ommited,
+a default path will be used. 
+    
+### unInstallQtIfw        
+
+This is the counterpart to the `installQtIfw()` function.  It will uninstall
+an existing installation of the QtIWF utliity.
+
+	unInstallQtIfw( qtIfwDirPath=None, version=None )
+ 
+**Returns**: a boolean to indicate success or failure.
+
+**qtIfwDirPath**: (Optional) The absolute path to the directory where the 
+utlility was installed. (i.e. the return value of `installQtIfw()`).  If ommited,
+the `version` argument will be looked to next.
+
+**version**:  (Optional) The version of QtIFW to uninstall. If `qtIfwDirPath` is 
+ommited, this argument will be used to dynamically resolve the default install path
+to the utility for the version specified.  If this argument is also ommited,
+a default version will be assumed.
+ 
 ### buildInstaller
 
-    buildInstaller( qtIfwConfig, isPkgSrcRemoved=False )
+	buildInstaller( qtIfwConfig, isSilent )
 
 **Returns**: the absolute path to the setup executable created.  
 
 **qtIfwConfig**: A (required) [QtIfwConfig](#qtifwconfig) object which dictates 
      the details for building an installer.      
-     Perhaps most critically, this object includes a "qtIfwDirPath"
-     attribute. As this utility's path is not readily
-     resolvable, such allows the user to define that.
-     If omitted, the library will look for an 
-     environmental variable instead, named "QT_IFW_DIR".
-     Defining such is arguably the better option (since
-     all your build scripts may then draw upon that)
-     and your project collaborators may independently 
-     define their own paths.
      The distbuilder library allows you either define a
      QtIFW installer in the full/natural manner, and then
      drawn upon that resource, or it can generate one from 
      entirely from scratch, or any combination thereof is 
-     possible. Setting the attribute installerDefDirPath, 
+     possible. Setting the attribute `installerDefDirPath`, 
      indicates that the installer definition (or at least part 
      of it) already exists and is to be used.  Dynamic components
      can be defined via attributes for the nested objects of type
      [QtIfwConfigXml](ConfigClasses.md#qtifwconfigxml), 
+     [QtIfwControlScript](ConfigClasses.md#qtifwcontrolscript),
      [QtIfwPackage](ConfigClasses.md#qtifwpackage),
      [QtIfwPackageXml](ConfigClasses.md#qtifwpackagexml), 
      and [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript).                                  
-     Other key attributes include the "pkgName", which is
+     Other key attributes include the `pkgName`, which is
      the sub directory where your content will be 
      dynamically copied to within the installer, and the 
-     "pkgSrcDirPath" (most typically the "binDir" returned 
-     by buildExecutable), which is source path of the 
+     `pkgSrcDirPath` (most typically the `binDir` returned 
+     by [buildExecutable](#buildExecutable)), which is source path of the 
      content. 
     
-**isPkgSrcRemoved**: A "convenience" option denoting if the 
-    package source content directory should be deleted 
-    after successfully building the installer.   
+**isSilent**: TODO: FILLIN 
 
 ### Silent Installers
 
@@ -708,6 +751,24 @@ prints a stack trace as well when isDetailed=True.
 Note: use printErr( e ) to print just an exception 
 "message". 
 
+### download
+
+	download( url, saveToPath=None, preserveName=True )
+	
+**Returns**: the local path to the completed download.
+
+**url**: The url to the file that is to be downloaded.
+
+**saveToPath**: (Optional) The full local path where the file should be downloaded to.
+If ommitted (or set to `None`), this path will be automatically assigned to one 
+within a temp directory.
+
+**preserveName**: (Optional) If `saveToPath` is `None`, this boolean dictates 
+whether the original name of the file should be used when saving the file locally.
+If set to `False`, the name will be auto assigned to one which does not conflict
+with any that already exist. If set to `True`, and the path already exists, the
+new download will overwrite the prior file.       	
+
 ### Aliased standard python functions
                 
         exists                 os.path.exists 
@@ -725,3 +786,12 @@ Note: use printErr( e ) to print just an exception
         joinPath               os.path.join
         splitPath              os.path.split
         splitExt               os.path.splitext 
+        
+### Constants
+        
+	IS_WINDOWS 
+    IS_LINUX 
+    IS_MACOS 
+    
+    THIS_DIR 
+        
