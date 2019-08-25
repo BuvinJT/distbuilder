@@ -216,7 +216,15 @@ The QtIfwControlScript class provides an abstraction layer for QtIfw script
 generation.  QtIfw scripts are written in "QScript", a spin off from JavaScript with
 additional custom objects and methods for this context. Using this abstracion,
 you can achieve a great many custom behaviors without having to learn much about 
-the language yourself.
+the language yourself. Refer to the details on 
+[Installer Scripting](LowLevel.md#installer-scripting) to learn more about 
+the low level helpers provided by the library for this purpose. 
+
+For maximum flexibility, rather than using the dynamic methods, you may directly define 
+the entire script via a raw string, by setting the `script` attribute.  Or, you may 
+specify an external file as the source instead via `script_path`. In addition, you may 
+always delegate scripts to a traditional QtIFW definition by using a higher level 
+config [QtIfwConfig](#qtifwconfig) to specify such.
 
 The way this class works, in summary, is that you may provide an optional script 
 as a raw string, or a path to script you wish to load directly.  If specificied, 
@@ -295,109 +303,6 @@ Object Methods:
 
     _generate()
     
-Static Constants :
-
-    TAB         
-    NEW_LINE     
-    END_LINE    
-    START_BLOCK 
-    END_BLOCK   
-    
-    TRUE  
-    FALSE 
-    
-    PATH_SEP   
-    
-    MAINTENANCE_TOOL_NAME  
-    
-    VERBOSE_CMD_SWITCH_ARG     
-    TARGET_DIR_KEY         
-    PRODUCT_NAME_KEY       
-    
-    ERR_LOG_PATH_CMD_ARG   
-    ERR_LOG_DEFAULT_PATH   
-
-    TARGET_DIR_CMD_ARG        
-    START_MENU_DIR_CMD_ARG        
-    ACCEPT_EULA_CMD_ARG       
-    INSTALL_LIST_CMD_ARG      
-    INCLUDE_LIST_CMD_ARG      
-    EXCLUDE_LIST_CMD_ARG      
-    RUN_PROGRAM_CMD_ARG       
-    AUTO_PILOT_CMD_ARG        
-    
-    TARGET_EXISTS_OPT_CMD_ARG 
-    TARGET_EXISTS_OPT_FAIL    
-    TARGET_EXISTS_OPT_REMOVE  
-    TARGET_EXISTS_OPT_PROMPT  
-    
-    MAINTAIN_MODE_CMD_ARG        
-    MAINTAIN_MODE_OPT_ADD_REMOVE 
-    MAINTAIN_MODE_OPT_UPDATE         
-    MAINTAIN_MODE_OPT_REMOVE_ALL 
-        
-    OK     
-    YES     
-    NO     
-    CANCEL 
-
-    NEXT_BUTTON 
-    BACK_BUTTON 
-    CANCEL_BUTTON
-    FINISH_BUTTON
-    
-    TARGET_DIR_EDITBOX       
-    START_MENU_DIR_EDITBOX   
-    ACCEPT_EULA_RADIO_BUTTON 
-    RUN_PROGRAM_CHECKBOX     
-
-Static Functions:      
-                                                   
-    log( msg, isAutoQuote=True )            
-    debugPopup( msg, isAutoQuote=True )
-                      
-    setValue( key, value, isAutoQuote=True )          
-     
-    lookupValue( key, default="", isAutoQuote=True )            
-    lookupValueList( key, defaultList=[], isAutoQuote=True, 
-                     delimiter=None )
-                          
-    targetDir()
-    productName() 
-    
-    cmdLineArg( arg, default="" )
-    cmdLineSwitchArg( arg )
-    cmdLineListArg( arg, default=[] )
-    ifCmdLineArg( arg, isNegated=False, isMultiLine=False, )  
-    ifCmdLineSwitch( arg, isNegated=False, isMultiLine=False )
-                      
-    ifInstalling( isMultiLine=False )
-    ifMaintenanceTool( isMultiLine=False )
-    
-    yesNoPopup( msg, title="Question", resultVar="result" )             
-    yesNoCancelPopup( msg, title="Question", resultVar="result" )                  
-    switchYesNoCancelPopup( msg, title="Question", resultVar="result", 
-                            onYes="", onNo="", onCancel="" )
-    ifYesNoPopup( msg, title="Question", resultVar="result", 
-                 isMultiLine=False )
-
-    fileExists( path, isAutoQuote=True )
-    ifFileExists( path, isAutoQuote=True, isMultiLine=False )   
-                              
-    currentPageWidget()                
-    assignPageWidgetVar( varName="page" )                
-   
-    setText( controlName, text, isAutoQuote=True )
-    
-    clickButton( buttonName, delayMillis=None )                
-
-    	(Note: checkbox controls also work on radio buttons)
-	enableCheckBox( checkboxName )                
-    disableCheckBox( checkboxName )               
-    setCheckBox( checkboxName, boolean )
-                   
-    _autoQuote( value, isAutoQuote )
-
 ## QtIfwPackage
 
 Objects of this type define the packages with an installer.
@@ -484,12 +389,15 @@ are intended for applying custom logic to manipulate a target environment when i
 a given package. See [QtIfwControlScript](#qtifwcontrolscript) for more info. 
 
 Objects of the type `QtIfwPackageScript` are used to dynamically generate
-a script used by a QtIFW package. Scripts are able to perform the most sophisticated 
-customizations for an installer. 
+a script used by a QtIFW package.  Refer to the details on 
+[Installer Scripting](LowLevel.md#installer-scripting) to learn more about 
+the low level helpers provided by the library for this purpose. 
 
-For maximum flexibility, you may directly define the entire script via a raw string, 
-by setting the "script" attribute.  Or, you specify a source to an external file instead.  Also,
-In additional You may always delegate scripts to a traditional QtIFW definition.
+For maximum flexibility, rather than using the dynamic methods, you may directly define 
+the entire script via a raw string, by setting the `script` attribute.  Or, you may 
+specify an external file as the source instead via `script_path`. In addition, you may 
+always delegate scripts to a traditional QtIFW definition by using a higher level 
+config [QtIfwConfig](#qtifwconfig) to specify such.
 
 This class works in an analagous manner to [QtIfwControlScript](#qtifwcontrolscript).
 Please refer to the that documentation for an explanation of how use these script
@@ -519,75 +427,6 @@ Attributes & default values:
     
     componentCreateOperationsBody = None
     isAutoComponentCreateOperations = True        
-
-Static Constants :
-
-    TAB         
-    NEW_LINE     
-    END_LINE    
-    START_BLOCK 
-    END_BLOCK   
-    
-    TRUE  
-    FALSE 
-    
-    PATH_SEP   
-    
-    MAINTENANCE_TOOL_NAME  
-    
-    VERBOSE_CMD_SWITCH_ARG     
-    TARGET_DIR_KEY         
-    PRODUCT_NAME_KEY       
-    
-    ERR_LOG_PATH_CMD_ARG   
-    ERR_LOG_DEFAULT_PATH   
-
-    AUTO_PILOT_CMD_ARG        
-        
-    MAINTAIN_MODE_CMD_ARG        
-    MAINTAIN_MODE_OPT_ADD_REMOVE 
-    MAINTAIN_MODE_OPT_UPDATE         
-    MAINTAIN_MODE_OPT_REMOVE_ALL 
-        
-    OK     
-    YES     
-    NO     
-    CANCEL 
-
-Static Functions:      
-                                                   
-    log( msg, isAutoQuote=True )            
-    debugPopup( msg, isAutoQuote=True )
-                      
-    setValue( key, value, isAutoQuote=True )          
-     
-    lookupValue( key, default="", isAutoQuote=True )            
-    lookupValueList( key, defaultList=[], isAutoQuote=True, 
-                     delimiter=None )
-                          
-    targetDir()
-    productName() 
-    
-    cmdLineArg( arg, default="" )
-    cmdLineSwitchArg( arg )
-    cmdLineListArg( arg, default=[] )
-    ifCmdLineArg( arg, isNegated=False, isMultiLine=False, )  
-    ifCmdLineSwitch( arg, isNegated=False, isMultiLine=False )
-                      
-    ifInstalling( isMultiLine=False )
-    ifMaintenanceTool( isMultiLine=False )
-    
-    yesNoPopup( msg, title="Question", resultVar="result" )             
-    yesNoCancelPopup( msg, title="Question", resultVar="result" )                  
-    switchYesNoCancelPopup( msg, title="Question", resultVar="result", 
-                            onYes="", onNo="", onCancel="" )
-    ifYesNoPopup( msg, title="Question", resultVar="result", 
-                 isMultiLine=False )
-
-    fileExists( path, isAutoQuote=True )
-    ifFileExists( path, isAutoQuote=True, isMultiLine=False )   
-                                                 
-    _autoQuote( value, isAutoQuote )
                                                    
 ## QtIfwShortcut
 

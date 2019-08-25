@@ -354,7 +354,7 @@ Upon creating a distribution (especially a stand-alone executable),
 the next logical progression is to bundle that into a full-scale 
 installer. This library is designed to employ the open source,
 cross platform utility: Qt IFW  (i.e. "Qt Installer Framework") 
-for such purposes. While the prototypical implementation of this
+for such purposes. While the prototypical implementation of that
 tool is with a Qt C++ program, it is equally usable for a Python
 program (especially if using "Qt for Python", and a QML driven 
 interface...).  
@@ -397,7 +397,7 @@ a default path will be used.
 ### unInstallQtIfw        
 
 This is the counterpart to the `installQtIfw()` function.  It will uninstall
-an existing installation of the QtIWF utliity.
+an existing installation of the QtIFW utliity.
 
 	unInstallQtIfw( qtIfwDirPath=None, version=None )
  
@@ -440,11 +440,221 @@ a default version will be assumed.
      by [buildExecutable](#buildExecutable)), which is source path of the 
      content. 
     
-**isSilent**: TODO: FILLIN 
-
+**isSilent**: When `isSilent` is enabled, the QtIFW installer produced will not display 
+a GUI or provide any interactive prompts for the user.  All options are dictated by 
+command line arguments. While this may certainly be desirable on any platform, it is  
+*necessary* to create an installer for a target OS with no GUI (e.g. many Linux distros).
+ 
+See [Silent Installers](#silient-installers) for more information. 
+ 
 ### Silent Installers
 
-TODO: FILLIN
+"Silent installation" is the process of running a installer without any interactive prompts 
+for the user.  All options are dictated by command line arguments.  This allows for scripted
+installs of programs, which is useful for a great many purposes, e.g. programatic 
+integrations of external utilities, or running the same installation on a large number
+of workstations.  While such a feature may certainly be desirable on any platform, not 
+requiring a GUI interaction is, of course, outright *necessary* if one wishes to target 
+an OS with no GUI support (e.g. many Linux distros).
+
+"Silent installation" (especially with no GUI) is not a option provided naturally by 
+the Qt Installer Framework. This feature has been made availble, however, via this 
+library!  As such, it is now easily possible to build installers for environments that
+would not normally be able via this otherwise excellent mechanism.     
+
+Returns error code (another new option)...
+
+### Installer Arguments
+
+Standard arguments
+
+    VERBOSE_CMD_SWITCH_ARG = "-v"    
+    TARGET_DIR_KEY         = "TargetDir"
+    PRODUCT_NAME_KEY       = "ProductName"
+    
+    ERR_LOG_PATH_CMD_ARG      = "errlog"
+    ERR_LOG_DEFAULT_PATH      = ( 
+        "%temp%\\\\installer.err" if IS_WINDOWS else
+        "/tmp/installer.err" ) # /tmp is supposedly guaranteed to exist, though it's not secure
+
+    TARGET_DIR_CMD_ARG        = "target"
+    START_MENU_DIR_CMD_ARG    = "startmenu"    
+    
+    INSTALL_LIST_CMD_ARG      = "install"
+    INCLUDE_LIST_CMD_ARG      = "include"
+    EXCLUDE_LIST_CMD_ARG      = "exclude"
+
+	AUTO_PILOT_CMD_ARG        = "auto"
+    ACCEPT_EULA_CMD_ARG       = "accept"
+    RUN_PROGRAM_CMD_ARG       = "run"
+       
+    TARGET_EXISTS_OPT_CMD_ARG = "onexist"
+    TARGET_EXISTS_OPT_FAIL    = "fail"
+    TARGET_EXISTS_OPT_REMOVE  = "remove"
+    TARGET_EXISTS_OPT_PROMPT  = "prompt"
+    
+    MAINTAIN_MODE_CMD_ARG        = "mode"
+    MAINTAIN_MODE_OPT_ADD_REMOVE = "addremove"
+    MAINTAIN_MODE_OPT_UPDATE     = "update"    
+    MAINTAIN_MODE_OPT_REMOVE_ALL = "removeall"
+
+
+Silent Installers
+
+common componentsPrefix stripped...
+              
+    parser.add_argument( '-v', '--verbose', default=False,
+                         help='verbose mode', 
+                         action='store_true' )
+    parser.add_argument( '-f', '--force', default=False, 
+                         help='force installation (uninstall existing installation)', 
+                         action='store_true' )
+    parser.add_argument( '-t', '--target', default=None,
+                         help='target directory' )
+                         
+    if IS_WINDOWS :                          
+        parser.add_argument( '-m', '--startmenu', default=None,  
+                             help='start menu directory' )
+                             
+    if len(components) > 0 :                             
+        parser.add_argument( '-c', '--components', nargs='*', default=[],
+                             help='component ids to install (space delimited list)' )
+        parser.add_argument( '-i', '--include', nargs='*', default=[],
+                             help='component ids to include (space delimited list)' )
+        parser.add_argument( '-e', '--exclude', nargs='*', default=[],
+                             help='component ids to exclude (space delimited list)' )  
+                                                        
+
+### Installer Scripting
+
+
+QtIfwControlScript
+
+Static Constants :
+
+    TAB         
+    NEW_LINE     
+    END_LINE    
+    START_BLOCK 
+    END_BLOCK   
+    
+    TRUE  
+    FALSE 
+    
+    PATH_SEP   
+    
+    MAINTENANCE_TOOL_NAME  
+    
+    VERBOSE_CMD_SWITCH_ARG     
+    TARGET_DIR_KEY         
+    PRODUCT_NAME_KEY       
+    
+    ERR_LOG_PATH_CMD_ARG   
+    ERR_LOG_DEFAULT_PATH   
+
+    TARGET_DIR_CMD_ARG        
+    START_MENU_DIR_CMD_ARG        
+    ACCEPT_EULA_CMD_ARG       
+    INSTALL_LIST_CMD_ARG      
+    INCLUDE_LIST_CMD_ARG      
+    EXCLUDE_LIST_CMD_ARG      
+    RUN_PROGRAM_CMD_ARG       
+    AUTO_PILOT_CMD_ARG        
+    
+    TARGET_EXISTS_OPT_CMD_ARG 
+    TARGET_EXISTS_OPT_FAIL    
+    TARGET_EXISTS_OPT_REMOVE  
+    TARGET_EXISTS_OPT_PROMPT  
+    
+    MAINTAIN_MODE_CMD_ARG        
+    MAINTAIN_MODE_OPT_ADD_REMOVE 
+    MAINTAIN_MODE_OPT_UPDATE         
+    MAINTAIN_MODE_OPT_REMOVE_ALL 
+        
+    OK     
+    YES     
+    NO     
+    CANCEL 
+
+    NEXT_BUTTON 
+    BACK_BUTTON 
+    CANCEL_BUTTON
+    FINISH_BUTTON
+    
+    TARGET_DIR_EDITBOX       
+    START_MENU_DIR_EDITBOX   
+    ACCEPT_EULA_RADIO_BUTTON 
+    RUN_PROGRAM_CHECKBOX     
+
+Static Functions:      
+                                                   
+    log( msg, isAutoQuote=True )            
+    debugPopup( msg, isAutoQuote=True )
+                      
+    setValue( key, value, isAutoQuote=True )          
+     
+    lookupValue( key, default="", isAutoQuote=True )            
+    lookupValueList( key, defaultList=[], isAutoQuote=True, 
+                     delimiter=None )
+                          
+    targetDir()
+    productName() 
+    
+    cmdLineArg( arg, default="" )
+    cmdLineSwitchArg( arg )
+    cmdLineListArg( arg, default=[] )
+    ifCmdLineArg( arg, isNegated=False, isMultiLine=False, )  
+    ifCmdLineSwitch( arg, isNegated=False, isMultiLine=False )
+                      
+    ifInstalling( isMultiLine=False )
+    ifMaintenanceTool( isMultiLine=False )
+    
+    yesNoPopup( msg, title="Question", resultVar="result" )             
+    yesNoCancelPopup( msg, title="Question", resultVar="result" )                  
+    switchYesNoCancelPopup( msg, title="Question", resultVar="result", 
+                            onYes="", onNo="", onCancel="" )
+    ifYesNoPopup( msg, title="Question", resultVar="result", 
+                 isMultiLine=False )
+
+    fileExists( path, isAutoQuote=True )
+    ifFileExists( path, isAutoQuote=True, isMultiLine=False )   
+                              
+    currentPageWidget()                
+    assignPageWidgetVar( varName="page" )                
+   
+    setText( controlName, text, isAutoQuote=True )
+    
+    clickButton( buttonName, delayMillis=None )                
+
+    	(Note: checkbox controls also work on radio buttons)
+	enableCheckBox( checkboxName )                
+    disableCheckBox( checkboxName )               
+    setCheckBox( checkboxName, boolean )
+                   
+    _autoQuote( value, isAutoQuote )
+
+
+Native QtIfw Script Functions
+
+TODO: Preamble.....
+
+	execute( binPath, args )
+	sleep( seconds )
+	clearErrorLog()
+	writeErrorLog( msg )
+	silentAbort( msg )
+	
+	toMaintenanceToolPath( dir )
+	maintenanceToolExists( dir )
+	defaultTargetExists()
+	cmdLineTargetExists()
+	targetExists()
+	removeTarget()
+	managePriorInstallation()
+	
+	WINDOWS ONLY: (uses registry):  
+	maintenanceToolPaths()
+	isOsRegisteredProgram()
 
 ### QtIfwPackage list manipulation
 

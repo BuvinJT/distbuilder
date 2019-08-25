@@ -582,10 +582,11 @@ directed), the installer will be launched when either `isTestingInstall`,
 or `isAutoTestInstall` is enabled. The `isVerboseTestInstall` option controls
 the level of debugging output logged to the console during the installation.
 
-The `isTestingInstall` simply launches the installer. in contrast, `isAutoTestInstall`
-runs it in "auto pilot" mode.  Note that there is not an "elevated privileges" option
-as such is to built-in requirement for silent installers (i.e. the auto elevate 
-themselves), and "loud"/gui installers have their own internal controls for this. 
+The `isTestingInstall` simply launches the installer. In contrast, `isAutoTestInstall`
+runs it in "auto pilot" mode (i.e. performs the installation as well).  Note that an 
+"elevated privileges" option was NOT provided as such is to built into all silent 
+installers (i.e. they auto elevate themselves), and "loud"/gui installers have their 
+own internal controls for this. 
 
 #### onInitialize(), onFinalize()   
 

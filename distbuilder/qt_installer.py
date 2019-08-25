@@ -1645,7 +1645,7 @@ def __postBuild( qtIfwConfig ):  # @UnusedVariable
         elif p.srcExePath and isFile( p.srcExePath): removeFile( p.srcExePath )                    
 
 def __buildSilentWrapper( qtIfwConfig ) :
-    print( "Building silient wrapper executable...\n" )
+    print( "Building silent wrapper executable...\n" )
     from distbuilder.master import PyToBinPackageProcess, ConfigFactory
     
     # On macOS, a "gui" .app must be build because that provides a .plist
@@ -1679,7 +1679,7 @@ def __buildSilentWrapper( qtIfwConfig ) :
             renameInDir( (srcSetupExeName, nestedExeName) )
             if IS_MACOS :               
                 self.__injectHidePropertyIntoApp( nestedExeName )
-                # a .app is a directory, so the "wrapper dir" must be peserved
+                # a .app is a directory, so the "wrapper dir" must be preserved
                 self.__nestedZipPath = toZipFile( nestedExeName, 
                                                   isWrapperDirIncluded=True ) 
             removeFromDir( wrapperPyName )
@@ -1708,7 +1708,7 @@ def __buildSilentWrapper( qtIfwConfig ) :
                 
         # On macOS enabling LSUIElement in the .plist will prevent 
         # showing the app icon in the dock when it is launched.  
-        # Unfornately, no analogous property seems to hide it from 
+        # Unfortunately, no analogous property seems to hide it from 
         # the screen! (or least not this app, on recent versions of the os...)
         def __injectHidePropertyIntoApp( self, appPath ):    
             util._system( ( "/usr/libexec/PlistBuddy -c " +
