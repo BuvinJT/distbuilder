@@ -84,10 +84,10 @@ invoke the makePyInstSpec function:
 ## Executable Obfuscation
 
 Code [obfuscation](https://en.wikipedia.org/wiki/Obfuscation_(software) 
-is the process of **rewriting** normal, human readbale code, into a form which
+is the process of **rewriting** normal, human readable code, into a form which
 is very difficult (well, *ideally* impossible) to read, yet still executes 
 in exactly the same manner when run through the target translator (or compiler).   
-The reason one would want to do this to is to protect properiatary work,
+The reason one would want to do this to is to protect proprietary work,
 while sharing source code.  
 
 [Opy for Distribution Builder](https://pypi.org/project/opy-distbuilder/)
@@ -95,8 +95,8 @@ is an obfuscation library for Python.  It can be used for protecting source
 that will be shared directly, or as an additional layer of protection behind 
 binaries built with PyInstaller.  
 
-Why would you need to obfuscate when compiling binaries?  Aren't they implictly protected?
-Well you don't litterally "compile" when using PyInstaller.  Your
+Why would you need to obfuscate when compiling binaries?  Aren't they implicitly protected?
+Well you don't literally "compile" when using PyInstaller.  Your
 code is still somewhat exposed.  If you go looking for it, you will not have to work overly 
 hard to find guides on the web about hacking PyInstaller binaries... For starters, 
 simply read this - straight from the horse's mouth: 
@@ -104,7 +104,7 @@ simply read this - straight from the horse's mouth:
 
 While Opy does not protect your code as well as real compilation does, it's better
 than nothing!  The obfuscation process is "lossy", so while the end result still
-functions as desired, Opy inheritantly destroys the clear text original names for 
+functions as desired, Opy inherently destroys the clear text original names for 
 functions, classes, objects, etc.  A hacker might still figure out some "secret"
 after putting in a good deal of effort, but no one can't just walk away with 
 your body of the work on the whole.    
@@ -365,8 +365,8 @@ When the QtIFW utlity is required for use by the library
 (i.e. when [buildInstaller](#buildInstaller) is invoked), 
 an attempt will be made to resolve the path to it via a collection 
 of methods.  First, if a [QtIfwConfig](#qtifwconfig) object is provided
-which specificies a path via the `qtIfwDirPath` attribute, that will be 
-employed.  Second, if there is an environmental varibale defined named
+which specifies a path via the `qtIfwDirPath` attribute, that will be 
+employed.  Second, if there is an environmental variable defined named
 `QT_IFW_DIR`, that path will be applied.  Next, a default directory 
 where the utility would typically be installed will be checked to see if
 that exists.  If none of these found, distbuilder will simply download 
@@ -374,42 +374,42 @@ the program an install it for you in that "default" location,
 using the [download](#download) function and this `installQtIfw` function. 
 
 If you wish to take control of such yourself, or simply download QtIFW
-directly for someother purpose, this function provides the means.   
+directly for some other purpose, this function provides the means.   
  
     installQtIfw( installerPath=None, version=None, targetPath=None )
 
-**Returns**: the absolute path to the directory where the utlility was 
+**Returns**: the absolute path to the directory where the utility was 
 successfully installed.
 
 **installerPath**: (Optional) The path to the QtIFW installer to be run. 
 This may either be a **local** path or a **url** to a location on the web.
-If ommited, the `version` argument will be used to dynamically resolve
+If omitted, the `version` argument will be used to dynamically resolve
 the url.
 
 **version**: (Optional) The version of QtIFW desired.  This should be provided
-as a string e.g. "3.1.1".  If `installerPath` is ommited, this argument 
-will be used to dynamically resolve the url.  If this argument is also ommited,
+as a string e.g. "3.1.1".  If `installerPath` is omitted, this argument 
+will be used to dynamically resolve the url.  If this argument is also omitted,
 a default version will be selected automatically.
 
-**targetPath**: (Optional) The target directory for installation.  If ommited,
+**targetPath**: (Optional) The target directory for installation.  If omitted,
 a default path will be used. 
     
 ### unInstallQtIfw        
 
 This is the counterpart to the `installQtIfw()` function.  It will uninstall
-an existing installation of the QtIFW utliity.
+an existing installation of the QtIFW utility.
 
 	unInstallQtIfw( qtIfwDirPath=None, version=None )
  
 **Returns**: a boolean to indicate success or failure.
 
 **qtIfwDirPath**: (Optional) The absolute path to the directory where the 
-utlility was installed. (i.e. the return value of `installQtIfw()`).  If ommited,
+utlility was installed. (i.e. the return value of `installQtIfw()`).  If omitted,
 the `version` argument will be looked to next.
 
 **version**:  (Optional) The version of QtIFW to uninstall. If `qtIfwDirPath` is 
-ommited, this argument will be used to dynamically resolve the default install path
-to the utility for the version specified.  If this argument is also ommited,
+omitted, this argument will be used to dynamically resolve the default install path
+to the utility for the version specified.  If this argument is also omitted,
 a default version will be assumed.
  
 ### buildInstaller
@@ -445,90 +445,138 @@ a GUI or provide any interactive prompts for the user.  All options are dictated
 command line arguments. While this may certainly be desirable on any platform, it is  
 *necessary* to create an installer for a target OS with no GUI (e.g. many Linux distros).
  
-See [Silent Installers](#silient-installers) for more information. 
+See [Silent Installers](#silent-installers) for more information. 
  
 ### Silent Installers
 
 "Silent installation" is the process of running a installer without any interactive prompts 
-for the user.  All options are dictated by command line arguments.  This allows for scripted
-installs of programs, which is useful for a great many purposes, e.g. programatic 
-integrations of external utilities, or running the same installation on a large number
-of workstations.  While such a feature may certainly be desirable on any platform, not 
-requiring a GUI interaction is, of course, outright *necessary* if one wishes to target 
-an OS with no GUI support (e.g. many Linux distros).
+for the user.  It simply runs without "talking" to you.  All options are dictated by 
+command line arguments.  This allows for scripted installs of programs, which is useful for 
+a great many purposes, e.g. programmatic integrations of external utilities, or running the 
+same installation on a large number of workstations.  While such a feature can be desirable 
+on any platform, not requiring a GUI interaction is, of course, an outright *necessary* if 
+one wishes to target an OS with no GUI support (e.g. many Linux distros).
 
-"Silent installation" (especially with no GUI) is not a option provided naturally by 
-the Qt Installer Framework. This feature has been made availble, however, via this 
+"Silent installation" (and/or no GUI) is not a option provided naturally by 
+the Qt Installer Framework. This feature has been made available, however, via this 
 library!  As such, it is now easily possible to build installers for environments that
-would not normally be able via this otherwise excellent mechanism.     
+would not normally be able via the otherwise excellent installation system Qt has given us.     
 
-Returns error code (another new option)...
+Note that in addition to those major feature additions, a distbuilder silent installer
+also returns an error code (1) upon failure.  A natural QtIFW installer does not, 
+returning a "success code" (0) even when the installation fails. 
 
-### Installer Arguments
+### Silent Installer Arguments
 
-Standard arguments
+One of the core features of [Silent Installers](#silient-installers) is that they can
+be driven by command line arguments.  The following switches have been provided for 
+this type of distbuilder installer. Note these differ from the 
+[Standard Installer Arguments](#standard-installer-arguments).
+             
+**-h / --help**: Display help for these arguments.
+             
+**-v / --verbose**: Enable verbose output. 
 
-    VERBOSE_CMD_SWITCH_ARG = "-v"    
-    TARGET_DIR_KEY         = "TargetDir"
-    PRODUCT_NAME_KEY       = "ProductName"
-    
-    ERR_LOG_PATH_CMD_ARG      = "errlog"
-    ERR_LOG_DEFAULT_PATH      = ( 
-        "%temp%\\\\installer.err" if IS_WINDOWS else
-        "/tmp/installer.err" ) # /tmp is supposedly guaranteed to exist, though it's not secure
+**-f / --force**: "Force" installation.  Uninstall an existing installation automatically,
+in the event that there is a conflict.  Without this, the installer would abort under such
+conditions by default (per the natural QtIFW design).
 
-    TARGET_DIR_CMD_ARG        = "target"
-    START_MENU_DIR_CMD_ARG    = "startmenu"    
-    
-    INSTALL_LIST_CMD_ARG      = "install"
-    INCLUDE_LIST_CMD_ARG      = "include"
-    EXCLUDE_LIST_CMD_ARG      = "exclude"
-
-	AUTO_PILOT_CMD_ARG        = "auto"
-    ACCEPT_EULA_CMD_ARG       = "accept"
-    RUN_PROGRAM_CMD_ARG       = "run"
-       
-    TARGET_EXISTS_OPT_CMD_ARG = "onexist"
-    TARGET_EXISTS_OPT_FAIL    = "fail"
-    TARGET_EXISTS_OPT_REMOVE  = "remove"
-    TARGET_EXISTS_OPT_PROMPT  = "prompt"
-    
-    MAINTAIN_MODE_CMD_ARG        = "mode"
-    MAINTAIN_MODE_OPT_ADD_REMOVE = "addremove"
-    MAINTAIN_MODE_OPT_UPDATE     = "update"    
-    MAINTAIN_MODE_OPT_REMOVE_ALL = "removeall"
-
-
-Silent Installers
-
-common componentsPrefix stripped...
-              
-    parser.add_argument( '-v', '--verbose', default=False,
-                         help='verbose mode', 
-                         action='store_true' )
-    parser.add_argument( '-f', '--force', default=False, 
-                         help='force installation (uninstall existing installation)', 
-                         action='store_true' )
-    parser.add_argument( '-t', '--target', default=None,
-                         help='target directory' )
+**-t / --target [path]**: The target directory for the installation.
                          
-    if IS_WINDOWS :                          
-        parser.add_argument( '-m', '--startmenu', default=None,  
-                             help='start menu directory' )
-                             
-    if len(components) > 0 :                             
-        parser.add_argument( '-c', '--components', nargs='*', default=[],
-                             help='component ids to install (space delimited list)' )
-        parser.add_argument( '-i', '--include', nargs='*', default=[],
-                             help='component ids to include (space delimited list)' )
-        parser.add_argument( '-e', '--exclude', nargs='*', default=[],
-                             help='component ids to exclude (space delimited list)' )  
-                                                        
+**-m / --startmenu [relative path]**: (Windows only) The target start menu directory for 
+shortcuts.
+
+**-c / --components [ids]**: The full set of components to include in the installation, 
+represented as a space delimited list of package ids.  Those ids NOT listed, will not be installed 
+(unless some custom logic added to the Control script forces them to be).  This list takes 
+priority over any `include` or `exclude` arguments.
+
+**-i / --include [ids]**: The components to *additionally* include in the installation, 
+represented as a space delimited list of package ids.  Default components do NOT need to be listed
+here, as they are already "included" implicitly. 
+
+**-e / --exclude [ids]**: The components to exclude from in the installation, 
+represented as a space delimited list of package ids.  Only default components need to be listed
+here, those not automatically included they are already "excluded" implicitly.
+
+The component selecting arguments are only made available when more than one
+package is defined for the installer.  If there is only a single package, there is not
+a needed to select/de-select it!  When these arguments can be used, the `--help` text
+will list the package ids and indicate if they are included by default.  As package ids
+are defined in the "Java package" format (e.g. "com.company.product"), and typically 
+installers will all have the same long form prefix for all such ids, that prefix will be
+truncated for the user's benefit.  So, rather than "com.company.product", the id will become
+simply "product".  If any of the packages do not have the same prefix as the rest, they
+will all be be listed in the long manner.
+
+### Standard Installer Arguments
+
+The standard (non silent) QtIFW installer can accept a collection of command line arguments
+out of the box.  To see the available options, simply pass the switch `-h` or `--help` 
+when executing the binary from a terminal.
+
+The distbuilder library, has added a series of additional options as well (assuming the
+built-in default Control Script additions are preserved).  Unfortunately,
+there does not appear to be a way to add these to the QtIFW help!  Note these differ from the 
+[Silent Installer Arguments](#silent-installer-arguments).
+**The following custom arguments must be passed in the format "Key=Value"**: 
+    
+**errlog=[path]**: The path where you would like (custom) error details written to for installation 
+debugging.  The default is `<temp dir>/installer.err`.
+
+**target=[path]**: The target directory for the installation.
+
+**startmenu=[relative path]**: (Windows only) The target start menu directory for 
+shortcuts.    
+
+**install=[ids]**: The full set of components to include in the installation, 
+represented as a space delimited list of package ids.  Those ids NOT listed, will not be installed 
+(unless some custom logic added to the Control script forces them to be).  This list takes 
+priority over any `include` or `exclude` arguments.
+
+**include=[ids]**: The components to *additionally* include in the installation, 
+represented as a space delimited list of package ids.  Default components do NOT need to be listed
+here, as they are already "included" implicitly. 
+
+**exclude=[ids]**: The components to exclude from in the installation, 
+represented as a space delimited list of package ids.  Only default components need to be listed
+here, those not automatically included they are already "excluded" implicitly.
+
+**accept=[true/false]**: Enable the checkbox for accepting the end user license agreement.
+
+**run=[true/false]**: Enable the checkbox for running the target program at the end of 
+the installation.
+       
+**onexist=[fail/remove/prompt]**: Define the action taken when an existing (conflicting)
+installation is present.  The default is to prompt, and allow for automatic removal if
+the user so chooses explicitly.   
+    
+**mode=[addremove/update/removeall]**: This option is provided for controlling how the 
+"Maintenance Tool" is to be run.   
+
+**auto=[true/false]**: Enable "Auto pilot" mode.  This is very much akin to a running the 
+installation like a [Silent Installer](#silent-installers), and is in fact at the heart
+of how that works. Unlike a silent installer, GUI suppression is involved, however,
+and some of the extended features are not available e.g. error return codes.                                                      
 
 ### Installer Scripting
 
+While both QtIWF, and the distbuilder additions to it, provide many build-in features
+for customizing installers, nothing can provide more open ended flexibility than writing
+your own scripts.
 
-QtIfwControlScript
+QtIFW scripts are written in [Qt Script](https://doc.qt.io/qt-5/qtscript-index.html) 
+(which is conceptually a spin off from JavaScript), with
+additional custom objects and methods for this context.  To truly understand it and
+learn about all of it's features in detail, you should refer to the official 
+[QtIFW Manual](https://doc.qt.io/qtinstallerframework/index.html).
+
+The classes [QtIfwControlScript](ConfigClasses.md#qtifwcontrolscript) and
+[QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript) provide abstraction layers 
+for QtIfw script generation. With these classes you can achieve a great many custom 
+behaviors, driven by scripts, without having to learn much about the language yourself. 
+
+Both of the distbuilder script classes provide the following **PYTHON** helpers:
 
 Static Constants :
 
@@ -576,20 +624,10 @@ Static Constants :
     NO     
     CANCEL 
 
-    NEXT_BUTTON 
-    BACK_BUTTON 
-    CANCEL_BUTTON
-    FINISH_BUTTON
-    
-    TARGET_DIR_EDITBOX       
-    START_MENU_DIR_EDITBOX   
-    ACCEPT_EULA_RADIO_BUTTON 
-    RUN_PROGRAM_CHECKBOX     
-
 Static Functions:      
                                                    
     log( msg, isAutoQuote=True )            
-    debugPopup( msg, isAutoQuote=True )
+	debugPopup( msg, isAutoQuote=True )
                       
     setValue( key, value, isAutoQuote=True )          
      
@@ -608,6 +646,9 @@ Static Functions:
                       
     ifInstalling( isMultiLine=False )
     ifMaintenanceTool( isMultiLine=False )
+
+    fileExists( path, isAutoQuote=True )
+    ifFileExists( path, isAutoQuote=True, isMultiLine=False )   
     
     yesNoPopup( msg, title="Question", resultVar="result" )             
     yesNoCancelPopup( msg, title="Question", resultVar="result" )                  
@@ -615,10 +656,25 @@ Static Functions:
                             onYes="", onNo="", onCancel="" )
     ifYesNoPopup( msg, title="Question", resultVar="result", 
                  isMultiLine=False )
+    
+    _autoQuote( value, isAutoQuote )
 
-    fileExists( path, isAutoQuote=True )
-    ifFileExists( path, isAutoQuote=True, isMultiLine=False )   
-                              
+In addition, QtIfwControlScript provides: 
+
+Static Constants :
+
+    NEXT_BUTTON 
+    BACK_BUTTON 
+    CANCEL_BUTTON
+    FINISH_BUTTON
+    
+    TARGET_DIR_EDITBOX       
+    START_MENU_DIR_EDITBOX   
+    ACCEPT_EULA_RADIO_BUTTON 
+    RUN_PROGRAM_CHECKBOX     
+
+Static Functions:      
+                   
     currentPageWidget()                
     assignPageWidgetVar( varName="page" )                
    
@@ -629,30 +685,30 @@ Static Functions:
     	(Note: checkbox controls also work on radio buttons)
 	enableCheckBox( checkboxName )                
     disableCheckBox( checkboxName )               
-    setCheckBox( checkboxName, boolean )
-                   
-    _autoQuote( value, isAutoQuote )
+    setCheckBox( checkboxName, boolean )                  
 
-
-Native QtIfw Script Functions
-
-TODO: Preamble.....
+If writing scripts directly for distbulder integration, you may also employ the 
+following add-on **QT SCRIPT** functions:
 
 	execute( binPath, args )
+	
 	sleep( seconds )
+	
 	clearErrorLog()
 	writeErrorLog( msg )
-	silentAbort( msg )
 	
-	toMaintenanceToolPath( dir )
-	maintenanceToolExists( dir )
+	silentAbort( msg )
+
+	targetExists()
 	defaultTargetExists()
 	cmdLineTargetExists()
-	targetExists()
+
 	removeTarget()
-	managePriorInstallation()
 	
-	WINDOWS ONLY: (uses registry):  
+	maintenanceToolExists( dir )
+	toMaintenanceToolPath( dir )
+	
+	WINDOWS ONLY: (resolves via registry lookups)  
 	maintenanceToolPaths()
 	isOsRegisteredProgram()
 
@@ -676,7 +732,7 @@ within the *pkgs* argument with the id supplied by *pkgId*.
 	
 Merges the [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
 objects within the *pkgs* argument with the ids supplied by 
-*srcId* and *destId*.  "Merging" entails a recurvise 
+*srcId* and *destId*.  "Merging" entails a recursive 
 directory merge of the source into the target via [mergeDirs](#mergeDirs)
 as well as combining the [QtIfwShortcut](ConfigClasses.md#qtifwshortcut)    
 list nested inside the [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript)
@@ -970,7 +1026,7 @@ Note: use printErr( e ) to print just an exception
 **url**: The url to the file that is to be downloaded.
 
 **saveToPath**: (Optional) The full local path where the file should be downloaded to.
-If ommitted (or set to `None`), this path will be automatically assigned to one 
+If omitted (or set to `None`), this path will be automatically assigned to one 
 within a temp directory.
 
 **preserveName**: (Optional) If `saveToPath` is `None`, this boolean dictates 

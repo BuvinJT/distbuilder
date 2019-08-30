@@ -2,13 +2,6 @@
 ![distbuilder logo](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png)
  
 ## High Priority
-
-* Provide backwards compatible PyInstaller builds for old OS versions
-  to address known complications e.g. GCC .so dynamic linkage:
-   
-   Refer to:
-    
-   https://pythonhosted.org/PyInstaller/usage.html#making-linux-apps-forward-compatible
    
 * Further develop the Qt IFW script generation features.
 	* Directory creation on target (e.g. user data directories)		
@@ -21,19 +14,29 @@
 	* are not enabled for install by default
 	* contain only "data" (no exe)
 
-## Moderate Priority
-
 * TEST (and develop as needed) QtIFW packages for Qt C++ exes, 
 to confirm auto dependency collection (include QML based projects).
+
+* Test and develop "update installer" features as needed.
+
+## Moderate Priority
+
+* Provide backwards compatible PyInstaller builds for old OS versions
+to address known complications e.g. GCC .so dynamic linkage:
+   
+   Refer to:
+    
+   https://pythonhosted.org/PyInstaller/usage.html#making-linux-apps-forward-compatible
+
+* Test, and confirm / fix uninstallation mechanism for silent installers,
+notably in non GUI environments. Can this be done via the Maintenance Tool
+and / or the original installer?
 
 * Further develop external library bundling (for Opy), making such 
 more automated and less work for the user (e.g. finding external library 
 sources locally and/or downloading them with pip...)
 			
 * Continue to improve and stabilize the Opy library and its beta features.
-
-* Continue to expand upon the documentation, especially with
-regard to the high level classes and the various configuration options.
 
 ## Low Priority
 
@@ -50,11 +53,13 @@ XML config classes.
 
 * Add additional examples.
 
+* Continue to expand upon the documentation.
+
 ## Wish List		
 
 * Automate builds for multiple environments / platforms
 
-   Pyinstaller referrence:
+   Pyinstaller reference:
    
    https://pythonhosted.org/PyInstaller/usage.html#supporting-multiple-python-environments
    

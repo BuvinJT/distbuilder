@@ -213,10 +213,10 @@ are intended for applying custom logic to manipulate a target environment when i
 a given package.  See [QtIfwPackageScript](#qtifwpackageScript) for more info. 
 
 The QtIfwControlScript class provides an abstraction layer for QtIfw script
-generation.  QtIfw scripts are written in "QScript", a spin off from JavaScript with
-additional custom objects and methods for this context. Using this abstracion,
-you can achieve a great many custom behaviors without having to learn much about 
-the language yourself. Refer to the details on 
+generation.  QtIfw scripts are written in [Qt Script](https://doc.qt.io/qt-5/qtscript-index.html) 
+(which is conceptually a spin off from JavaScript), with additional custom objects and 
+methods for this context. Using this abstracion, you can achieve a great many custom 
+behaviors without having to learn much about the language yourself. Refer to the details on 
 [Installer Scripting](LowLevel.md#installer-scripting) to learn more about 
 the low level helpers provided by the library for this purpose. 
 
