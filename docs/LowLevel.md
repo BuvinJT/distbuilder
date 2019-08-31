@@ -473,7 +473,7 @@ objects.
 
 ## Code Obfuscation
 
-Code [obfuscation](https://en.wikipedia.org/wiki/Obfuscation_(software) 
+Code [obfuscation](https://en.wikipedia.org/wiki/Obfuscation_(software)) 
 is the process of **rewriting** normal, human readable code, into a form which
 is very difficult (well, *ideally* impossible) to read, yet still executes 
 in exactly the same manner when run through the target translator (or compiler).   
@@ -505,7 +505,7 @@ can be reverse engineered back into the original (or nearly original) `.py` sour
 As a quick starting point to learn about this hacking process, you can check out 
 these Stack Overflow posts:
 
-- [How do you reverse engineer an EXE “compiled” with PyInstaller](https://reverseengineering.stackexchange.com/questions/160/how-do-you-reverse-engineer-an-exe-compiled-with-pyinstaller)
+- [How do you reverse engineer an EXE compiled with PyInstaller?](https://reverseengineering.stackexchange.com/questions/160/how-do-you-reverse-engineer-an-exe-compiled-with-pyinstaller)
 - [Is it possible to decompile a compiled .pyc file into a .py file?](https://stackoverflow.com/questions/5287253/is-it-possible-to-decompile-a-compiled-pyc-file-into-a-py-file)  
 
 If you don't trust posts from "random" third parties, simply read this - straight from 

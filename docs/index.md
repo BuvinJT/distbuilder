@@ -13,13 +13,13 @@ is for creating Python based programs. It can, however, be employed for bundling
 software.  
 
 Distribution Builder has been tested on recent versions of Windows, macOS, and multiple Linux distros. 
-It features the ability to to create standalone binaries from Python scripts (via PyInstaller), and is  
-it is capable of building installers in a cross platform manner (via QtIWF) 
+It features the ability to to create standalone binaries from Python scripts (via PyInstaller),
+and is capable of building installers in a cross platform manner (via QtIWF) 
 which work in either gui or *non-gui* contexts (which QtIWF does NOT naturally provide!).
 The library can also be used to obfuscate code (via Opy), so as to protect proprietary work.
 
 See the [Quick Start Guide](QuickStart.md) for instructions on installation 
-and getting started with the tool. For a more thorough explanation of how to it, 
+and getting started with the tool. For a more thorough explanation of how to use it, 
 it is recommended you next proceed to 
 [High Level Classes](HighLevel.md).  Then, as needed, move on to 
 [Low Level Classes And Functions](LowLevel.md) and 
