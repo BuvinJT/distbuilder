@@ -201,14 +201,14 @@ object when invoking the `pyInstallerConfig()` function for this class.
 
 #### setupName
 
-The file name given to a QtIWF installer when the config factory is used in a context to 
+The file name given to a QtIFW installer when the config factory is used in a context to 
 produce one. This attribute is specifically applied when generating a 
 [QtIfwConfig](ConfigClasses.md#qtifwconfig) object upon invoking the `qtIfwConfig()`
 function for this class.
 
 #### isSilentSetup
 
-When `isSilentSetup` is enabled, the QtIWF installer produced will not display a GUI or 
+When `isSilentSetup` is enabled, the QtIFW installer produced will not display a GUI or 
 provide any interactive prompts for the user.  All options are dictated by command line 
 arguments. While this may certainly be desirable on any platform, it is  
 *necessary* to create an installer for a target OS with no GUI (e.g. many Linux distros).
@@ -221,10 +221,10 @@ For more information refer to:
 
 #### ifwDefDirPath
 
-When producing a QtIWF installer this attribute may *optionally* be used to specify 
+When producing a QtIFW installer this attribute may *optionally* be used to specify 
 an external, hard coded definition for the installer.  This is useful when either 
-integrating the distbuilder library with an existing QtIWF installer, or when a 
-developer would perfer to use the traditional QtIWF approach (perhaps due to extensive 
+integrating the distbuilder library with an existing QtIFW installer, or when a 
+developer would perfer to use the traditional QtIFW approach (perhaps due to extensive 
 customizations).    
 
 Note: This hard coded definition may include target installation content, and it 
@@ -237,7 +237,7 @@ function for this class.
 
 #### ifwPackages
 
-When producing a QtIWF installer, this attribute maybe used to list of "Qt IFW Packages".
+When producing a QtIFW installer, this attribute maybe used to list of "Qt IFW Packages".
 Items in this list may be dynamic [QtIfwPackage](ConfigClasses.md#qtifwpackage) objects,
 or be simple strings defining relative paths to QtIFW packages which are defined
 as external resources, in the traditional (hard coded, content containing) IFW manner.
@@ -256,7 +256,7 @@ For more information refer to:
 
 #### ifwCntrlScript, ifwCntrlScriptText, ifwCntrlScriptPath, ifwCntrlScriptName
 
-QtIWF installers may have a "Control Script" and/or a collection of "Package Scripts".
+QtIFW installers may have a "Control Script" and/or a collection of "Package Scripts".
 The "Control Script" is intended to dictate how the installer *interface*  behaves, and
 other high level logic pertaining to the installer itself. In contrast, "Package Scripts"
 are intended for applying custom logic to manipulate a target environment when installing 
@@ -282,7 +282,7 @@ there is need or desire to override the default.
    
 #### ifwPkgScript, ifwPkgScriptText, ifwPkgScriptPath, ifwPkgScriptName
 
-QtIWF installers may have a "Control Script" and/or a collection of "Package Scripts".
+QtIFW installers may have a "Control Script" and/or a collection of "Package Scripts".
 The "Control Script" is intended to dictate how the installer *interface*  behaves, and
 other high level logic pertaining to the installer itself. In contrast, "Package Scripts"
 are intended for applying custom logic to manipulate a target environment when installing 

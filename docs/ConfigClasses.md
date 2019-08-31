@@ -59,7 +59,7 @@ Attributes & default values:
     distDirs        = [] 
 	isSpecFileRemoved = False
 
-## PyInstSpec:
+## PyInstSpec
 
 Objects of this type are used for PyInstaller spec file
 parsing, and programmatic manipulation.  This class provides
@@ -206,7 +206,7 @@ Functions:
        
 ## QtIfwControlScript
 
-QtIWF installers may have a "Control Script" and/or a collection of "Package Scripts".
+QtIFW installers may have a "Control Script" and/or a collection of "Package Scripts".
 The "Control Script" is intended to dictate how the installer *interface*  behaves, and
 other high level logic pertaining to the installer itself. In contrast, "Package Scripts"
 are intended for applying custom logic to manipulate a target environment when installing 
@@ -231,7 +231,7 @@ as a raw string, or a path to script you wish to load directly.  If specificied,
 those resources act as a *base*, from which you may continue to add on to.
 
 Along with being able to add your own custom functions to use as "helpers"
-a QtIWF Control script is driven by the framework which calls functions of
+a QtIFW Control script is driven by the framework which calls functions of
 specific names, if they exist, in order to apply custom coding during a given
 event.  A QtIfwControlScript object has a pair of attributes related to each such 
 event in the framework.  One is a boolean, dictating whether to auto generate this 
@@ -382,7 +382,7 @@ Functions:
     
 ## QtIfwPackageScript
 
-QtIWF installers may have a "Control Script" and/or a collection of "Package Scripts".
+QtIFW installers may have a "Control Script" and/or a collection of "Package Scripts".
 The "Control Script" is intended to dictate how the installer *interface*  behaves, and
 other high level logic pertaining to the installer itself. In contrast, "Package Scripts"
 are intended for applying custom logic to manipulate a target environment when installing 

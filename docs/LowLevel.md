@@ -294,7 +294,7 @@ will all be be listed in the long manner.
 
 ### Installer Scripting
 
-While both QtIWF, and the distbuilder additions to it, provide many build-in features
+While both QtIFW, and the distbuilder additions to it, provide many build-in features
 for customizing installers, nothing can provide more open ended flexibility than writing
 your own scripts.
 
