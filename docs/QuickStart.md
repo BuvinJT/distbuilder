@@ -3,7 +3,7 @@
 
 ## Installation 
 
-### Easy installation (via PIP)
+### Easy installation (via pip)
 
 Depending upon your computer's configuration, installation may be as simple 
 as executing the following on your terminal / command prompt:
@@ -23,7 +23,10 @@ To install from the raw source instead (useful if you want a
 "cutting edge" alpha release), you may perform a Git clone from 
 `https://github.com/BuvinJT/distbuilder.git`, 
 or otherwise download the repository in a "flat" manner 
-from the [GitHub](https://github.com/BuvinJT/distbuilder) page.
+from the [GitHub Page](https://github.com/BuvinJT/distbuilder).
+You may also visit the [PyPi downloads](https://pypi.org/project/distbuilder/#files) 
+page for this project to instantly acquire an official release in the form 
+of a tarball.
 
 With a local copy of the full source, on Windows you may be able
 to simply run `install.bat` (or `install3.bat`). 
@@ -60,16 +63,14 @@ process may be slightly different based on your platform or environmental detail
 (e.g. having multiple Python installations).  The scope of such matters is beyond what 
 can be addressed here.  Refer to these links as a starting point: 
 
-[Pip on Windows](https://stackoverflow.com/questions/4750806/how-do-i-install-pip-on-windows)
-
-[Pip on Mac](https://stackoverflow.com/questions/17271319/how-do-i-install-pip-on-macos-or-os-x)
-
-[Pip on Linux](https://stackoverflow.com/questions/6587507/how-to-install-pip-with-python-3)
+- [Pip on Windows](https://stackoverflow.com/questions/4750806/how-do-i-install-pip-on-windows)
+- [Pip on Mac](https://stackoverflow.com/questions/17271319/how-do-i-install-pip-on-macos-or-os-x)
+- [Pip on Linux](https://stackoverflow.com/questions/6587507/how-to-install-pip-with-python-3)
 
 ### Opy
 
-The distbuilder library requires a fork from the open source project 
-"Opy", dubbed "Opy for Distribution Builder". When installing 
+The distbuilder library requires a *fork* from the open source project 
+"Opy", dubbed "**Opy for Distribution Builder**". When installing 
 distbuilder, this dependency should be **automatically installed**
 for you. To acquire the source for that directly, and manually install
 it instead, you may use the links/urls below:  
@@ -83,7 +84,7 @@ Or, via the direct git clone url:
 BRANCH: opy_distbuilder
 	
 The most recent (development) commits, however, are 
-accessible at the development [Git Hub Page](https://github.com/BuvinJT/Opy)
+accessible from the development [GitHub Page](https://github.com/BuvinJT/Opy)
 or directly via git using:   
 
 `https://github.com/BuvinJT/Opy.git`		
@@ -91,7 +92,7 @@ or directly via git using:
 ### Qt Installer Framework (optional / recommended) 
 
 Additionally, the "Qt Installer Framework"
-is recommended.  This component is not a hard
+is a conditional dependency.  This component is not a hard
 requirement, but is *strongly recommended*, so 
 that you may employ the installer creating features
 offered by distbuilder.
@@ -104,20 +105,21 @@ cannot be found).
 If desired, you may also manually install it. 
 Installation and uninstallation can, in fact, be accomplished
 with functions provided by distbuilder. (Refer to 
-[Installers](LowLevel.md#installers) for details.)
+[installQtIfw](LowLevel.md#installqtifw) / [unInstallQtIfw](LowLevel.md#uninstallqtifw)
+for details.)
 
 Alternatively, QtIFW can be directly acquired from: 
-[QtIFW Downloads](http://download.qt.io/official_releases/qt-installer-framework)
+[QtIFW downloads](http://download.qt.io/official_releases/qt-installer-framework)
 
-Once manually installed, the best way to integrate it 
+If manually installed, the "best" way to integrate it 
 with distbuilder is to define an environmental
 variable named `QT_IFW_DIR` and the set value
 for that equal to the directory where you 
-installed the utility. See [QtIFW issues](Issues.md#qt-installer-framework-issues)  
-for help with that.  Note, it also possible to
+installed the utility. See [QtIFW issues](Issues.md#qt-installer-framework-issues) 
+if you require help with that.  Note, it also possible to
 supply the path within your implementation script. 
-Refer to [Installers](LowLevel.md#installers) 
-for more details on such. 
+Refer to [QtIfwConfig](ConfigClasses.md#qtifwconfig)
+or [buildInstaller](LowLevel.md#buildInstaller) for more details. 
       
 ## Implementation Overview
 
@@ -140,29 +142,26 @@ for instance, only needs two specific imports, and so it starts out
 
 ## Getting Started
 
-The easiest way learn how to use distbuilder is likely 
-to review an example.  The all of the examples discussed here are 
-included in the "source distribution" of the library.
-You may visit the [PyPi](https://pypi.org/project/distbuilder/#files) 
-downloads page for the project to acquire this in the form of a tarball.
-That's arguably the fastest route if you plan to step through each
-example.
+The easiest way for most people to learn how to use distbuilder is to view
+an example.  All of the examples discussed here are included in the
+"source distribution" of the library. The [PyPi downloads](https://pypi.org/project/distbuilder/#files) 
+page for this project is arguably the fastest route to acquire the examples.
+See [From source installation](#from-source-installation) for other means
+of achieving this.
 
 ## Hello World Example
 
 The Hello World Example is a demonstration of using the 
-[PyToBinPackageProcess](HighLevel.md#py-to-bin-package-process) class. 
-This is one of most straightforward, and typical use cases for the library.  
+[PyToBinPackageProcess](HighLevel.md#pytobinpackageprocess) class. 
+This is one of the most straightforward, and typical use cases for the library.  
 
 If you did not download the full source for the library (inclusive of the examples) 
-you may download/copy the following files directly from GitHub into a local directory. 
+you may download/copy the following individual files directly from GitHub into a local directory. 
 It is recommended that you place them in a directory named `hello_world`.   
 
-Example program: [hello.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/hello.py)
-
-Build script: [build.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/build.py)
-
-Example resource: [LICENSE](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/LICENSE)
+- Example program: [hello.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/hello.py)
+- Build script: [build.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/build.py)
+- Example resource: [LICENSE](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/LICENSE)
 
 Start by confirming you can run the program script in the "natural" manner:
 
@@ -188,23 +187,19 @@ Having witnessed that function, review the [build.py](https://raw.githubusercont
 
 This next example is a more comprehensive version of the first Hello World.
 It is a demonstration of using the 
-[PyToBinInstallerProcess](HighLevel.md#py-to-bin-installer-process) class.
+[PyToBinInstallerProcess](HighLevel.md#pytobininstallerprocess) class.
 
 *Note: This example requires the standard Python [TKinter](https://tkdocs.com/tutorial/install.html) 
 library	be installed.*
 
-You may download/copy the following example files directly from GitHub into a local directory.  
+You may download/copy the following individual files directly from GitHub into a local directory.  
 It is recommended that you place them in a directory named `hello_world_tk`.   
 
-Example app: [hello.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/hello.py)
-
-Build script: [build.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/build.py)
-
-Windows resource: [demo.ico](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.ico)
-
-Mac resource: [demo.icns](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.icns)
-
-Linux resource: [demo.png](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.png)
+- Example app: [hello.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/hello.py)
+- Build script: [build.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/build.py)
+- Windows resource: [demo.ico](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.ico)
+- Mac resource: [demo.icns](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.icns)
+- Linux resource: [demo.png](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.png)
 
 Start by confirming you can run the program script in the "natural" manner:
 
@@ -235,7 +230,11 @@ script. The script is a simple example, but covers a good portion of the
 
 ### Extended feature demo: "debug mode"
 
-Now, locate the following commented out line in the Hello World Tk build script:
+Here is a good place to illustrate one very useful extended feature of this library,
+which may prove immeaditely valuable to you.  This is will also help you to understand
+a common pattern for using some of the primary distbuilder classes. 
+
+Locate the following commented out line in the Hello World Tk build script:
 
     #def onPyPackageProcess( self, prc ): prc.isTestingExe = True
 
@@ -252,7 +251,8 @@ and then "pass it through" an overridable function where you may
 access such and revise it for your own needs prior to its use.  
 
 So, what's the point of setting `prc.isTestingExe = True` ?
-The most astute observer may notice (on Windows or Mac, but not Linux...) 
+If you have run this example program, the most astute observer may notice 
+(on Windows or Mac, but not Linux...) 
 that the stdout/err messages (seen by clicking the "Hello Tkinter" 
 button when running the raw .py script) are not produced on the terminal
 by the *standalone version* of the program when it is launched in the 
@@ -268,7 +268,7 @@ demonstrated here. Refer to [Testing](LowLevel.md#testing) for more details.
 ## Hello Silent Example
 
 It is another demonstration of using the 
-[PyToBinInstallerProcess](HighLevel.md#py-to-bin-installer-process) class.
+[PyToBinInstallerProcess](HighLevel.md#pytobininstallerprocess) class.
 
 Hello Silent demonstrates how one can use distbuilder to build "silent" installers. 
 These do not require user interactions for them to complete their tasks.  Instead, 
@@ -288,7 +288,7 @@ using an interactive graphical interface, AND could also be used on a CentOS ser
 (for example), with nothing but a terminal interface available. 
 You would only have to toggle the `isSilentSetup` option before running the build script!
 
-This example expects that you have already downloaded and ran the first example 
+This example expects that you already downloaded the first example 
 (Hello World). That must be present in the testing environment within a directory 
 adjacent to where you place the next file.  That first directory must be 
 named `hello_world` for this "master" script (which draws upon that) to function.
@@ -301,17 +301,17 @@ Build script: [build.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/m
 Upon building the silent installer, the demo is set to test "Auto Installation" of it. 
 With that enabled, it will run the installer with the command line argument to 
 "force installation". If run more than once, that option will cause it to uninstall 
-any prior existing installation rather than exiting with an error, as it would do  
+any prior existing installation rather than exiting with an error, as it would do
 by default when a conflict was detected.
 
-Refer to [Installers](LowLevel.md#installers) for more details on silent installers.
+For more information, refer to [Silent Installers](LowLevel.md#silent-installers).
 
 ## Hello Packages Example
 
 The Hello Packages Example is a demonstration of using the 
-[RobustInstallerProcess](HighLevel.md#robust-installer-process) class.
+[RobustInstallerProcess](HighLevel.md#robustinstallerprocess) class.
 It demonstrates a way that you can generate and then "combine" multiple 
-"packages" into a single installer with a single build process.  
+"packages" into a single installer with a single build process.
 In this case, those become separate components which may be 
 installed *selectively* by the end user. 
 
@@ -333,7 +333,7 @@ This is another demonstration of using the
 
 Similar to the Hello Packages Example, Hello Merge demonstrates 
 how you can "merge" multiple "packages" into a *single package* within
-an installer.  The content of the two programs, which worked independently,  
+an installer.  The content of the two programs, which worked independently,
 become one component which may *NOT* be installed selectively by the user. 
 
 This example requires that both of the first examples 

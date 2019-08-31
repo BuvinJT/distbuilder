@@ -81,273 +81,6 @@ invoke the makePyInstSpec function:
 	creation.  Be sure to include this if you desire obfuscation
 	and will be subsequently invoking the buildExecutable function.
       	                    
-## Executable Obfuscation
-
-Code [obfuscation](https://en.wikipedia.org/wiki/Obfuscation_(software) 
-is the process of **rewriting** normal, human readable code, into a form which
-is very difficult (well, *ideally* impossible) to read, yet still executes 
-in exactly the same manner when run through the target translator (or compiler).   
-The reason one would want to do this to is to protect proprietary work,
-while sharing source code.  
-
-[Opy for Distribution Builder](https://pypi.org/project/opy-distbuilder/)
-is an obfuscation library for Python.  It can be used for protecting source 
-that will be shared directly, or as an additional layer of protection behind 
-binaries built with PyInstaller.  
-
-Why would you need to obfuscate when compiling binaries?  Aren't they implicitly protected?
-Well you don't literally "compile" when using PyInstaller.  Your
-code is still somewhat exposed.  If you go looking for it, you will not have to work overly 
-hard to find guides on the web about hacking PyInstaller binaries... For starters, 
-simply read this - straight from the horse's mouth: 
-[PyInstaller Docs: Hiding The Source Code](https://pyinstaller.readthedocs.io/en/stable/operating-mode.html#hiding-the-source-code)
-
-While Opy does not protect your code as well as real compilation does, it's better
-than nothing!  The obfuscation process is "lossy", so while the end result still
-functions as desired, Opy inherently destroys the clear text original names for 
-functions, classes, objects, etc.  A hacker might still figure out some "secret"
-after putting in a good deal of effort, but no one can't just walk away with 
-your body of the work on the whole.    
-
-### obfuscatePy
- 
-To generate an obfuscated version of your project (without 
-converting it to binary) invoke obfuscatePy:
-
-    obfuscatePy( opyConfig )
-
-**Returns (obDir, obPath)**: a tuple containing:
-    the absolute path to the obfuscated package,
-    the absolute path to the obfuscated entry point script
-    (within the package). 
-    
-**opyConfig**: An [OpyConfig](#opyconfig) object, which dictates the 
-    code obfuscation details using the Opy Library. 
-    
-Upon invoking this, you will be left with an "obfuscated"
-directory adjacent to your build script.  This is a useful 
-preliminary step to take, prior to running buildExecutable, 
-so that you may inspect and test the obfuscation results 
-before building the final distribution package.
-               
-## Library Obfuscation  
-
-### obfuscatePyLib
-
-To generate an obfuscated version of your project, which 
-you can then distribute as an importable library, invoke 
-obfuscatePyLib:
- 
-    obfuscatePyLib( opyConfig, 
-                    isExposingPackageImports=True, 
-                    isExposingPublic=True )
-
-**Returns (obDir, setupPath)**: a tuple containing:
-    the absolute path to the obfuscated directory,
-    the absolute path to the (non obfuscated) setup.py 
-    script within the prepared package  
-
-**opyConfig**: An [OpyConfig](#opyconfig) object, to 
-	dictate code obfuscation details using the Opy Library. 
-    
-**isExposingPackageImports**: Option to NOT obfuscate 
-    any of the imports defined in the package 
-    entry point modules (i.e. __init__.py files).
-    This is the default mode for a library.  
-    
-**isExposingPublic**: Option to NOT obfuscate anything 
-    which it is naturally granting public access 
-    (e.g. module constants, functions, classes, 
-    and class members).  All locals and those 
-    identifiers prefixed with a double underscore
-    (denoting private) will be still be obfuscated.     
-    This is the default mode for a library.
-
-## Library Installation  
- 
-### installLibrary
- 
-To install a library (via pip), invoke installLibrary.
-Note: that installLibraries (plural) may used to install
-multiple libraries in a single call.  
-    
-    installLibrary( name, opyConfig=None, pipConfig=PipConfig() )
-    
-**Returns: None**
-
-**name**: The name/source of the library.  If the
-    library is your *current project itself* and you 
-    are obfuscating it, be sure to supply the name you 
-    are giving it.  If you are NOT obfuscating it, 
-    specify "." instead.  If you wish to install a
-    remote package registered with pip (i.e. the typical way pip 
-    is used), simply supply the name.
-    If you wish to use a local path, or a specific url (http/git), 
-    see [PipConfig](#pipconfig) (and perhaps the pip documentation 
-    for details).               
-    
-**opyConfig**: An (optional) [OpyConfig](#opyconfig) object, 
-    to dictate code obfuscation details using 
-    the Opy Library. If omitted, no obfuscation 
-    will be performed. If you are building
-    an obfuscated version of your project 
-    as a importable library, this function is useful 
-    for testing the operations of your library 
-    post-obfuscation/pre-distribution. This will  
-    run [obfuscatePyLib](#library-obfuscation) with default arguments, 
-    install the library, and remove the temporary 
-    obfuscation from the working directory.                             
-    
-**pipConfig**: An (optional) [PipConfig](#pipconfig) object, to dictate
-    extended installation details.  If omitted,
-    the library is simply installed in the standard
-    manner to your (global) Python site packages.
-    Notable attributes include "incDpndncsSwitch",
-    "destPath" and "asSource".  These allow you to 
-    skip dependency gathering if desired, install to 
-    a specific path such as a temp build directory,
-    and to request raw .py scripts be placed there.
-    Note that remote raw pip packages will require an 
-    alternate "vcs url" be supplied to a "development" 
-    repository in place of the simple package name.  
-    See [editable installs](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs)  
-
-### installLibraries
-
-	installLibraries( *libs )
-
-This function is a convenience wrapper over installLibrary (singular) function.
-One of the primary uses for this function is to ensure that the product to be
-created by a build script is being run in an environment which has all of its
-dependencies. 
-	    
-**Returns: None**
-
-***libs**: This function is extremely flexible in terms of how 
-   it may be invoked. The libs argument maybe a tuple, a list,
-   or a series of arguments passed directly to the function 
-   of arbitrary length.  The arguments or collection may consist of 
-   simple strings (i.e. the library names), or be tuples / dictionaries
-   themselves.  When passing tuples, or dictionaries, they will be
-   treated as the argument list to installLibrary().
-   
-Simple example:
- 	
-	installLibraries( 'six', 'abc' )
-
-Simple example with a version detail:
-
-	installLibraries( 'six', 'abc', 'setuptools==40.6.3' )
-
-Complex example:
- 	
- 	opyCfg = OpyConfig()
- 	... 	
- 	pipCfg = PipConfig()
- 	... 	
- 	myLib = {'name':'MyLib', 'opyConfig':opyCfg, 'pipConfig':pipCfg } 	
- 	installLibraries( 'six', myLib )
-            
-### uninstallLibrary
-	
-	uninstallLibrary( name )
-
-**Returns: None**
-
-Simply uninstalls a library from Python site packages
-in the basic/traditional pip manner.    
-
-    vcsUrl( name, baseUrl, vcs="git", subDir=None )  
-
-Convenience function to build vcsUrls from their
-component parts. This is to be used in conjunction
-with the PipConfig attribute asSource.
-See https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support
-
-## Obfuscation Features 
-
-The Opy Library contains an [OpyConfig](#opyconfig) class, which has been extended
-by the distbuilder library (and aliased with the same name).  The revised /
-extended class contains attributes for patching the obfuscation and
-for bundling the source of external libraries (so that they too maybe 
-obfuscated). This new configuration type has the notable additions:
- 
-    patches
-    bundleLibs 
-    sourceDir
-
-### OpyPatch
-
-Opy is not perfect.  It has known bugs, and can require a bit of 
-effort in order to define a "perfect" configuration for it. In the 
-event you are struggling to make it work exactly as desired, an
-"easy out" has been provided by way of "patching" the results. If 
-you have already determined exactly which files/lines/bugs
-you are encountering, you may simply define a list of "OpyPatch"
-objects for the configuration.  They will be applied at the **end** 
-of the process (i.e. to the **obfuscated** code) to fix any problems. 
-An [OpyPatch](#opypatch) is created via:
-
-    OpyPatch( relPath, patches, parentDir=OBFUS_DIR_PATH )
-    
-relPath: The relative file path within the obfuscation 
-results that you wish to change.  
-
-patches: A list of tuples. 2 element tuples in the form 
-(line number, line) will be utilized for complete line 
-replacements. Alternatively, 3 element tuples in the form 
-(line number, old, new) will perform a find/replace operation
-on that line (to just swap out an identifier typically).  
-
-parentDir: An (optional) path to use a directory other 
-than the standard obfuscation results path. 
-
-### LibToBundle
-
-Library Bundling:
-         
-The sourceDir defaults to THIS_DIR.  If bundleLibs is defined, it is 
-used in combination with sourceDir to create a "staging directory".
-The bundleLibs attributes may be either None or a list of     
-"LibToBundle" objects. [LibToBundle](#libtobundle) objects maybe created via: 
-
-    LibToBundle( name, localDirPath=None, pipConfig=None, 
-                 isObfuscated=False )
-
-That class has attributes named likewise, which may be set after 
-creating such an object as well.    
-
-**name**: The name of the library, i.e. the name to be given to the 
-    bundled package.  
-    
-**localDirPath**: If this library may be simply copied from a local 
-    source, this is the path to that source.  Otherwise, leave 
-    this as None.  
-    
-**pipConfig**: A [PipConfig](#pipconfig) object defining how to download and 
-    install the library.  The destination will be automatically 
-    set to the "staging    directory" for the obfuscation process.   
-    
-**isObfuscated**: A boolean indicating if the library is *already* 
-    obfuscated, and therefore may be bundled as is.  
-
-### createStageDir
-
-In the event that defining bundleLibs for an OpyConfig object will 
-not suffice to setup your staging directory, you may instead call:      
-
-    createStageDir( bundleLibs=[], sourceDir=THIS_DIR )
-
-Returns: the path to the newly created staging directory.
-
-After doing this, you may perform any extended operations that you 
-require, and then set an OpyConfig object's sourceDir to that 
-staging path while leaving bundleLibs as None in the configuration.
-
-Note that the OpyConfig external_modules list attribute must still 
-be set in such a manner to account for the libraries which were 
-bundled, or which remain as "external" imports.
-                      
 ## Installers 
             
 Upon creating a distribution (especially a stand-alone executable), 
@@ -418,7 +151,7 @@ a default version will be assumed.
 
 **Returns**: the absolute path to the setup executable created.  
 
-**qtIfwConfig**: A (required) [QtIfwConfig](#qtifwconfig) object which dictates 
+**qtIfwConfig**: A (required) [QtIfwConfig](ConfigClasses.md#qtifwconfig) object which dictates 
      the details for building an installer.      
      The distbuilder library allows you either define a
      QtIFW installer in the full/natural manner, and then
@@ -446,6 +179,56 @@ command line arguments. While this may certainly be desirable on any platform, i
 *necessary* to create an installer for a target OS with no GUI (e.g. many Linux distros).
  
 See [Silent Installers](#silent-installers) for more information. 
+
+### Standard Installer Arguments
+
+The standard (non silent) QtIFW installer can accept a collection of command line arguments
+out of the box.  To see the available options, simply pass the switch `-h` or `--help` 
+when executing the binary from a terminal.
+
+The distbuilder library, has added a series of additional options as well (assuming the
+built-in default Control Script additions are preserved).  Unfortunately,
+there does not appear to be a way to add these to the QtIFW help!  Note these differ from the 
+[Silent Installer Arguments](#silent-installer-arguments).
+**The following custom arguments must be passed in the format "Key=Value"**: 
+    
+**errlog=[path]**: The path where you would like (custom) error details written to for installation 
+debugging.  The default is `<temp dir>/installer.err`.
+
+**target=[path]**: The target directory for the installation.
+
+**startmenu=[relative path]**: (Windows only) The target start menu directory for 
+shortcuts.    
+
+**install=[ids]**: The full set of components to include in the installation, 
+represented as a space delimited list of package ids.  Those ids NOT listed, will not be installed 
+(unless some custom logic added to the Control script forces them to be).  This list takes 
+priority over any `include` or `exclude` arguments.
+
+**include=[ids]**: The components to *additionally* include in the installation, 
+represented as a space delimited list of package ids.  Default components do NOT need to be listed
+here, as they are already "included" implicitly. 
+
+**exclude=[ids]**: The components to exclude from in the installation, 
+represented as a space delimited list of package ids.  Only default components need to be listed
+here, those not automatically included they are already "excluded" implicitly.
+
+**accept=[true/false]**: Enable the checkbox for accepting the end user license agreement.
+
+**run=[true/false]**: Enable the checkbox for running the target program at the end of 
+the installation.
+       
+**onexist=[fail/remove/prompt]**: Define the action taken when an existing (conflicting)
+installation is present.  The default is to prompt, and allow for automatic removal if
+the user so chooses explicitly.   
+    
+**mode=[addremove/update/removeall]**: This option is provided for controlling how the 
+"Maintenance Tool" is to be run.   
+
+**auto=[true/false]**: Enable "Auto pilot" mode.  This is very much akin to a running the 
+installation like a [Silent Installer](#silent-installers), and is in fact at the heart
+of how that works. Unlike a silent installer, GUI suppression is involved, however,
+and some of the extended features are not available e.g. error return codes.                                                      
  
 ### Silent Installers
 
@@ -508,56 +291,6 @@ installers will all have the same long form prefix for all such ids, that prefix
 truncated for the user's benefit.  So, rather than "com.company.product", the id will become
 simply "product".  If any of the packages do not have the same prefix as the rest, they
 will all be be listed in the long manner.
-
-### Standard Installer Arguments
-
-The standard (non silent) QtIFW installer can accept a collection of command line arguments
-out of the box.  To see the available options, simply pass the switch `-h` or `--help` 
-when executing the binary from a terminal.
-
-The distbuilder library, has added a series of additional options as well (assuming the
-built-in default Control Script additions are preserved).  Unfortunately,
-there does not appear to be a way to add these to the QtIFW help!  Note these differ from the 
-[Silent Installer Arguments](#silent-installer-arguments).
-**The following custom arguments must be passed in the format "Key=Value"**: 
-    
-**errlog=[path]**: The path where you would like (custom) error details written to for installation 
-debugging.  The default is `<temp dir>/installer.err`.
-
-**target=[path]**: The target directory for the installation.
-
-**startmenu=[relative path]**: (Windows only) The target start menu directory for 
-shortcuts.    
-
-**install=[ids]**: The full set of components to include in the installation, 
-represented as a space delimited list of package ids.  Those ids NOT listed, will not be installed 
-(unless some custom logic added to the Control script forces them to be).  This list takes 
-priority over any `include` or `exclude` arguments.
-
-**include=[ids]**: The components to *additionally* include in the installation, 
-represented as a space delimited list of package ids.  Default components do NOT need to be listed
-here, as they are already "included" implicitly. 
-
-**exclude=[ids]**: The components to exclude from in the installation, 
-represented as a space delimited list of package ids.  Only default components need to be listed
-here, those not automatically included they are already "excluded" implicitly.
-
-**accept=[true/false]**: Enable the checkbox for accepting the end user license agreement.
-
-**run=[true/false]**: Enable the checkbox for running the target program at the end of 
-the installation.
-       
-**onexist=[fail/remove/prompt]**: Define the action taken when an existing (conflicting)
-installation is present.  The default is to prompt, and allow for automatic removal if
-the user so chooses explicitly.   
-    
-**mode=[addremove/update/removeall]**: This option is provided for controlling how the 
-"Maintenance Tool" is to be run.   
-
-**auto=[true/false]**: Enable "Auto pilot" mode.  This is very much akin to a running the 
-installation like a [Silent Installer](#silent-installers), and is in fact at the heart
-of how that works. Unlike a silent installer, GUI suppression is involved, however,
-and some of the extended features are not available e.g. error return codes.                                                      
 
 ### Installer Scripting
 
@@ -737,6 +470,297 @@ directory merge of the source into the target via [mergeDirs](#mergeDirs)
 as well as combining the [QtIfwShortcut](ConfigClasses.md#qtifwshortcut)    
 list nested inside the [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript)
 objects.	
+
+## Code Obfuscation
+
+Code [obfuscation](https://en.wikipedia.org/wiki/Obfuscation_(software) 
+is the process of **rewriting** normal, human readable code, into a form which
+is very difficult (well, *ideally* impossible) to read, yet still executes 
+in exactly the same manner when run through the target translator (or compiler).   
+The reason one would want to do this to is to protect proprietary work and/or
+to eliminate security holes (based upon context) while sharing source code.  
+
+[Opy for Distribution Builder](https://pypi.org/project/opy-distbuilder/)
+is an obfuscation library for Python.  It can be used for protecting source 
+that will be shared directly, or as an additional layer of protection behind 
+binaries built with PyInstaller.  
+
+While Opy does not protect your code as well as real compilation does, it's far better
+than nothing!  The obfuscation process is "lossy", so while the end result still
+functions as desired, Opy inherently destroys the clear text original names for 
+functions, classes, objects, etc.  A hacker might still figure out some "secret"
+after putting in a good deal of effort, but no one can't just walk away with 
+your body of the work on the whole, or instantly spot your security secrets.    
+
+### Executable Obfuscation
+
+Why would you need to obfuscate when building executable binaries?  Aren't they implicitly 
+protected by virtue to being compiled?
+
+Well, the thing is you don't literally "compile" when using PyInstaller (or Py2Exe, etc.)!  
+The mechanism for creating standalone Python executables works by creating `.pyc` files
+and bundling them with a Python interpreter into a neat package.  Unfortunately `.pyc`
+can be reverse engineered back into the original (or nearly original) `.py` source.  
+
+As a quick starting point to learn about this hacking process, you can check out 
+these Stack Overflow posts:
+
+- [How do you reverse engineer an EXE “compiled” with PyInstaller](https://reverseengineering.stackexchange.com/questions/160/how-do-you-reverse-engineer-an-exe-compiled-with-pyinstaller)
+- [Is it possible to decompile a compiled .pyc file into a .py file?](https://stackoverflow.com/questions/5287253/is-it-possible-to-decompile-a-compiled-pyc-file-into-a-py-file)  
+
+If you don't trust posts from "random" third parties, simply read this - straight from 
+the horse's mouth: 
+[PyInstaller Docs: Hiding The Source Code](https://pyinstaller.readthedocs.io/en/stable/operating-mode.html#hiding-the-source-code)
+
+One "solution" to this problem is to bundle `.pye` files instead of `.pyc`.  PyInstaller
+provides built-in support for this, in fact.  The alternate `.pye` is an *encrypted* 
+equilavent to a `.pyc`.  If your end user is in possession of the decryption key, they can run
+the code, because it will be unlocked for them to begin the process of running it.  
+Unfortunately, that still ultimately exposes the code!  It merely restricts access.  
+If your goal is to distribute a program, for which you want to prevent access 
+to the source, then you couldn't distribute the key!  So, this security measure is only
+really pertinent when it is possible for someone to access the program independently from
+the key, and the target user being given the key can be trusted with the raw source.
+That's a fairly atypical use case...      
+
+#### obfuscatePy
+ 
+To generate an obfuscated version of your project (without 
+converting it to binary) invoke obfuscatePy:
+
+    obfuscatePy( opyConfig )
+
+**Returns (obDir, obPath)**: a tuple containing:
+    the absolute path to the obfuscated package,
+    the absolute path to the obfuscated entry point script
+    (within the package). 
+    
+**opyConfig**: An [OpyConfig](#opyconfig) object, which dictates the 
+    code obfuscation details using the Opy Library. 
+    
+Upon invoking this, you will be left with an "obfuscated"
+directory adjacent to your build script.  This is a useful 
+preliminary step to take, prior to running buildExecutable, 
+so that you may inspect and test the obfuscation results 
+before building the final distribution package.
+               
+### Library Obfuscation  
+
+#### obfuscatePyLib
+
+To generate an obfuscated version of your project, which 
+you can then distribute as an importable library, invoke 
+obfuscatePyLib:
+ 
+    obfuscatePyLib( opyConfig, 
+                    isExposingPackageImports=True, 
+                    isExposingPublic=True )
+
+**Returns (obDir, setupPath)**: a tuple containing:
+    the absolute path to the obfuscated directory,
+    the absolute path to the (non obfuscated) setup.py 
+    script within the prepared package  
+
+**opyConfig**: An [OpyConfig](#opyconfig) object, to 
+	dictate code obfuscation details using the Opy Library. 
+    
+**isExposingPackageImports**: Option to NOT obfuscate 
+    any of the imports defined in the package 
+    entry point modules (i.e. __init__.py files).
+    This is the default mode for a library.  
+    
+**isExposingPublic**: Option to NOT obfuscate anything 
+    which it is naturally granting public access 
+    (e.g. module constants, functions, classes, 
+    and class members).  All locals and those 
+    identifiers prefixed with a double underscore
+    (denoting private) will be still be obfuscated.     
+    This is the default mode for a library.
+
+### Obfuscation Features 
+
+The Opy Library contains an [OpyConfig](#opyconfig) class, which has been extended
+by the distbuilder library (and aliased with the same name).  The revised /
+extended class contains attributes for patching the obfuscation and
+for bundling the source of external libraries (so that they too maybe 
+obfuscated). This new configuration type has the notable additions:
+ 
+    patches
+    bundleLibs 
+    sourceDir
+
+#### OpyPatch
+
+Opy is not perfect.  It has known bugs, and can require a bit of 
+effort in order to define a "perfect" configuration for it. In the 
+event you are struggling to make it work exactly as desired, an
+"easy out" has been provided by way of "patching" the results. If 
+you have already determined exactly which files/lines/bugs
+you are encountering, you may simply define a list of "OpyPatch"
+objects for the configuration.  They will be applied at the **end** 
+of the process (i.e. to the **obfuscated** code) to fix any problems. 
+An [OpyPatch](#opypatch) is created via:
+
+    OpyPatch( relPath, patches, parentDir=OBFUS_DIR_PATH )
+    
+relPath: The relative file path within the obfuscation 
+results that you wish to change.  
+
+patches: A list of tuples. 2 element tuples in the form 
+(line number, line) will be utilized for complete line 
+replacements. Alternatively, 3 element tuples in the form 
+(line number, old, new) will perform a find/replace operation
+on that line (to just swap out an identifier typically).  
+
+parentDir: An (optional) path to use a directory other 
+than the standard obfuscation results path. 
+
+#### LibToBundle
+
+Library Bundling:
+         
+The sourceDir defaults to THIS_DIR.  If bundleLibs is defined, it is 
+used in combination with sourceDir to create a "staging directory".
+The bundleLibs attributes may be either None or a list of     
+"LibToBundle" objects. [LibToBundle](#libtobundle) objects maybe created via: 
+
+    LibToBundle( name, localDirPath=None, pipConfig=None, 
+                 isObfuscated=False )
+
+That class has attributes named likewise, which may be set after 
+creating such an object as well.    
+
+**name**: The name of the library, i.e. the name to be given to the 
+    bundled package.  
+    
+**localDirPath**: If this library may be simply copied from a local 
+    source, this is the path to that source.  Otherwise, leave 
+    this as None.  
+    
+**pipConfig**: A [PipConfig](#pipconfig) object defining how to download and 
+    install the library.  The destination will be automatically 
+    set to the "staging    directory" for the obfuscation process.   
+    
+**isObfuscated**: A boolean indicating if the library is *already* 
+    obfuscated, and therefore may be bundled as is.  
+
+#### createStageDir
+
+In the event that defining bundleLibs for an OpyConfig object will 
+not suffice to setup your staging directory, you may instead call:      
+
+    createStageDir( bundleLibs=[], sourceDir=THIS_DIR )
+
+Returns: the path to the newly created staging directory.
+
+After doing this, you may perform any extended operations that you 
+require, and then set an OpyConfig object's sourceDir to that 
+staging path while leaving bundleLibs as None in the configuration.
+
+Note that the OpyConfig external_modules list attribute must still 
+be set in such a manner to account for the libraries which were 
+bundled, or which remain as "external" imports.
+      
+## Library Installation  
+ 
+### installLibrary
+ 
+To install a library (via pip), invoke installLibrary.
+Note: that installLibraries (plural) may used to install
+multiple libraries in a single call.  
+    
+    installLibrary( name, opyConfig=None, pipConfig=PipConfig() )
+    
+**Returns: None**
+
+**name**: The name/source of the library.  If the
+    library is your *current project itself* and you 
+    are obfuscating it, be sure to supply the name you 
+    are giving it.  If you are NOT obfuscating it, 
+    specify "." instead.  If you wish to install a
+    remote package registered with pip (i.e. the typical way pip 
+    is used), simply supply the name.
+    If you wish to use a local path, or a specific url (http/git), 
+    see [PipConfig](#pipconfig) (and perhaps the pip documentation 
+    for details).               
+    
+**opyConfig**: An (optional) [OpyConfig](#opyconfig) object, 
+    to dictate code obfuscation details using 
+    the Opy Library. If omitted, no obfuscation 
+    will be performed. If you are building
+    an obfuscated version of your project 
+    as a importable library, this function is useful 
+    for testing the operations of your library 
+    post-obfuscation/pre-distribution. This will  
+    run [obfuscatePyLib](#library-obfuscation) with default arguments, 
+    install the library, and remove the temporary 
+    obfuscation from the working directory.                             
+    
+**pipConfig**: An (optional) [PipConfig](#pipconfig) object, to dictate
+    extended installation details.  If omitted,
+    the library is simply installed in the standard
+    manner to your (global) Python site packages.
+    Notable attributes include "incDpndncsSwitch",
+    "destPath" and "asSource".  These allow you to 
+    skip dependency gathering if desired, install to 
+    a specific path such as a temp build directory,
+    and to request raw .py scripts be placed there.
+    Note that remote raw pip packages will require an 
+    alternate "vcs url" be supplied to a "development" 
+    repository in place of the simple package name.  
+    See [editable installs](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs)  
+
+### installLibraries
+
+	installLibraries( *libs )
+
+This function is a convenience wrapper over installLibrary (singular) function.
+One of the primary uses for this function is to ensure that the product to be
+created by a build script is being run in an environment which has all of its
+dependencies. 
+	    
+**Returns: None**
+
+***libs**: This function is extremely flexible in terms of how 
+   it may be invoked. The libs argument maybe a tuple, a list,
+   or a series of arguments passed directly to the function 
+   of arbitrary length.  The arguments or collection may consist of 
+   simple strings (i.e. the library names), or be tuples / dictionaries
+   themselves.  When passing tuples, or dictionaries, they will be
+   treated as the argument list to installLibrary().
+   
+Simple example:
+ 	
+	installLibraries( 'six', 'abc' )
+
+Simple example with a version detail:
+
+	installLibraries( 'six', 'abc', 'setuptools==40.6.3' )
+
+Complex example:
+ 	
+ 	opyCfg = OpyConfig()
+ 	... 	
+ 	pipCfg = PipConfig()
+ 	... 	
+ 	myLib = {'name':'MyLib', 'opyConfig':opyCfg, 'pipConfig':pipCfg } 	
+ 	installLibraries( 'six', myLib )
+            
+### uninstallLibrary
+	
+	uninstallLibrary( name )
+
+**Returns: None**
+
+Simply uninstalls a library from Python site packages
+in the basic/traditional pip manner.    
+
+    vcsUrl( name, baseUrl, vcs="git", subDir=None )  
+
+Convenience function to build vcsUrls from their
+component parts. This is to be used in conjunction
+with the PipConfig attribute asSource.
+See https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support
       
 ## Testing
 
