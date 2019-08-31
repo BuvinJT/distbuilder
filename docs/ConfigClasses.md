@@ -210,7 +210,7 @@ QtIWF installers may have a "Control Script" and/or a collection of "Package Scr
 The "Control Script" is intended to dictate how the installer *interface*  behaves, and
 other high level logic pertaining to the installer itself. In contrast, "Package Scripts"
 are intended for applying custom logic to manipulate a target environment when installing 
-a given package.  See [QtIfwPackageScript](#qtifwpackageScript) for more info. 
+a given package.  See [QtIfwPackageScript](#qtifwpackagescript) for more info. 
 
 The QtIfwControlScript class provides an abstraction layer for QtIfw script
 generation.  QtIfw scripts are written in [Qt Script](https://doc.qt.io/qt-5/qtscript-index.html) 
@@ -310,8 +310,8 @@ A [QtIfwConfig](#qtifwconfig) contains a list of these.
 Notably, these package objects define the source content to be 
 included in the installer via `srcDirPath` or
 simply `srcExePath` attributes. They also contain
-[QtIfwPackageXml](#qtifwpackageXml) and 
-[QtIfwPackageScript](#qtifwpackageScript) objects,
+[QtIfwPackageXml](#qtifwpackagexml) and 
+[QtIfwPackageScript](#qtifwpackagescript) objects,
 for extended configuration details.
 
 Constructor:  
@@ -431,7 +431,7 @@ Attributes & default values:
 ## QtIfwShortcut
 
 These shortcut objects are use by
-[QtIfwPackageScript](#qtifwpackageScript) objects,
+[QtIfwPackageScript](#qtifwpackagescript) objects,
 to create shortcuts on the installation target 
 environments.
 

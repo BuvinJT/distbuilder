@@ -95,7 +95,7 @@ interface...).
 ### installQtIfw    
  
 When the QtIFW utlity is required for use by the library 
-(i.e. when [buildInstaller](#buildInstaller) is invoked), 
+(i.e. when [buildInstaller](#buildinstaller) is invoked), 
 an attempt will be made to resolve the path to it via a collection 
 of methods.  First, if a [QtIfwConfig](#qtifwconfig) object is provided
 which specifies a path via the `qtIfwDirPath` attribute, that will be 
@@ -170,7 +170,7 @@ a default version will be assumed.
      the sub directory where your content will be 
      dynamically copied to within the installer, and the 
      `pkgSrcDirPath` (most typically the `binDir` returned 
-     by [buildExecutable](#buildExecutable)), which is source path of the 
+     by [buildExecutable](#buildexecutable)), which is source path of the 
      content. 
     
 **isSilent**: When `isSilent` is enabled, the QtIFW installer produced will not display 
@@ -466,14 +466,14 @@ within the *pkgs* argument with the id supplied by *pkgId*.
 Merges the [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
 objects within the *pkgs* argument with the ids supplied by 
 *srcId* and *destId*.  "Merging" entails a recursive 
-directory merge of the source into the target via [mergeDirs](#mergeDirs)
-as well as combining the [QtIfwShortcut](ConfigClasses.md#qtifwshortcut)    
+directory merge of the source into the target via [mergeDirs](#mergedirs)
+as well as combining the [QtIfwShortcut](ConfigClasses.md#qtifwshortcut)
 list nested inside the [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript)
 objects.	
 
 ## Code Obfuscation
 
-Code [obfuscation](https://en.wikipedia.org/wiki/Obfuscation_(software) 
+Code [obfuscation](https://en.wikipedia.org/wiki/Obfuscation_(software)) 
 is the process of **rewriting** normal, human readable code, into a form which
 is very difficult (well, *ideally* impossible) to read, yet still executes 
 in exactly the same manner when run through the target translator (or compiler).   
@@ -505,7 +505,7 @@ can be reverse engineered back into the original (or nearly original) `.py` sour
 As a quick starting point to learn about this hacking process, you can check out 
 these Stack Overflow posts:
 
-- [How do you reverse engineer an EXE “compiled” with PyInstaller](https://reverseengineering.stackexchange.com/questions/160/how-do-you-reverse-engineer-an-exe-compiled-with-pyinstaller)
+- [How do you reverse engineer an EXE compiled with PyInstaller?](https://reverseengineering.stackexchange.com/questions/160/how-do-you-reverse-engineer-an-exe-compiled-with-pyinstaller)
 - [Is it possible to decompile a compiled .pyc file into a .py file?](https://stackoverflow.com/questions/5287253/is-it-possible-to-decompile-a-compiled-pyc-file-into-a-py-file)  
 
 If you don't trust posts from "random" third parties, simply read this - straight from 
@@ -900,7 +900,7 @@ Copies files OR directories to a given destination.
 The argument srcPaths may be a singular path (i.e. a string)
 or an iterable (i.e. a list or tuple). This *replaces* any existing 
 copy found at the destination path.  When relative paths are specified,
-they are resolved via [absPath](#absPath).
+they are resolved via [absPath](#abspath).
       
     moveToDir( srcPaths, destDirPath )
         
@@ -909,7 +909,7 @@ The argument srcPaths may be a singular path (i.e. a string)
 or an iterable (i.e. a list or tuple).  (Note: it *moves* the 
 path specified, it does not leave a copy of the source). This
 *replaces* any existing copy found at the destination path.
-When relative paths are specified, they are resolved via [absPath](#absPath).
+When relative paths are specified, they are resolved via [absPath](#abspath).
 
     copyToDesktop( path )            
 	moveToDesktop( path )
@@ -927,7 +927,7 @@ The argument subPaths may be a singular path (i.e. a string)
 or an iterable (i.e. a list or tuple).  A `subPath` argument must be 
 relative to the `parentDirPath`.
 When relative paths are specified for `parentDirPath`, 
-they are resolved via [absPath](#absPath).
+they are resolved via [absPath](#abspath).
 
 ### renameInDir 
 
@@ -937,7 +937,7 @@ Renames files OR directories with a given directory.
 The argument namePairs may be a singular tuple (oldName, newName)
 or an iterable (i.e. a list or tuple) of such tuple pairs. 
 When relative paths are specified for `parentDirPath`, 
-they are resolved via [absPath](#absPath).
+they are resolved via [absPath](#abspath).
 
 ### collectDirs 
 
@@ -946,7 +946,7 @@ they are resolved via [absPath](#absPath).
 Moves a list of directories into a common parent directory.
 That parent directory will be created is it does not exist.
 When relative paths are specified or `parentDirPath`, 
-they are resolved via [absPath](#absPath).
+they are resolved via [absPath](#abspath).
 
 ### mergeDirs
 
@@ -958,7 +958,7 @@ If performed recursively, the destination contents contained
 within a merged sub directory target are all preserved. Otherwise,
 the source sub directories replace the target sub directories as
 whole units. When relative paths are specified, 
-they are resolved via [absPath](#absPath).
+they are resolved via [absPath](#abspath).
         
 ### normBinaryName
     
