@@ -502,7 +502,7 @@ stage: `binDir`, `binPath`.
 
 A PyToBinInstallerProcess process *contains* a 
 [PyToBinPackageProcess](#pytobinpackageprocess)
-within it, and thus provides the full functionality of that to begin with.    
+within it, and thus provides the full functionality of that to begin with.
 In addition, however, it rolls the product of that lower level process within
 a full fledged installer.  Like the other process classes, this uses a
 [ConfigFactory](#configfactory) to automatically produce the config 
@@ -614,9 +614,9 @@ implementation.
 
 A RobustInstallerProcess is the most advanced and intricate of these processes.  
 It exposes details of the build process that [PyToBinInstallerProcess](#pytobininstallerprocess) 
-insulates from the user.  In addition to providing access to more nitty gritty details,   
-this class is primarily intended for use when you need to produce multiple binaries 
-from Python scripts and/or multiple installable "packages" bundled together.  
+insulates from the user.  In addition to providing access to more nitty gritty details,
+this class is primarily intended for use when you need to produce multiple binaries
+from Python scripts and/or multiple installable "packages" bundled together.
 This class is also useful for building an installer which does NOT involve
 a Python to binary conversion process (e.g. packaging binaries
 produced in another language, using some other compiler).
@@ -634,9 +634,9 @@ separate instances of a [PyToBinPackageProcess](#pytobinpackageprocess).
 If a value in the "Py Package Config Factories" dictionary is set to `None`, one will 
 be generated for it, by *cloning* the master config.  That cloned ConfigFactory will 
 then be passed to the overridable function `onConfigFactory( key, factory )`.  Within
-that, your implementation my modify the object, but it will not have to start from
+that, your implementation may modify the object, but it will not have to start from
 "scratch" because whatever common attributes might be shared between the master and 
-the sub components will already be defined.  
+the sub components will already be defined (hence the purpose of the cloning option).  
 
 The other notable attribute of this class is the list of "Qt IFW Packages".
 Items in this list may be dynamic [QtIfwPackage](ConfigClasses.md#qtifwpackage) objects,

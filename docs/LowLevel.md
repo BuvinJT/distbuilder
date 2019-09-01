@@ -237,7 +237,7 @@ for the user.  It simply runs without "talking" to you.  All options are dictate
 command line arguments.  This allows for scripted installs of programs, which is useful for 
 a great many purposes, e.g. programmatic integrations of external utilities, or running the 
 same installation on a large number of workstations.  While such a feature can be desirable 
-on any platform, not requiring a GUI interaction is, of course, an outright *necessary* if 
+on any platform, not requiring a GUI interaction is, of course, outright *necessary* if 
 one wishes to target an OS with no GUI support (e.g. many Linux distros).
 
 "Silent installation" (and/or no GUI) is not a option provided naturally by 
@@ -476,7 +476,7 @@ objects.
 Code [obfuscation](https://en.wikipedia.org/wiki/Obfuscation_(software)) 
 is the process of **rewriting** normal, human readable code, into a form which
 is very difficult (well, *ideally* impossible) to read, yet still executes 
-in exactly the same manner when run through the target translator (or compiler).   
+in exactly the same manner when run through the target translator (or compiler).
 The reason one would want to do this to is to protect proprietary work and/or
 to eliminate security holes (based upon context) while sharing source code.  
 
@@ -515,8 +515,8 @@ the horse's mouth:
 One "solution" to this problem is to bundle `.pye` files instead of `.pyc`.  PyInstaller
 provides built-in support for this, in fact.  The alternate `.pye` is an *encrypted* 
 equilavent to a `.pyc`.  If your end user is in possession of the decryption key, they can run
-the code, because it will be unlocked for them to begin the process of running it.  
-Unfortunately, that still ultimately exposes the code!  It merely restricts access.  
+the code, because it will be unlocked for them to begin the process of running it.
+Unfortunately, that still ultimately exposes the code!  It merely restricts access.
 If your goal is to distribute a program, for which you want to prevent access 
 to the source, then you couldn't distribute the key!  So, this security measure is only
 really pertinent when it is possible for someone to access the program independently from
