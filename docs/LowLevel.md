@@ -95,7 +95,7 @@ interface...).
 ### installQtIfw    
  
 When the QtIFW utlity is required for use by the library 
-(i.e. when [buildInstaller](#buildInstaller) is invoked), 
+(i.e. when [buildInstaller](#buildinstaller) is invoked), 
 an attempt will be made to resolve the path to it via a collection 
 of methods.  First, if a [QtIfwConfig](#qtifwconfig) object is provided
 which specifies a path via the `qtIfwDirPath` attribute, that will be 
@@ -170,7 +170,7 @@ a default version will be assumed.
      the sub directory where your content will be 
      dynamically copied to within the installer, and the 
      `pkgSrcDirPath` (most typically the `binDir` returned 
-     by [buildExecutable](#buildExecutable)), which is source path of the 
+     by [buildExecutable](#buildexecutable)), which is source path of the 
      content. 
     
 **isSilent**: When `isSilent` is enabled, the QtIFW installer produced will not display 
@@ -237,7 +237,7 @@ for the user.  It simply runs without "talking" to you.  All options are dictate
 command line arguments.  This allows for scripted installs of programs, which is useful for 
 a great many purposes, e.g. programmatic integrations of external utilities, or running the 
 same installation on a large number of workstations.  While such a feature can be desirable 
-on any platform, not requiring a GUI interaction is, of course, an outright *necessary* if 
+on any platform, not requiring a GUI interaction is, of course, outright *necessary* if 
 one wishes to target an OS with no GUI support (e.g. many Linux distros).
 
 "Silent installation" (and/or no GUI) is not a option provided naturally by 
@@ -294,7 +294,7 @@ will all be be listed in the long manner.
 
 ### Installer Scripting
 
-While both QtIWF, and the distbuilder additions to it, provide many build-in features
+While both QtIFW, and the distbuilder additions to it, provide many build-in features
 for customizing installers, nothing can provide more open ended flexibility than writing
 your own scripts.
 
@@ -466,8 +466,8 @@ within the *pkgs* argument with the id supplied by *pkgId*.
 Merges the [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
 objects within the *pkgs* argument with the ids supplied by 
 *srcId* and *destId*.  "Merging" entails a recursive 
-directory merge of the source into the target via [mergeDirs](#mergeDirs)
-as well as combining the [QtIfwShortcut](ConfigClasses.md#qtifwshortcut)    
+directory merge of the source into the target via [mergeDirs](#mergedirs)
+as well as combining the [QtIfwShortcut](ConfigClasses.md#qtifwshortcut)
 list nested inside the [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript)
 objects.	
 
@@ -476,7 +476,7 @@ objects.
 Code [obfuscation](https://en.wikipedia.org/wiki/Obfuscation_(software)) 
 is the process of **rewriting** normal, human readable code, into a form which
 is very difficult (well, *ideally* impossible) to read, yet still executes 
-in exactly the same manner when run through the target translator (or compiler).   
+in exactly the same manner when run through the target translator (or compiler).
 The reason one would want to do this to is to protect proprietary work and/or
 to eliminate security holes (based upon context) while sharing source code.  
 
@@ -515,8 +515,8 @@ the horse's mouth:
 One "solution" to this problem is to bundle `.pye` files instead of `.pyc`.  PyInstaller
 provides built-in support for this, in fact.  The alternate `.pye` is an *encrypted* 
 equilavent to a `.pyc`.  If your end user is in possession of the decryption key, they can run
-the code, because it will be unlocked for them to begin the process of running it.  
-Unfortunately, that still ultimately exposes the code!  It merely restricts access.  
+the code, because it will be unlocked for them to begin the process of running it.
+Unfortunately, that still ultimately exposes the code!  It merely restricts access.
 If your goal is to distribute a program, for which you want to prevent access 
 to the source, then you couldn't distribute the key!  So, this security measure is only
 really pertinent when it is possible for someone to access the program independently from
@@ -900,7 +900,7 @@ Copies files OR directories to a given destination.
 The argument srcPaths may be a singular path (i.e. a string)
 or an iterable (i.e. a list or tuple). This *replaces* any existing 
 copy found at the destination path.  When relative paths are specified,
-they are resolved via [absPath](#absPath).
+they are resolved via [absPath](#abspath).
       
     moveToDir( srcPaths, destDirPath )
         
@@ -909,7 +909,7 @@ The argument srcPaths may be a singular path (i.e. a string)
 or an iterable (i.e. a list or tuple).  (Note: it *moves* the 
 path specified, it does not leave a copy of the source). This
 *replaces* any existing copy found at the destination path.
-When relative paths are specified, they are resolved via [absPath](#absPath).
+When relative paths are specified, they are resolved via [absPath](#abspath).
 
     copyToDesktop( path )            
 	moveToDesktop( path )
@@ -927,7 +927,7 @@ The argument subPaths may be a singular path (i.e. a string)
 or an iterable (i.e. a list or tuple).  A `subPath` argument must be 
 relative to the `parentDirPath`.
 When relative paths are specified for `parentDirPath`, 
-they are resolved via [absPath](#absPath).
+they are resolved via [absPath](#abspath).
 
 ### renameInDir 
 
@@ -937,7 +937,7 @@ Renames files OR directories with a given directory.
 The argument namePairs may be a singular tuple (oldName, newName)
 or an iterable (i.e. a list or tuple) of such tuple pairs. 
 When relative paths are specified for `parentDirPath`, 
-they are resolved via [absPath](#absPath).
+they are resolved via [absPath](#abspath).
 
 ### collectDirs 
 
@@ -946,7 +946,7 @@ they are resolved via [absPath](#absPath).
 Moves a list of directories into a common parent directory.
 That parent directory will be created is it does not exist.
 When relative paths are specified or `parentDirPath`, 
-they are resolved via [absPath](#absPath).
+they are resolved via [absPath](#abspath).
 
 ### mergeDirs
 
@@ -958,7 +958,7 @@ If performed recursively, the destination contents contained
 within a merged sub directory target are all preserved. Otherwise,
 the source sub directories replace the target sub directories as
 whole units. When relative paths are specified, 
-they are resolved via [absPath](#absPath).
+they are resolved via [absPath](#abspath).
         
 ### normBinaryName
     

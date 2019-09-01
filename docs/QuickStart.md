@@ -119,7 +119,7 @@ installed the utility. See [QtIFW issues](Issues.md#qt-installer-framework-issue
 if you require help with that.  Note, it also possible to
 supply the path within your implementation script. 
 Refer to [QtIfwConfig](ConfigClasses.md#qtifwconfig)
-or [buildInstaller](LowLevel.md#buildInstaller) for more details. 
+or [buildInstaller](LowLevel.md#buildinstaller) for more details. 
       
 ## Implementation Overview
 
