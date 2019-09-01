@@ -3,8 +3,8 @@ pages:
     - Home: index.md
     - Quick Start Guide: QuickStart.md
     - High Level Classes: HighLevel.md
-    - Low Level Functions: LowLevel.md
     - Configuration Classes: ConfigClasses.md
+    - Low Level Functions: LowLevel.md
     - Troubleshooting: Issues.md
     - To-Do List: ToDo.md
     - Contact / Contribute: Contribute.md
