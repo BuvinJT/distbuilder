@@ -1,53 +1,66 @@
 # To-Do List 
 ![distbuilder logo](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png)
  
-## High Priority
-   
-* Further develop the Qt IFW script generation features.
-	* Directory creation on target (e.g. user data directories)		
-	* Windows Registry functions     
-
-* TEST on more Linux distros
-
-* TEST (and develop as needed) QtIFW packages which: 
-	* do not install shortcuts
-	* are not enabled for install by default
-	* contain only "data" (no exe)
+ The following is a loose, ever evolving "road map" for planned releases of the library, 
+ grouped / ordered by release number:
+ 
+## v.0.7.6
 
 * TEST (and develop as needed) QtIFW packages for Qt C++ exes, 
 to confirm auto dependency collection (include QML based projects).
 
-* Test and develop "update installer" features as needed.
+* TEST (and develop as needed) QtIFW packages which: 
+	* contain only "data" (no exe)
+	* do not install shortcuts
+	* are not enabled for install by default
 
-## Moderate Priority
-
-* Provide backwards compatible PyInstaller builds for old OS versions
-to address known complications e.g. GCC .so dynamic linkage:
-   
-   Refer to:
-    
-   https://pythonhosted.org/PyInstaller/usage.html#making-linux-apps-forward-compatible
+## v.0.7.7
 
 * Test, and confirm / fix uninstallation mechanism for silent installers,
 notably in non GUI environments. Can this be done via the Maintenance Tool
 and / or the original installer?
 
-* Further develop external library bundling (for Opy), making such 
-more automated and less work for the user (e.g. finding external library 
-sources locally and/or downloading them with pip...)
-			
-* Continue to improve and stabilize the Opy library and its beta features.
+## v.0.7.8
 
-## Low Priority
+* Test and develop "update installer" features as needed.
+   
+## v.0.7.9
+
+* Further develop the Qt IFW script generation features.
+	* Directory creation on target (e.g. user data directories)		
+	* Resource installation outside of the target directory
+	* Windows Registry functions     
+
+## v.0.8.x
+
+* Add git integration: Clone/pull to build project from multiple remote sources
+			
+* Improve and stabilize Opy to the point it can handle *most* scripts without *any*
+manual intervention. 
+   
+* "Perfect" Opy "library bundling" (for both private and PyPi libraries). 
+
+## v.0.9.x
 
 * Add option for appending platform suffix onto installer file names. 
 
+* Add tarball alternative to zip packaging.
+
 * Add all yet to be provided parameters for PyInstaller.  
 
-* Add all yet to be provided elements for the various Qt IFW 
-XML config classes.  
+* Add all yet to be provided elements for the various Qt IFW XML config classes.  
 
-* Add tarball alternative to zip packaging.
+## v.1.0
+
+* Extended QA... TBD
+
+* TEST on more Windows versions (7?, 8.1?)
+
+* TEST on more Linux distros (Debian, Fedora, Arch...?)
+
+* TEST on OSes with alternate language settings? (Hunting for path names or unicode glitches, etc.?) 
+
+## v.1.1.x 
 
 * Add QtIFW "online" installer features.
 
@@ -55,17 +68,29 @@ XML config classes.
 
 * Continue to expand upon the documentation.
 
-## Wish List		
+* Add more git integration: auto commit / push / tag...
 
-* Automate builds for multiple environments / platforms
+## v.1.5.x
 
+* Provide forward/backward across OS versions.
+
+Currently, (depending upon the platform) building with PyInstaller (and/or QtIFW?) 
+on an older or newer version of an OS can result in the product NOT being forwards 
+or backwards compatible!  
+
+Notably, there are known complications e.g. GCC .so dynamic linkage:
+   
+   Refer to:    
+   https://pythonhosted.org/PyInstaller/usage.html#making-linux-apps-forward-compatible
+
+* Automate builds for multiple environments / platforms:
    Pyinstaller reference:
-   
-   https://pythonhosted.org/PyInstaller/usage.html#supporting-multiple-python-environments
-   
-   https://pythonhosted.org/PyInstaller/usage.html#supporting-multiple-operating-systems
+	* https://pythonhosted.org/PyInstaller/usage.html#supporting-multiple-python-environments 
+	* https://pythonhosted.org/PyInstaller/usage.html#supporting-multiple-operating-systems
 
 * Add auto conversion of alternate icon formats, so a project only needs one file for such.
+
+## v.2.x+ Spitballs 		
 
 * Add a Py2Exe wrapper as alternative to PyInstaller.
 
@@ -76,14 +101,10 @@ which PyInstaller simply lacks (e.g. COM server dll creation).
 
 * Add setuptools / distutil wrappers an as alternative to pip.  
 
-* Add git integration to commit and push versions.
-
 * Add the option to build projects outside of the build script directory 
 e.g. in temp.  
 
-* Add PyPi integration to publish releases.
-
-* Add automated version tracking / stamping / git tagging...
+* Add PyPi integration to publish open source releases.
   
 * Add (configurable) interactive ui feature, to select various 
 operations at runtime (cli or gui).  Use the selected options
