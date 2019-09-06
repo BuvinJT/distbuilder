@@ -453,10 +453,8 @@ def sitePackagePath( packageName ):
     return packagePath if exists( packagePath ) else None
 
 def __importByStr( moduleName, memberName=None ):
-    try: 
-        if memberName is None : exec( __IMPORT_TMPLT % (moduleName,) )
-        else: exec( __FROM_IMPORT_TMPLT % (moduleName, memberName) )
-    except Exception as e: printExc( e )
+    if memberName is None : exec( __IMPORT_TMPLT % (moduleName,) )
+    else: exec( __FROM_IMPORT_TMPLT % (moduleName, memberName) )
 
 # -----------------------------------------------------------------------------
 def toZipFile( sourceDir, zipDest=None, removeScr=True, 
