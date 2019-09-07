@@ -35,7 +35,7 @@ program, invoke the buildExecutable function:
     omitted, the name and entryPointPy arguments, 
     plus other default settings will be used.
 
-**opyConfig**: An (optional) [OpyConfig](#opyconfig) object, to 
+**opyConfig**: An (optional) [OpyConfig](ConfigClasses.md#opyconfig) object, to 
 	dictate code obfuscation details using the Opy 
 	Library. If omitted (or explicitly specified as	None),
 	no obfuscation will be performed.
@@ -76,7 +76,7 @@ invoke the makePyInstSpec function:
     object used to dictate the details for generating 
     the spec file using the makespec Utility.
 
-**opyConfig**: An (optional) [OpyConfig](#opyconfig) object, 
+**opyConfig**: An (optional) [OpyConfig](ConfigClasses.md#opyconfig) object, 
 	providing supplemental details regarding the spec file
 	creation.  Be sure to include this if you desire obfuscation
 	and will be subsequently invoking the buildExecutable function.
@@ -97,7 +97,7 @@ interface...).
 When the QtIFW utlity is required for use by the library 
 (i.e. when [buildInstaller](#buildinstaller) is invoked), 
 an attempt will be made to resolve the path to it via a collection 
-of methods.  First, if a [QtIfwConfig](#qtifwconfig) object is provided
+of methods.  First, if a [QtIfwConfig](ConfigClasses.md#qtifwconfig) object is provided
 which specifies a path via the `qtIfwDirPath` attribute, that will be 
 employed.  Second, if there is an environmental variable defined named
 `QT_IFW_DIR`, that path will be applied.  Next, a default directory 
@@ -535,7 +535,7 @@ converting it to binary) invoke obfuscatePy:
     the absolute path to the obfuscated entry point script
     (within the package). 
     
-**opyConfig**: An [OpyConfig](#opyconfig) object, which dictates the 
+**opyConfig**: An [OpyConfig](ConfigClasses.md#opyconfig) object, which dictates the 
     code obfuscation details using the Opy Library. 
     
 Upon invoking this, you will be left with an "obfuscated"
@@ -561,7 +561,7 @@ obfuscatePyLib:
     the absolute path to the (non obfuscated) setup.py 
     script within the prepared package  
 
-**opyConfig**: An [OpyConfig](#opyconfig) object, to 
+**opyConfig**: An [OpyConfig](ConfigClasses.md#opyconfig) object, to 
 	dictate code obfuscation details using the Opy Library. 
     
 **isExposingPackageImports**: Option to NOT obfuscate 
@@ -579,9 +579,9 @@ obfuscatePyLib:
 
 ### Obfuscation Features 
 
-The Opy Library contains an [OpyConfig](#opyconfig) class, which has been extended
-by the distbuilder library (and aliased with the same name).  The revised /
-extended class contains attributes for patching the obfuscation and
+The Opy Library contains an [OpyConfig](ConfigClasses.md#opyconfig) class, 
+which has been extended by the distbuilder library (and aliased with the same name).  
+The revised / extended class contains attributes for patching the obfuscation and
 for bundling the source of external libraries (so that they too maybe 
 obfuscated). This new configuration type has the notable additions:
  
@@ -599,30 +599,29 @@ you have already determined exactly which files/lines/bugs
 you are encountering, you may simply define a list of "OpyPatch"
 objects for the configuration.  They will be applied at the **end** 
 of the process (i.e. to the **obfuscated** code) to fix any problems. 
-An [OpyPatch](#opypatch) is created via:
+An [OpyPatch](ConfigClasses.md#opypatch) is created via:
 
     OpyPatch( relPath, patches, parentDir=OBFUS_DIR_PATH )
     
-relPath: The relative file path within the obfuscation 
+**relPath**: The relative file path within the obfuscation 
 results that you wish to change.  
 
-patches: A list of tuples. 2 element tuples in the form 
+**patches**: A list of tuples. 2 element tuples in the form 
 (line number, line) will be utilized for complete line 
 replacements. Alternatively, 3 element tuples in the form 
 (line number, old, new) will perform a find/replace operation
 on that line (to just swap out an identifier typically).  
 
-parentDir: An (optional) path to use a directory other 
+**parentDir**: An (optional) path to use a directory other 
 than the standard obfuscation results path. 
 
 #### LibToBundle
-
-Library Bundling:
-         
-The sourceDir defaults to THIS_DIR.  If bundleLibs is defined, it is 
+        
+When an [OpyConfig](ConfigClasses.md#opyconfig) object is created, the sourceDir 
+defaults to `THIS_DIR`.  If the `bundleLibs` attribute is defined, it is 
 used in combination with sourceDir to create a "staging directory".
-The bundleLibs attributes may be either None or a list of     
-"LibToBundle" objects. [LibToBundle](#libtobundle) objects maybe created via: 
+The bundleLibs attributes may be either `None` or a list of     
+"LibToBundle" objects, constructed via: 
 
     LibToBundle( name, localDirPath=None, pipConfig=None, 
                  isObfuscated=False )
@@ -637,9 +636,9 @@ creating such an object as well.
     source, this is the path to that source.  Otherwise, leave 
     this as None.  
     
-**pipConfig**: A [PipConfig](#pipconfig) object defining how to download and 
-    install the library.  The destination will be automatically 
-    set to the "staging    directory" for the obfuscation process.   
+**pipConfig**: A [PipConfig](ConfigClasses.md#pipconfig) object defining how to download and 
+    install the library. The destination will be automatically 
+    set to the "staging directory" for the obfuscation process.   
     
 **isObfuscated**: A boolean indicating if the library is *already* 
     obfuscated, and therefore may be bundled as is.  
@@ -681,10 +680,10 @@ multiple libraries in a single call.
     remote package registered with pip (i.e. the typical way pip 
     is used), simply supply the name.
     If you wish to use a local path, or a specific url (http/git), 
-    see [PipConfig](#pipconfig) (and perhaps the pip documentation 
+    see [PipConfig](ConfigClasses.md#pipconfig) (and perhaps the pip documentation 
     for details).               
     
-**opyConfig**: An (optional) [OpyConfig](#opyconfig) object, 
+**opyConfig**: An (optional) [OpyConfig](ConfigClasses.md#opyconfig) object, 
     to dictate code obfuscation details using 
     the Opy Library. If omitted, no obfuscation 
     will be performed. If you are building
@@ -696,12 +695,12 @@ multiple libraries in a single call.
     install the library, and remove the temporary 
     obfuscation from the working directory.                             
     
-**pipConfig**: An (optional) [PipConfig](#pipconfig) object, to dictate
+**pipConfig**: An (optional) [PipConfig](ConfigClasses.md#pipconfig) object, to dictate
     extended installation details.  If omitted,
     the library is simply installed in the standard
     manner to your (global) Python site packages.
-    Notable attributes include "incDpndncsSwitch",
-    "destPath" and "asSource".  These allow you to 
+    Notable attributes include `incDpndncsSwitch`,
+    `destPath` and `asSource`.  These allow you to 
     skip dependency gathering if desired, install to 
     a specific path such as a temp build directory,
     and to request raw .py scripts be placed there.
@@ -754,6 +753,8 @@ Complex example:
 
 Simply uninstalls a library from Python site packages
 in the basic/traditional pip manner.    
+
+### vcsUrl
 
     vcsUrl( name, baseUrl, vcs="git", subDir=None )  
 

@@ -485,6 +485,23 @@ Attributes:
     isCacheUsed                  
     isUpgrade      
     otherPipArgs  (open ended argument string)      
+
+TODO: Expand on this considerably... 
+
+The `source` attribute is the the "heart" of this class.
+It can take *many* different forms.  Including library
+names registered at PyPi, local paths, and urls. 
+
+Other Notable attributes include `incDpndncsSwitch`,
+`destPath` and `asSource`.  These allow you to 
+skip dependency gathering if desired, install to 
+a specific path such as a temp build directory,
+and to request raw .py scripts be placed there.
+
+Note that remote raw pip packages will require an 
+alternate [vcs url](LowLevel.md#vcsurl) be supplied to a "development" 
+repository in place of the simple package name as the `source` attribute.  
+See [editable installs](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs)  
           
 ## OpyConfig
     
@@ -494,7 +511,7 @@ use by the Opy Library.
 
 This library **EXTENDS** the natural OpyConfig, however,
 adding the attributes / features described below.
-See [Obfuscation Features](#obfuscation-features) for a 
+See [Obfuscation Features](LowLevel.md#obfuscation-features) for a 
 description of how objects of this type are used.
 
 Constructor:        
@@ -512,7 +529,7 @@ Attributes:
 
 ## OpyPatch
 
-See [Obfuscation Features](#obfuscation-features) for a 
+See [Obfuscation Features](LowLevel.md#obfuscation-features) for a 
 description of how objects of this type are used.
     
 Constructor:
@@ -532,7 +549,7 @@ Functions:
 
 ## LibToBundle 
 
-See [Obfuscation Features](#obfuscation-features) for a 
+See [Obfuscation Features](LowLevel.md#obfuscation-features) for a 
 description of how objects of this type are used.
 
 Constructor:
