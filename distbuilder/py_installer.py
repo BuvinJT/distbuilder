@@ -98,12 +98,16 @@ class PyInstallerConfig:
                 
     def toArgs( self, isMakeSpec=False ) :
 
-        specPath = self.pyInstSpec.path() if self.pyInstSpec else None
-    
-        entryPointSpec = ( '"%s"' % (self._absPath(self.entryPointPy),)          
-                           if isMakeSpec else "" )        
-        specFileSpec = ( '"%s"' % (self._absPath(specPath),) 
-                         if not isMakeSpec and specPath else "" )
+        entryPointSpec = ""
+        specFileSpec   = ""
+        if isMakeSpec:       
+            entryPointSpec = '"%s"' % (self._absPath(self.entryPointPy),)      
+        else:     
+            specPath = self.pyInstSpec.path() if self.pyInstSpec else None
+            if specPath : 
+                specFileSpec = '"%s"' % (self._absPath(specPath),)
+            else :        
+                entryPointSpec = '"%s"' % (self._absPath(self.entryPointPy),)
         
         nameSpec       = ( "--name %s" % (self.name,)
                            if self.name else "" )
