@@ -221,10 +221,10 @@ class ConfigFactory:
         return "%s.%s.%s" % (self.ifwPkgNamePrefix, comp, prod)
 
     def __pkgSrcDirPath( self ):
-        if self.__pkgPyInstConfig :
-            return joinPath( THIS_DIR, self.__pkgPyInstConfig.name )
+        if self.__pkgPyInstConfig : return absPath( self.__pkgPyInstConfig.name )
         if self.pkgSrcDirPath : return self.pkgSrcDirPath
-        return joinPath( THIS_DIR, self.binaryName )                 
+        if self.binaryName : return absPath( self.binaryName )
+        return None                 
 
 # -----------------------------------------------------------------------------
 @six.add_metaclass(ABCMeta)

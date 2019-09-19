@@ -40,6 +40,9 @@ __NESTED_INSTALLER_NAME  = "hidden-installer"
 
 __QT_WINDOWS_DEPLOY_EXE_NAME   = "windeployqt.exe"
 __QT_WINDOWS_DEPLOY_QML_SWITCH = "--qmldir"
+
+#TODO: Add more of these dlls?  
+#TODO: Add additional logic to determine the need for this...
 __MINGW_DLL_LIST = [
       "libgcc_s_dw2-1.dll"
     , "libstdc++-6.dll"
@@ -1530,8 +1533,7 @@ def __validateConfig( qtIfwConfig ):
 def __initBuild( qtIfwConfig ) :
     print( "Initializing installer build..." )
     # remove any prior setup file
-    setupExePath = joinPath( THIS_DIR, 
-                             util.normBinaryName( qtIfwConfig.setupExeName ) )
+    setupExePath = absPath( util.normBinaryName( qtIfwConfig.setupExeName ) )
     if exists( setupExePath ) : removeFile( setupExePath )
     # create a "clean" build directory
     if exists( BUILD_SETUP_DIR_PATH ) : removeDir( BUILD_SETUP_DIR_PATH )
@@ -1549,8 +1551,9 @@ def __initBuild( qtIfwConfig ) :
             copyDir( p.srcDirPath, destDir )    
         if p.srcExePath :
             srcExeDir, srcExeName = splitPath( p.srcExePath )
-            if srcExeDir != p.srcDirPath :                    
-                copyFile( p.srcExePath, destDir )                
+            if srcExeDir != p.srcDirPath :         
+                if not isDir( destDir ): makeDir( destDir )
+                copyToDir( p.srcExePath, destDirPath=destDir )                
             if p.exeName is None: p.exeName = srcExeName 
             elif p.exeName != srcExeName :             
                 rename( joinPath( destDir, srcExeName ),
@@ -1619,8 +1622,8 @@ def __addQtCppDependencies( qtIfwConfig, package ) :
         if package.isMingwExe :
             print( "Adding additional Qt dependencies..." )
             for fileName in __MINGW_DLL_LIST:
-                copyFile( normpath( package.qtBinDirPath ), 
-                          joinPath( destDirPath, fileName ) )
+                copyToDir( joinPath( qtIfwConfig.qtBinDirPath, fileName ), 
+                           destDirPath=destDirPath )
 
 def __build( qtIfwConfig ) :
     print( "Building installer using Qt IFW...\n" )

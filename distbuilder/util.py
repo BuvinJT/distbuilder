@@ -343,8 +343,8 @@ def __copyToDir( srcPath, destDirPath ):
     destPath = joinPath( destDirPath, srcTail )
     if srcPath == destPath: return
     __removeFromDir( srcTail, destDirPath )
-    if isFile( srcPath ): copyFile( srcPath )
-    elif isDir( srcPath ): copyDir( srcPath )        
+    if isFile( srcPath ): copyFile( srcPath, destPath )
+    elif isDir( srcPath ): copyDir( srcPath, destPath )        
     print( 'Copied "%s" to "%s"' % (srcPath, destPath) )
     return destPath
 
@@ -477,7 +477,8 @@ def toZipFile( sourceDir, zipDest=None, removeScr=True,
     return filePath
  
 # -----------------------------------------------------------------------------   
-def normBinaryName( path, isPathPreserved=False, isGui=False ):    
+def normBinaryName( path, isPathPreserved=False, isGui=False ):
+    if path is None : return None    
     if not isPathPreserved : path = basename( path )
     base, ext = splitExt( path )
     if IS_MACOS and isGui :
@@ -485,7 +486,8 @@ def normBinaryName( path, isPathPreserved=False, isGui=False ):
     if IS_WINDOWS: return base + (".exe" if ext=="" else ext)
     return base 
                             
-def _normIconName( path, isPathPreserved=False ):    
+def _normIconName( path, isPathPreserved=False ):
+    if path is None : return None    
     if not isPathPreserved : path = basename( path )
     base, _ = splitExt( path )
     if IS_WINDOWS: return "%s%s" % (base, _WINDOWS_ICON_EXT) 
@@ -494,7 +496,9 @@ def _normIconName( path, isPathPreserved=False ):
     raise Exception( __NOT_SUPPORTED_MSG )
     return base 
                         
-def _isMacApp( path ): return IS_MACOS and splitExt(path)[1]==".app"
+def _isMacApp( path ):
+    if path is None : return False 
+    return IS_MACOS and splitExt(path)[1]==".app"
 
 # ----------------------------------------------------------------------------- 
 def isFile( path ): 
@@ -504,6 +508,7 @@ def isDir( path ):
     return path is not None and exists( path ) and not isFile( path )
 
 def absPath( relativePath, basePath=None ):
+    if relativePath is None : return None
     if isabs( relativePath ): return relativePath
     if basePath is None: basePath=THIS_DIR        
     return realpath( normpath( joinPath( basePath, relativePath ) ) )
