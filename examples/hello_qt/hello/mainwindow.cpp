@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // custom defines which cascade down from QMake (see ./package/package.pri)
     qDebug() << "PRODUCT_TITLE: "       << PRODUCT_TITLE;
     qDebug() << "PRODUCT_DESCRIPTION: " << PRODUCT_DESCRIPTION;
-    qDebug() << "COMPANY_NAME: "        << COMPANY_NAME;
+    qDebug() << "COMPANY_TRADE_NAME: "  << COMPANY_TRADE_NAME;
     qDebug() << "COMPANY_LEGAL_NAME: "  << COMPANY_LEGAL_NAME;
     qDebug() << "COPYRIGHT_YEAR: "      << COPYRIGHT_YEAR;
     qDebug() << "APP_VERSION: "         << APP_VERSION;
