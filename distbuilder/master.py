@@ -186,21 +186,9 @@ class ConfigFactory:
                     scriptPath=self.ifwPkgScriptPath )
         return script
 
-    def __versionTuple( self ):        
-        try:
-            return( self.version if isinstance(self.version, tuple) 
-                    else tuple( self.version.split(".") ) ) 
-        except:
-            print( "WARNING: version attribute malformed or not defined!" ) 
-            return (0,0,0,0)
+    def __versionTuple( self ): return versionTuple( self.version )
                     
-    def __versionStr( self ):
-        try : 
-            return( self.version if isinstance(self.version, six.string_types) 
-                    else "%d.%d.%d.%d" % self.version )
-        except:
-            print( "WARNING: version attribute malformed or not defined!" )
-            return "0.0.0.0"
+    def __versionStr( self ): return versionStr( self.version )
         
     def __ifwPkgId( self ):
         if self.ifwPkgId : return self.ifwPkgId

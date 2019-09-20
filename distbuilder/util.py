@@ -1,4 +1,4 @@
-from six import PY2, PY3  # @UnusedImport
+from six import PY2, PY3, string_types  # @UnusedImport
 from six.moves import urllib
 from sys import argv, stdout, stderr, exit, \
     executable as PYTHON_PATH
@@ -561,7 +561,32 @@ def __getFolderPathByCSIDL( csidl ):
     ctypes.windll.shell32.SHGetFolderPathW( 
         None, csidl, None, SHGFP_TYPE_CURRENT, buf )
     return buf.value 
-            
+
+# -----------------------------------------------------------------------------
+
+def versionTuple( ver, parts=4 ): return tuple( __versionList( ver, parts ) )
+                
+def versionStr( ver, parts=4 ): 
+    verList = __versionList( ver, parts )
+    verList = [str(p) for p in verList]
+    return ".".join( verList )
+
+def __versionList( ver, parts=4 ):        
+    try:
+        if isinstance(ver, string_types ):                 
+            ver = ver.replace(",",".").replace(" ","").replace("(","").replace(")","")
+            verList = ver.split(".")
+        elif isinstance(ver, tuple): verList = list(ver)
+        elif isinstance(ver, list): verList = ver
+        else: verList = str(ver).split(".")
+        verList = [int(p) for p in verList]        # convert all parts to ints or raise an exception
+        verList.extend( [0]*(parts-len(verList)) ) # rpad with 0s as needed
+        verList = verList[:parts]                  # truncate to size as needed
+    except:
+        printErr( "WARNING: version malformed or not defined!" ) 
+        verList = [0]*parts
+    return verList
+
 # -----------------------------------------------------------------------------
 def halt(): printErr( "HALT!", isFatal=True )
                

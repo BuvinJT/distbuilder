@@ -48,6 +48,8 @@ from distbuilder.util import \
       IS_WINDOWS \
     , IS_LINUX \
     , IS_MACOS \
+    , PY2 \
+    , PY3 \
     , THIS_DIR \
     , absPath \
     , exists \
@@ -88,4 +90,6 @@ from distbuilder.util import \
     , printErr \
     , printExc \
     , halt \
-    , download
+    , download \
+    , versionTuple \
+    , versionStr
