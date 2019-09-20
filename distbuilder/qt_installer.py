@@ -183,8 +183,8 @@ class QtIfwConfigXml( _QtIfwXml ):
             iconBaseName = self.iconFilePath = None
         else :    
             self.iconFilePath = ( None if iconFilePath is None else 
-                                  util._normIconName( iconFilePath, 
-                                                      isPathPreserved=True ) )        
+                                  normIconName( iconFilePath, 
+                                                isPathPreserved=True ) )        
             try:    iconBaseName = splitExt( basename(iconFilePath) )[0]
             except: iconBaseName = None
         self.companyTradeName = ( companyTradeName if companyTradeName 

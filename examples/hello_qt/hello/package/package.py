@@ -1,6 +1,7 @@
 from distbuilder import RobustInstallerProcess, \
-    IS_LINUX, normBinaryName, QtIfwShortcut, QtIfwPackageScript
-from distbuilder.util import _normIconName
+    IS_LINUX, normBinaryName, normIconName, \
+    QtIfwShortcut, QtIfwPackageScript
+    
 from distbuilder.qt_cpp import qmakeInit
 
 args, configFactory = qmakeInit()
@@ -27,7 +28,7 @@ class BuildProcess( RobustInstallerProcess ):
                                                               isGui=firstPkg.isGui )                         
             cfg.configXml.setDefaultPaths()        
             
-        pngIconResPath = ( _normIconName(f.iconFilePath, isPathPreserved=True)
+        pngIconResPath = ( normIconName(f.iconFilePath, isPathPreserved=True)
                            if IS_LINUX else None )             
         versionStr = args.version
                 

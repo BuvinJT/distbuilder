@@ -486,7 +486,7 @@ def normBinaryName( path, isPathPreserved=False, isGui=False ):
     if IS_WINDOWS: return base + (".exe" if ext=="" else ext)
     return base 
                             
-def _normIconName( path, isPathPreserved=False ):
+def normIconName( path, isPathPreserved=False ):
     if path is None : return None    
     if not isPathPreserved : path = basename( path )
     base, _ = splitExt( path )

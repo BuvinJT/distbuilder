@@ -141,7 +141,7 @@ class PyInstallerConfig:
             if IS_LINUX : 
                 # icon embedding is not supported by PyInstaller for Linux,
                 # this is handled by the library wrapper independently 
-                self._pngIconResPath = self._absPath( util._normIconName( 
+                self._pngIconResPath = self._absPath( normIconName( 
                     self.iconFilePath, isPathPreserved=True ) )
                 self.iconFilePath = None                                                         
             elif( IS_WINDOWS and
@@ -155,7 +155,7 @@ class PyInstallerConfig:
                         self._absPath(self.iconFilePath[0]), self.iconFilePath[1] )
                 else : raise
             else :
-                self.iconFilePath = self._absPath( util._normIconName( 
+                self.iconFilePath = self._absPath( normIconName( 
                     self.iconFilePath, isPathPreserved=True ) )               
         except: self.iconFilePath = None
         iconSpec = ( '--icon "%s"' % (self.iconFilePath,) 

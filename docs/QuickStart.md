@@ -228,6 +228,19 @@ Having witnessed everything function, review the
 script. The script is a simple example, but covers a good portion of the 
 "core" distbuilder features.
 
+### Feature spotlight: "file name normalization"
+
+You might notice that binary names/paths (in any of the examples) may or may not
+include extensions such as `.exe`.  Likewise, icons may or may not have extensions
+such as `.ico` specified.  Yet, these scripts work cross platform, where the extensions
+differ!  That is due to the use of [normBinaryName](LowLevel.md#normbinaryname) and
+[normIconName](LowLevel.md#normiconname) functions under the hood of distbuilder's processes.
+The library corrects those names for you automatically based upon the environmental context.
+
+Currently, alternate icon resources must be provided which align with the platform context.
+There are plans, however, for future releases of the library to generate missing icon formats
+for you as needed.    
+
 ### Extended feature demo: "debug mode"
 
 Here is a good place to illustrate one very useful extended feature of this library,

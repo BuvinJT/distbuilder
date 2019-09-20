@@ -970,10 +970,45 @@ cross platform contexts.  On Windows, binaries normally end
 in a ".exe" extension, but on other platforms they normally have
 no extension.  On macOS, binaries to be launched with a GUI, 
 normally have a ".app" extension (vs none when they do not have
-a GUI).  That additional logic is applied when `isGui` is True. 
-When `isPathPreserved` is True, the entire path is returned rather 
-than only the file name.
+a GUI).  That additional logic is applied when `isGui` is `True`. 
+When `isPathPreserved` is `True`, the entire path is returned rather 
+than only the file name.  When `False` (the default) a full path 
+is stripped down to the basename.
 
+### normIconName
+    
+	normIconName( path, isPathPreserved=False )
+	
+The "normalized" name of an icon, resolving such for
+cross platform contexts.  On Windows, icons end 
+in a ".ico" extension, on macOS ".icns" files are used. In Linux, 
+there is no fixed standard exactly on icons, since many distros 
+are non-gui, and as such Linux binaries do not have icons embedded in them.
+For Linux desktops, however, it is common place to use external ".png" files
+to create icons which point to binaries. 
+When `isPathPreserved` is `True`, the entire path is returned rather 
+than only the file name. When `False` (the default) a full path 
+is stripped down to the basename.
+
+### versionTuple
+### versionStr
+
+	versionTuple( ver, parts=4 )    
+	versionStr( ver, parts=4 )
+	
+These functions return "version representations" as either tuples
+of integers, or as strings delimited by periods respectively (e.g. "1.0.0.0").
+Based upon context, either format is commonly used by this library, and
+elsewhere.
+
+The `ver` argument may take many forms: a string (Unicode or bytes), 
+an integer, a float, a tuple, a list... It must simply use digits for 
+each "part" of the version.  Alpha characters are not permitted.
+
+The optional `parts` argument will truncate or pad the return value, so it
+has that many elements present in the representation.  4 "parts" is the standard, 
+i.e. "Major.Minor.Micro.Build". 
+    
 ### Module import utilities 
 
     modulePath( moduleName )
@@ -1083,6 +1118,9 @@ new download will overwrite the prior file.
 	IS_WINDOWS 
     IS_LINUX 
     IS_MACOS 
+    
+    PY2
+    PY3
     
     THIS_DIR 
         

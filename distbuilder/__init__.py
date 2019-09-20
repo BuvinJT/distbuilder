@@ -68,6 +68,7 @@ from distbuilder.util import \
     , splitPath \
     , splitExt \
     , normBinaryName \
+    , normIconName \
     , copyToDir \
     , moveToDir \
     , removeFromDir \
