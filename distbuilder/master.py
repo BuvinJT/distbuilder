@@ -57,7 +57,7 @@ class ConfigFactory:
         self.version       = (0,0,0,0)
         self.isGui         = False
         
-        self.sourceDir     = None      
+        self.sourceDir     = None              
         self.entryPointPy  = None
         self.iconFilePath  = None       
         self.distResources = []
@@ -83,6 +83,7 @@ class ConfigFactory:
         self.ifwPkgScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
         
         self.pkgSrcDirPath    = None
+        self.pkgSrcExePath    = None
        
         self.__pkgPyInstConfig = None
                             
@@ -131,11 +132,7 @@ class ConfigFactory:
                               isGuiPrimaryContentExe=self.isGui,                               
                               companyTradeName=self.companyTradeName )
         if xml.RunProgram is None and self.ifwPackages is not None:
-            firstPkg = self.ifwPackages[0]
-            xml.RunProgramDescription = firstPkg.pkgXml.DisplayName
-            xml.exeName = util.normBinaryName( firstPkg.exeName, 
-                                               isGui=firstPkg.isGui )            
-            xml.setDefaultPaths()
+            xml.setPrimaryContentExe( self.ifwPackages[0] )
         return xml
 
     def qtIfwControlScript( self ) :
@@ -154,11 +151,12 @@ class ConfigFactory:
         pkg = QtIfwPackage(
                 pkgId=self.__ifwPkgId(), 
                 name=self.__ifwPkgName(), 
-                srcDirPath=self.__pkgSrcDirPath(),                  
+                srcDirPath=self.__pkgSrcDirPath(),
+                srcExePath=self.pkgSrcExePath,                  
                 isTempSrc = isTempSrc,
                 pkgXml=self.qtIfwPackageXml(), 
                 pkgScript=self.qtIfwPackageScript( self.__pkgPyInstConfig ) )
-        pkg.exeName = self.binaryName
+        pkg.exeName = self.__pkgExeName()
         pkg.isGui = self.isGui
         return pkg
 
@@ -170,12 +168,16 @@ class ConfigFactory:
     def qtIfwPackageScript( self, pyInstConfig=None ) :
         if self.ifwPkgScript : return self.ifwPkgScript
         self.__pkgPyInstConfig = pyInstConfig
-        pngIconResPath = ( self.__pkgPyInstConfig._pngIconResPath
-            if IS_LINUX and self.__pkgPyInstConfig is not None
-            else None )                     
+        if IS_LINUX:
+            if self.__pkgPyInstConfig: 
+                pngIconResPath = self.__pkgPyInstConfig._pngIconResPath
+            elif self.iconFilePath:    
+                pngIconResPath = normIconName(
+                    self.iconFilePath, isPathPreserved=True )
+        else : pngIconResPath = None         
         defShortcut= QtIfwShortcut(                    
                         productName=self.productName,
-                        exeName=self.binaryName,    
+                        exeName=self.__pkgExeName(),    
                         exeVersion=self.__versionStr(),
                         isGui=self.isGui,                                  
                         pngIconResPath=pngIconResPath )  
@@ -214,6 +216,12 @@ class ConfigFactory:
         if self.binaryName : return absPath( self.binaryName )
         return None                 
 
+    def __pkgExeName( self ):
+        if self.binaryName : return self.binaryName
+        if self.pkgSrcExePath: 
+            return normBinaryName( self.pkgSrcExePath, isGui=self.isGui )  
+        return None
+        
 # -----------------------------------------------------------------------------
 @six.add_metaclass(ABCMeta)
 class _DistBuildProcessBase:

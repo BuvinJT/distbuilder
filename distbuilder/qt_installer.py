@@ -206,6 +206,13 @@ class QtIfwConfigXml( _QtIfwXml ):
         self.setDefaultTitle()
         self.setDefaultPaths()
 
+    def setPrimaryContentExe( self, ifwPackage ) :
+        if ifwPackage:
+            self.RunProgramDescription = ifwPackage.pkgXml.DisplayName
+            self.primaryContentExe = util.normBinaryName( ifwPackage.exeName, 
+                                                         isGui=ifwPackage.isGui )            
+            self.setDefaultPaths()
+
     def setDefaultVersion( self ) :
         # TODO: extract version info from primary exe?
         if self.Version is None: self.Version = "1.0.0" 
@@ -272,27 +279,27 @@ class QtIfwPackage:
                       % (INSTALLER_DIR_PATH,) ) )
     
     def __init__( self, pkgId=None, name=None, 
-                  srcDirPath=None, srcExePath=None,    
-                  isTempSrc=False,
+                  srcDirPath=None, srcExePath=None, 
+                  isTempSrc=False, 
                   pkgXml=None, pkgScript=None ) :
         # internal id
-        self.pkgId           = pkgId       
+        self.pkgId          = pkgId       
         # definition
-        self.name            = name
-        self.pkgXml          = pkgXml
-        self.pkgScript       = pkgScript        
+        self.name           = name
+        self.pkgXml         = pkgXml
+        self.pkgScript      = pkgScript        
         # content        
-        self.srcDirPath      = srcDirPath
-        self.srcExePath      = srcExePath
-        self.othContentPaths = None
-        self.isTempSrc       = isTempSrc                     
-        # extended content detail
-        self.exeName        = None   
+        self.srcDirPath     = srcDirPath
+        self.srcExePath     = srcExePath
+        self.distResources  = None
+        self.isTempSrc      = isTempSrc                     
+        # extended content detail        
+        self.exeName        = None           
         self.isGui          = False
         self.isQtCppExe     = False
         self.isMingwExe     = False
         self.qmlScrDirPath  = None  # for QML projects only   
-            
+           
     def contentDirPath( self ) :
         return joinPath( BUILD_SETUP_DIR_PATH,
             normpath( QtIfwPackage.__CONTENT_PATH_TMPLT 
@@ -1548,12 +1555,17 @@ def __initBuild( qtIfwConfig ) :
         destDir = p.contentDirPath()                
         if p.srcDirPath : 
             p.srcDirPath = normpath( p.srcDirPath )
-            copyDir( p.srcDirPath, destDir )    
+            copyDir( p.srcDirPath, destDir )                
         if p.srcExePath :
-            srcExeDir, srcExeName = splitPath( p.srcExePath )
+            srcExeDir, srcExeName = splitPath( 
+                normBinaryName( p.srcExePath, isPathPreserved=True, 
+                                isGui=p.isGui ) )
+            # if the source was was not in the source directory
+            # and therefore already copied to the destDir, do so...
             if srcExeDir != p.srcDirPath :         
                 if not isDir( destDir ): makeDir( destDir )
-                copyToDir( p.srcExePath, destDirPath=destDir )                
+                copyToDir( p.srcExePath, destDirPath=destDir )
+            # reconcile the exeName with the source exe                     
             if p.exeName is None: p.exeName = srcExeName 
             elif p.exeName != srcExeName :             
                 rename( joinPath( destDir, srcExeName ),
@@ -1595,13 +1607,13 @@ def __addInstallerResources( qtIfwConfig ) :
                    % (pkgScript.fileName) )
             pkgScript.debug()
             pkgScript.write()            
-        if p.othContentPaths is not None : __addOtherFiles( p )     
+        if p.distResources is not None : __addResources( p )     
         if p.isQtCppExe : __addQtCppDependencies( qtIfwConfig, p )        
             
-def __addOtherFiles( package ) :    
-    print( "Adding additional files..." )
+def __addResources( package ) :    
+    print( "Adding additional resources..." )
     destPath = package.contentDirPath()            
-    for srcPath in package.othContentPaths:
+    for srcPath in package.distResources:
         if isDir( srcPath ) : copyDir( srcPath, destPath )
         else : copyFile( srcPath, joinPath( destPath, basename( srcPath ) ) )
 

@@ -25,6 +25,7 @@ def qmakeArgs():
 def qmakeConfigFactory( args=None ): 
     if args is None: args = qmakeArgs()    
     f = ConfigFactory()
+    f.pkgSrcExePath    = args.binaryPath 
     f.productName      = args.title
     f.description      = args.descr
     f.companyTradeName = args.company

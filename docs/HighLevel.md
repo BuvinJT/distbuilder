@@ -71,6 +71,7 @@ Attributes & default values:
     ifwPkgScriptName = "installscript.qs"
     
     pkgSrcDirPath    = None
+    pkgSrcExePath    = None
 
 Object creation functions:
      
@@ -322,14 +323,22 @@ involved. For more information refer to:
 QtInstaller for deployment on a target environment.  Normally, you may allow
 distbuilder to set the name for you automatically.
 
-#### pkgSrcDirPath
+#### pkgSrcDirPath, pkgSrcExePath
 
 When building installers that have external resources which are not part of
-automatically generated packages, this attribute may be used to define the path
-to that package's content.  When not supplied, this path defined by an 
-[PyInstallerConfig](ConfigClasses.md#pyinstallerconfig) object definition reference
-by the factory, or assumed to simply be a sub directory adjacent to the build script
-with the same name as the `binaryName` attribute.
+automatically generated products/packages, these attributes may be used to define the paths
+to that package's content.  
+
+When the `pkgSrcDirPath` is not supplied, this is path defined 
+by either a [PyInstallerConfig](ConfigClasses.md#pyinstallerconfig) object definition,
+or assumed to simply be a sub directory adjacent to the build script
+*with the same name* as the `binaryName` attribute.
+
+The attribute `pkgSrcExePath` must only be supplied when the package contains a
+"primary" executable which was not produced by a process with the library (i.e. 
+it was compliled previously by some other build system).  Note, that if `binaryName`
+is also defined, the `pkgSrcExePath` file will be renamed to that name upon building
+the package. 
 
 See: [RobustInstallerProcess](#robustinstallerprocess). 
     

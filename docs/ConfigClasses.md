@@ -334,7 +334,7 @@ Attributes:
 	<content>        
 	srcDirPath      = None
 	srcExePath      = None
-	othContentPaths = None
+	distResources   = None
 	isTempSrc       = False
 	                     
 	<extended content detail>
