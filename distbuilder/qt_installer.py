@@ -6,13 +6,6 @@ from xml.dom import minidom
 from datetime import date
 from abc import ABCMeta, abstractmethod
 
-__MSVC_BIN  = "msvc"
-__MINGW_BIN = "mingw"
-SRC_COMPILER_OPTIONS=[ __MSVC_BIN, __MINGW_BIN ]
-
-BUILD_SETUP_DIR_PATH = absPath( "build_setup" )
-INSTALLER_DIR_PATH = "installer"
-
 QT_IFW_DEFAULT_VERSION = "3.1.1"
 QT_IFW_DOWNLOAD_URL_BASE = "https://download.qt.io/official_releases/qt-installer-framework"
 QT_IFW_DOWNLOAD_FILE_WINDOWS = "QtInstallerFramework-win-x86.exe"
@@ -21,10 +14,12 @@ QT_IFW_DOWNLOAD_FILE_LINUX   = "QtInstallerFramework-linux-x64.run"
 __QT_IFW_DOWNLOAD_URL_TMPLT = "%s/%s/%s"
 
 QT_IFW_DIR_ENV_VAR = "QT_IFW_DIR"
-QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
 
 DEFAULT_SETUP_NAME = util.normBinaryName( "setup" )
 DEFAULT_QT_IFW_SCRIPT_NAME = "installscript.qs"
+
+BUILD_SETUP_DIR_PATH = absPath( "build_setup" )
+INSTALLER_DIR_PATH = "installer"
 
 QT_IFW_VERBOSE_SWITCH = '-v'
 _SILENT_FORCED_ARGS = ["-f"]
@@ -41,17 +36,6 @@ __QT_IFW_UNATTENDED_SCRIPT_NAME    = "__distb-unattended-qt-ifw.qs"
 __WRAPPER_SCRIPT_NAME = "__installer.py"
 __WRAPPER_INSTALLER_NAME = "wrapper-installer" 
 __NESTED_INSTALLER_NAME  = "hidden-installer"
-
-__QT_WINDOWS_DEPLOY_EXE_NAME   = "windeployqt.exe"
-__QT_WINDOWS_DEPLOY_QML_SWITCH = "--qmldir"
-
-#TODO: Add more of these dlls?  
-#TODO: Add additional logic to determine the need for this...
-__MINGW_DLL_LIST = [
-      "libgcc_s_dw2-1.dll"
-    , "libstdc++-6.dll"
-    , "libwinpthread-1.dll"
-]
 
 STARTMENU_WIN_SHORTCUT         = 0
 DESKTOP_WIN_SHORTCUT           = 1
@@ -82,9 +66,8 @@ class QtIfwConfig:
         self.controlScript       = controlScript         
         
         self.setupExeName        = setupExeName
-        # Qt paths (attempt to use environmental variables if not defined)
+        # QtIFW path (attempt to use environmental variable if not defined)
         self.qtIfwDirPath = None
-        self.qtBinDirPath = None          
         # other IFW command line options
         self.isDebugMode    = True
         self.otherQtIfwArgs = ""
@@ -303,6 +286,9 @@ class QtIfwPackage:
         # extended content detail        
         self.exeName        = None           
         self.isGui          = False
+        self.qtCppConfig    = None
+        
+        
         self.exeCompiler    = None 
         self.qmlScrDirPath  = None  # for QML projects only   
            
@@ -1536,12 +1522,8 @@ def __validateConfig( qtIfwConfig ):
         raise Exception( "Valid Qt IFW directory path required" )
     for p in qtIfwConfig.packages :
         if not isinstance( p, QtIfwPackage ) : continue
-        if p.pkgType == QtIfwPackage.Type.QT_CPP : 
-            if qtIfwConfig.qtBinDirPath is None:
-                qtIfwConfig.qtBinDirPath = getenv( QT_BIN_DIR_ENV_VAR )    
-            if( qtIfwConfig.qtBinDirPath is None or
-                not isDir(qtIfwConfig.qtBinDirPath) ):        
-                raise Exception( "Valid Qt Bin directory path required" )
+        if p.pkgType == QtIfwPackage.Type.QT_CPP :
+            p.qtCppConfig.validate() 
 
 def __initBuild( qtIfwConfig ) :
     print( "Initializing installer build..." )
@@ -1613,9 +1595,9 @@ def __addInstallerResources( qtIfwConfig ) :
                    % (pkgScript.fileName) )
             pkgScript.debug()
             pkgScript.write()            
-        if p.distResources is not None : __addResources( p )     
         if p.pkgType == QtIfwPackage.Type.QT_CPP : 
-            __addQtCppDependencies( qtIfwConfig, p )        
+            p.qtCppConfig.addDependencies( p )        
+        if p.distResources is not None : __addResources( p )     
             
 def __addResources( package ) :    
     print( "Adding additional resources..." )
@@ -1623,26 +1605,6 @@ def __addResources( package ) :
     for srcPath in package.distResources:
         if isDir( srcPath ) : copyDir( srcPath, destPath )
         else : copyFile( srcPath, joinPath( destPath, basename( srcPath ) ) )
-
-def __addQtCppDependencies( qtIfwConfig, package ) :
-    # TODO: Add the counterparts here for other platforms
-    if IS_WINDOWS :
-        print( "Adding Qt C++ dependencies...\n" )
-        qtUtilityPath =  normpath( joinPath(
-            qtIfwConfig.qtBinDirPath, __QT_WINDOWS_DEPLOY_EXE_NAME ) )                    
-        destDirPath = package.contentDirPath()
-        exePath = joinPath( destDirPath, package.exeName )
-        cmdList = [qtUtilityPath, exePath]
-        if package.qmlScrDirPath is not None:
-            cmdList.append( __QT_WINDOWS_DEPLOY_QML_SWITCH )
-            cmdList.append( normpath( package.qmlScrDirPath ) )
-        cmd = list2cmdline( cmdList )
-        system( cmd )
-        if package.exeCompiler == __MINGW_BIN:            
-            print( "Adding additional Mingw dependencies..." )
-            for fileName in __MINGW_DLL_LIST:
-                copyToDir( joinPath( qtIfwConfig.qtBinDirPath, fileName ), 
-                           destDirPath=destDirPath )
 
 def __build( qtIfwConfig ) :
     print( "Building installer using Qt IFW...\n" )
@@ -2316,4 +2278,4 @@ def __QtIfwInstallerVersion( installerPath ):
         [installerPath, "--framework-version"] )
     # TODO: validate expected format returned, return None if bad
     return version    
-    
+        

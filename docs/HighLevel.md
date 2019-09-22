@@ -69,10 +69,13 @@ Attributes & default values:
     ifwPkgScriptText = None
     ifwPkgScriptPath = None        
     ifwPkgScriptName = "installscript.qs"
-    
+
+	pkgType          = None    
     pkgSrcDirPath    = None
     pkgSrcExePath    = None
 
+	qtCppConfig      = None
+ 
 Object creation functions:
      
     pyInstallerConfig()    
@@ -323,6 +326,10 @@ involved. For more information refer to:
 QtInstaller for deployment on a target environment.  Normally, you may allow
 distbuilder to set the name for you automatically.
 
+#### pkgType    
+	
+TODO	
+
 #### pkgSrcDirPath, pkgSrcExePath
 
 When building installers that have external resources which are not part of
@@ -341,6 +348,10 @@ is also defined, the `pkgSrcExePath` file will be renamed to that name upon buil
 the package. 
 
 See: [RobustInstallerProcess](#robustinstallerprocess). 
+
+#### qtCppConfig
+
+TODO
     
 ## Process Classes
 

@@ -145,7 +145,6 @@ Attributes & default values:
 	
 	<Qt paths (attempt to use environmental variables if not defined)>
 	qtIfwDirPath = None
-	qtBinDirPath = None          
 	
 	<other IFW command line options>
 	isDebugMode    = True
@@ -562,3 +561,20 @@ Attributes:
     localDirPath 
     pipConfig    
     isObfuscated 
+
+## QtCppConfig:
+
+Used for Qt C++ integration.
+
+Constructor:
+
+    QtCppConfig( qtBinDirPath, exeCompiler,  
+                 qmlScrDirPath=None  )
+    
+Attributes:                    
+
+	qtBinDirPath             
+    exeCompiler    
+    qmlScrDirPath     
+    
+    

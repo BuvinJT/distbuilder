@@ -1,8 +1,9 @@
-from argparse import ArgumentParser
 from distbuilder.master import ConfigFactory
-from distbuilder.qt_installer import QtIfwPackage, \
-    QT_BIN_DIR_ENV_VAR, SRC_COMPILER_OPTIONS 
-from distbuilder.util import versionTuple, setEnv 
+from distbuilder.qt_installer import QtIfwPackage
+from distbuilder.util import * # @UnusedWildImport
+from argparse import ArgumentParser
+ 
+QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
 
 def qmakeInit(): 
     factory = qmakeConfigFactory()
@@ -11,9 +12,9 @@ def qmakeInit():
 
 def qmakeConfigFactory( args=None ): 
     if args is None: args = qmakeArgs()
-    setEnv( QT_BIN_DIR_ENV_VAR, args.qtBinDirPath )
     f = ConfigFactory()
-    f.pkgType          = QtIfwPackage.Type.QT_CPP    
+    f.pkgType          = QtIfwPackage.Type.QT_CPP
+    f.qtCppConfig      = QtCppConfig( args.qtBinDirPath, args.binCompiler )          
     f.pkgSrcExePath    = args.srcExePath
     f.isGui            = args.gui
     f.productName      = args.title
@@ -42,7 +43,64 @@ def qmakeArgParser():
     parser.add_argument( "-i", "--icon", default=None, help="Icon path" )
     parser.add_argument( "-v", "--version", default="0.0.0.0", help="Product version" )
     parser.add_argument( "-s", "--setup", default=None, help="Setup name" )
-    parser.add_argument( "-b", '--binCompiler', default=None, choices=SRC_COMPILER_OPTIONS,
+    parser.add_argument( "-b", '--binCompiler', default=None, 
+                         choices=QtCppConfig.srcCompilerOptions(),
                          help='compiler used (for dependency gathering)' )
     return parser
- 
+
+# -----------------------------------------------------------------------------
+class QtCppConfig:
+
+    __QT_WINDOWS_DEPLOY_EXE_NAME   = "windeployqt.exe"
+    __QT_WINDOWS_DEPLOY_QML_SWITCH = "--qmldir"
+    
+    #TODO: Add more of these dlls?  
+    #TODO: Add additional logic to determine the need for this...
+    __MINGW_DLL_LIST = [
+          "libgcc_s_dw2-1.dll"
+        , "libstdc++-6.dll"
+        , "libwinpthread-1.dll"
+    ]
+    
+    __MSVC_BIN  = "msvc"
+    __MINGW_BIN = "mingw"
+    
+    @staticmethod    
+    def srcCompilerOptions(): 
+        return [ QtCppConfig.__MSVC_BIN
+               , QtCppConfig.__MINGW_BIN 
+        ] 
+    
+    def __init__( self, qtBinDirPath, exeCompiler,  
+                  qmlScrDirPath=None ):
+        self.qtBinDirPath   = qtBinDirPath          
+        self.exeCompiler    = exeCompiler
+        self.qmlScrDirPath  = qmlScrDirPath   
+
+    def validate( self ):
+        if self.qtBinDirPath is None:
+            self.qtBinDirPath = getEnv( QT_BIN_DIR_ENV_VAR )    
+        if( self.qtBinDirPath is None or
+            not isDir(self.qtBinDirPath) ):        
+            raise Exception( "Valid Qt Bin directory path required" )
+    
+    def addDependencies( self, package ) :
+        print( "Adding Qt C++ dependencies...\n" )
+        self.validate()                
+        # TODO: Add the counterparts here for other platforms
+        if IS_WINDOWS :
+            qtUtilityPath =  normpath( joinPath( 
+                self.qtBinDirPath, QtCppConfig.__QT_WINDOWS_DEPLOY_EXE_NAME ) )                    
+            destDirPath = package.contentDirPath()
+            exePath = joinPath( destDirPath, package.exeName )
+            cmdList = [qtUtilityPath, exePath]
+            if package.qmlScrDirPath is not None:
+                cmdList.append( QtCppConfig.__QT_WINDOWS_DEPLOY_QML_SWITCH )
+                cmdList.append( normpath( package.qmlScrDirPath ) )
+            cmd = list2cmdline( cmdList )
+            system( cmd )
+            if package.exeCompiler == QtCppConfig.__MINGW_BIN:            
+                print( "Adding additional Mingw dependencies..." )
+                for fileName in QtCppConfig.__MINGW_DLL_LIST:
+                    copyToDir( joinPath( self.qtBinDirPath, fileName ), 
+                               destDirPath=destDirPath )

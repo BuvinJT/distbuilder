@@ -86,6 +86,8 @@ class ConfigFactory:
         self.pkgSrcDirPath    = None
         self.pkgSrcExePath    = None
        
+        self.qtCppConfig      = None
+       
         self.__pkgPyInstConfig = None
                             
     def pyInstallerConfig( self ): 
@@ -160,6 +162,7 @@ class ConfigFactory:
                 pkgScript=self.qtIfwPackageScript( self.__pkgPyInstConfig ) )
         pkg.exeName = self.__pkgExeName()
         pkg.isGui = self.isGui
+        pkg.qtCppConfig = self.qtCppConfig
         return pkg
 
     def qtIfwPackageXml( self ) :
