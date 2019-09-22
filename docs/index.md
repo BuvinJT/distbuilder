@@ -10,22 +10,22 @@ the [Qt Installer Framework](http://doc.qt.io/qtinstallerframework),
 [Opy](https://pypi.org/project/opy-distbuilder/) (Obfuscator for Python), 
 [pip](https://pypi.org/project/pip/), and more.  
 
-This library is compatible with both Python 2 and 3.  Its primary intention, as one might guess,
-is for creating Python based programs. It can, however, be employed for bundling all sorts of
-software.  
+As one might guess, the primary role which Distribution Builder can serve for your development 
+need, is packaging and deploying Python based programs. It can, however, be employed for 
+distributing software of all sorts.  To this end, a dedicated module (and set of examples), 
+have been provided for [Qt C++ Integration](QtCpp.md).    
 
-Distribution Builder has been tested on recent versions of Windows, macOS, and multiple Linux distros. 
-It features the ability to create standalone binaries from Python scripts (via PyInstaller),
-and is capable of building installers in a cross platform manner (via QtIFW) 
-which work in either gui or *non-gui* contexts (note QtIFW does NOT
-naturally provide a *non-gui* option!). The library can also be used to obfuscate code (via Opy), 
-so as to protect proprietary work.
+This library is compatible with both Python 2 and 3.  It has been tested on recent versions of 
+Windows, macOS, and multiple Linux distros. It features the ability to create standalone 
+binaries from Python scripts (via PyInstaller), and is capable of building installers in a 
+cross platform manner (via QtIFW) which work in either gui or *non-gui* contexts (note 
+QtIFW does NOT naturally provide a *non-gui* option!). The library can also be used to 
+**obfuscate** code (via Opy), so as to protect proprietary work.
 
 See the [Quick Start Guide](QuickStart.md) for instructions on installation 
 and getting started with the tool. For a more thorough explanation of how to use it, 
-it is recommended you next proceed to 
-[High Level Classes](HighLevel.md).  Then, as needed, move on to 
-[Configuration Classes](ConfigClasses.md) and/or
+it is recommended you next proceed to [High Level Classes](HighLevel.md).
+Then, as needed, move on to [Configuration Classes](ConfigClasses.md) and/or
 [Low Level Classes And Functions](LowLevel.md).
 	
 If you wish to contribute, please review the [To-Do List](ToDo.md) 
@@ -35,10 +35,10 @@ releases.
 	
 ## Additional Project Goals
 
-In addition to everything which is already flesh out and functional within it, "Distribution Builder"
-will soon supply a **new development paradigm**...  Using the obfuscation and library 
-management features, it will provide the ability for collaborators to work on a **Python** 
-project together, **without directly sharing source code**!
+In addition to everything which is already flesh out and functional within it, 
+"Distribution Builder" will soon supply a **new development paradigm**...  Using the 
+obfuscation and library management features, it will provide the ability for collaborators 
+to work on a **Python** project together, **without directly sharing source code**!
 
 We acknowledge this idea may to be deemed "anti-Pythonic" by purists, since the language is
 commonly employed for open source purposes, and the Python ecosystem is almost 100%
@@ -53,11 +53,11 @@ Once theses features (in development) are completed and smoothed over, each Pyth
 on a project could independently create libraries with a clear text 
 *public* interface, but which employ code bases that are obfuscated.  Other developers 
 could then implement the functionality of those libraries as they develop their modules.
-"Distribution Builder" could next seamlessly bring together everyone's work into a single project, 
-where all of the protected code bases work together and even the "seams" between those public 
-interfaces become obfuscated. In this scenario, each developer will have this capability, 
-and therefore be able to test their own work - on the fly - within the context of the 
-larger product.  
+"Distribution Builder" could next seamlessly bring together everyone's work into a single 
+project, where all of the protected code bases work together and even the "seams" between 
+those public interfaces become obfuscated. In this scenario, each developer will have this 
+capability, and therefore be able to test their own work - on the fly - within the context 
+of the larger product.  
 
 Producing software in this manner, allows engineers to work together 
 on endeavors where there are gray areas pertaining to intellectual rights and/or the
@@ -68,25 +68,22 @@ which they made considerable contributions.
 While this overarching concept has long been available with other languages (e.g. with 
 C++ dll's and other analogous compiled components), this has not generally been an option 
 for Python.  Even in those languages where such is a "ready option", a development scheme 
-of this nature is often too cumbersome to employ. "Distribution Builder" aims to make 
-this a painless and realistic mode of operation for Python.
+of this nature is often too cumbersome to employ, or simply not an option developers have
+considered. "Distribution Builder" aims to make this a painless and realistic mode of 
+operation for Python.
  
 ## Important Notes
 
-*BEFORE USE, BACK UP YOUR ENTIRE PROJECT TO ENSURE THERE WILL 
-NOT POSSIBLY BE ANY WORK LOST!!!* 
+*BEFORE USE, BACK UP YOUR CODE TO ENSURE THERE COULD NOT POSSIBLY BE ANYTHING LOST!!!* 
 
-This library is actively under development. It is not 
-yet officially released for production use. Function 
-signatures, class definitions, etc. are NOT currently 
-guaranteed to be stable / backwards compatible.
-Client implementations may require modification upon 
-pulling the latest revisions to this.
+This library is actively under development. It is not yet officially released for 
+production use. Function signatures, class definitions, etc. are NOT currently 
+guaranteed to be stable / backwards compatible. Client implementations may require 
+modification upon pulling the latest revisions to this.
 
-At the present time, the weakest components in the library are 
-admittedly the obfuscation features. There is a bit of a learning curve 
-for utilizing such, and a fair degree of effort is likely required
-to perfect it for your own project right now.  It is recommended that
-you employ these security features only after getting the 
-rest of your build process defined.
+At the present time, the weakest components in the library are admittedly the obfuscation 
+features. There is a bit of a learning curve for utilizing such, and a fair degree of 
+effort is likely required to perfect it for your own project right now.  It is recommended 
+that you employ these security features only after getting the rest of your build process 
+defined.
  

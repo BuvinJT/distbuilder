@@ -5,6 +5,7 @@ pages:
     - High Level Classes: HighLevel.md
     - Configuration Classes: ConfigClasses.md
     - Low Level Functions: LowLevel.md
+    - Qt C++ Integration: QtCpp.md
     - Troubleshooting: Issues.md
     - To-Do List: ToDo.md
     - Contact / Contribute: Contribute.md
