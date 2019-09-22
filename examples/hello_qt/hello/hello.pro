@@ -4,9 +4,6 @@
 #
 #-------------------------------------------------
 
-# Distbuilder integration dependency
-include(util.pri)
-
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -45,7 +42,8 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-# Distbuilder integration
+# DISTRIBUTION BUILDER INTEGRATION
+#==============================================================================
 include(package/package.pri)
-message(Commands to execute post link:)
+message(Commands to execute upon rebuild:)
 message($${QMAKE_POST_LINK})
