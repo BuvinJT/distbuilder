@@ -7,42 +7,42 @@ from distbuilder.master import \
     , RobustInstallerProcess 
        
 from distbuilder.py_installer import \
-      buildExecutable \
-    , makePyInstSpec \
-    , PyInstallerConfig \
+      PyInstallerConfig \
     , PyInstSpec \
-    , WindowsExeVersionInfo
+    , WindowsExeVersionInfo \
+    , buildExecutable \
+    , makePyInstSpec 
     
 from distbuilder.qt_installer import \
-      installQtIfw \
-    , unInstallQtIfw \
-    , buildInstaller \
-    , findQtIfwPackage \
-    , removeQtIfwPackage \
-    , mergeQtIfwPackages \
-    , QtIfwConfig \
+      QtIfwConfig \
     , QtIfwConfigXml \
     , QtIfwControlScript \
     , QtIfwPackage \
     , QtIfwPackageXml \
     , QtIfwPackageScript \
     , QtIfwShortcut \
+    , installQtIfw \
+    , unInstallQtIfw \
+    , buildInstaller \
+    , findQtIfwPackage \
+    , removeQtIfwPackage \
+    , mergeQtIfwPackages \
     , QT_IFW_VERBOSE_SWITCH
 
 from distbuilder.pip_installer import \
-      installLibraries \
+      PipConfig \
+    , installLibraries \
     , installLibrary \
     , uninstallLibrary \
-    , PipConfig \
     , vcsUrl
 
 from distbuilder.opy_library import \
-      obfuscatePy \
-    , obfuscatePyLib \
-    , createStageDir \
-    , OpyConfigExt as OpyConfig \
+      OpyConfigExt as OpyConfig \
     , OpyPatch \
-    , LibToBundle 
+    , LibToBundle \
+    , obfuscatePy \
+    , obfuscatePyLib \
+    , createStageDir 
     
 from distbuilder.util import \
       IS_WINDOWS \
@@ -79,6 +79,9 @@ from distbuilder.util import \
     , copyToHomeDir \
     , collectDirs \
     , mergeDirs \
+    , getEnv \
+    , setEnv \
+    , delEnv \
     , _run \
     , run \
     , runPy \

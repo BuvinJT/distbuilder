@@ -990,8 +990,15 @@ When `isPathPreserved` is `True`, the entire path is returned rather
 than only the file name. When `False` (the default) a full path 
 is stripped down to the basename.
 
-### versionTuple
-### versionStr
+### getEnv, setEnv, delEnv
+
+	getEnv( varName, default=None )
+	setEnv( varName, value )
+	delEnv( varName )
+
+Use these functions to retrieve or manipulate environmental variables.
+
+### versionTuple, versionStr
 
 	versionTuple( ver, parts=4 )    
 	versionStr( ver, parts=4 )

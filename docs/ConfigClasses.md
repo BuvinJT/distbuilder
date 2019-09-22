@@ -323,10 +323,11 @@ Constructor:
 
 Attributes:    
 
-	<internal id>
+	<internal id / type>
 	pkgId           = None       
+	pkgType	        = None
 	
-	<definition>
+	<QtIFW definition>
 	name            = None
 	pkgXml          = None
 	pkgScript       = None
@@ -340,8 +341,7 @@ Attributes:
 	<extended content detail>
 	exeName        = None   
 	isGui          = False
-	isQtCppExe     = False
-	isMingwExe     = False
+	exeCompiler    = None
 	qmlScrDirPath  = None  <for QML projects only>   
  
 Functions:      

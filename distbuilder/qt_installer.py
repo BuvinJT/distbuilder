@@ -6,6 +6,10 @@ from xml.dom import minidom
 from datetime import date
 from abc import ABCMeta, abstractmethod
 
+__MSVC_BIN  = "msvc"
+__MINGW_BIN = "mingw"
+SRC_COMPILER_OPTIONS=[ __MSVC_BIN, __MINGW_BIN ]
+
 BUILD_SETUP_DIR_PATH = absPath( "build_setup" )
 INSTALLER_DIR_PATH = "installer"
 
@@ -268,6 +272,8 @@ class QtIfwConfigXml( _QtIfwXml ):
     
 # -----------------------------------------------------------------------------
 class QtIfwPackage:
+
+    class Type: DATA, PY_INSTALLER, QT_CPP = range(3)  
     
     __PACKAGES_PATH_TMPLT = "%s/packages"
     __CONTENT_PATH_TMPLT = "%s/packages/%s/data" 
@@ -278,13 +284,14 @@ class QtIfwPackage:
             normpath( QtIfwPackage.__PACKAGES_PATH_TMPLT 
                       % (INSTALLER_DIR_PATH,) ) )
     
-    def __init__( self, pkgId=None, name=None, 
+    def __init__( self, pkgId=None, pkgType=None, name=None, 
                   srcDirPath=None, srcExePath=None, 
                   isTempSrc=False, 
                   pkgXml=None, pkgScript=None ) :
-        # internal id
-        self.pkgId          = pkgId       
-        # definition
+        # internal id / type
+        self.pkgId          = pkgId
+        self.pkgType        = pkgType       
+        # QtIFW definition        
         self.name           = name
         self.pkgXml         = pkgXml
         self.pkgScript      = pkgScript        
@@ -296,8 +303,7 @@ class QtIfwPackage:
         # extended content detail        
         self.exeName        = None           
         self.isGui          = False
-        self.isQtCppExe     = False
-        self.isMingwExe     = False
+        self.exeCompiler    = None 
         self.qmlScrDirPath  = None  # for QML projects only   
            
     def contentDirPath( self ) :
@@ -1530,7 +1536,7 @@ def __validateConfig( qtIfwConfig ):
         raise Exception( "Valid Qt IFW directory path required" )
     for p in qtIfwConfig.packages :
         if not isinstance( p, QtIfwPackage ) : continue
-        if p.isQtCppExe : 
+        if p.pkgType == QtIfwPackage.Type.QT_CPP : 
             if qtIfwConfig.qtBinDirPath is None:
                 qtIfwConfig.qtBinDirPath = getenv( QT_BIN_DIR_ENV_VAR )    
             if( qtIfwConfig.qtBinDirPath is None or
@@ -1608,7 +1614,8 @@ def __addInstallerResources( qtIfwConfig ) :
             pkgScript.debug()
             pkgScript.write()            
         if p.distResources is not None : __addResources( p )     
-        if p.isQtCppExe : __addQtCppDependencies( qtIfwConfig, p )        
+        if p.pkgType == QtIfwPackage.Type.QT_CPP : 
+            __addQtCppDependencies( qtIfwConfig, p )        
             
 def __addResources( package ) :    
     print( "Adding additional resources..." )
@@ -1631,8 +1638,8 @@ def __addQtCppDependencies( qtIfwConfig, package ) :
             cmdList.append( normpath( package.qmlScrDirPath ) )
         cmd = list2cmdline( cmdList )
         system( cmd )
-        if package.isMingwExe :
-            print( "Adding additional Qt dependencies..." )
+        if package.exeCompiler == __MINGW_BIN:            
+            print( "Adding additional Mingw dependencies..." )
             for fileName in __MINGW_DLL_LIST:
                 copyToDir( joinPath( qtIfwConfig.qtBinDirPath, fileName ), 
                            destDirPath=destDirPath )

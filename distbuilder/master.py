@@ -5,7 +5,7 @@ from copy import deepcopy
 from datetime import datetime 
 from time import time as curTime
 
-from distbuilder import util
+from distbuilder import util    # @UnusedImport
 from distbuilder.util import *  # @UnusedWildImport
 
 from distbuilder.py_installer import \
@@ -82,6 +82,7 @@ class ConfigFactory:
         self.ifwPkgScriptPath = None        
         self.ifwPkgScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
         
+        self.pkgType          = None
         self.pkgSrcDirPath    = None
         self.pkgSrcExePath    = None
        
@@ -149,7 +150,8 @@ class ConfigFactory:
     def qtIfwPackage( self, pyInstConfig=None, isTempSrc=False ):
         self.__pkgPyInstConfig = pyInstConfig
         pkg = QtIfwPackage(
-                pkgId=self.__ifwPkgId(), 
+                pkgId=self.__ifwPkgId(),
+                pkgType=self.__ifwPkgType(), 
                 name=self.__ifwPkgName(), 
                 srcDirPath=self.__pkgSrcDirPath(),
                 srcExePath=self.pkgSrcExePath,                  
@@ -199,6 +201,14 @@ class ConfigFactory:
                  else self.productName )        
         prod = prod.replace(" ", "").replace(".", "").lower()            
         return prod
+
+    def __ifwPkgType( self ):
+        if self.pkgType : return self.pkgType
+        if self.__pkgPyInstConfig : return QtIfwPackage.Type.PY_INSTALLER
+        if self.pkgSrcExePath is None:
+            return ( QtIfwPackage.Type.DATA if self.binaryName is None else
+                     QtIfwPackage.Type.PY_INSTALLER )
+        return None
     
     def __ifwPkgName( self ):
         if self.ifwPkgName : return self.ifwPkgName

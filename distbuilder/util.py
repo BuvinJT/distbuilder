@@ -3,7 +3,7 @@ from six.moves import urllib
 from sys import argv, stdout, stderr, exit, \
     executable as PYTHON_PATH
 from os import system, sep as PATH_DELIM, remove as removeFile, \
-    fdopen, getcwd, chdir, walk, \
+    fdopen, getcwd, chdir, walk, environ, \
     chmod, getenv, listdir, makedirs as makeDir, rename # @UnusedImport   
 from os.path import exists, isfile, \
     dirname as dirPath, normpath, realpath, isabs, \
@@ -563,7 +563,6 @@ def __getFolderPathByCSIDL( csidl ):
     return buf.value 
 
 # -----------------------------------------------------------------------------
-
 def versionTuple( ver, parts=4 ): return tuple( __versionList( ver, parts ) )
                 
 def versionStr( ver, parts=4 ): 
@@ -587,6 +586,16 @@ def __versionList( ver, parts=4 ):
         verList = [0]*parts
     return verList
 
+# -----------------------------------------------------------------------------
+def getEnv( varName, default=None ): return environ.get( varName, default )
+
+def setEnv( varName, value ): environ[ varName ] = value
+ 
+def delEnv( varName ):
+    environ[ varName ] = "" 
+    try: del environ[ varName ]
+    except: pass        
+    
 # -----------------------------------------------------------------------------
 def halt(): printErr( "HALT!", isFatal=True )
                

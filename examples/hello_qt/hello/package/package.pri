@@ -34,15 +34,16 @@ OTHER_FILES += $${packageScriptPath}
 
 CONFIG(package){  # if running the "package" build configuration...
 
-    win32: binaryPath=$$OUT_PWD/release/$${TARGET}.exe
-    else:  binaryPath=$$OUT_PWD/$${TARGET}
+    win32: exePath=$$OUT_PWD/release/$${TARGET}.exe
+    else:  exePath=$$OUT_PWD/$${TARGET}
 
     qtBinDirPath = $$dirname(QMAKE_QMAKE)
 
     packageCmd=$${PY_PATH} \
         $$quot( $$clean_path( $${packageScriptPath} ) ) \
-        $$quot( $$clean_path( $${binaryPath} ) ) \
+        $$quot( $$clean_path( $${exePath} ) ) \
         $$quot( $$clean_path( $${qtBinDirPath} ) ) \
+        --gui \
         -t $$quot( $${PRODUCT_TITLE} ) \
         -d $$quot( $${PRODUCT_DESCRIPTION} ) \
         -v $$quot( $${APP_VERSION} ) \
