@@ -287,10 +287,6 @@ class QtIfwPackage:
         self.exeName        = None           
         self.isGui          = False
         self.qtCppConfig    = None
-        
-        
-        self.exeCompiler    = None 
-        self.qmlScrDirPath  = None  # for QML projects only   
            
     def contentDirPath( self ) :
         return joinPath( BUILD_SETUP_DIR_PATH,

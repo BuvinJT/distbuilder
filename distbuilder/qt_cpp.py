@@ -46,6 +46,7 @@ def qmakeArgParser():
     parser.add_argument( "-b", '--binCompiler', default=None, 
                          choices=QtCppConfig.srcCompilerOptions(),
                          help='compiler used (for dependency gathering)' )
+    parser.add_argument( "-q", "--qml", default=None, help="path to the QML source directory" )
     return parser
 
 # -----------------------------------------------------------------------------
@@ -94,12 +95,12 @@ class QtCppConfig:
             destDirPath = package.contentDirPath()
             exePath = joinPath( destDirPath, package.exeName )
             cmdList = [qtUtilityPath, exePath]
-            if package.qmlScrDirPath is not None:
+            if self.qmlScrDirPath is not None:
                 cmdList.append( QtCppConfig.__QT_WINDOWS_DEPLOY_QML_SWITCH )
-                cmdList.append( normpath( package.qmlScrDirPath ) )
+                cmdList.append( normpath( self.qmlScrDirPath ) )
             cmd = list2cmdline( cmdList )
             system( cmd )
-            if package.exeCompiler == QtCppConfig.__MINGW_BIN:            
+            if self.exeCompiler == QtCppConfig.__MINGW_BIN:            
                 print( "Adding additional Mingw dependencies..." )
                 for fileName in QtCppConfig.__MINGW_DLL_LIST:
                     copyToDir( joinPath( self.qtBinDirPath, fileName ), 
