@@ -32,8 +32,9 @@ qrc_*.cpp
 Thumbs.db
 *.res
 *.rc
-/.qmake.cache
-/.qmake.stash
+*.qmake.cache
+*.qmake.stash
+moc_predefs.h
 
 # qtcreator generated files
 *.pro.user*
@@ -62,6 +63,8 @@ Thumbs.db
 # MinGW generated files
 *.Debug
 *.Release
+/*MinGW*Debug
+/*MinGW*Release
 
 # Python byte code
 *.pyc
