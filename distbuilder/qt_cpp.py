@@ -12,9 +12,11 @@ def qmakeInit():
 
 def qmakeConfigFactory( args=None ): 
     if args is None: args = qmakeArgs()
+    cppConfig = QtCppConfig( args.qtBinDirPath, args.binCompiler, 
+                             qmlScrDirPath=args.qml )
     f = ConfigFactory()
     f.pkgType          = QtIfwPackage.Type.QT_CPP
-    f.qtCppConfig      = QtCppConfig( args.qtBinDirPath, args.binCompiler )          
+    f.qtCppConfig      = cppConfig           
     f.pkgSrcExePath    = args.srcExePath
     f.isGui            = args.gui
     f.productName      = args.title
@@ -72,10 +74,10 @@ class QtCppConfig:
                , QtCppConfig.__MINGW_BIN 
         ] 
     
-    def __init__( self, qtBinDirPath, exeCompiler,  
+    def __init__( self, qtBinDirPath, binCompiler,  
                   qmlScrDirPath=None ):
         self.qtBinDirPath   = qtBinDirPath          
-        self.exeCompiler    = exeCompiler
+        self.binCompiler    = binCompiler
         self.qmlScrDirPath  = qmlScrDirPath   
 
     def validate( self ):
@@ -100,7 +102,7 @@ class QtCppConfig:
                 cmdList.append( normpath( self.qmlScrDirPath ) )
             cmd = list2cmdline( cmdList )
             system( cmd )
-            if self.exeCompiler == QtCppConfig.__MINGW_BIN:            
+            if self.binCompiler == QtCppConfig.__MINGW_BIN:            
                 print( "Adding additional Mingw dependencies..." )
                 for fileName in QtCppConfig.__MINGW_DLL_LIST:
                     copyToDir( joinPath( self.qtBinDirPath, fileName ), 
