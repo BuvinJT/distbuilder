@@ -81,7 +81,7 @@ DEFINES += $$globalStrDef( APP_VERSION, 1.0.0.0 )
 DEFINES += $$globalStrDef( COMPANY_TRADE_NAME, Some Company )
 DEFINES += $$globalStrDef( COMPANY_LEGAL_NAME, Some Company Inc. )
 DEFINES += $$globalStrDef( COPYRIGHT_YEAR, $${currentYear} )
-DEFINES += $$globalStrDef( PRODUCT_TITLE, Hello World Qt Example )
+DEFINES += $$globalStrDef( PRODUCT_TITLE, Hello World QML Example )
 DEFINES += $$globalStrDef( PRODUCT_DESCRIPTION, A Distribution Builder Example )
 
 SETUP_NAME=HelloQtSetup
@@ -118,6 +118,8 @@ CONFIG(package){  # detect the "package" build configuration
 
     qtBinDirPath = $$dirname(QMAKE_QMAKE)
 
+    qmlSourcePath = $${_PRO_FILE_PWD_}/ux
+
     packageCmd=$${PY_PATH} \
         $$quot( $$clean_path( $${packageScriptPath} ) ) \
         $$quot( $$clean_path( $${exePath} ) ) \
@@ -129,7 +131,8 @@ CONFIG(package){  # detect the "package" build configuration
         -c $$quot( $${COMPANY_TRADE_NAME} ) \
         -l $$quot( $${COMPANY_LEGAL_NAME} ) \
         -s $$quot( $${SETUP_NAME} ) \
-        -i $$quot( $$clean_path( $${ICON_PATH} ) )
+        -i $$quot( $$clean_path( $${ICON_PATH} ) ) \
+        -q $$quot( $$clean_path( $${qmlSourcePath} ) )
 
     # Detect and pass pertinent compiler details
     win32-msvc*: packageCmd += -b msvc

@@ -18,7 +18,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // style the window
     this->setWindowTitle( PRODUCT_TITLE );
-    this->setWindowIcon( QIcon( ICON_RESOURCE_PATH ) );
 
     // set text on form labels
     ui->product_title->setText( PRODUCT_TITLE );
