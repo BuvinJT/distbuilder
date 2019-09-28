@@ -55,6 +55,77 @@ def qmakeArgParser():
 
 # -----------------------------------------------------------------------------
 class QtCppConfig:
+        
+    def __init__( self, qtBinDirPath, binCompiler,  
+                  qmlScrDirPath=None ):
+        self.qtBinDirPath   = qtBinDirPath          
+        self.binCompiler    = binCompiler
+        self.qmlScrDirPath  = qmlScrDirPath   
+
+    def validate( self ):
+        if IS_WINDOWS :
+            if self.qtBinDirPath is None:
+                self.qtBinDirPath = getEnv( QT_BIN_DIR_ENV_VAR )    
+            if self.qtBinDirPath is None or not isDir(self.qtBinDirPath):        
+                raise Exception( "Valid Qt Bin directory path required" )
+    
+    # Refer to: https://doc.qt.io/qt-5/deployment.html
+    def addDependencies( self, package ) :
+        print( "Adding binary dependencies...\n" )
+        
+        self.validate()                
+        destDirPath = package.contentDirPath()
+        exePath = joinPath( destDirPath, package.exeName )
+
+        if IS_WINDOWS :
+            # collect required .dlls via the Qt deploy utility for Windows
+            qtUtilityPath =  normpath( joinPath( 
+                self.qtBinDirPath, QtCppConfig.__QT_WINDOWS_DEPLOY_EXE_NAME ) )                                
+            cmdList = [qtUtilityPath, exePath]
+            # optionally detect and bundle QML resources
+            if self.qmlScrDirPath is not None:
+                cmdList.extend( [QtCppConfig.__QT_WINDOWS_DEPLOY_QML_SWITCH,
+                                 normpath( self.qmlScrDirPath )] )
+            util._system( list2cmdline( cmdList ) )
+            # add additional .dlls the Qt utility seems to miss
+            if self.binCompiler == QtCppConfig.__MINGW:            
+                for fileName in QtCppConfig.__MINGW_DLL_LIST:
+                    copyToDir( joinPath( self.qtBinDirPath, fileName ), 
+                               destDirPath=destDirPath )
+        elif IS_LINUX:            
+            # get the list of .so libraries the binary links against within the 
+            # local environment, via the standard Linux utility for this.  
+            # Parse that output and collect the files. 
+            cmdList = [QtCppConfig.__LINUX_DYNAMIC_DEPENDENCIES_UTIL_NAME, 
+                       exePath]            
+            lddLines = util._subProcessStdOut( cmdList, asCleanLines=True )
+            for line in lddLines:
+                try :
+                    src = line.split( QtCppConfig.__LDD_DELIMITER_SRC )[1].strip()
+                    path = src.split( QtCppConfig.__LDD_DELIMITER_PATH )[0].strip()
+                    if isFile( path ): 
+                        copyToDir( path, destDirPath=destDirPath )                        
+                except: pass
+            binWrapperPath = "%s.sh" % (joinPath( destDirPath, package.exeName ),)
+            
+            # this bash wrapper ensures the libraries are loaded when launching 
+            # the binary on a target environment  
+            print("Writing binary wrapper script:\n\n%s\n" % 
+                  (QtCppConfig._LINUX_BIN_WRAPPER_SCRIPT))   
+            with open( binWrapperPath, 'w' ) as f:
+                f.write( QtCppConfig._LINUX_BIN_WRAPPER_SCRIPT )
+            
+            # Neither the Qt produced binary, nor the bash script,
+            # implicitly have execute permissions
+            print("Granting execute permissions..." )                   
+            chmod( exePath, 0o755 )
+            chmod( binWrapperPath, 0o755 )
+
+    @staticmethod    
+    def srcCompilerOptions(): 
+        if IS_WINDOWS :
+            return [ QtCppConfig.__MSVC, QtCppConfig.__MINGW ] 
+        return ["default"]
 
     __QT_WINDOWS_DEPLOY_EXE_NAME   = "windeployqt.exe"
     __QT_WINDOWS_DEPLOY_QML_SWITCH = "--qmldir"
@@ -71,74 +142,24 @@ class QtCppConfig:
         , "libwinpthread-1.dll"
     ]
     
-    __MSVC_BIN  = "msvc"
-    __MINGW_BIN = "mingw"
+    __MSVC  = "msvc"
+    __MINGW = "mingw"
 
+    # A client may override this if needed for some reason 
+    # (e.g. the need for alternate syntax on a specific Linux distro target)
+    # Note: this is nearly a verbatim copy of the script Qt
+    # offers up for this purpose.  The only change is the addition
+    # of quotes in a few places, which allows for paths with spaces.    
     _LINUX_BIN_WRAPPER_SCRIPT = (
 """#!/bin/sh
 appname=`basename "$0" | sed s,\.sh$,,`
 dirname=`dirname "$0"`
 tmp="${dirname#?}"
 if [ "${dirname%$tmp}" != "/" ]; then
-    dirname="$PWD/$dirname"
+dirname="$PWD/$dirname"
 fi
 LD_LIBRARY_PATH="$dirname"
 export LD_LIBRARY_PATH
 "$dirname/$appname" "$@"
 """)
     
-    @staticmethod    
-    def srcCompilerOptions(): 
-        return [ QtCppConfig.__MSVC_BIN
-               , QtCppConfig.__MINGW_BIN 
-        ] 
-                
-    def __init__( self, qtBinDirPath, binCompiler,  
-                  qmlScrDirPath=None ):
-        self.qtBinDirPath   = qtBinDirPath          
-        self.binCompiler    = binCompiler
-        self.qmlScrDirPath  = qmlScrDirPath   
-
-    def validate( self ):
-        if self.qtBinDirPath is None:
-            self.qtBinDirPath = getEnv( QT_BIN_DIR_ENV_VAR )    
-        if( self.qtBinDirPath is None or
-            not isDir(self.qtBinDirPath) ):        
-            raise Exception( "Valid Qt Bin directory path required" )
-    
-    # Refer to: https://doc.qt.io/qt-5/deployment.html
-    def addDependencies( self, package ) :
-        print( "Adding binary dependencies...\n" )
-        self.validate()                
-        # TODO: Add the counterparts here for other platforms
-        destDirPath = package.contentDirPath()
-        exePath = joinPath( destDirPath, package.exeName )
-        if IS_WINDOWS :
-            qtUtilityPath =  normpath( joinPath( 
-                self.qtBinDirPath, QtCppConfig.__QT_WINDOWS_DEPLOY_EXE_NAME ) )                    
-            cmdList = [qtUtilityPath, exePath]
-            if self.qmlScrDirPath is not None:
-                cmdList.append( QtCppConfig.__QT_WINDOWS_DEPLOY_QML_SWITCH )
-                cmdList.append( normpath( self.qmlScrDirPath ) )
-            util._system( list2cmdline( cmdList ) )
-            if self.binCompiler == QtCppConfig.__MINGW_BIN:            
-                for fileName in QtCppConfig.__MINGW_DLL_LIST:
-                    copyToDir( joinPath( self.qtBinDirPath, fileName ), 
-                               destDirPath=destDirPath )
-        elif IS_LINUX:            
-            cmdList = [QtCppConfig.__LINUX_DYNAMIC_DEPENDENCIES_UTIL_NAME, 
-                       exePath]            
-            lddLines = util._subProcessStdOut( 
-                                cmdList, asCleanLines=True, isDebug=True )
-            for line in lddLines:
-                try :
-                    src = line.split( QtCppConfig.__LDD_DELIMITER_SRC )[1].strip()
-                    path = src.split( QtCppConfig.__LDD_DELIMITER_PATH )[0].strip()
-                    if isFile( path ): 
-                        copyToDir( path, destDirPath=destDirPath )                        
-                except: pass
-            binWrapperPath = "%s.sh" % (joinPath( destDirPath, package.exeName ),)
-            print("Writing binary wrapper script:\n\n%s\n" % 
-                  (QtCppConfig._LINUX_BIN_WRAPPER_SCRIPT))   
-            with open( binWrapperPath, 'w' ) as f:
-                f.write( QtCppConfig._LINUX_BIN_WRAPPER_SCRIPT )              

@@ -151,9 +151,10 @@ class ConfigFactory:
         
     def qtIfwPackage( self, pyInstConfig=None, isTempSrc=False ):
         self.__pkgPyInstConfig = pyInstConfig
+        pkgType=self.__ifwPkgType()
         pkg = QtIfwPackage(
                 pkgId=self.__ifwPkgId(),
-                pkgType=self.__ifwPkgType(), 
+                pkgType=pkgType, 
                 name=self.__ifwPkgName(), 
                 srcDirPath=self.__pkgSrcDirPath(),
                 srcExePath=self.pkgSrcExePath,                  
@@ -162,6 +163,12 @@ class ConfigFactory:
                 pkgScript=self.qtIfwPackageScript( self.__pkgPyInstConfig ) )
         pkg.exeName = self.__pkgExeName()
         pkg.isGui = self.isGui
+        if( IS_LINUX and self.iconFilePath and 
+            pkgType != QtIfwPackage.Type.PY_INSTALLER ): # PyInst process adds this resource itself  
+            pngPath = normIconName( self.iconFilePath, isPathPreserved=True )
+            if isFile( pngPath ):
+                if pkg.distResources is None: pkg.distResources=[] 
+                pkg.distResources.append( pngPath )
         pkg.qtCppConfig = self.qtCppConfig
         return pkg
 
