@@ -73,13 +73,26 @@ class QtCppConfig:
     
     __MSVC_BIN  = "msvc"
     __MINGW_BIN = "mingw"
+
+    _LINUX_BIN_WRAPPER_SCRIPT = (
+"""#!/bin/sh
+appname=`basename "$0" | sed s,\.sh$,,`
+dirname=`dirname "$0"`
+tmp="${dirname#?}"
+if [ "${dirname%$tmp}" != "/" ]; then
+    dirname="$PWD/$dirname"
+fi
+LD_LIBRARY_PATH="$dirname"
+export LD_LIBRARY_PATH
+"$dirname/$appname" "$@"
+""")
     
     @staticmethod    
     def srcCompilerOptions(): 
         return [ QtCppConfig.__MSVC_BIN
                , QtCppConfig.__MINGW_BIN 
         ] 
-    
+                
     def __init__( self, qtBinDirPath, binCompiler,  
                   qmlScrDirPath=None ):
         self.qtBinDirPath   = qtBinDirPath          
@@ -118,12 +131,14 @@ class QtCppConfig:
             lddLines = util._subProcessStdOut( 
                                 cmdList, asCleanLines=True, isDebug=True )
             for line in lddLines:
-                print("ldd line:" + line) 
                 try :
                     src = line.split( QtCppConfig.__LDD_DELIMITER_SRC )[1].strip()
                     path = src.split( QtCppConfig.__LDD_DELIMITER_PATH )[0].strip()
-                    print("ldd path:" + path)
                     if isFile( path ): 
                         copyToDir( path, destDirPath=destDirPath )                        
-                except: pass            
-            
+                except: pass
+            binWrapperPath = "%s.sh" % (joinPath( destDirPath, package.exeName ),)
+            print("Writing binary wrapper script:\n\n%s\n" % 
+                  (QtCppConfig._LINUX_BIN_WRAPPER_SCRIPT))   
+            with open( binWrapperPath, 'w' ) as f:
+                f.write( QtCppConfig._LINUX_BIN_WRAPPER_SCRIPT )              
