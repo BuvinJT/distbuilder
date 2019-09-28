@@ -1,6 +1,8 @@
 from distbuilder.master import ConfigFactory
 from distbuilder.qt_installer import QtIfwPackage
 from distbuilder.util import * # @UnusedWildImport
+from distbuilder import util 
+
 from argparse import ArgumentParser
  
 QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
@@ -56,7 +58,11 @@ class QtCppConfig:
 
     __QT_WINDOWS_DEPLOY_EXE_NAME   = "windeployqt.exe"
     __QT_WINDOWS_DEPLOY_QML_SWITCH = "--qmldir"
-    
+
+    __LINUX_DYNAMIC_DEPENDENCIES_UTIL_NAME = "ldd"
+    __LDD_DELIMITER_SRC = "=>"
+    __LDD_DELIMITER_PATH = " "
+        
     #TODO: Add more of these dlls?  
     #TODO: Add additional logic to determine the need for this...
     __MINGW_DLL_LIST = [
@@ -87,23 +93,37 @@ class QtCppConfig:
             not isDir(self.qtBinDirPath) ):        
             raise Exception( "Valid Qt Bin directory path required" )
     
+    # Refer to: https://doc.qt.io/qt-5/deployment.html
     def addDependencies( self, package ) :
-        print( "Adding Qt C++ dependencies...\n" )
+        print( "Adding binary dependencies...\n" )
         self.validate()                
         # TODO: Add the counterparts here for other platforms
+        destDirPath = package.contentDirPath()
+        exePath = joinPath( destDirPath, package.exeName )
         if IS_WINDOWS :
             qtUtilityPath =  normpath( joinPath( 
                 self.qtBinDirPath, QtCppConfig.__QT_WINDOWS_DEPLOY_EXE_NAME ) )                    
-            destDirPath = package.contentDirPath()
-            exePath = joinPath( destDirPath, package.exeName )
             cmdList = [qtUtilityPath, exePath]
             if self.qmlScrDirPath is not None:
                 cmdList.append( QtCppConfig.__QT_WINDOWS_DEPLOY_QML_SWITCH )
                 cmdList.append( normpath( self.qmlScrDirPath ) )
-            cmd = list2cmdline( cmdList )
-            system( cmd )
+            util._system( list2cmdline( cmdList ) )
             if self.binCompiler == QtCppConfig.__MINGW_BIN:            
-                print( "Adding additional Mingw dependencies..." )
                 for fileName in QtCppConfig.__MINGW_DLL_LIST:
                     copyToDir( joinPath( self.qtBinDirPath, fileName ), 
                                destDirPath=destDirPath )
+        elif IS_LINUX:            
+            cmdList = [QtCppConfig.__LINUX_DYNAMIC_DEPENDENCIES_UTIL_NAME, 
+                       exePath]            
+            lddLines = util._subProcessStdOut( 
+                                cmdList, asCleanLines=True, isDebug=True )
+            for line in lddLines:
+                print("ldd line:" + line) 
+                try :
+                    src = line.split( QtCppConfig.__LDD_DELIMITER_SRC )[1].strip()
+                    path = src.split( QtCppConfig.__LDD_DELIMITER_PATH )[0].strip()
+                    print("ldd path:" + path)
+                    if isFile( path ): 
+                        copyToDir( path, destDirPath=destDirPath )                        
+                except: pass            
+            

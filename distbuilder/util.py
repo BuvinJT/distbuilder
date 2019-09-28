@@ -177,8 +177,10 @@ def _system( cmd, wrkDir=None ):
     print('')
     if wrkDir is not None: chdir( initWrkDir )
 
-def _subProcessStdOut( cmd, asCleanLines=False ): 
-    stdOut = check_output( cmd )    
+def _subProcessStdOut( cmd, asCleanLines=False, isDebug=False ):
+    if isDebug: print( cmd ) 
+    stdOut = check_output( cmd )
+    if isDebug: print( stdOut )    
     if PY3 : stdOut = stdOut.decode(encoding='windows-1252')
     if asCleanLines :
         lines = stdOut.split('\n')
