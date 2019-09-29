@@ -66,6 +66,10 @@ moc_predefs.h
 /*MinGW*Debug
 /*MinGW*Release
 
+# GCC generated files
+/*GCC*Debug
+/*GCC*Release
+
 # Python byte code
 *.pyc
 
