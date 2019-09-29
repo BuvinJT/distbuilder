@@ -17,17 +17,18 @@ def qmakeConfigFactory( args=None ):
     cppConfig = QtCppConfig( args.qtBinDirPath, args.binCompiler, 
                              qmlScrDirPath=args.qml )
     f = ConfigFactory()
-    f.pkgType          = QtIfwPackage.Type.QT_CPP
-    f.qtCppConfig      = cppConfig           
-    f.pkgSrcExePath    = args.srcExePath
-    f.isGui            = args.gui
-    f.productName      = args.title
-    f.description      = args.descr
-    f.companyTradeName = args.company
-    f.companyLegalName = args.legal    
-    f.iconFilePath     = args.icon
-    f.version          = args.version
-    f.setupName        = args.setup
+    f.pkgType             = QtIfwPackage.Type.QT_CPP
+    f.qtCppConfig         = cppConfig               
+    f.pkgSrcExePath       = args.srcExePath
+    f.pkgExeWrapperScript = QtCppConfig.exeWrapperScript( args.srcExePath )
+    f.isGui               = args.gui
+    f.productName         = args.title
+    f.description         = args.descr
+    f.companyTradeName    = args.company
+    f.companyLegalName    = args.legal    
+    f.iconFilePath        = args.icon
+    f.version             = args.version
+    f.setupName           = args.setup
     return f
 
 def qmakeArgs(): 
@@ -106,20 +107,8 @@ class QtCppConfig:
                     if isFile( path ): 
                         copyToDir( path, destDirPath=destDirPath )                        
                 except: pass
-            binWrapperPath = "%s.sh" % (joinPath( destDirPath, package.exeName ),)
-            
-            # this bash wrapper ensures the libraries are loaded when launching 
-            # the binary on a target environment  
-            print("Writing binary wrapper script:\n\n%s\n" % 
-                  (QtCppConfig._LINUX_BIN_WRAPPER_SCRIPT))   
-            with open( binWrapperPath, 'w' ) as f:
-                f.write( QtCppConfig._LINUX_BIN_WRAPPER_SCRIPT )
-            
-            # Neither the Qt produced binary, nor the bash script,
-            # implicitly have execute permissions
-            print("Granting execute permissions..." )                   
+            # The Qt produced binary does not have execute permissions automatically!
             chmod( exePath, 0o755 )
-            chmod( binWrapperPath, 0o755 )
 
     @staticmethod    
     def srcCompilerOptions(): 
@@ -127,6 +116,14 @@ class QtCppConfig:
             return [ QtCppConfig.__MSVC, QtCppConfig.__MINGW ] 
         return ["default"]
 
+    @staticmethod    
+    def exeWrapperScript( exePath ): 
+        if IS_LINUX :    
+            return ExecutableScript( 
+                normBinaryName( exePath ), # strips extension on Linux
+                script=QtCppConfig.__LINUX_BIN_WRAPPER_SCRIPT )
+        else: return None
+        
     __QT_WINDOWS_DEPLOY_EXE_NAME   = "windeployqt.exe"
     __QT_WINDOWS_DEPLOY_QML_SWITCH = "--qmldir"
 
@@ -145,13 +142,12 @@ class QtCppConfig:
     __MSVC  = "msvc"
     __MINGW = "mingw"
 
-    # A client may override this if needed for some reason 
-    # (e.g. the need for alternate syntax on a specific Linux distro target)
     # Note: this is nearly a verbatim copy of the script Qt
     # offers up for this purpose.  The only change is the addition
-    # of quotes in a few places, which allows for paths with spaces.    
-    _LINUX_BIN_WRAPPER_SCRIPT = (
-"""#!/bin/sh
+    # of quotes in a few places, which allows for paths with spaces.   
+    # The shebang is omitted because class ExecutableScript injects that. 
+    __LINUX_BIN_WRAPPER_SCRIPT = (
+"""
 appname=`basename "$0" | sed s,\.sh$,,`
 dirname=`dirname "$0"`
 tmp="${dirname#?}"
@@ -162,4 +158,3 @@ LD_LIBRARY_PATH="$dirname"
 export LD_LIBRARY_PATH
 "$dirname/$appname" "$@"
 """)
-    

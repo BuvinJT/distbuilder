@@ -82,11 +82,12 @@ class ConfigFactory:
         self.ifwPkgScriptPath = None        
         self.ifwPkgScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
         
-        self.pkgType          = None
-        self.pkgSrcDirPath    = None
-        self.pkgSrcExePath    = None
+        self.pkgType             = None
+        self.pkgSrcDirPath       = None
+        self.pkgSrcExePath       = None
+        self.pkgExeWrapperScript = None
        
-        self.qtCppConfig      = None
+        self.qtCppConfig = None
        
         self.__pkgPyInstConfig = None
                             
@@ -132,7 +133,10 @@ class ConfigFactory:
                               self.__versionStr(), self.companyLegalName, 
                               iconFilePath=self.iconFilePath, 
                               primaryContentExe=self.binaryName,
-                              isGuiPrimaryContentExe=self.isGui,                               
+                              isGuiPrimaryContentExe=self.isGui,
+                              primaryExeWrapper=(
+                                  self.pkgExeWrapperScript.fileName()
+                                  if self.pkgExeWrapperScript else None ),                               
                               companyTradeName=self.companyTradeName )
         if xml.RunProgram is None and self.ifwPackages is not None:
             xml.setPrimaryContentExe( self.ifwPackages[0] )
@@ -163,6 +167,7 @@ class ConfigFactory:
                 pkgScript=self.qtIfwPackageScript( self.__pkgPyInstConfig ) )
         pkg.exeName = self.__pkgExeName()
         pkg.isGui = self.isGui
+        pkg.exeWrapperScript = self.pkgExeWrapperScript 
         if( IS_LINUX and self.iconFilePath and 
             pkgType != QtIfwPackage.Type.PY_INSTALLER ): # PyInst process adds this resource itself  
             pngPath = normIconName( self.iconFilePath, isPathPreserved=True )
@@ -186,10 +191,13 @@ class ConfigFactory:
             elif self.iconFilePath:    
                 pngIconResPath = normIconName(
                     self.iconFilePath, isPathPreserved=True )
-        else : pngIconResPath = None         
-        defShortcut= QtIfwShortcut(                    
+        else : pngIconResPath = None                 
+        wrapperName = ( self.pkgExeWrapperScript.fileName()
+                        if self.pkgExeWrapperScript else None )        
+        defShortcut = QtIfwShortcut(                    
                         productName=self.productName,
                         exeName=self.__pkgExeName(),    
+                        wrapperName=wrapperName,
                         exeVersion=self.__versionStr(),
                         isGui=self.isGui,                                  
                         pngIconResPath=pngIconResPath )  

@@ -645,6 +645,40 @@ def _isLocalPath( path ):
     isLocal = scheme=="file" or scheme=="" 
     return isLocal, path 
 
+# -----------------------------------------------------------------------------            
+class ExecutableScript:
+    def __init__( self, fileNameBase, 
+                  extension=True, # True==auto assign, str==what to use, or None
+                  shebang=True, # True==auto assign, str==what to use, or None                  
+                  script=None, scriptPath=None ) :
+        self.fileNameBase = fileNameBase
+        if extension==True:
+            self.extension = "bat" if IS_WINDOWS else "sh"
+        else: self.extension = extension    
+        if shebang==True and scriptPath is None :
+            self.shebang = None if IS_WINDOWS else "#!/bin/sh" 
+        else: self.shebang = shebang            
+        if scriptPath:
+            with open( scriptPath, 'rb' ) as f: self.script = f.read()
+        else: self.script = script  
+                                                    
+    def __str__( self ) :
+        return( ("%s\n%s" % (self.shebang, self.script)) 
+                if self.shebang else self.script )
+        
+    def debug( self ): print( str(self) )
+        
+    def fileName( self ):
+        return( "%s.%s" % (self.fileNameBase,self.extension)
+                if self.extension else self.fileNameBase )
+                        
+    def write( self, dirPath ):
+        if not isDir( dirPath ): makeDir( dirPath )
+        filePath = joinPath( dirPath, self.fileName() )
+        print("Writing script: %s\n\n%s\n" % (filePath,str(self)) )                               
+        with open( filePath, 'w' ) as f: f.write( str(self) ) 
+        if IS_LINUX : chmod( filePath, 0o755 )
+    
 # -----------------------------------------------------------------------------           
 if IS_WINDOWS :
     class _WindowsSharedFile:

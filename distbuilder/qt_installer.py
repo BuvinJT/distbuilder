@@ -156,6 +156,7 @@ class QtIfwConfigXml( _QtIfwXml ):
                   controlScriptName=None,
                   primaryContentExe=None,
                   isGuiPrimaryContentExe=True,
+                  primaryExeWrapper=None,
                   companyTradeName=None ) :
         _QtIfwXml.__init__( self, QtIfwConfigXml.__ROOT_TAG, 
                             QtIfwConfigXml.__TAGS )
@@ -164,6 +165,7 @@ class QtIfwConfigXml( _QtIfwXml ):
             util.normBinaryName( primaryContentExe, 
                                  isGui=isGuiPrimaryContentExe )
             if primaryContentExe else None )
+        self.primaryExeWrapper=primaryExeWrapper
         
         if IS_LINUX :
             # qt installer does not support icon embedding in Linux
@@ -197,7 +199,9 @@ class QtIfwConfigXml( _QtIfwXml ):
         if ifwPackage:
             self.RunProgramDescription = ifwPackage.pkgXml.DisplayName
             self.primaryContentExe = util.normBinaryName( ifwPackage.exeName, 
-                                                         isGui=ifwPackage.isGui )            
+                                                          isGui=ifwPackage.isGui )
+            self.primaryExeWrapper=( ifwPackage.exeWrapperScript.fileName()
+                                     if ifwPackage.exeWrapperScript else None )            
             self.setDefaultPaths()
 
     def setDefaultVersion( self ) :
@@ -227,7 +231,9 @@ class QtIfwConfigXml( _QtIfwXml ):
         if self.primaryContentExe is not None: 
             # NOTE: THE WORKING DIRECTORY IS NOT SET FOR RUN PROGRAM!
             # THERE DOES NOT SEEM TO BE AN OPTION YET FOR THIS IN QT IFW   
-            programPath = "@TargetDir@/%s" % (self.primaryContentExe,)    
+            programPath = "@TargetDir@/%s" % (
+                self.primaryExeWrapper if self.primaryExeWrapper else
+                self.primaryContentExe,)    
             if util._isMacApp( self.primaryContentExe ):   
                 self.RunProgram = util._LAUNCH_MACOS_APP_CMD 
                 if not isinstance( self.runProgramArgList, list ) :
@@ -272,21 +278,22 @@ class QtIfwPackage:
                   isTempSrc=False, 
                   pkgXml=None, pkgScript=None ) :
         # internal id / type
-        self.pkgId          = pkgId
-        self.pkgType        = pkgType       
+        self.pkgId     = pkgId
+        self.pkgType   = pkgType       
         # QtIFW definition        
-        self.name           = name
-        self.pkgXml         = pkgXml
-        self.pkgScript      = pkgScript        
+        self.name      = name
+        self.pkgXml    = pkgXml
+        self.pkgScript = pkgScript        
         # content        
-        self.srcDirPath     = srcDirPath
-        self.srcExePath     = srcExePath
-        self.distResources  = None
-        self.isTempSrc      = isTempSrc                     
+        self.srcDirPath       = srcDirPath
+        self.srcExePath       = srcExePath
+        self.distResources    = None
+        self.exeWrapperScript = None # use class ExecutableScript
+        self.isTempSrc        = isTempSrc                     
         # extended content detail        
-        self.exeName        = None           
-        self.isGui          = False
-        self.qtCppConfig    = None
+        self.exeName     = None           
+        self.isGui       = False
+        self.qtCppConfig = None
            
     def contentDirPath( self ) :
         return joinPath( BUILD_SETUP_DIR_PATH,
@@ -1213,11 +1220,12 @@ class QtIfwPackageScript( _QtIfwScript ):
     }
 
     @staticmethod
-    def __winAddShortcut( location, exeName, 
+    def __winAddShortcut( location, exeName, wrapper=None, 
                           label="@ProductName@", 
                           directory="@TargetDir@", 
                           iconId=0 ):        
-        exePath = "%s/%s" % (directory, util.normBinaryName( exeName ))
+        exePath = "%s/%s" % (directory, 
+                    wrapper if wrapper else normBinaryName( exeName ))    
         locDir = QtIfwPackageScript.__WIN_SHORTCUT_LOCATIONS[location]             
         shortcutPath = "%s/%s.lnk" % (locDir, label)        
         s = QtIfwPackageScript.__WIN_ADD_SHORTCUT_TMPLT
@@ -1229,11 +1237,12 @@ class QtIfwPackageScript( _QtIfwScript ):
         return s 
 
     @staticmethod
-    def __macAddShortcut( location, exeName, isGui,
+    def __macAddShortcut( location, exeName, isGui, wrapper=None, 
                           label="@ProductName@", 
                           directory="@TargetDir@" ):        
-        exePath = "%s/%s" % (directory, util.normBinaryName( exeName, 
-                                                             isGui=isGui ))
+        exePath = "%s/%s" % (directory, 
+                    wrapper if wrapper else normBinaryName( exeName,    
+                                                            isGui=isGui ))
         locDir = QtIfwPackageScript.__MAC_SHORTCUT_LOCATIONS[location]             
         shortcutPath = "%s/%s" % (locDir, label)        
         s = QtIfwPackageScript.__MAC_ADD_SYMLINK_TMPLT
@@ -1242,12 +1251,14 @@ class QtIfwPackageScript( _QtIfwScript ):
         return s 
 
     @staticmethod
-    def __linuxAddDesktopEntry( location, exeName, version, 
+    def __linuxAddDesktopEntry( location, exeName, version,
+                                wrapper=None,  
                                 label="@ProductName@", 
                                 directory="@TargetDir@", 
                                 pngPath=None,
                                 isGui=True ):        
-        exePath = "%s/%s" % (directory, util.normBinaryName( exeName ))
+        exePath = "%s/%s" % (directory, 
+                    wrapper if wrapper else normBinaryName( exeName ))    
         locDir = QtIfwPackageScript.__X11_SHORTCUT_LOCATIONS[location]             
         shortcutPath = "%s/%s.desktop" % (locDir, label.replace(" ","_"))        
         s = QtIfwPackageScript.__X11_ADD_DESKTOP_ENTRY_TMPLT
@@ -1307,35 +1318,44 @@ class QtIfwPackageScript( _QtIfwScript ):
                 if shortcut.exeName and shortcut.isAppShortcut :
                     winOps += QtIfwPackageScript.__winAddShortcut(
                             STARTMENU_WIN_SHORTCUT, shortcut.exeName,
+                            wrapper=shortcut.wrapperName,
                             label=shortcut.productName )              
                 if shortcut.exeName and shortcut.isDesktopShortcut:
                     winOps += QtIfwPackageScript.__winAddShortcut(
                             DESKTOP_WIN_SHORTCUT, shortcut.exeName,
+                            wrapper=shortcut.wrapperName,
                             label=shortcut.productName ) 
                 if winOps!="" :    
                     self.componentCreateOperationsBody += (             
                         '    if( systemInfo.kernelType === "winnt" ){\n' +
                         '%s\n    }' % (winOps,) )
             elif IS_MACOS:
+                # TODO: Handle having a wrapper script PLUS an icon
                 macOps = ""
                 if shortcut.exeName and shortcut.isAppShortcut :
                     macOps += QtIfwPackageScript.__macAddShortcut(
-                            APPS_MAC_SHORTCUT, shortcut.exeName,
-                            shortcut.isGui, label=shortcut.productName )              
+                            APPS_MAC_SHORTCUT, 
+                            shortcut.exeName, shortcut.isGui, 
+                            wrapper=shortcut.wrapperName,
+                            label=shortcut.productName )              
                 if shortcut.exeName and shortcut.isDesktopShortcut:
                     macOps += QtIfwPackageScript.__macAddShortcut(
-                            DESKTOP_MAC_SHORTCUT, shortcut.exeName,
-                            shortcut.isGui, label=shortcut.productName )             
+                            DESKTOP_MAC_SHORTCUT, 
+                            shortcut.exeName, shortcut.isGui, 
+                            wrapper=shortcut.wrapperName,
+                            label=shortcut.productName )             
                 if macOps!="" :    
                     self.componentCreateOperationsBody += (             
                         '    if( systemInfo.kernelType === "darwin" ){\n' +
                         '%s\n    }' % (macOps,) )                    
             elif IS_LINUX:
                 x11Ops = ""
+                print( "shortcut.wrapperName %s" % shortcut.wrapperName ) 
                 if shortcut.exeName and shortcut.isAppShortcut :
                     x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
                             APPS_X11_SHORTCUT, 
                             shortcut.exeName, shortcut.exeVersion,
+                            wrapper=shortcut.wrapperName,
                             label=shortcut.productName,
                             pngPath=shortcut.pngIconResPath,
                             isGui=shortcut.isGui )                
@@ -1343,6 +1363,7 @@ class QtIfwPackageScript( _QtIfwScript ):
                     x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
                             DESKTOP_X11_SHORTCUT, 
                             shortcut.exeName, shortcut.exeVersion,
+                            wrapper=shortcut.wrapperName,
                             label=shortcut.productName,
                             pngPath=shortcut.pngIconResPath,
                             isGui=shortcut.isGui )                               
@@ -1365,17 +1386,19 @@ class QtIfwPackageScript( _QtIfwScript ):
 # -----------------------------------------------------------------------------    
 class QtIfwShortcut:
     def __init__( self, productName="@ProductName@", 
-                  exeName=None, exeVersion="0.0.0.0",        
+                  exeName=None, wrapperName=None, 
+                  exeVersion="0.0.0.0",        
                   pngIconResPath=None, isGui=True ) :
         self.productName    = productName
         self.exeName        = exeName   
+        self.wrapperName    = wrapperName
         self.isGui          = isGui
         self.exeVersion     = exeVersion        
         self.pngIconResPath = pngIconResPath        
         self.isAppShortcut     = True
         self.isDesktopShortcut = False
 
-# -----------------------------------------------------------------------------            
+# -----------------------------------------------------------------------------    
 def installQtIfw( installerPath=None, version=None, targetPath=None ):    
     if installerPath is None :        
         if   IS_WINDOWS : fileName = QT_IFW_DOWNLOAD_FILE_WINDOWS
@@ -1576,11 +1599,15 @@ def __addInstallerResources( qtIfwConfig ) :
     if ctrlScript :
         print( "Adding installer control script..." )
         ctrlScript.debug()
-        ctrlScript.write()                                      
+        ctrlScript.write()        
+                                      
     for p in qtIfwConfig.packages :
-        if not isinstance( p, QtIfwPackage ) : continue
+        if not isinstance( p, QtIfwPackage ) : continue        
         pkgXml = p.pkgXml              
-        pkgScript = p.pkgScript                   
+        pkgScript = p.pkgScript
+        exeWrapperScript = ( p.exeWrapperScript
+            if isinstance( p.exeWrapperScript, ExecutableScript )
+            else None )
         if pkgXml :            
             print( "Adding installer package definition: %s..." 
                    % (pkgXml.pkgName) )
@@ -1590,9 +1617,16 @@ def __addInstallerResources( qtIfwConfig ) :
             print( "Adding installer package script: %s..." 
                    % (pkgScript.fileName) )
             pkgScript.debug()
-            pkgScript.write()            
+            pkgScript.write()
+        if exeWrapperScript :
+            print( "Adding executable wrapper script: %s..." 
+                   % (exeWrapperScript.fileName()) )
+            exeWrapperScript.debug()
+            exeWrapperScript.write( p.contentDirPath() )
+
         if p.pkgType == QtIfwPackage.Type.QT_CPP : 
             p.qtCppConfig.addDependencies( p )        
+            
         if p.distResources is not None : __addResources( p )     
             
 def __addResources( package ) :    
