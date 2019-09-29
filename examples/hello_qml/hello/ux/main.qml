@@ -1,6 +1,7 @@
 import QtQuick 2.4
 import QtCanvas3D 1.1
 import QtQuick.Window 2.2
+import QtMultimedia 5.8
 
 import "glcode.js" as GLCode
 
@@ -45,4 +46,10 @@ Window {
             }
         }
     }
+
+    SoundEffect {
+        id: drumroll
+        source: "drumroll.wav"
+    }
+    Component.onCompleted: drumroll.play()
 }
