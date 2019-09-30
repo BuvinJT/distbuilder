@@ -144,7 +144,11 @@ class QtCppConfig:
 
     @staticmethod            
     def installDeployTools():             
-        if IS_LINUX:       
+        if IS_LINUX:
+            #TODO: dynamically find, or acquire an askpass program
+            askpassSv=getEnv("SUDO_ASKPASS")  
+            if not askpassSv:     
+                setEnv("SUDO_ASKPASS", "/usr/share/git-cola/bin/ssh-askpass")
             isCqtdeployerInstalled = QtCppConfig.__isCqtdeployerInstalled()
             if not isCqtdeployerInstalled:
                 isSnapdInstalled = QtCppConfig.__isSnapdInstalled()
@@ -154,7 +158,11 @@ class QtCppConfig:
                 isSnapdInstalled = QtCppConfig.__isSnapdInstalled()
                 if isSnapdInstalled:
                     try: QtCppConfig.__installCqtdeployer()
-                    except Exception as e: printExc( e ) 
+                    except Exception as e: printExc( e )
+            if askpassSv:        
+                setEnv("SUDO_ASKPASS", askpassSv)
+            else:
+                delEnv("SUDO_ASKPASS")    
     
     @staticmethod        
     def __isCqtdeployerInstalled():
