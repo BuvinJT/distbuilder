@@ -3,7 +3,7 @@ from six.moves import urllib
 from sys import argv, stdout, stderr, exit, \
     executable as PYTHON_PATH
 from os import system, sep as PATH_DELIM, remove as removeFile, \
-    fdopen, getcwd, chdir, walk, environ, \
+    fdopen, getcwd, chdir, walk, environ, devnull, \
     chmod, getenv, listdir, makedirs as makeDir, rename # @UnusedImport   
 from os.path import exists, isfile, \
     dirname as dirPath, normpath, realpath, isabs, \
@@ -15,7 +15,10 @@ from shutil import rmtree as removeDir, move, make_archive, \
 import platform
 from tempfile import gettempdir, mkstemp, mktemp
 from subprocess import Popen, list2cmdline, check_output, \
-    PIPE, STDOUT
+    PIPE, STDOUT, \
+    check_call  # @UnusedImport
+try: from subprocess import DEVNULL 
+except ImportError: DEVNULL = open(devnull, 'wb')    
 import traceback
 from distutils.sysconfig import get_python_lib
 import inspect  # @UnusedImport

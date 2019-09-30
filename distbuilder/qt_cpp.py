@@ -4,10 +4,12 @@ from distbuilder.util import * # @UnusedWildImport
 from distbuilder import util 
 
 from argparse import ArgumentParser
+from distbuilder.util import _system
  
 QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
 
 def qmakeInit(): 
+    QtCppConfig.installDeployTools()
     factory = qmakeConfigFactory()
     package = factory.qtIfwPackage()
     return factory, package
@@ -72,44 +74,117 @@ class QtCppConfig:
     
     # Refer to: https://doc.qt.io/qt-5/deployment.html
     def addDependencies( self, package ) :
-        print( "Adding binary dependencies...\n" )
-        
+        print( "Adding binary dependencies...\n" )        
         self.validate()                
         destDirPath = package.contentDirPath()
         exePath = joinPath( destDirPath, package.exeName )
-
         if IS_WINDOWS :
-            # collect required .dlls via the Qt deploy utility for Windows
-            qtUtilityPath =  normpath( joinPath( 
-                self.qtBinDirPath, QtCppConfig.__QT_WINDOWS_DEPLOY_EXE_NAME ) )                                
-            cmdList = [qtUtilityPath, exePath]
-            # optionally detect and bundle QML resources
-            if self.qmlScrDirPath is not None:
-                cmdList.extend( [QtCppConfig.__QT_WINDOWS_DEPLOY_QML_SWITCH,
-                                 normpath( self.qmlScrDirPath )] )
-            util._system( list2cmdline( cmdList ) )
-            # add additional .dlls the Qt utility seems to miss
-            if self.binCompiler == QtCppConfig.__MINGW:            
-                for fileName in QtCppConfig.__MINGW_DLL_LIST:
-                    copyToDir( joinPath( self.qtBinDirPath, fileName ), 
-                               destDirPath=destDirPath )
-        elif IS_LINUX:            
-            # get the list of .so libraries the binary links against within the 
-            # local environment, via the standard Linux utility for this.  
-            # Parse that output and collect the files. 
-            cmdList = [QtCppConfig.__LINUX_DYNAMIC_DEPENDENCIES_UTIL_NAME, 
-                       exePath]            
-            lddLines = util._subProcessStdOut( cmdList, asCleanLines=True )
-            for line in lddLines:
-                try :
-                    src = line.split( QtCppConfig.__LDD_DELIMITER_SRC )[1].strip()
-                    path = src.split( QtCppConfig.__LDD_DELIMITER_PATH )[0].strip()
-                    if isFile( path ): 
-                        copyToDir( path, destDirPath=destDirPath )                        
-                except: pass
-            # The Qt produced binary does not have execute permissions automatically!
-            chmod( exePath, 0o755 )
+            self.__useWindeployqt( destDirPath, exePath )
+        elif IS_LINUX:       
+            if QtCppConfig.__isCqtdeployerInstalled():
+                self.__useCqtdeployer( destDirPath, exePath )
+            else :                
+                printErr(
+                    "\n\n>>> WARNING: Cannot utilize cqtdeployer tool! <<<\n\n"
+                    "Attempting to use primitive built-in method...\n"
+                    "(The resulting distro may not function!)\n")
+                self.__useLdd( destDirPath, exePath )
 
+    def __useWindeployqt( self, destDirPath, exePath ):             
+        # collect required dependencies via the Qt deploy utility for Windows
+        qtUtilityPath =  normpath( joinPath( 
+            self.qtBinDirPath, QtCppConfig.__QT_WINDOWS_DEPLOY_EXE_NAME ) )                                
+        cmdList = [qtUtilityPath, exePath]
+        # optionally detect and bundle QML resources
+        if self.qmlScrDirPath is not None:
+            cmdList.extend( [QtCppConfig.__QT_WINDOWS_DEPLOY_QML_SWITCH,
+                             normpath( self.qmlScrDirPath )] )
+        util._system( list2cmdline( cmdList ) )
+        # add additional .dlls the Qt utility seems to miss
+        if self.binCompiler == QtCppConfig.__MINGW:            
+            for fileName in QtCppConfig.__MINGW_DLL_LIST:
+                copyToDir( joinPath( self.qtBinDirPath, fileName ), 
+                           destDirPath=destDirPath )
+                
+    def __useCqtdeployer( self, destDirPath, exePath ):             
+        # collect required dependencies via the third party cqtdeployer utility
+        qmakePath = normpath( joinPath( 
+            self.qtBinDirPath, QtCppConfig.__QMAKE_EXE_NAME ) )    
+        cmdList = [QtCppConfig.__C_QT_DEPLOYER_CMD,                   
+                   QtCppConfig.__C_QT_DEPLOYER_BIN_SWITCH, exePath,
+                   QtCppConfig.__C_QT_DEPLOYER_QMAKE_SWITCH, qmakePath]
+        # optionally detect and bundle QML resources
+        if self.qmlScrDirPath is not None:
+            cmdList.extend( [QtCppConfig.__C_QT_DEPLOYER_QML_SWITCH,
+                             normpath( self.qmlScrDirPath )] )
+        util._system( list2cmdline( cmdList ) )
+        print( '"UN-nesting" the distro directory content...' )
+        removeFile( exePath )
+        nestedDistDir = joinPath( destDirPath, 
+                                  QtCppConfig.__C_QT_DEPLOYER_DIST_DIR )
+        mergeDirs( nestedDistDir, destDirPath, isRecursive=True )
+
+    def __useLdd( self, destDirPath, exePath ):             
+        # get the list of .so libraries the binary links against within the 
+        # local environment, via the standard Linux utility for this.  
+        # Parse that output and collect the files. 
+        cmdList = [QtCppConfig.__LDD_CMD, 
+                   exePath]            
+        lddLines = util._subProcessStdOut( cmdList, asCleanLines=True )
+        for line in lddLines:
+            try :
+                src = line.split( QtCppConfig.__LDD_DELIMITER_SRC )[1].strip()
+                path = src.split( QtCppConfig.__LDD_DELIMITER_PATH )[0].strip()
+                if isFile( path ): 
+                    copyToDir( path, destDirPath=destDirPath )                        
+            except: pass
+        # The Qt produced binary does not have execute permissions automatically!
+        chmod( exePath, 0o755 )
+        #TODO: continue to develop this, so it almost revivals cqtdeploy
+
+    @staticmethod            
+    def installDeployTools():             
+        if IS_LINUX:       
+            isCqtdeployerInstalled = QtCppConfig.__isCqtdeployerInstalled()
+            if not isCqtdeployerInstalled:
+                isSnapdInstalled = QtCppConfig.__isSnapdInstalled()
+                if not isSnapdInstalled:
+                    try: QtCppConfig.__installSnapd()
+                    except Exception as e: printExc( e ) 
+                isSnapdInstalled = QtCppConfig.__isSnapdInstalled()
+                if isSnapdInstalled:
+                    try: QtCppConfig.__installCqtdeployer()
+                    except Exception as e: printExc( e ) 
+    
+    @staticmethod        
+    def __isCqtdeployerInstalled():
+        try: 
+            check_call( [QtCppConfig.__C_QT_DEPLOYER_CMD,
+                         QtCppConfig.__C_QT_DEPLOYER_FOUND_TEST], 
+                stdout=DEVNULL, stderr=DEVNULL )
+            return True                                                              
+        except: return False    
+
+    @staticmethod        
+    def __installCqtdeployer():
+        cmdList = ["sudo", QtCppConfig.__SNAP_CMD,
+                   "install", QtCppConfig.__C_QT_DEPLOYER_SNAP_NAME]
+        _system( list2cmdline(cmdList) )
+
+    @staticmethod        
+    def __isSnapdInstalled():
+        try: 
+            check_call( [QtCppConfig.__SNAP_CMD,
+                         QtCppConfig.__SNAP_FOUND_TEST], 
+                stdout=DEVNULL, stderr=DEVNULL )
+            return True                                                              
+        except: return False    
+        
+    @staticmethod        
+    def __installSnapd():
+        raise Exception( "Snapd installation must be performed manually."
+            "Refer to https://snapcraft.io/docs/installing-snapd" )
+        
     @staticmethod    
     def srcCompilerOptions(): 
         if IS_WINDOWS :
@@ -118,18 +193,31 @@ class QtCppConfig:
 
     @staticmethod    
     def exeWrapperScript( exePath ): 
-        if IS_LINUX :    
+        if IS_LINUX and not QtCppConfig.__isCqtdeployerInstalled():    
             return ExecutableScript( 
                 normBinaryName( exePath ), # strips extension on Linux
                 script=QtCppConfig.__LINUX_BIN_WRAPPER_SCRIPT )
         else: return None
-        
+
+    __QMAKE_EXE_NAME = normBinaryName( "qmake" )
+            
     __QT_WINDOWS_DEPLOY_EXE_NAME   = "windeployqt.exe"
     __QT_WINDOWS_DEPLOY_QML_SWITCH = "--qmldir"
 
-    __LINUX_DYNAMIC_DEPENDENCIES_UTIL_NAME = "ldd"
-    __LDD_DELIMITER_SRC = "=>"
+    __LDD_CMD            = "ldd"
+    __LDD_DELIMITER_SRC  = "=>"
     __LDD_DELIMITER_PATH = " "
+    
+    __C_QT_DEPLOYER_SNAP_NAME    = "cqtdeployer"    
+    __C_QT_DEPLOYER_CMD          = "cqtdeployer"
+    __C_QT_DEPLOYER_FOUND_TEST   = "help"
+    __C_QT_DEPLOYER_BIN_SWITCH   = "-bin" 
+    __C_QT_DEPLOYER_QMAKE_SWITCH = "-qmake" 
+    __C_QT_DEPLOYER_QML_SWITCH   = "-qmlDir"
+    __C_QT_DEPLOYER_DIST_DIR     = "Distro"
+    
+    __SNAP_CMD        = "snap"
+    __SNAP_FOUND_TEST = "version"
         
     #TODO: Add more of these dlls?  
     #TODO: Add additional logic to determine the need for this...
