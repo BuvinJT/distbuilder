@@ -85,7 +85,7 @@ class QtCppConfig:
             self.__useWindeployqt( destDirPath, exePath )
         elif IS_LINUX:       
             if QtCppConfig.__isCqtdeployerInstalled():
-                self.__useCqtdeployer( destDirPath, exePath )
+                exePath = self.__useCqtdeployer( destDirPath, exePath )
             else :                
                 printErr(
                     "\n\n>>> WARNING: Cannot utilize cqtdeployer tool! <<<\n\n"
@@ -112,21 +112,22 @@ class QtCppConfig:
     def __useCqtdeployer( self, destDirPath, exePath ):             
         # collect required dependencies via the third party cqtdeployer utility
         qmakePath = normpath( joinPath( 
-            self.qtBinDirPath, QtCppConfig.__QMAKE_EXE_NAME ) )    
+            self.qtBinDirPath, QtCppConfig.__QMAKE_EXE_NAME ) )
         cmdList = [QtCppConfig.__C_QT_DEPLOYER_CMD,                   
                    QtCppConfig.__C_QT_DEPLOYER_BIN_SWITCH, exePath,
-                   QtCppConfig.__C_QT_DEPLOYER_QMAKE_SWITCH, qmakePath]
+                   QtCppConfig.__C_QT_DEPLOYER_QMAKE_SWITCH, qmakePath,
+                   QtCppConfig.__C_QT_DEPLOYER_TARGET_SWITCH, destDirPath ]
         # optionally detect and bundle QML resources
         if self.qmlScrDirPath is not None:
             cmdList.extend( [QtCppConfig.__C_QT_DEPLOYER_QML_SWITCH,
-                             normpath( self.qmlScrDirPath )] )
+                             normpath( self.qmlScrDirPath )] )                    
         util._system( list2cmdline( cmdList ) )
-        print( '"UN-nesting" the distro directory content...' )
-        removeFile( exePath )
-        nestedDistDir = joinPath( destDirPath, 
-                                  QtCppConfig.__C_QT_DEPLOYER_DIST_DIR )
-        mergeDirs( nestedDistDir, destDirPath, isRecursive=True )
-
+        # return where the exe ends up
+        exePath = joinPath( joinPath( 
+            destDirPath, QtCppConfig.__C_QT_DEPLOYER_TARGET_BIN_DIR ),
+            normBinaryName(exePath) )
+        return exePath
+    
     def __useLdd( self, destDirPath, exePath ):             
         # get the list of .so libraries the binary links against within the 
         # local environment, via the standard Linux utility for this.  
@@ -213,14 +214,15 @@ class QtCppConfig:
     __LDD_DELIMITER_SRC  = "=>"
     __LDD_DELIMITER_PATH = " "
     
-    __C_QT_DEPLOYER_SNAP_NAME    = "cqtdeployer"    
-    __C_QT_DEPLOYER_CMD          = "cqtdeployer"
-    __C_QT_DEPLOYER_FOUND_TEST   = "help"
-    __C_QT_DEPLOYER_BIN_SWITCH   = "-bin" 
-    __C_QT_DEPLOYER_QMAKE_SWITCH = "-qmake" 
-    __C_QT_DEPLOYER_QML_SWITCH   = "-qmlDir"
-    __C_QT_DEPLOYER_DIST_DIR     = "Distro"
-    
+    __C_QT_DEPLOYER_SNAP_NAME      = "cqtdeployer"    
+    __C_QT_DEPLOYER_CMD            = "cqtdeployer"
+    __C_QT_DEPLOYER_FOUND_TEST     = "help"
+    __C_QT_DEPLOYER_BIN_SWITCH     = "-bin" 
+    __C_QT_DEPLOYER_QMAKE_SWITCH   = "-qmake" 
+    __C_QT_DEPLOYER_TARGET_SWITCH  = "-targetDir"
+    __C_QT_DEPLOYER_TARGET_BIN_DIR = "bin"
+    __C_QT_DEPLOYER_QML_SWITCH     = "-qmlDir"    
+        
     __SNAP_CMD        = "snap"
     __SNAP_FOUND_TEST = "version"
         
