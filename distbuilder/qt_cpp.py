@@ -8,9 +8,10 @@ from distbuilder.util import _system
  
 QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
 
-def qmakeInit(): 
-    QtCppConfig.installDeployTools()
-    factory = qmakeConfigFactory()
+def qmakeInit():     
+    args = qmakeArgs()
+    QtCppConfig.installDeployTools( args.askPass )
+    factory = qmakeConfigFactory( args )
     package = factory.qtIfwPackage()
     return factory, package
 
@@ -54,6 +55,8 @@ def qmakeArgParser():
                          choices=QtCppConfig.srcCompilerOptions(),
                          help='compiler used (for dependency gathering)' )
     parser.add_argument( "-q", "--qml", default=None, help="path to the QML source directory" )
+    if IS_LINUX :
+        parser.add_argument( "-a", "--askPass", default=None, help='Path to an "AskPass" program' )    
     return parser
 
 # -----------------------------------------------------------------------------
@@ -143,12 +146,9 @@ class QtCppConfig:
         #TODO: continue to develop this, so it almost revivals cqtdeploy
 
     @staticmethod            
-    def installDeployTools():             
-        if IS_LINUX:
-            #TODO: dynamically find, or acquire an askpass program
-            askpassSv=getEnv("SUDO_ASKPASS")  
-            if not askpassSv:     
-                setEnv("SUDO_ASKPASS", "/usr/share/git-cola/bin/ssh-askpass")
+    def installDeployTools( askPassPath=None ):             
+        if IS_LINUX:            
+            util._assertAskPassAvailable( askPassPath ) 
             isCqtdeployerInstalled = QtCppConfig.__isCqtdeployerInstalled()
             if not isCqtdeployerInstalled:
                 isSnapdInstalled = QtCppConfig.__isSnapdInstalled()
@@ -159,10 +159,7 @@ class QtCppConfig:
                 if isSnapdInstalled:
                     try: QtCppConfig.__installCqtdeployer()
                     except Exception as e: printExc( e )
-            if askpassSv:        
-                setEnv("SUDO_ASKPASS", askpassSv)
-            else:
-                delEnv("SUDO_ASKPASS")    
+            util._restoreAskPass()        
     
     @staticmethod        
     def __isCqtdeployerInstalled():

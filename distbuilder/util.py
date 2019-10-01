@@ -3,7 +3,7 @@ from six.moves import urllib
 from sys import argv, stdout, stderr, exit, \
     executable as PYTHON_PATH
 from os import system, sep as PATH_DELIM, remove as removeFile, \
-    fdopen, getcwd, chdir, walk, environ, devnull, \
+    fdopen, getcwd, chdir, walk, environ, geteuid, devnull, \
     chmod, getenv, listdir, makedirs as makeDir, rename # @UnusedImport   
 from os.path import exists, isfile, \
     dirname as dirPath, normpath, realpath, isabs, \
@@ -807,4 +807,48 @@ if IS_MACOS :
         if not exists( mountPath ) : return True
         raise Exception( "Failed to unmount %s" % (mountPath) )
         
+# ----------------------------------------------------------------------------- 
+if IS_LINUX:
+    
+    __commonAskpassPaths = [
+         "/usr/X11R6/bin/ssh-askpass"
+        ,"/usr/bin/ssh-askpass"
+    ]
+    __ASKPASS_ENV_VAR="SUDO_ASKPASS"
+    __askpassSv=None
+    def _assertAskPassAvailable( askpassPath=None ):
+        # if running in a standard tty context, or if
+        # the user has root access, there is no need to do this
+        if stdout.isatty() or geteuid() == 0: return
+             
+        # if the askpass env var is already defined, just use that
+        askpass = getEnv( __ASKPASS_ENV_VAR )
+        if askpass: return 
+        
+        global __askpassSv
+        __askpassSv = askpass
+        if askpassPath: 
+            if isFile( askpassPath ):
+                setEnv( __ASKPASS_ENV_VAR, askpassPath )
+                return 
+        for path in __commonAskpassPaths:
+            if isFile( path ):    
+                setEnv( __ASKPASS_ENV_VAR, path )
+                return
+        
+        # Invoke a fatal error if nothing succeeded    
+        printErr( 
+            'A GUI "askpass" program must be manually installed '
+            'to run this script within this context (e.g. inside an IDE...?). ' 
+            'Common paths were searched without success. '
+            'Here is an example installation command to you might execute'
+            'to solve this problem:\n\n'
+            'sudo apt-get install ssh-askpass-gnome\n\n', 
+            isFatal=True )
+        
+    def _restoreAskPass():
+        global __askpassSv
+        if __askpassSv: setEnv( __ASKPASS_ENV_VAR, __askpassSv )
+        else          : delEnv( __ASKPASS_ENV_VAR )    
+        __askpassSv = None                
         

@@ -138,6 +138,10 @@ CONFIG(package){  # detect the "package" build configuration
     win32-msvc*: packageCmd += -b msvc
     win32-g++:   packageCmd += -b mingw
 
+    # On Linux, you may optionally provide a custom "AskPass" program to handle
+    # password input for root/sudo privileges if required
+    #linux: packageCmd += --askPass $$quot( $$clean_path( /usr/share/git-cola/bin/ssh-askpass ) )
+
     # Append the command to those to be executed after exe linking
     QMAKE_POST_LINK += $${packageCmd}
 }
