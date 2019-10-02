@@ -481,7 +481,7 @@ def toZipFile( sourceDir, zipDest=None, removeScr=True,
         print( 'Removed directory: "%s"' % (sourceDir,) )        
     return filePath
  
-# -----------------------------------------------------------------------------   
+# -----------------------------------------------------------------------------  
 def normBinaryName( path, isPathPreserved=False, isGui=False ):
     if path is None : return None    
     if not isPathPreserved : path = basename( path )
@@ -506,6 +506,15 @@ def _isMacApp( path ):
     return IS_MACOS and splitExt(path)[1]==".app"
 
 # ----------------------------------------------------------------------------- 
+def rootFileName( path ): 
+    if path is None : return None
+    return splitExt(basename(path))[0]
+
+def joinExt( rootName, extension ):
+    if rootName is None : return None
+    if extension is None: return rootName 
+    return "%s.%s" % ( rootName, extension )
+
 def isFile( path ): 
     return path is not None and isfile( path )       
 
@@ -650,32 +659,45 @@ def _isLocalPath( path ):
 
 # -----------------------------------------------------------------------------            
 class ExecutableScript:
-    def __init__( self, fileNameBase, 
+    
+    __WIN_DEFAULT_EXT = "bat" 
+    __NIX_DEFAULT_EXT = "sh"
+    
+    __NIX_DEFAULT_SHEBANG = "#!/bin/sh"
+    __SHEBANG_TEMPLATE = "%s\n%s"
+        
+    def __init__( self, rootName, 
                   extension=True, # True==auto assign, str==what to use, or None
                   shebang=True, # True==auto assign, str==what to use, or None                  
                   script=None, scriptPath=None ) :
-        self.fileNameBase = fileNameBase
+        self.rootName = rootName
         if extension==True:
-            self.extension = "bat" if IS_WINDOWS else "sh"
+            self.extension = ( ExecutableScript.__WIN_DEFAULT_EXT 
+                if IS_WINDOWS else ExecutableScript.__NIX_DEFAULT_EXT )
         else: self.extension = extension    
         if shebang==True and scriptPath is None :
-            self.shebang = None if IS_WINDOWS else "#!/bin/sh" 
+            self.shebang =( None if IS_WINDOWS else 
+                            ExecutableScript.__NIX_DEFAULT_SHEBANG ) 
         else: self.shebang = shebang            
         if scriptPath:
             with open( scriptPath, 'rb' ) as f: self.script = f.read()
         else: self.script = script  
                                                     
     def __str__( self ) :
-        return( ("%s\n%s" % (self.shebang, self.script)) 
-                if self.shebang else self.script )
+        if self.script is None : ""
+        if self.shebang:
+            return( ExecutableScript.__SHEBANG_TEMPLATE % 
+                    (self.shebang, self.script) )
+        else: return self.script 
         
-    def debug( self ): print( str(self) )
+    def debug( self ): 
+        if self.script: print( str(self) )
         
     def fileName( self ):
-        return( "%s.%s" % (self.fileNameBase,self.extension)
-                if self.extension else self.fileNameBase )
+        return joinExt( self.rootName,self.extension )
                         
     def write( self, dirPath ):
+        if self.script is None : return
         if not isDir( dirPath ): makeDir( dirPath )
         filePath = joinPath( dirPath, self.fileName() )
         print("Writing script: %s\n\n%s\n" % (filePath,str(self)) )                               

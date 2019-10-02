@@ -1618,7 +1618,7 @@ def __addInstallerResources( qtIfwConfig ) :
                    % (pkgScript.fileName) )
             pkgScript.debug()
             pkgScript.write()
-        if exeWrapperScript :
+        if exeWrapperScript and exeWrapperScript.script:
             print( "Adding executable wrapper script: %s..." 
                    % (exeWrapperScript.fileName()) )
             exeWrapperScript.debug()
