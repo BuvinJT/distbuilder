@@ -5,15 +5,36 @@ from distbuilder import util
 
 from argparse import ArgumentParser
 from distbuilder.util import _system
- 
-QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
 
+QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
+ 
 def qmakeInit():     
     args = qmakeArgs()
-    QtCppConfig.installDeployTools( args.askPass )
+    installDeployTools( args.askPass )
     factory = qmakeConfigFactory( args )
     package = factory.qtIfwPackage()
     return factory, package
+
+def installDeployTools( askPassPath=None ):             
+    if IS_LINUX:
+        # Attempt to install the third-party utility "cqtdeployer". The 
+        # installation mechanism requires "snapd".  Since this script is 
+        # intended to be run inside of  QtCreator, we need to assert an  
+        # "AskPass" program is available (when that context is detected) in 
+        # order to run sudo commands. If the utility can't be installed, print      
+        # the errors, and continue  on, as there is a "fallback" option ("ldd")
+        # to try when needed instead of this preferred mechanism.                       
+        util._assertAskPassAvailable( askPassPath ) 
+        if not _isCqtdeployerInstalled():
+            isSnapdInstalled = _isSnapdInstalled()
+            if not isSnapdInstalled:
+                try: _installSnapd()
+                except Exception as e: printExc( e ) 
+                isSnapdInstalled = _isSnapdInstalled() # confirm success
+            if isSnapdInstalled:
+                try: _installCqtdeployer()
+                except Exception as e: printExc( e )
+        util._restoreAskPass()        
 
 def qmakeConfigFactory( args=None ): 
     if args is None: args = qmakeArgs()
@@ -69,7 +90,7 @@ class QtCppConfig:
         self.qmlScrDirPath  = qmlScrDirPath   
 
     def validate( self ):
-        if IS_WINDOWS :
+        if IS_WINDOWS or ( IS_LINUX and _isCqtdeployerInstalled() ):
             if self.qtBinDirPath is None:
                 self.qtBinDirPath = getEnv( QT_BIN_DIR_ENV_VAR )    
             if self.qtBinDirPath is None or not isDir(self.qtBinDirPath):        
@@ -84,7 +105,7 @@ class QtCppConfig:
         if IS_WINDOWS :
             self.__useWindeployqt( destDirPath, exePath )
         elif IS_LINUX:       
-            if QtCppConfig.__isCqtdeployerInstalled():
+            if _isCqtdeployerInstalled():
                 exePath = self.__useCqtdeployer( destDirPath, exePath )
             else :                
                 printErr(
@@ -145,51 +166,6 @@ class QtCppConfig:
         # The Qt produced binary does not have execute permissions automatically!
         chmod( exePath, 0o755 )
         #TODO: continue to develop this, so it almost revivals cqtdeploy
-
-    @staticmethod            
-    def installDeployTools( askPassPath=None ):             
-        if IS_LINUX:            
-            util._assertAskPassAvailable( askPassPath ) 
-            isCqtdeployerInstalled = QtCppConfig.__isCqtdeployerInstalled()
-            if not isCqtdeployerInstalled:
-                isSnapdInstalled = QtCppConfig.__isSnapdInstalled()
-                if not isSnapdInstalled:
-                    try: QtCppConfig.__installSnapd()
-                    except Exception as e: printExc( e ) 
-                isSnapdInstalled = QtCppConfig.__isSnapdInstalled()
-                if isSnapdInstalled:
-                    try: QtCppConfig.__installCqtdeployer()
-                    except Exception as e: printExc( e )
-            util._restoreAskPass()        
-    
-    @staticmethod        
-    def __isCqtdeployerInstalled():
-        try: 
-            check_call( [QtCppConfig.__C_QT_DEPLOYER_CMD,
-                         QtCppConfig.__C_QT_DEPLOYER_FOUND_TEST], 
-                stdout=DEVNULL, stderr=DEVNULL )
-            return True                                                              
-        except: return False    
-
-    @staticmethod        
-    def __installCqtdeployer():
-        cmdList = ["sudo", QtCppConfig.__SNAP_CMD,
-                   "install", QtCppConfig.__C_QT_DEPLOYER_SNAP_NAME]
-        _system( list2cmdline(cmdList) )
-
-    @staticmethod        
-    def __isSnapdInstalled():
-        try: 
-            check_call( [QtCppConfig.__SNAP_CMD,
-                         QtCppConfig.__SNAP_FOUND_TEST], 
-                stdout=DEVNULL, stderr=DEVNULL )
-            return True                                                              
-        except: return False    
-        
-    @staticmethod        
-    def __installSnapd():
-        raise Exception( "Snapd installation must be performed manually."
-            "Refer to https://snapcraft.io/docs/installing-snapd" )
         
     @staticmethod    
     def srcCompilerOptions(): 
@@ -201,31 +177,15 @@ class QtCppConfig:
     def exeWrapperScript( exePath ): 
         if IS_LINUX:    
             return ExecutableScript( rootFileName( exePath ), 
-                script=(None if QtCppConfig.__isCqtdeployerInstalled()  
-                        else QtCppConfig.__LINUX_BIN_WRAPPER_SCRIPT) )
+                script=(None if _isCqtdeployerInstalled()  
+                        else QtCppConfig.__DEFAULT_LINUX_BIN_WRAPPER_SCRIPT) )
         else: return None
 
     __QMAKE_EXE_NAME = normBinaryName( "qmake" )
             
     __QT_WINDOWS_DEPLOY_EXE_NAME   = "windeployqt.exe"
     __QT_WINDOWS_DEPLOY_QML_SWITCH = "--qmldir"
-
-    __LDD_CMD            = "ldd"
-    __LDD_DELIMITER_SRC  = "=>"
-    __LDD_DELIMITER_PATH = " "
     
-    __C_QT_DEPLOYER_SNAP_NAME      = "cqtdeployer"    
-    __C_QT_DEPLOYER_CMD            = "cqtdeployer"
-    __C_QT_DEPLOYER_FOUND_TEST     = "help"
-    __C_QT_DEPLOYER_BIN_SWITCH     = "-bin" 
-    __C_QT_DEPLOYER_QMAKE_SWITCH   = "-qmake" 
-    __C_QT_DEPLOYER_TARGET_SWITCH  = "-targetDir"
-    __C_QT_DEPLOYER_TARGET_BIN_DIR = "bin"
-    __C_QT_DEPLOYER_QML_SWITCH     = "-qmlDir"    
-        
-    __SNAP_CMD        = "snap"
-    __SNAP_FOUND_TEST = "version"
-        
     #TODO: Add more of these dlls?  
     #TODO: Add additional logic to determine the need for this...
     __MINGW_DLL_LIST = [
@@ -236,12 +196,23 @@ class QtCppConfig:
     
     __MSVC  = "msvc"
     __MINGW = "mingw"
+    
+    __C_QT_DEPLOYER_CMD            = "cqtdeployer" 
+    __C_QT_DEPLOYER_BIN_SWITCH     = "-bin" 
+    __C_QT_DEPLOYER_QMAKE_SWITCH   = "-qmake" 
+    __C_QT_DEPLOYER_TARGET_SWITCH  = "-targetDir"
+    __C_QT_DEPLOYER_TARGET_BIN_DIR = "bin"
+    __C_QT_DEPLOYER_QML_SWITCH     = "-qmlDir"    
 
+    __LDD_CMD            = "ldd"
+    __LDD_DELIMITER_SRC  = "=>"
+    __LDD_DELIMITER_PATH = " "
+        
     # Note: this is nearly a verbatim copy of the script Qt
     # offers up for this purpose.  The only change is the addition
     # of quotes in a few places, which allows for paths with spaces.   
     # The shebang is omitted because class ExecutableScript injects that. 
-    __LINUX_BIN_WRAPPER_SCRIPT = (
+    __DEFAULT_LINUX_BIN_WRAPPER_SCRIPT = (
 """
 appname=`basename "$0" | sed s,\.sh$,,`
 dirname=`dirname "$0"`
@@ -253,3 +224,39 @@ LD_LIBRARY_PATH="$dirname"
 export LD_LIBRARY_PATH
 "$dirname/$appname" "$@"
 """)
+
+# -----------------------------------------------------------------------------
+
+if IS_LINUX:
+    __C_QT_DEPLOYER_CMD        = "cqtdeployer"
+    __C_QT_DEPLOYER_FOUND_TEST = "help"
+    __C_QT_DEPLOYER_SNAP_NAME  = "cqtdeployer"    
+        
+    __SNAP_CMD         = "snap"
+    __SNAP_FOUND_TEST  = "version"
+    __SNAP_INSTALL_OPT = "install"
+
+    def _isCqtdeployerInstalled():
+        try: 
+            check_call( [__C_QT_DEPLOYER_CMD, __C_QT_DEPLOYER_FOUND_TEST], 
+                        stdout=DEVNULL, stderr=DEVNULL )
+            return True                                                              
+        except: return False    
+    
+    def _installCqtdeployer():
+        cmdList = ["sudo", __SNAP_CMD,
+                   __SNAP_INSTALL_OPT, __C_QT_DEPLOYER_SNAP_NAME]
+        _system( list2cmdline(cmdList) )
+    
+    def _isSnapdInstalled():
+        try: 
+            check_call( [__SNAP_CMD, __SNAP_FOUND_TEST], 
+                        stdout=DEVNULL, stderr=DEVNULL )
+            return True                                                              
+        except: return False    
+        
+    def _installSnapd():
+        # For now, don't even try to do this in a cross distro manner...
+        raise Exception( "Snapd installation must be performed manually."
+            "Refer to https://snapcraft.io/docs/installing-snapd" )
+    
