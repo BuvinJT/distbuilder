@@ -32,24 +32,33 @@ Window {
             width: parent.width
             Text {
                 objectName: "product_title"
-                width: parent.width
-                color: "white"
-                font.pointSize: 24
+                width: parent.width                
+                font.family: "Arial Black"
+                font.pointSize: 20
                 horizontalAlignment: Text.AlignHCenter
+                color: "white"
             }
             Text {
                 objectName: "app_version"
                 width: parent.width
-                color: "white"
-                font.pointSize: 18
+                font.family: "Arial Black"
+                font.pointSize: 14
                 horizontalAlignment: Text.AlignHCenter
+                color: "white"
             }
         }
+    }
+
+    Timer {
+        id: rotateTimer
+        interval: 10; running: true; repeat: true
+        onTriggered: GLCode.rotateGL(canvas3d);
     }
 
     SoundEffect {
         id: drumroll
         source: "drumroll.wav"
     }
+
     Component.onCompleted: drumroll.play()
 }

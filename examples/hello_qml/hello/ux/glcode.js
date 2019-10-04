@@ -31,3 +31,9 @@ function resizeGL(canvas) {
 function paintGL(canvas) {
     renderer.render(scene, camera);
 }
+
+function rotateGL(canvas) {
+    if( !cube ) return;
+    cube.rotation.x += 0.01;
+    cube.rotation.y += 0.01;
+}
