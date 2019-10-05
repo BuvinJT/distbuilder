@@ -58,14 +58,21 @@ Opy distbuilder:
 If your application uses "relative resources" (e.g. images, etc. packaged
 with it external to the binary), you may encounter problems with such
 based on the context in which your application is launched.
-Rather than depending upon the current working directory being set to
-your's program's location before it is started, you would be better off
-acquiring the directory path programmatically, and then resolving your 
+
+Perhaps the easiest solution to this may be to "force" the work directory 
+prior to launching the program.  That can be accomplished via a "wrapper script"
+around the binary. See [pkgExeWrapperScript](HighLevel.md#pkgexewrapperscript) 
+and [ExecutableScript](LowLevel.md#executablescript) for help adding this
+"quick fix".
+
+Here is a better solution... Rather than depending upon the current working 
+directory being set to your's program's location before it is started, you could
+acquire the directory path programmatically, and then resolving your 
 relative paths to ones which are absolute.  
 
 In Python, you could use a function such as this `absPath` example.  
-Note, the `THIS_DIR` assignment shown here is valid in both a script and 
-binary (i.e. "frozen") context.
+(Note, the `THIS_DIR` assignment shown here is valid in both a script and 
+binary (i.e. "frozen") context.)
 
     import os, sys
 	
@@ -74,9 +81,11 @@ binary (i.e. "frozen") context.
     def absPath( relativePath ):    
         return os.path.normpath( os.path.join( THIS_DIR, relativePath ) )
 
-In some situations, that preferred approach would take a great deal of effort to apply unfortunately. In which case, a "shortcut" solution maybe to
-just set the working directory when the program is launched, and then set it 
-back to what it was upon exit.
+Unfortunately, in some situations, that preferred approach would take a great deal
+of effort to apply . In which case, yet another approach could be taken, which 
+resembles the "wrapper script" concept, but is built into your program itself.
+Just set the working directory when the program is launched, for inside of, and then
+set it back to what it was upon exit.
 
 Python example:
 
@@ -93,7 +102,7 @@ Python example:
 	def restoreWorkDir() :
 	    if __INIT_DIR : os.chdir( __INIT_DIR )
 	
-Example use of the above functions:
+Example use of the above functions, to place in your "entry point":
 	
 	if __name__ == "__main__":
 	    normalizeWorkDir()
@@ -132,12 +141,12 @@ but here some places to start looking for help.
 
 ### Launch App at end of install failures
 
-If the application appears runs in every other context, except
-when launched at the end of the Qt installer, the most likely
+If the application appears to run in every other context, except
+when launched at the end of the Qt installer, a likely
 reason is that working directory is incorrect when it is 
 executed. This library attempts to set the working
 directory for any program to the location where it resides
-implictly.  QtIFW, however, does not currently support setting
+implicitly.  QtIFW, however, does not currently support setting
 the working directory as a "RunProgram" directive.
 A feature request for this was filed with Qt (long ago):
 
@@ -145,7 +154,7 @@ https://bugreports.qt.io/browse/QTIFW-217
 
 For now, while there are various potential solutions to this, 
 the *best* one is arguably to resolve this directly within your program.  
-See [Relative resources](Relative resources) for more help. 
+See [Relative resources](relative-resources) for more help. 
 
 If Qt does not finally resolve this themselves sometime in 
 an upcoming IFW release, then distbuilder will provide a built-in

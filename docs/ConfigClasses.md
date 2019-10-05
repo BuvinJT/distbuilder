@@ -143,9 +143,6 @@ Attributes & default values:
 	        
 	setupExeName        = "setup"
 	
-	<Qt paths (attempt to use environmental variables if not defined)>
-	qtIfwDirPath = None
-	
 	<other IFW command line options>
 	isDebugMode    = True
 	otherQtIfwArgs = ""
@@ -169,13 +166,16 @@ Constructor:
                   	controlScriptName=None,
                   	primaryContentExe=None,
                   	isGuiPrimaryContentExe=True,
+                  	primaryExeWrapper=None,
                   	companyTradeName=None ) 
 
 Attributes:    
 
-    primaryContentExe (used indirectly w/ isGui)
+    primaryContentExe (used indirectly w/ isGui)    
     iconFilePath  (used indirectly)
     companyTradeName (used indirectly)
+    
+    primaryExeWrapper
     
     Name                     
     Version                  
@@ -194,6 +194,7 @@ Attributes:
     
 Functions:
 
+    setPrimaryContentExe( ifwPackage )
     setDefaultVersion()
     setDefaultTitle()    
     setDefaultPaths()
@@ -315,7 +316,7 @@ for extended configuration details.
 
 Constructor:  
 
-    QtIfwPackage( pkgId=None, name=None, 
+    QtIfwPackage( pkgId=None, pkgType=None, name=None, 
                   srcDirPath=None, srcExePath=None,    
                   isTempSrc=False,
                   pkgXml=None, pkgScript=None ) 
@@ -324,7 +325,7 @@ Attributes:
 
 	<internal id / type>
 	pkgId           = None       
-	pkgType	        = None
+	pkgType	       = None
 	
 	<QtIFW definition>
 	name            = None
@@ -332,10 +333,11 @@ Attributes:
 	pkgScript       = None
 	        
 	<content>        
-	srcDirPath      = None
-	srcExePath      = None
-	distResources   = None
-	isTempSrc       = False
+	srcDirPath       = None
+	srcExePath       = None
+	distResources    = None
+	exeWrapperScript = None
+	isTempSrc        = False
 	                     
 	<extended content detail>
 	exeName        = None   
@@ -361,7 +363,7 @@ will not be written, otherwise they will be.
 Constructor:       
 
 	QtIfwPackageXml( pkgName, displayName, description, version, 
-					 scriptName=None, isDefault=True )
+				   scriptName=None, isDefault=True )
                   
 Attributes & default values:      
 
@@ -568,12 +570,11 @@ Used for Qt C++ integration.
 
 Constructor:
 
-    QtCppConfig( qtBinDirPath, exeCompiler,  
-                 qmlScrDirPath=None  )
+    QtCppConfig( qtBinDirPath, exeCompiler, qmlScrDirPath=None  )
     
 Attributes:                    
 
-	qtBinDirPath             
+    qtBinDirPath             
     exeCompiler    
     qmlScrDirPath     
     

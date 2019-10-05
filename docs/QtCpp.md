@@ -24,8 +24,3 @@ by which to extend your Qt build process.
 ## Hello World Qt Example
 
 ## Hello World QML Example
-
-## Hello PySide Example
-
-## Hello Qt Combo Example
-

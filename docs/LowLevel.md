@@ -872,6 +872,59 @@ preparing the program for distribution:
                 
 *TODO: Add git commit/push...*    
                                                                         
+## ExecutableScript
+
+Executable scripts have a wide ranging potential for use with this library.  
+They may be employed as part of the build process, or deployed
+with a distribution. 
+
+The ExecutableScript class is used to generate / bundle such scripts. Normally,
+this is a batch file on Windows, or a shell script on Linux or Mac.  Notably, 
+this is most often used as a "wrapper" over a deployed executable, bundled
+with a distribution.  In some contexts, that wrapper mechanism is implicitly
+employed by deployment preparing tools the library leans on, and/or is added
+directly by the library. Use of this class allows such to be overridden. 
+
+Constructor:       
+
+	ExecutableScript( rootName, 
+					extension=True, shebang=True,                   
+                  	script=None, scriptPath=None )
+                  
+Attributes & default values:    
+
+    rootName <required> 
+    extension=True
+    shebang=True,                   
+    script=None
+    scriptPath=None
+    
+Functions:   
+
+    debug()        
+    fileName()
+    write( dirPath )
+    
+Details:
+
+**rootName**: The name of script without the extension.  If this is used
+as an "exe/binary wrapper", this name should normally align with the root 
+of that binary's name, which may be acquired with `rootFileName( path )`.  
+
+**extension**: The file extension used when creating the file. If `True`,
+the extension will be automatically assigned. This defaults to `bat` on 
+Windows, `sh` on Mac and Linux.  If set to `None`, there will be no extension
+on the file.  A user supplied string will be applied if custom provided.  
+
+**shebang**: A "shebang" injected into the top of the script automatically. 
+On Windows, this attribute is not used.  Else, if `True`, `#!/bin/sh` will be used. 
+A user supplied string will be applied if custom provided.
+
+**script**: The content for the for script, provided as a string.
+
+**scriptPath**: The content for the for script, provided as a file path
+to source for where it is to be extracted.
+
 ## Utilities
 
 The following low level "utilities" are also provided for 
@@ -1103,7 +1156,7 @@ with any that already exist. If set to `True`, and the path already exists, the
 new download will overwrite the prior file.       	
 
 ### Aliased standard python functions
-                
+       
         exists                 os.path.exists 
         isFile                 os.path.isfile
         isDir                  exists AND not isFile
@@ -1115,10 +1168,13 @@ new download will overwrite the prior file.
         move                   shutil.move
         rename                 os.rename
         tempDirPath            tempfile.gettempdir()    
+        rootFileName			<custom> os.path.splitext of basename 
+        baseFileName           os.path.basename         
         dirPath                os.path.dirname
         joinPath               os.path.join
         splitPath              os.path.split
         splitExt               os.path.splitext 
+        joinExt 				<custom> inverse of splitExt   
         
 ### Constants
         

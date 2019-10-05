@@ -8,8 +8,8 @@ from os import system, sep as PATH_DELIM, remove as removeFile, \
 from os.path import exists, isfile, \
     dirname as dirPath, normpath, realpath, isabs, \
     join as joinPath, split as splitPath, splitext as splitExt, \
-    expanduser, \
-    basename, relpath, pathsep      # @UnusedImport
+    expanduser, basename as fileBaseName, \
+    relpath, pathsep      # @UnusedImport
 from shutil import rmtree as removeDir, move, make_archive, \
     copytree as copyDir, copyfile as copyFile   # @UnusedImport
 import platform
@@ -344,7 +344,7 @@ def __copyToDir( srcPath, destDirPath ):
     """ Copies 1 item (recursively) """
     srcPath     = absPath( srcPath )
     destDirPath = absPath( destDirPath )
-    srcTail = basename( normpath(srcPath) )
+    srcTail = fileBaseName( normpath(srcPath) )
     destPath = joinPath( destDirPath, srcTail )
     if srcPath == destPath: return
     __removeFromDir( srcTail, destDirPath )
@@ -371,7 +371,7 @@ def __moveToDir( srcPath, destDirPath ):
     """ Moves 1 item (recursively) """
     srcPath     = absPath( srcPath )
     destDirPath = absPath( destDirPath )    
-    srcTail = basename( normpath(srcPath) )
+    srcTail = fileBaseName( normpath(srcPath) )
     destPath = joinPath( destDirPath, srcTail )
     if srcPath == destPath: return
     __removeFromDir( srcTail, destDirPath )
@@ -472,7 +472,7 @@ def toZipFile( sourceDir, zipDest=None, removeScr=True,
         zipDest, _ = splitExt(zipDest)           
     if isWrapperDirIncluded:
         filePath = make_archive( zipDest, 'zip', 
-            dirPath( sourceDir ), basename( sourceDir ) )
+            dirPath( sourceDir ), fileBaseName( sourceDir ) )
     else :       
         filePath = make_archive( zipDest, 'zip', sourceDir )
     print( 'Created zip file: "%s"' % (filePath,) )    
@@ -484,7 +484,7 @@ def toZipFile( sourceDir, zipDest=None, removeScr=True,
 # -----------------------------------------------------------------------------  
 def normBinaryName( path, isPathPreserved=False, isGui=False ):
     if path is None : return None    
-    if not isPathPreserved : path = basename( path )
+    if not isPathPreserved : path = fileBaseName( path )
     base, ext = splitExt( path )
     if IS_MACOS and isGui :
         return "%s%s" % (base, _MACOS_APP_EXT)      
@@ -493,7 +493,7 @@ def normBinaryName( path, isPathPreserved=False, isGui=False ):
                             
 def normIconName( path, isPathPreserved=False ):
     if path is None : return None    
-    if not isPathPreserved : path = basename( path )
+    if not isPathPreserved : path = fileBaseName( path )
     base, _ = splitExt( path )
     if IS_WINDOWS: return "%s%s" % (base, _WINDOWS_ICON_EXT) 
     elif IS_MACOS: return "%s%s" % (base, _MACOS_ICON_EXT) 
@@ -508,11 +508,14 @@ def _isMacApp( path ):
 # ----------------------------------------------------------------------------- 
 def rootFileName( path ): 
     if path is None : return None
-    return splitExt(basename(path))[0]
+    return splitExt(fileBaseName(path))[0]
 
-def joinExt( rootName, extension ):
+def joinExt( rootName, extension=None ):
+    if isinstance( rootName, tuple ): rootName, extension = rootName
     if rootName is None : return None
     if extension is None: return rootName 
+    if rootName.endswith("."): rootName=rootName[:-1]
+    if extension.startswith("."): extension=extension[1:]
     return "%s.%s" % ( rootName, extension )
 
 def isFile( path ): 
@@ -644,7 +647,7 @@ def download( url, saveToPath=None, preserveName=True ):
                 stdout.flush() 
     if saveToPath is None and preserveName:
         downloadDir = tempDirPath()
-        downloadName = basename( urllib.parse.urlsplit( url )[2] )
+        downloadName = fileBaseName( urllib.parse.urlsplit( url )[2] )
         removeFromDir( downloadName, downloadDir )            
         saveToPath = joinPath( downloadDir, downloadName )
     localPath, _ = urllib.request.urlretrieve( url, saveToPath, 
@@ -808,7 +811,7 @@ if IS_MACOS :
                 binPath if isFile( binPath ) else None )
         #example mount path:
         #   /Volumes/QtInstallerFramework-mac-x64/QtInstallerFramework-mac-x64.app/Contents/MacOS/QtInstallerFramework-mac-x64              
-        dmgBaseName = splitExt( basename( dmgPath ) )[0]
+        dmgBaseName = splitExt( fileBaseName( dmgPath ) )[0]
         mountPath = joinPath( PATH_DELIM, joinPath( "Volumes", dmgBaseName ) )
         appPath = joinPath( mountPath, "%s.app" % (dmgBaseName,) )
         binPath = __INTERNAL_MACOS_APP_BINARY_TMPLT % (

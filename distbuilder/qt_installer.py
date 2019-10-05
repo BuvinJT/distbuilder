@@ -174,7 +174,7 @@ class QtIfwConfigXml( _QtIfwXml ):
             self.iconFilePath = ( None if iconFilePath is None else 
                                   normIconName( iconFilePath, 
                                                 isPathPreserved=True ) )        
-            try:    iconBaseName = splitExt( basename(iconFilePath) )[0]
+            try:    iconBaseName = splitExt( fileBaseName(iconFilePath) )[0]
             except: iconBaseName = None
         self.companyTradeName = ( companyTradeName if companyTradeName 
                                   else publisher.replace(".","") )
@@ -1595,7 +1595,7 @@ def __addInstallerResources( qtIfwConfig ) :
             if isFile( iconFilePath ):
                 copyFile( iconFilePath,                       
                           joinPath( configXml.dirPath(), 
-                                    basename( configXml.iconFilePath ) ) )
+                                    fileBaseName( configXml.iconFilePath ) ) )
     if ctrlScript :
         print( "Adding installer control script..." )
         ctrlScript.debug()
@@ -1629,7 +1629,7 @@ def __addResources( package ) :
     destPath = package.contentDirPath()            
     for srcPath in package.distResources:
         if isDir( srcPath ) : copyDir( srcPath, destPath )
-        else : copyFile( srcPath, joinPath( destPath, basename( srcPath ) ) )
+        else : copyFile( srcPath, joinPath( destPath, fileBaseName( srcPath ) ) )
 
 def __addExeWrapper( package ) :           
     exeWrapperScript = package.exeWrapperScript
@@ -1721,8 +1721,8 @@ def __buildSilentWrapper( qtIfwConfig ) :
             removeFromDir( wrapperPyName )            
             removeFromDir( self.__nestedZipPath 
                            if IS_MACOS else nestedExeName )
-            dirName = basename( self.binDir )
-            binName = basename( self.binPath )       
+            dirName = fileBaseName( self.binDir )
+            binName = fileBaseName( self.binPath )       
             tmpDir = renameInDir( (dirName, "__" + dirName) )             
             moveToDir( joinPath( tmpDir, binName ) ) 
             removeFromDir( tmpDir )

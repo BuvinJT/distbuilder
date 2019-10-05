@@ -70,9 +70,10 @@ Attributes & default values:
     ifwPkgScriptPath = None        
     ifwPkgScriptName = "installscript.qs"
 
-	pkgType          = None    
-    pkgSrcDirPath    = None
-    pkgSrcExePath    = None
+    pkgType             = None    
+    pkgSrcDirPath       = None
+    pkgSrcExePath       = None
+    pkgExeWrapperScript = None
 
 	qtCppConfig      = None
  
@@ -328,7 +329,13 @@ distbuilder to set the name for you automatically.
 
 #### pkgType    
 	
-TODO	
+The type (`QtIfwPackage.Type`) of package being built.  If this is omitted and a 
+`binaryName` attribute is specified, `PY_INSTALLER` is assumed.  If there is no type 
+provided, and no `binaryName`, the `DATA` type is assumed.  Other options are also possible. This list is expected to grow over time:
+
+	QtIfwPackage.Type.DATA
+	QtIfwPackage.Type.PY_INSTALLER
+	QtIfwPackage.Type.QT_CPP
 
 #### pkgSrcDirPath, pkgSrcExePath
 
@@ -349,9 +356,24 @@ the package.
 
 See: [RobustInstallerProcess](#robustinstallerprocess). 
 
+#### pkgExeWrapperScript 
+
+An [ExecutableScript](LowLevel.md#executablescript) object, used as a "wrapper" 
+over the primary executable in a [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
+being built.  This maybe used for many purposes, e.g. defining program arguments,
+setting the working directory, setting environmental variables, or otherwise
+performing some sort of configuration or initialization prior to launching the
+program.
+
+Note that in addition to generating a script, if this attribute is set, "shortcuts"
+which would point a user to the binary, will instead run this wrapper.
+
 #### qtCppConfig
 
-TODO
+A [QtCppConfig](ConfigClasses.md#qtcppconfig) object.  Used to define how to
+package programs developed within the Qt C++ libraries / framework. 
+
+See the [Qt C++ Integration](QtCpp.md) document for more information.  
     
 ## Process Classes
 

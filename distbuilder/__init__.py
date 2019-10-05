@@ -45,7 +45,8 @@ from distbuilder.opy_library import \
     , createStageDir 
     
 from distbuilder.util import \
-      IS_WINDOWS \
+      ExecutableScript \
+    , IS_WINDOWS \
     , IS_LINUX \
     , IS_MACOS \
     , PY2 \
@@ -67,6 +68,8 @@ from distbuilder.util import \
     , joinPath \
     , splitPath \
     , splitExt \
+    , joinExt \
+    , rootFileName \
     , normBinaryName \
     , normIconName \
     , copyToDir \
