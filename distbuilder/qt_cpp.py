@@ -58,6 +58,7 @@ def qmakeConfigFactory( args=None ):
 def qmakeArgs(): 
     args = qmakeArgParser().parse_args()
     args.version = versionTuple( args.version )
+    if not IS_LINUX : args.askPass = None
     return args
 
 def qmakeArgParser():      

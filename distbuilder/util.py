@@ -3,7 +3,7 @@ from six.moves import urllib
 from sys import argv, stdout, stderr, exit, \
     executable as PYTHON_PATH
 from os import system, sep as PATH_DELIM, remove as removeFile, \
-    fdopen, getcwd, chdir, walk, environ, geteuid, devnull, \
+    fdopen, getcwd, chdir, walk, environ, devnull, \
     chmod, getenv, listdir, makedirs as makeDir, rename # @UnusedImport   
 from os.path import exists, isfile, \
     dirname as dirPath, normpath, realpath, isabs, \
@@ -834,6 +834,8 @@ if IS_MACOS :
         
 # ----------------------------------------------------------------------------- 
 if IS_LINUX:
+
+    from os import geteuid  # @UnresolvedImport (IMPORT DOES NOT EXIST ON WINDOWS)
     
     __commonAskpassPaths = [
          "/usr/X11R6/bin/ssh-askpass"
