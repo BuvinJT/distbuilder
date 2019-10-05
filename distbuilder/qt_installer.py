@@ -1620,7 +1620,7 @@ def __addInstallerResources( qtIfwConfig ) :
             p.qtCppConfig.addDependencies( p )        
 
         if p.distResources: __addResources( p )     
-        
+
         if isinstance( p.exeWrapperScript, ExecutableScript ): 
             __addExeWrapper( p )
             
@@ -1631,8 +1631,8 @@ def __addResources( package ) :
         if isDir( srcPath ) : copyDir( srcPath, destPath )
         else : copyFile( srcPath, joinPath( destPath, fileBaseName( srcPath ) ) )
 
-def __addExeWrapper( package ) :           
-    exeWrapperScript = package.exeWrapperScript
+def __addExeWrapper( package ) :
+    exeWrapperScript = package.exeWrapperScript    
     dirPath = package.contentDirPath()
     fileName = exeWrapperScript.fileName()
     filePath = joinPath(dirPath, fileName )
@@ -1641,7 +1641,7 @@ def __addExeWrapper( package ) :
     if isFound:
         print( "%sExecutable wrapper script: %s content:\n" %
                (("ORIGINAL " if isCustom else ""), fileName) )                   
-        with open( filePath, 'r' ) as f: print "\n\n%s\n\n" % (f.read(),)
+        with open( filePath, 'r' ) as f: print( "\n\n%s\n\n" % (f.read(),) )
     if isCustom:
         if isFound: print( "REPLACING..." )                           
         exeWrapperScript.write( dirPath )           

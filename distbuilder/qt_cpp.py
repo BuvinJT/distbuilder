@@ -10,10 +10,8 @@ QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
  
 def qmakeInit():     
     args = qmakeArgs()
-    installDeployTools( args.askPass )
-    factory = qmakeConfigFactory( args )
-    package = factory.qtIfwPackage()
-    return factory, package
+    installDeployTools( args.askPass )    
+    return qmakeMasterConfigFactory( args ), qmakePackageConfigFactory( args )
 
 def installDeployTools( askPassPath=None ):             
     if IS_LINUX:
@@ -36,7 +34,19 @@ def installDeployTools( askPassPath=None ):
                 except Exception as e: printExc( e )
         util._restoreAskPass()        
 
-def qmakeConfigFactory( args=None ): 
+def qmakeMasterConfigFactory( args=None ): 
+    if args is None: args = qmakeArgs()
+    f = ConfigFactory()
+    f.productName         = args.title
+    f.description         = args.descr
+    f.companyTradeName    = args.company
+    f.companyLegalName    = args.legal    
+    f.iconFilePath        = args.icon
+    f.version             = args.version
+    f.setupName           = args.setup
+    return f
+
+def qmakePackageConfigFactory( args=None ): 
     if args is None: args = qmakeArgs()
     cppConfig = QtCppConfig( args.qtBinDirPath, args.binCompiler, 
                              qmlScrDirPath=args.qml )
@@ -52,7 +62,6 @@ def qmakeConfigFactory( args=None ):
     f.companyLegalName    = args.legal    
     f.iconFilePath        = args.icon
     f.version             = args.version
-    f.setupName           = args.setup
     return f
 
 def qmakeArgs(): 

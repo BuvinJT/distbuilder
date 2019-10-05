@@ -19,6 +19,23 @@ by which to extend your Qt build process.
 
 ## QMake Integration
 
+Note: To modify the package, modify the factory, 
+in order avoid missing nested components! 
+
+For example, to override the wrapper script: 
+ 
+	packageFactory.pkgExeWrapperScript = ExecutableScript("hello",script="notepad")
+	helloQtPkg = configFactory.qtIfwPackage()
+
+NOT
+
+	helloQtPkg = configFactory.qtIfwPackage()
+	helloQtPkg.exeWrapperScript = ExecutableScript("hello",script="notepad")
+	
+The later fails to modify the nested package script, which contains the qscript
+to generates the program shortcut on the target, so while most of this
+would appear to be functional, there would be a subtle glitch introduced to the product. 
+
 ## Qt Module
 
 ## Hello World Qt Example
