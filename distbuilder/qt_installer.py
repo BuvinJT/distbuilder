@@ -1225,14 +1225,15 @@ class QtIfwPackageScript( _QtIfwScript ):
                           directory="@TargetDir@", 
                           iconId=0 ):        
         exePath = "%s/%s" % (directory, 
-                    wrapper if wrapper else normBinaryName( exeName ))    
+                    wrapper if wrapper else normBinaryName( exeName ))
+        iconPath = "%s/%s" % (directory, normBinaryName( exeName ) )   
         locDir = QtIfwPackageScript.__WIN_SHORTCUT_LOCATIONS[location]             
         shortcutPath = "%s/%s.lnk" % (locDir, label)        
         s = QtIfwPackageScript.__WIN_ADD_SHORTCUT_TMPLT
         s = s.replace( "[EXE_PATH]", exePath )
         s = s.replace( "[SHORTCUT_PATH]", shortcutPath )
         s = s.replace( "[WORKING_DIR]", directory )
-        s = s.replace( "[ICON_PATH]", exePath )
+        s = s.replace( "[ICON_PATH]", iconPath )
         s = s.replace( "[ICON_ID]", str(iconId) )
         return s 
 
