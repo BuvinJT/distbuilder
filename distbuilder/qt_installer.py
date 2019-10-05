@@ -1604,10 +1604,7 @@ def __addInstallerResources( qtIfwConfig ) :
     for p in qtIfwConfig.packages :
         if not isinstance( p, QtIfwPackage ) : continue        
         pkgXml = p.pkgXml              
-        pkgScript = p.pkgScript
-        exeWrapperScript = ( p.exeWrapperScript
-            if isinstance( p.exeWrapperScript, ExecutableScript )
-            else None )
+        pkgScript = p.pkgScript       
         if pkgXml :            
             print( "Adding installer package definition: %s..." 
                    % (pkgXml.pkgName) )
@@ -1618,16 +1615,14 @@ def __addInstallerResources( qtIfwConfig ) :
                    % (pkgScript.fileName) )
             pkgScript.debug()
             pkgScript.write()
-        if exeWrapperScript and exeWrapperScript.script:
-            print( "Adding executable wrapper script: %s..." 
-                   % (exeWrapperScript.fileName()) )
-            exeWrapperScript.debug()
-            exeWrapperScript.write( p.contentDirPath() )
 
         if p.pkgType == QtIfwPackage.Type.QT_CPP : 
             p.qtCppConfig.addDependencies( p )        
-            
-        if p.distResources is not None : __addResources( p )     
+
+        if p.distResources: __addResources( p )     
+        
+        if isinstance( p.exeWrapperScript, ExecutableScript ): 
+            __addExeWrapper( p )
             
 def __addResources( package ) :    
     print( "Adding additional resources..." )
@@ -1635,6 +1630,21 @@ def __addResources( package ) :
     for srcPath in package.distResources:
         if isDir( srcPath ) : copyDir( srcPath, destPath )
         else : copyFile( srcPath, joinPath( destPath, basename( srcPath ) ) )
+
+def __addExeWrapper( package ) :           
+    exeWrapperScript = package.exeWrapperScript
+    dirPath = package.contentDirPath()
+    fileName = exeWrapperScript.fileName()
+    filePath = joinPath(dirPath, fileName )
+    isFound = isFile( filePath )
+    isCustom = exeWrapperScript.script is not None    
+    if isFound:
+        print( "%sExecutable wrapper script: %s content:\n" %
+               (("ORIGINAL " if isCustom else ""), fileName) )                   
+        with open( filePath, 'r' ) as f: print "\n\n%s\n\n" % (f.read(),)
+    if isCustom:
+        if isFound: print( "REPLACING..." )                           
+        exeWrapperScript.write( dirPath )           
 
 def __build( qtIfwConfig ) :
     print( "Building installer using Qt IFW...\n" )

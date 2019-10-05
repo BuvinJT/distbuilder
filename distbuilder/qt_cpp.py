@@ -175,10 +175,10 @@ class QtCppConfig:
 
     @staticmethod    
     def exeWrapperScript( exePath ): 
-        if IS_LINUX:    
-            return ExecutableScript( rootFileName( exePath ), 
-                script=(None if _isCqtdeployerInstalled()  
-                        else QtCppConfig.__DEFAULT_LINUX_BIN_WRAPPER_SCRIPT) )
+        if IS_LINUX:   
+            content =( None if _isCqtdeployerInstalled() else   
+                       QtCppConfig.__DEFAULT_LINUX_BIN_WRAPPER_SCRIPT ) 
+            return ExecutableScript( rootFileName( exePath ), script=content )
         else: return None
 
     __QMAKE_EXE_NAME = normBinaryName( "qmake" )
