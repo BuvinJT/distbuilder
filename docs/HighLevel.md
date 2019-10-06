@@ -359,14 +359,38 @@ See: [RobustInstallerProcess](#robustinstallerprocess).
 #### pkgExeWrapperScript 
 
 An [ExecutableScript](LowLevel.md#executablescript) object, used as a "wrapper" 
-over the primary executable in a [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
-being built.  This maybe used for many purposes, e.g. defining program arguments,
+over the primary executable in a [QtIfwPackage](ConfigClasses.md#qtifwpackage).  
+This maybe used for many purposes, e.g. defining program arguments,
 setting the working directory, setting environmental variables, or otherwise
 performing some sort of configuration or initialization prior to launching the
 program.
 
 Note that in addition to generating a script, if this attribute is set, "shortcuts"
 which would point a user to the binary, will instead run this wrapper.
+
+The following are examples of useful "wrapper scripts", illustrating the value
+and potential reasons one may want to define such:  
+
+**Windows Batch to force the working directory & run as admin**:
+
+	@powershell "Start-Process -FilePath '%~n0.exe' -WorkingDirectory '%~dp0' -Verb RunAs"
+
+**Linux Shell Script: Qt template to load bundled dynamic libraries**:
+
+	appname=`basename "$0" | sed s,\.sh$,,`
+	dirname=`dirname "$0"`
+	tmp="${dirname#?}"
+	if [ "${dirname%$tmp}" != "/" ]; then
+	dirname="$PWD/$dirname"
+	fi
+	LD_LIBRARY_PATH="$dirname"
+	export LD_LIBRARY_PATH
+	"$dirname/$appname" "$@"
+
+Note, the easiest syntax for defining embedding scripts in Python is likely via 
+"triple quotes". This avoid the mess of needing escape characters. For example:
+
+	batch="""@powershell "Start-Process -FilePath '%~n0.exe' -WorkingDirectory '%~dp0' -Verb RunAs" """
 
 #### qtCppConfig
 

@@ -874,7 +874,7 @@ preparing the program for distribution:
                                                                         
 ## ExecutableScript
 
-Executable scripts have a wide ranging potential for use with this library.  
+Executable scripts have wide ranging potential for use with this library.  
 They may be employed as part of the build process, or deployed
 with a distribution. 
 
@@ -883,7 +883,7 @@ this is a batch file on Windows, or a shell script on Linux or Mac.  Notably,
 this is most often used as a "wrapper" over a deployed executable, bundled
 with a distribution.  In some contexts, that wrapper mechanism is implicitly
 employed by deployment preparing tools the library leans on, and/or is added
-directly by the library. Use of this class allows such to be overridden. 
+directly by distbuilder code. Use of this class allows such to be overridden. 
 
 Constructor:       
 
