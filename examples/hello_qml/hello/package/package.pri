@@ -84,7 +84,7 @@ DEFINES += $$globalStrDef( COPYRIGHT_YEAR, $${currentYear} )
 DEFINES += $$globalStrDef( PRODUCT_TITLE, Hello World QML Example )
 DEFINES += $$globalStrDef( PRODUCT_DESCRIPTION, A Distribution Builder Example )
 
-SETUP_NAME=HelloQtSetup
+SETUP_NAME=HelloQMLSetup
 
 win32: ICON_PATH=$${_PRO_FILE_PWD_}/icons/demo.ico
 win64: ICON_PATH=$${_PRO_FILE_PWD_}/icons/demo.ico

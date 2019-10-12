@@ -82,10 +82,10 @@ class ConfigFactory:
         self.ifwPkgScriptPath = None        
         self.ifwPkgScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
         
-        self.pkgType             = None
-        self.pkgSrcDirPath       = None
-        self.pkgSrcExePath       = None
-        self.pkgExeWrapperScript = None
+        self.pkgType       = None
+        self.pkgSrcDirPath = None
+        self.pkgSrcExePath = None
+        self.pkgExeWrapper = None # class QtIfwExeWrapper
        
         self.qtCppConfig = None
        
@@ -133,10 +133,8 @@ class ConfigFactory:
                               self.__versionStr(), self.companyLegalName, 
                               iconFilePath=self.iconFilePath, 
                               primaryContentExe=self.binaryName,
-                              isGuiPrimaryContentExe=self.isGui,
-                              primaryExeWrapper=(
-                                  self.pkgExeWrapperScript.fileName()
-                                  if self.pkgExeWrapperScript else None ),                               
+                              isPrimaryExeGui=self.isGui,
+                              primaryExeWrapper=self.pkgExeWrapper,                               
                               companyTradeName=self.companyTradeName )
         if xml.RunProgram is None and self.ifwPackages is not None:
             xml.setPrimaryContentExe( self.ifwPackages[0] )
@@ -169,12 +167,12 @@ class ConfigFactory:
         
         pkg.exeName = self.__pkgExeName()
         pkg.isGui = self.isGui
-        pkg.exeWrapperScript = self.pkgExeWrapperScript
+        pkg.exeWrapper = self.pkgExeWrapper
          
         # Add additional distribution resources 
         # (note PyInst process adds these resource itself)
         if pkgType != QtIfwPackage.Type.PY_INSTALLER:            
-            # Add the external icon resource as need for Linux 
+            # Add the external icon resource as needed for Linux 
             if IS_LINUX and self.iconFilePath :  
                 pngPath = normIconName( self.iconFilePath, isPathPreserved=True )
                 if isFile( pngPath ):
@@ -199,8 +197,8 @@ class ConfigFactory:
 
         # Build the shortcut object 
         # (shortcuts are script generated on the target, not bundled resources) 
-        wrapperName = ( self.pkgExeWrapperScript.fileName()
-                        if self.pkgExeWrapperScript else None )                
+        shortcutCmd = ( self.pkgExeWrapper._shortcutCmd
+                        if self.pkgExeWrapper else None )                
         if IS_LINUX:
             if self.__pkgPyInstConfig: 
                 pngIconResPath = self.__pkgPyInstConfig._pngIconResPath
@@ -210,8 +208,8 @@ class ConfigFactory:
         else : pngIconResPath = None                         
         defShortcut = QtIfwShortcut(                    
                         productName=self.productName,
-                        exeName=self.__pkgExeName(),    
-                        wrapperName=wrapperName,
+                        command=shortcutCmd,
+                        exeName=self.__pkgExeName(),                            
                         exeVersion=self.__versionStr(),
                         isGui=self.isGui,                                  
                         pngIconResPath=pngIconResPath )  

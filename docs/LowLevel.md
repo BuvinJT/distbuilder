@@ -888,8 +888,8 @@ directly by distbuilder code. Use of this class allows such to be overridden.
 Constructor:       
 
 	ExecutableScript( rootName, 
-					extension=True, shebang=True,                   
-                  	script=None, scriptPath=None )
+				  	  extension=True, shebang=True,                   
+                  	  script=None, scriptPath=None )
                   
 Attributes & default values:    
 

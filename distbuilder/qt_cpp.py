@@ -1,10 +1,9 @@
 from distbuilder.master import ConfigFactory
-from distbuilder.qt_installer import QtIfwPackage
+from distbuilder.qt_installer import QtIfwPackage, QtIfwExeWrapper
 from distbuilder.util import * # @UnusedWildImport
 from distbuilder import util 
 
 from argparse import ArgumentParser
-from distbuilder.util import _system
 
 QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
  
@@ -54,7 +53,7 @@ def qmakePackageConfigFactory( args=None ):
     f.pkgType             = QtIfwPackage.Type.QT_CPP
     f.qtCppConfig         = cppConfig               
     f.pkgSrcExePath       = args.srcExePath
-    f.pkgExeWrapperScript = QtCppConfig.exeWrapperScript( args.srcExePath )
+    f.pkgExeWrapper       = QtCppConfig.exeWrapper( args.srcExePath, args.gui )
     f.isGui               = args.gui
     f.productName         = args.title
     f.description         = args.descr
@@ -184,11 +183,13 @@ class QtCppConfig:
         return ["default"]
 
     @staticmethod    
-    def exeWrapperScript( exePath ): 
-        if IS_LINUX:   
-            content =( None if _isCqtdeployerInstalled() else   
-                       QtCppConfig.__DEFAULT_LINUX_BIN_WRAPPER_SCRIPT ) 
-            return ExecutableScript( rootFileName( exePath ), script=content )
+    def exeWrapper( exePath, isGui ): 
+        if IS_LINUX:            
+            exeScript = ExecutableScript( rootFileName( exePath ), 
+                script=( None if _isCqtdeployerInstalled() else   
+                         QtCppConfig.__DEFAULT_LINUX_BIN_WRAPPER_SCRIPT ) )            
+            return QtIfwExeWrapper( normBinaryName(exePath, isGui),
+                                    wrapperScript=exeScript )            
         else: return None
 
     __QMAKE_EXE_NAME = normBinaryName( "qmake" )

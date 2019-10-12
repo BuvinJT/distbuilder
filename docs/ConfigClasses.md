@@ -165,7 +165,7 @@ Constructor:
                   	iconFilePath=None, 
                   	controlScriptName=None,
                   	primaryContentExe=None,
-                  	isGuiPrimaryContentExe=True,
+                  	isPrimaryExeGui=True,
                   	primaryExeWrapper=None,
                   	companyTradeName=None ) 
 
@@ -200,7 +200,12 @@ Functions:
     setDefaultPaths()
     
     addCustomTags( root ) 
-
+               
+    write()
+    
+    debug()
+    toPrettyXml()
+            
     path()   
     dirPath() 
        
@@ -333,17 +338,17 @@ Attributes:
 	pkgScript       = None
 	        
 	<content>        
-	srcDirPath       = None
-	srcExePath       = None
-	distResources    = None
-	exeWrapperScript = None
-	isTempSrc        = False
+	srcDirPath    = None
+	srcExePath    = None
+	distResources = None	
+	isTempSrc     = False
 	                     
 	<extended content detail>
-	exeName        = None   
-	isGui          = False
-	exeCompiler    = None
-	qmlScrDirPath  = None  <for QML projects only>   
+	exeName     = None   
+	isGui       = False
+	exeWrapper  = None
+
+	qtCppConfig = None
  
 Functions:      
 
@@ -378,7 +383,14 @@ Attributes & default values:
 
 Functions:      
 
-	path()
+    addCustomTags( root ) 
+               
+    write()
+    
+    debug()
+    toPrettyXml()
+            
+    path()   
     dirPath() 
     
 ## QtIfwPackageScript
@@ -438,13 +450,15 @@ environments.
 
 Constructor:       
 
-	QtIfwShortcut( productName="@ProductName@", 
-                   exeName=None, exeVersion="0.0.0.0",        
+	QtIfwShortcut( productName=QT_IFW_PRODUCT_NAME, 
+                   command=None, exeName=None, 
+                   exeVersion="0.0.0.0",        
                    pngIconResPath=None, isGui=True )
                   
 Attributes & default values:
       
 	productName       = "@ProductName@" <QtIfw Built-in Variable>
+	command           = None
     exeName           = None  
     isGui             = True <used in Mac / Linux>
     exeVersion        = "0.0.0.0"        
@@ -452,6 +466,78 @@ Attributes & default values:
     isAppShortcut     = True
     isDesktopShortcut = False
 
+## QtIfwExeWrapper
+
+This class provides a means to "wrap" your exe inside of additional external layers.
+Such layers may take a series of forms, and be nested inside of one another.
+The benefit of this is to impose a specific environment and or set of parameters 
+onto the exe without having to modify it internally.  These options work cross
+platform, and are language agonstic.  You may, in fact, even wrap third-party
+compiled programs in these layers!
+
+The easiest way to use this class is to set some of its basic attributes. For
+example, `workingDir`, `isElevated`, `envVars`, or `exeArgs`.  The approach taken by the 
+library is to use the "lightest touch" possible.  If you simply changed the 
+default values for those example attributes, their shortcuts and the way QtIFW
+would run the program post intallation, would be altered to provided the functionality.
+If you went to the other extreme, you could set the `isHard` attribute to `True`.
+Doing that, results in the production of a new binary, which contains the orginal
+and imposes these external conditions upon it, such that they are always applied
+even when the user side steps the shortcut and directly executes the program.     
+
+The most flexible attribute you may impose is a `wrapperScript` layer.
+This is an [ExecutableScript](LowLevel.md#executablescript) object, used to produce
+a persistent "companion" to your binary.  Executing the script rather then the 
+binary itself would be the intended means for launching the program.  If this attribute 
+is set, "shortcuts" which would point a user to the binary, will instead run this wrapper
+layer.  If you set the `isHard` attribute to `True`, this script would also be bundled
+into a standalone binary with the program, and there would be no option for the 
+user to side step it. 
+
+The application of a wrapper script of this nature is not uncommon.  This is most 
+commonly done on Linux.  When deploying Qt C++ applications which are dynamically linked,
+the standard procedure is to use this (slightly modifed) shell script to load the 
+required libraries: 
+ 
+    #!/bin/sh
+	appname=`basename "$0" | sed s,\.sh$,,`
+	dirname=`dirname "$0"`
+	tmp="${dirname#?}"
+	if [ "${dirname%$tmp}" != "/" ]; then
+	dirname="$PWD/$dirname"
+	fi
+	LD_LIBRARY_PATH="$dirname"
+	export LD_LIBRARY_PATH
+	"$dirname/$appname" "$@"
+
+Constructor:
+
+    QtIfwExeWrapper( exeName, exeDir=QT_IFW_TARGET_DIR,                   
+                     workingDir=None,
+                     isElevated=False,
+                     exeArgs=None, wrapperArgs=None,
+                     wrapperScript=None ) :    
+
+Attributes & default values:
+
+        exeName       = exeName
+        exeDir        = "@TargetDir@" <QtIfw Built-in Variable>
+        workingDir    = None
+        isElevated    = False
+        envVars       = None    # TODO
+        isHard        = False   # TODO: option to encapsulate with a binary  
+        exeArgs       = None      
+        wrapperArgs   = None  
+        wrapperScript = None            
+
+        _runProgram        
+        _runProgramArgList 
+        _shortcutCmd       
+                    
+Functions:
+      
+		refresh()
+             
 ## PipConfig
 
 Objects of this type define the details for downloading
@@ -563,19 +649,3 @@ Attributes:
     localDirPath 
     pipConfig    
     isObfuscated 
-
-## QtCppConfig:
-
-Used for Qt C++ integration.
-
-Constructor:
-
-    QtCppConfig( qtBinDirPath, exeCompiler, qmlScrDirPath=None  )
-    
-Attributes:                    
-
-    qtBinDirPath             
-    exeCompiler    
-    qmlScrDirPath     
-    
-    

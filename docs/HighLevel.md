@@ -70,10 +70,10 @@ Attributes & default values:
     ifwPkgScriptPath = None        
     ifwPkgScriptName = "installscript.qs"
 
-    pkgType             = None    
-    pkgSrcDirPath       = None
-    pkgSrcExePath       = None
-    pkgExeWrapperScript = None
+    pkgType       = None    
+    pkgSrcDirPath = None
+    pkgSrcExePath = None
+    pkgExeWrapper = None
 
 	qtCppConfig      = None
  
@@ -146,10 +146,10 @@ as: `(2,11,6,139)`
 
 #### binaryName, isGui           
 
-These are specific to producing a given [Stand Alone Executable](LowLevel.md#stand-alone-executables)
-as opposed to products / installers on a higher level via the config factory.
-
-These details are used when generating a [PyInstallerConfig](ConfigClasses.md#pyinstconfig) 
+These are attrubte used for a vareity of purposes, which would be difficult to 
+list here. Most notably, they are applied diecrtly to the production of  
+[Stand Alone Executables](LowLevel.md#stand-alone-executables). In that specific 
+process these details are set on a [PyInstallerConfig](ConfigClasses.md#pyinstconfig) 
 object when invoking the `pyInstallerConfig()` function for this class.
   
 #### sourceDir, entryPointPy 
@@ -356,41 +356,16 @@ the package.
 
 See: [RobustInstallerProcess](#robustinstallerprocess). 
 
-#### pkgExeWrapperScript 
+#### pkgExeWrapper 
 
-An [ExecutableScript](LowLevel.md#executablescript) object, used as a "wrapper" 
-over the primary executable in a [QtIfwPackage](ConfigClasses.md#qtifwpackage).  
-This maybe used for many purposes, e.g. defining program arguments,
-setting the working directory, setting environmental variables, or otherwise
-performing some sort of configuration or initialization prior to launching the
-program.
+A [QtIfwExeWrapper](ConfigClasses.md#qtifwexewrapper) object used to "wrap"
+the primary executable in a [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
+being built using the factory provided configurations.
 
-Note that in addition to generating a script, if this attribute is set, "shortcuts"
-which would point a user to the binary, will instead run this wrapper.
-
-The following are examples of useful "wrapper scripts", illustrating the value
-and potential reasons one may want to define such:  
-
-**Windows Batch to force the working directory & run as admin**:
-
-	@powershell "Start-Process -FilePath '%~n0.exe' -WorkingDirectory '%~dp0' -Verb RunAs"
-
-**Linux Shell Script: Qt template to load bundled dynamic libraries**:
-
-	appname=`basename "$0" | sed s,\.sh$,,`
-	dirname=`dirname "$0"`
-	tmp="${dirname#?}"
-	if [ "${dirname%$tmp}" != "/" ]; then
-	dirname="$PWD/$dirname"
-	fi
-	LD_LIBRARY_PATH="$dirname"
-	export LD_LIBRARY_PATH
-	"$dirname/$appname" "$@"
-
-Note, the easiest syntax for defining embedding scripts in Python is likely via 
-"triple quotes". This avoid the mess of needing escape characters. For example:
-
-	batch="""@powershell "Start-Process -FilePath '%~n0.exe' -WorkingDirectory '%~dp0' -Verb RunAs" """
+Such a wrapper can super impose environmental conditions on the context
+within which the binary is run.  Notably, this may include an 
+[ExecutableScript](LowLevel.md#executablescript) for maximum flexiblity.
+Follow the links to learn to more.
 
 #### qtCppConfig
 

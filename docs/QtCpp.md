@@ -38,6 +38,20 @@ would appear to be functional, there would be a subtle glitch introduced to the 
 
 ## Qt Module
 
+### QtCppConfig:
+
+Used for Qt C++ integration.
+
+Constructor:
+
+    QtCppConfig( qtBinDirPath, exeCompiler, qmlScrDirPath=None  )
+    
+Attributes:                    
+
+    qtBinDirPath             
+    exeCompiler    
+    qmlScrDirPath     
+
 ## Hello World Qt Example
 
 ## Hello World QML Example

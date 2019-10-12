@@ -48,6 +48,8 @@ DESKTOP_MAC_SHORTCUT = 1
 APPS_X11_SHORTCUT    = 0
 DESKTOP_X11_SHORTCUT = 1
 
+# TODO: move these to _QtIfwScript 
+#       add more (both built-in and custom) 
 QT_IFW_PRODUCT_NAME  = "@ProductName@"
 
 QT_IFW_TARGET_DIR    = "@TargetDir@"
@@ -164,7 +166,7 @@ class QtIfwConfigXml( _QtIfwXml ):
                   iconFilePath=None, 
                   controlScriptName=None,
                   primaryContentExe=None,
-                  isGuiPrimaryContentExe=True,
+                  isPrimaryExeGui=True,
                   primaryExeWrapper=None,
                   companyTradeName=None ) :
         _QtIfwXml.__init__( self, QtIfwConfigXml.__ROOT_TAG, 
@@ -172,7 +174,7 @@ class QtIfwConfigXml( _QtIfwXml ):
        
         self.primaryContentExe = ( 
             util.normBinaryName( primaryContentExe, 
-                                 isGui=isGuiPrimaryContentExe )
+                                 isGui=isPrimaryExeGui )
             if primaryContentExe else None )
         self.primaryExeWrapper=primaryExeWrapper
         
@@ -209,8 +211,7 @@ class QtIfwConfigXml( _QtIfwXml ):
             self.RunProgramDescription = ifwPackage.pkgXml.DisplayName
             self.primaryContentExe = util.normBinaryName( ifwPackage.exeName, 
                                                           isGui=ifwPackage.isGui )
-            self.primaryExeWrapper=( ifwPackage.exeWrapperScript.fileName()
-                                     if ifwPackage.exeWrapperScript else None )            
+            self.primaryExeWrapper = ifwPackage.exeWrapper            
             self.setDefaultPaths()
 
     def setDefaultVersion( self ) :
@@ -221,35 +222,39 @@ class QtIfwConfigXml( _QtIfwXml ):
         if self.Title is None: self.Title = self.Name
             #self.Title = "%s Setup" % (self.Name) # New IFW seem to be adding "Setup" suffix?
     
-    def setDefaultPaths( self ) :        
-        if( self.companyTradeName is not None and 
-            self.Name is not None ):
+    def setDefaultPaths( self ) :
+        # NOTE: DON'T USE PATH FUNCTIONS HERE!
+        # USE RAW STRINGS with FORWARD SLASHES (/) 
+        # (QtIFW configs & scripts are happy with / cross platform)
+                
+        if self.companyTradeName and self.Name:
             # On macOS, self-contained "app bundles" are typically dropped 
             # into "Applications", but "traditional" directories e.g.
             # what QtIFW installs (with the .app contained within it)
             # are NOT placed there.  Instead, the user's home directory
-            # seems more typical, with a link perhaps also appearing 
+            # is typical, with a link perhaps also appearing 
             # in Applications.  On Linux and Windows, @ApplicationsDir@
-            # resolves to a typical (cross user) apps location.       
+            # resolves to a typical (cross user) applications location.       
             dirVar = QT_IFW_HOME_DIR if IS_MACOS else QT_IFW_APPS_DIR
             subDir = "%s/%s" % (self.companyTradeName, self.Name) 
             self.TargetDir = "%s/%s" % (dirVar, subDir)
+            
         if IS_WINDOWS:
-            if self.companyTradeName is not None :
+            if self.companyTradeName:
                 self.StartMenuDir = self.companyTradeName
-        if self.primaryContentExe is not None: 
-            # NOTE: THE WORKING DIRECTORY IS NOT SET FOR RUN PROGRAM!
-            # THERE DOES NOT SEEM TO BE AN OPTION YET FOR THIS IN QT IFW   
-            programPath = "%s/%s" % ( QT_IFW_TARGET_DIR,
-                self.primaryExeWrapper if self.primaryExeWrapper else
-                self.primaryContentExe)    
+                
+        if self.primaryExeWrapper:
+            self.RunProgram = self.primaryExeWrapper._runProgram 
+            self.runProgramArgList = self.primaryExeWrapper._runProgramArgList            
+        elif self.primaryContentExe:        
+            programPath = "%s/%s" % ( QT_IFW_TARGET_DIR, self.primaryContentExe)    
             if util._isMacApp( self.primaryContentExe ):   
                 self.RunProgram = util._LAUNCH_MACOS_APP_CMD 
                 if not isinstance( self.runProgramArgList, list ) :
                     self.runProgramArgList = []
                 self.runProgramArgList.insert(0, programPath)
             else : self.RunProgram = programPath                    
-                                     
+                                         
     def addCustomTags( self, root ) :
         if( self.RunProgram is not None and 
             self.runProgramArgList is not None ):            
@@ -294,14 +299,14 @@ class QtIfwPackage:
         self.pkgXml    = pkgXml
         self.pkgScript = pkgScript        
         # content        
-        self.srcDirPath       = srcDirPath
-        self.srcExePath       = srcExePath
-        self.distResources    = None
-        self.exeWrapperScript = None # use class ExecutableScript
-        self.isTempSrc        = isTempSrc                     
+        self.srcDirPath    = srcDirPath
+        self.srcExePath    = srcExePath
+        self.distResources = None        
+        self.isTempSrc     = isTempSrc                     
         # extended content detail        
         self.exeName     = None           
         self.isGui       = False
+        self.exeWrapper  = None # class QtIfwExeWrapper
         self.qtCppConfig = None
            
     def contentDirPath( self ) :
@@ -1180,7 +1185,7 @@ class QtIfwPackageScript( _QtIfwScript ):
     __WIN_ADD_SHORTCUT_TMPLT = ( 
 """
         component.addOperation( "CreateShortcut",
-            "[EXE_PATH]",
+            "[CMD]",
             "[SHORTCUT_PATH]",
             "workingDirectory=[WORKING_DIR]",
             "iconPath=[ICON_PATH]",
@@ -1192,17 +1197,18 @@ class QtIfwPackageScript( _QtIfwScript ):
 """
         component.addOperation( "CreateLink",  
             "[SHORTCUT_PATH]",
-            "[EXE_PATH]"
+            "[LINK_TO_PATH]"
         );    
 """ )
 
+    #Refer to: https://specifications.freedesktop.org/desktop-entry-spec/latest/
     __X11_ADD_DESKTOP_ENTRY_TMPLT = ( 
 """
         component.addOperation( "CreateDesktopEntry", 
             "[SHORTCUT_PATH]",
             "Type=Application\\n" 
           + "Terminal=[IS_TERMINAL]\\n" 
-          + "Exec=bash -c 'cd \\\"[WORKING_DIR]\\\" && \\\"[EXE_PATH]\\\"'\\n"
+          + "Exec=bash -c '[CMD]'\\n"
           + "Name=[LABEL]\\n" 
           + "Name[en_US]=[LABEL]\\n" 
           + "Version=[VERSION]\\n" 
@@ -1226,20 +1232,21 @@ class QtIfwPackageScript( _QtIfwScript ):
     __X11_SHORTCUT_LOCATIONS = {
           DESKTOP_X11_SHORTCUT : QT_IFW_DESKTOP_DIR
         , APPS_X11_SHORTCUT    : "/usr/share/applications" 
-    }
+    }   # “~/.local/share/applications” - current user location?
 
     @staticmethod
-    def __winAddShortcut( location, exeName, wrapper=None, 
+    def __winAddShortcut( location, exeName, command=None, 
                           label=QT_IFW_PRODUCT_NAME, 
                           directory=QT_IFW_TARGET_DIR, 
                           iconId=0 ):        
-        exePath = "%s/%s" % (directory, 
-                    wrapper if wrapper else normBinaryName( exeName ))
+        if command is None :
+            command = "%s/%s" % (directory, normBinaryName( exeName ))
+        command = command.replace('"','\\"')    
         iconPath = "%s/%s" % (directory, normBinaryName( exeName ) )   
         locDir = QtIfwPackageScript.__WIN_SHORTCUT_LOCATIONS[location]             
         shortcutPath = "%s/%s.lnk" % (locDir, label)        
         s = QtIfwPackageScript.__WIN_ADD_SHORTCUT_TMPLT
-        s = s.replace( "[EXE_PATH]", exePath )
+        s = s.replace( "[CMD]", command )
         s = s.replace( "[SHORTCUT_PATH]", shortcutPath )
         s = s.replace( "[WORKING_DIR]", directory )
         s = s.replace( "[ICON_PATH]", iconPath )
@@ -1247,32 +1254,35 @@ class QtIfwPackageScript( _QtIfwScript ):
         return s 
 
     @staticmethod
-    def __macAddShortcut( location, exeName, isGui, wrapper=None, 
+    def __macAddShortcut( location, exeName, isGui, command=None, 
                           label=QT_IFW_PRODUCT_NAME, 
-                          directory=QT_IFW_TARGET_DIR ):        
-        exePath = "%s/%s" % (directory, 
-                    wrapper if wrapper else normBinaryName( exeName,    
-                                                            isGui=isGui ))
+                          directory=QT_IFW_TARGET_DIR ):    
+        if command : linkToPath = command 
+        else :
+            linkToPath = "%s/%s" % (directory, 
+                                    normBinaryName( exeName, isGui=isGui ))
         locDir = QtIfwPackageScript.__MAC_SHORTCUT_LOCATIONS[location]             
         shortcutPath = "%s/%s" % (locDir, label)        
         s = QtIfwPackageScript.__MAC_ADD_SYMLINK_TMPLT
-        s = s.replace( "[EXE_PATH]", exePath )
+        s = s.replace( "[LINK_TO_PATH]", linkToPath )
         s = s.replace( "[SHORTCUT_PATH]", shortcutPath )
         return s 
 
     @staticmethod
     def __linuxAddDesktopEntry( location, exeName, version,
-                                wrapper=None,  
+                                command=None,  
                                 label=QT_IFW_PRODUCT_NAME, 
                                 directory=QT_IFW_TARGET_DIR, 
                                 pngPath=None,
                                 isGui=True ):        
-        exePath = "%s/%s" % (directory, 
-                    wrapper if wrapper else normBinaryName( exeName ))    
+        if command is None :
+            command = 'cd "{0}" && "{0}/{1}"'.format( 
+                        directory, normBinaryName( exeName ))
+        command = command.replace('"','\\"')            
         locDir = QtIfwPackageScript.__X11_SHORTCUT_LOCATIONS[location]             
         shortcutPath = "%s/%s.desktop" % (locDir, label.replace(" ","_"))        
         s = QtIfwPackageScript.__X11_ADD_DESKTOP_ENTRY_TMPLT
-        s = s.replace( "[EXE_PATH]", exePath )
+        s = s.replace( "[CMD]", command )
         s = s.replace( "[SHORTCUT_PATH]", shortcutPath )
         s = s.replace( "[LABEL]", label )
         s = s.replace( "[VERSION]", version )
@@ -1328,12 +1338,12 @@ class QtIfwPackageScript( _QtIfwScript ):
                 if shortcut.exeName and shortcut.isAppShortcut :
                     winOps += QtIfwPackageScript.__winAddShortcut(
                             STARTMENU_WIN_SHORTCUT, shortcut.exeName,
-                            wrapper=shortcut.wrapperName,
+                            command=shortcut.command,
                             label=shortcut.productName )              
                 if shortcut.exeName and shortcut.isDesktopShortcut:
                     winOps += QtIfwPackageScript.__winAddShortcut(
                             DESKTOP_WIN_SHORTCUT, shortcut.exeName,
-                            wrapper=shortcut.wrapperName,
+                            command=shortcut.command,
                             label=shortcut.productName ) 
                 if winOps!="" :    
                     self.componentCreateOperationsBody += (             
@@ -1346,13 +1356,13 @@ class QtIfwPackageScript( _QtIfwScript ):
                     macOps += QtIfwPackageScript.__macAddShortcut(
                             APPS_MAC_SHORTCUT, 
                             shortcut.exeName, shortcut.isGui, 
-                            wrapper=shortcut.wrapperName,
+                            command=shortcut.command,
                             label=shortcut.productName )              
                 if shortcut.exeName and shortcut.isDesktopShortcut:
                     macOps += QtIfwPackageScript.__macAddShortcut(
                             DESKTOP_MAC_SHORTCUT, 
                             shortcut.exeName, shortcut.isGui, 
-                            wrapper=shortcut.wrapperName,
+                            command=shortcut.command,
                             label=shortcut.productName )             
                 if macOps!="" :    
                     self.componentCreateOperationsBody += (             
@@ -1365,7 +1375,7 @@ class QtIfwPackageScript( _QtIfwScript ):
                     x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
                             APPS_X11_SHORTCUT, 
                             shortcut.exeName, shortcut.exeVersion,
-                            wrapper=shortcut.wrapperName,
+                            command=shortcut.command,
                             label=shortcut.productName,
                             pngPath=shortcut.pngIconResPath,
                             isGui=shortcut.isGui )                
@@ -1373,7 +1383,7 @@ class QtIfwPackageScript( _QtIfwScript ):
                     x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
                             DESKTOP_X11_SHORTCUT, 
                             shortcut.exeName, shortcut.exeVersion,
-                            wrapper=shortcut.wrapperName,
+                            command=shortcut.command,
                             label=shortcut.productName,
                             pngPath=shortcut.pngIconResPath,
                             isGui=shortcut.isGui )                               
@@ -1396,12 +1406,12 @@ class QtIfwPackageScript( _QtIfwScript ):
 # -----------------------------------------------------------------------------    
 class QtIfwShortcut:
     def __init__( self, productName=QT_IFW_PRODUCT_NAME, 
-                  exeName=None, wrapperName=None, 
+                  command=None, exeName=None,  
                   exeVersion="0.0.0.0",        
                   pngIconResPath=None, isGui=True ) :
         self.productName    = productName
-        self.exeName        = exeName   
-        self.wrapperName    = wrapperName
+        self.command        = command
+        self.exeName        = exeName           
         self.isGui          = isGui
         self.exeVersion     = exeVersion        
         self.pngIconResPath = pngIconResPath        
@@ -1422,63 +1432,79 @@ class QtIfwExeWrapper:
                   workingDir=None, # QT_IFW_TARGET_DIR ? 
                   isElevated=False,
                   exeArgs=None, wrapperArgs=None,
-                  wrapperScript=None ) :        
-        self.exeName     = exeName
-        self.exeDir      = exeDir
-        self.workingDir  = workingDir 
-        self.isElevated  = isElevated
-        self.exeArgs     = exeArgs      
-        self.wrapperArgs = wrapperArgs  
-        
-        if isinstance( wrapperScript, ExecutableScript ):
-            self.wrapperScript = wrapperScript
-        elif wrapperScript:
+                  wrapperScript=None ) :
+        """
+        Providing a wrapperScript negates the rest of the built-in features.          
+        The user is responsible for quoting / escaping spaces in arguments.
+        The "wrapperArgs"  attribute has a context dependent meaning...
+            If using a wrapper script, those are passed into the script,
+            by the shortcut and the QtIFW run.
+            If not, they are passed to a built-in wrapper over the exe,  
+                i.e. on Windows: custom PowerShell Start-Process parameters
+        The "exeArgs" are discarded when using a wrapper script  
+            (those should be embedded in the script as hard values, 
+            and/or passed through via the wrapperArgs).
+        """                
+        self.exeName       = exeName
+        self.exeDir        = exeDir
+        self.workingDir    = workingDir 
+        self.isElevated    = isElevated
+        self.envVars       = None   # TODO
+        self.isHard        = False   # TODO: option to encapsulate with a binary (use PyInst) 
+        self.exeArgs       = exeArgs      
+        self.wrapperArgs   = wrapperArgs  
+        self.wrapperScript = wrapperScript            
+        self.refresh()
+            
+    def refresh( self ):
+        if not isinstance( self.wrapperScript, ExecutableScript ):
             self.wrapperScript = ExecutableScript( 
-                rootFileName( exeName ), script=wrapperScript )
-            
-        self.setDefaultCommands()
-            
-    def setDefaultCommands( self ):
-        # Providing a wrapperScript negates the rest of the built-in features  
-        # The user is responsible for quoting / escaping spaces in arguments
-        # "wrapperArgs" has a context dependent meaning...
-        # "exeArgs" are discarded when using a wrapper script  
-        #    (those should be embedded in the script)
+                rootFileName( self.exeName ), script=self.wrapperScript )
         
-        self.RunProgram        = None
-        self.runProgramArgList = None
-        self.shortcutCmd       = None
+        self._runProgram        = None
+        self._runProgramArgList = None
+        self._shortcutCmd       = None
         
         if self.wrapperScript:
-            self.RunProgram = "%s/%s" % ( 
+            self._runProgram = "%s/%s" % ( 
                 QT_IFW_TARGET_DIR, self.wrapperScript.fileName() )
-            self.runProgramArgList = self.wrapperArgs
-            self.shortcutCmd = "%s/%s" % ( 
+            self._runProgramArgList = self.wrapperArgs
+            self._shortcutCmd = "%s/%s" % ( 
                 QT_IFW_TARGET_DIR, self.wrapperScript.fileName() )
-            if self.wrapperArgs : self.shortcutCmd += " ".join( self.wrapperArgs )            
-        else :
-            if IS_WINDOWS :                      
-                # The PowerShell Start-Process routine has all sorts of features
-                # we can tap to extend the shortcut and QtIWF launch mechanism  
-                if self.isElevated or self.workingDir:
-                    self.RunProgram = QtIfwExeWrapper.__WIN_PS
-                    psCmd = QtIfwExeWrapper.__WIN_PS_START_TMPLT % (
-                        self.exeDir, normBinaryName(self.exeName) )
-                    if self.isElevated: 
-                        psCmd += QtIfwExeWrapper.__WIN_PS_START_ADMIN_SWITCH
-                    if self.workingDir :
-                        psCmd += QtIfwExeWrapper.__WIN_PS_START_PWD_TMPLT % (
-                            self.workingDir, )
-                    if self.exeArgs :
-                        psCmd += QtIfwExeWrapper.__WIN_PS_START_ARGS_SWITCH
-                        psCmd += ",".join([ '"%s"' % (a,) for a in self.exeArgs ])
-                    # In this context, "wrapperArgs" are custom additions to Start-Process 
-                    if self.wrapperArgs: psCmd += " %s" % (self.wrapperArgs,)
-                    psCmd = '"%s"' % (psCmd,) # the psCmd is one long argument for ps
-                    self.runProgramArgList=[ psCmd ]            
-                    self.shortcutCmd = "%s %s" % (QtIfwExeWrapper.__WIN_PS, psCmd) 
+            if self.wrapperArgs : self._shortcutCmd += " ".join( self.wrapperArgs )            
+        elif IS_WINDOWS :                      
+            # The PowerShell Start-Process routine has all sorts of features
+            # we can tap to extend the shortcut and QtIWF launch mechanism  
+            if self.isElevated or self.workingDir:
+                self._runProgram = QtIfwExeWrapper.__WIN_PS
+                psCmd = QtIfwExeWrapper.__WIN_PS_START_TMPLT % (
+                    self.exeDir, normBinaryName(self.exeName) )
+                if self.isElevated: 
+                    psCmd += QtIfwExeWrapper.__WIN_PS_START_ADMIN_SWITCH
+                if self.workingDir :
+                    psCmd += QtIfwExeWrapper.__WIN_PS_START_PWD_TMPLT % (
+                        self.workingDir, )
+                if self.exeArgs :
+                    psCmd += QtIfwExeWrapper.__WIN_PS_START_ARGS_SWITCH
+                    psCmd += ",".join([ '"%s"' % (a,) for a in self.exeArgs ])
+                # In this context, "wrapperArgs" are custom additions to Start-Process 
+                if self.wrapperArgs: psCmd += " %s" % (self.wrapperArgs,)
+                psCmd = '"%s"' % (psCmd,) # the psCmd is one long argument for ps
+                self._runProgramArgList=[ psCmd ]            
+                self._shortcutCmd = "%s %s" % (QtIfwExeWrapper.__WIN_PS, psCmd) 
+        else:
+            pass            
+            # TODO : FILL IN!
 
-            
+        # TODO: check this...
+        if util._isMacApp( self.exeName  ):
+            programPath = self._runProgram   
+            self._runProgram = util._LAUNCH_MACOS_APP_CMD
+            self._runProgramArgList = self.exeArgs 
+            if not isinstance( self._runProgramArgList, list ) :
+                self._runProgramArgList = []
+            self._runProgramArgList.insert(0, programPath)
+                            
 # -----------------------------------------------------------------------------    
 def installQtIfw( installerPath=None, version=None, targetPath=None ):    
     if installerPath is None :        
@@ -1702,7 +1728,7 @@ def __addInstallerResources( qtIfwConfig ) :
 
         if p.distResources: __addResources( p )     
 
-        if isinstance( p.exeWrapperScript, ExecutableScript ): 
+        if isinstance( p.exeWrapper, QtIfwExeWrapper ): 
             __addExeWrapper( p )
             
 def __addResources( package ) :    
@@ -1713,19 +1739,20 @@ def __addResources( package ) :
         else : copyFile( srcPath, joinPath( destPath, fileBaseName( srcPath ) ) )
 
 def __addExeWrapper( package ) :
-    exeWrapperScript = package.exeWrapperScript    
-    dirPath = package.contentDirPath()
-    fileName = exeWrapperScript.fileName()
-    filePath = joinPath(dirPath, fileName )
-    isFound = isFile( filePath )
-    isCustom = exeWrapperScript.script is not None    
-    if isFound:
-        print( "%sExecutable wrapper script: %s content:\n" %
-               (("ORIGINAL " if isCustom else ""), fileName) )                   
-        with open( filePath, 'r' ) as f: print( "\n\n%s\n\n" % (f.read(),) )
-    if isCustom:
-        if isFound: print( "REPLACING..." )                           
-        exeWrapperScript.write( dirPath )           
+    exeWrapperScript = package.exeWrapper.wrapperScript
+    if isinstance( exeWrapperScript, ExecutableScript ):
+        dirPath = package.contentDirPath()
+        fileName = exeWrapperScript.fileName()
+        filePath = joinPath( dirPath, fileName )
+        isFound = isFile( filePath )
+        isCustom = exeWrapperScript.script is not None    
+        if isFound:
+            print( "%sExecutable wrapper script: %s content:\n" %
+                   (("ORIGINAL " if isCustom else ""), fileName) )                   
+            with open( filePath, 'r' ) as f: print( "\n\n%s\n\n" % (f.read(),) )
+        if isCustom:
+            if isFound: print( "REPLACING..." )                           
+            exeWrapperScript.write( dirPath )           
 
 def __build( qtIfwConfig ) :
     print( "Building installer using Qt IFW...\n" )
