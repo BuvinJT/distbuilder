@@ -198,7 +198,9 @@ class ConfigFactory:
         # Build the shortcut object 
         # (shortcuts are script generated on the target, not bundled resources) 
         shortcutCmd = ( self.pkgExeWrapper._shortcutCmd
-                        if self.pkgExeWrapper else None )                
+                        if self.pkgExeWrapper else None )
+        shortcutArgs = ( self.pkgExeWrapper._shortcutArgs
+                         if self.pkgExeWrapper else [] )                
         if IS_LINUX:
             if self.__pkgPyInstConfig: 
                 pngIconResPath = self.__pkgPyInstConfig._pngIconResPath
@@ -209,6 +211,7 @@ class ConfigFactory:
         defShortcut = QtIfwShortcut(                    
                         productName=self.productName,
                         command=shortcutCmd,
+                        args=shortcutArgs,
                         exeName=self.__pkgExeName(),                            
                         exeVersion=self.__versionStr(),
                         isGui=self.isGui,                                  

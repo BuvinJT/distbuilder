@@ -21,6 +21,7 @@ from distbuilder.qt_installer import \
     , QtIfwPackageXml \
     , QtIfwPackageScript \
     , QtIfwShortcut \
+    , QtIfwExeWrapper \
     , installQtIfw \
     , unInstallQtIfw \
     , buildInstaller \
