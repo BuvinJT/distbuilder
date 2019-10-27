@@ -206,9 +206,13 @@ class ConfigFactory:
         if IS_LINUX:
             if self.__pkgPyInstConfig: 
                 pngIconResPath = self.__pkgPyInstConfig._pngIconResPath
+                relTo = (THIS_DIR if self.__pkgPyInstConfig.sourceDir is None 
+                         else self.__pkgPyInstConfig.sourceDir )                                            
+                pngIconResPath = relpath( pngIconResPath, relTo )                         
             elif self.iconFilePath:    
-                pngIconResPath = normIconName(
-                    self.iconFilePath, isPathPreserved=True )
+                pngIconResPath = relpath( normIconName(
+                        self.iconFilePath, isPathPreserved=True ),
+                    dirPath( self.iconFilePath ) )                
         else : pngIconResPath = None                         
         defShortcut = QtIfwShortcut(                    
                         productName=self.productName,

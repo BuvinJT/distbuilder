@@ -1336,7 +1336,7 @@ class QtIfwPackageScript( _QtIfwScript ):
     __X11_SHORTCUT_LOCATIONS = {
           DESKTOP_X11_SHORTCUT : QT_IFW_DESKTOP_DIR
         , APPS_X11_SHORTCUT    : "/usr/share/applications" 
-    }   # “~/.local/share/applications” - current user location?
+    }   # ï¿½~/.local/share/applicationsï¿½ - current user location?
 
     @staticmethod
     def __winAddShortcut( location, exeName, command=None, args=[], 
@@ -1346,7 +1346,7 @@ class QtIfwPackageScript( _QtIfwScript ):
                           iconId=0 ):
         if command is None :
             command = "%s/%s" % (directory, normBinaryName( exeName ))
-        if args:            
+        if args and len(args) > 0 :            
             args = [ a.replace('"','\\"').replace( 
                      '@TargetDir@', '" + ' + _QtIfwScript.targetDir() + ' + "') 
                     for a in args ]
@@ -1395,7 +1395,7 @@ class QtIfwPackageScript( _QtIfwScript ):
         if command is None :
             command = 'cd "{0}" && "{0}/{1}"'.format( 
                         directory, normBinaryName( exeName ))
-        if len(args) > 0 : command += " " + ' '.join(args)            
+        if args and len(args) > 0 : command += " " + ' '.join(args)            
         command = command.replace('"','\\"')            
         locDir = QtIfwPackageScript.__X11_SHORTCUT_LOCATIONS[location]             
         shortcutPath = "%s/%s.desktop" % (locDir, label.replace(" ","_"))        
@@ -1533,7 +1533,6 @@ class QtIfwPackageScript( _QtIfwScript ):
                         '%s\n    }' % (macOps,) )                    
             elif IS_LINUX:
                 x11Ops = ""
-                print( "shortcut.wrapperName %s" % shortcut.wrapperName ) 
                 if shortcut.exeName and shortcut.isAppShortcut :
                     x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
                             APPS_X11_SHORTCUT, 
