@@ -48,10 +48,15 @@ program, invoke the buildExecutable function:
     names/paths relative to the original project 
     directory. Else, you may provide a list of two 
     element tuples, with a specific source and 
-    destination.  The source may be an absolute path 
-    from another location on your file system. The 
-    destination maybe whatever name/path you want
-    specified relative to the package being created.    
+    destination.  The source may be a relative or 
+    absolute path from another location on your file 
+    system. The destination maybe whatever name/path 
+    you want specified relative to the package being 
+    created. Note that when using a **relative** source
+    **outside** of the build directory, you MUST specify 
+    the corresponding the destination explictly if you 
+    wish for that to be **nested**, rather than placed
+    on the package root.    
     
 **distDirs**: An (optional) list of directories to 
     create within the package.  Note distResources
@@ -894,8 +899,8 @@ Constructor:
 Attributes & default values:    
 
     rootName <required> 
-    extension=True
-    shebang=True,                   
+    extension=True  # i.e. automatic
+    shebang=True    # i.e. automatic   
     script=None
     scriptPath=None
     

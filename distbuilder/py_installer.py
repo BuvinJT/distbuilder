@@ -203,7 +203,12 @@ class PyInstallerConfig:
         srcHead, srcTail = splitPath( src )
         if srcHead=="" : 
             srcHead = THIS_DIR if self.sourceDir is None else self.sourceDir
-            src = self._absPath( srcTail )                    
+            src = self._absPath( srcTail )
+        elif srcHead.startswith( ".." ) : 
+            # NOTE: for a relative source path to have a **nested** destination 
+            # path, the destination MUST be explicitly provided (see dest logic)
+            srcHead = THIS_DIR if self.sourceDir is None else self.sourceDir
+            src = self._absPath( src )                                                    
         if isPyInstallerArg:
             if dest is None: dest = relpath( srcHead, THIS_DIR )                    
         else :

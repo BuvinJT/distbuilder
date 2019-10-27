@@ -1345,11 +1345,13 @@ class QtIfwPackageScript( _QtIfwScript ):
                           directory=QT_IFW_TARGET_DIR, 
                           iconId=0 ):
         if command is None :
-            command = "%s/%s" % (directory, normBinaryName( exeName ))        
-        args = [ a.replace('"','\\"').replace( 
-                 '@TargetDir@', '" + ' + _QtIfwScript.targetDir() + ' + "') 
-                for a in args ]
-        args = '\"%s\",' % (" ".join(args),)            
+            command = "%s/%s" % (directory, normBinaryName( exeName ))
+        if args:            
+            args = [ a.replace('"','\\"').replace( 
+                     '@TargetDir@', '" + ' + _QtIfwScript.targetDir() + ' + "') 
+                    for a in args ]
+            args = '\"%s\",' % (" ".join(args),)     
+        else : args=""           
         iconPath = "%s/%s" % (directory, normBinaryName( exeName ) )   
         locDir = QtIfwPackageScript.__WIN_SHORTCUT_LOCATIONS[location]             
         shortcutPath = "%s/%s.lnk" % (locDir, label)        
