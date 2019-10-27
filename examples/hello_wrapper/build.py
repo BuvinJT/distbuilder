@@ -1,6 +1,7 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
     QtIfwExeWrapper, \
     IS_WINDOWS, IS_MACOS, IS_LINUX
+from distbuilder.qt_installer import QT_IFW_TARGET_DIR, QT_IFW_HOME_DIR
 
 f = configFactory  = ConfigFactory()
 f.description      = "A Distribution Builder Example"
@@ -24,26 +25,32 @@ p.isTestingInstall = True
 #------------------------------------------------------------------------------
 f.productName      = "Hello WorkDir Example"
 f.setupName        = "HelloWorkDirSetup"
-f.pkgExeWrapper    = QtIfwExeWrapper( f.binaryName, workingDir="@TargetDir@" )
+f.pkgExeWrapper    = QtIfwExeWrapper( f.binaryName, workingDir=QT_IFW_TARGET_DIR )
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
 #p.run()       
 
 #------------------------------------------------------------------------------
+licenseName = "LICENSE"
+
+if IS_WINDOWS :
+    launchScript = (
+"""@echo off
+set PROG_DIR=%~dp0
+start "{0}" "%PROG_DIR%\{1}"
+start "Display License" notepad "%PROG_DIR%\{2}"
+""".format( f.productName, f.binaryName, licenseName ) )
+elif IS_MACOS :
+    launchScript = None # TODO
+elif IS_LINUX :
+    launchScript = None # TODO        
+        
 f.productName      = "Hello WrapperScript Example"
 f.setupName        = "HelloWrapperScriptSetup"
-f.distResources    = ["../hello_world/LICENSE"]
-if IS_WINDOWS :
-    script = (
-"""@echo off
-cd "%~dp0"
-start "{0}" "{1}"
-start "Display License" notepad LICENSE""".format( f.productName, f.binaryName ) )
-elif IS_MACOS :
-    script = None # TODO
-elif IS_LINUX :
-    script = None # TODO            
-f.pkgExeWrapper    = QtIfwExeWrapper( f.binaryName, wrapperScript=script )
+f.distResources    = ["../hello_world/{0}".format( licenseName ) ]
+f.pkgExeWrapper    = QtIfwExeWrapper( f.binaryName, 
+        wrapperScript=launchScript )
+        #wrapperScript=launchScript, isElevated=True, workingDir=QT_IFW_HOME_DIR )
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
 p.run()       

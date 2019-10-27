@@ -5,7 +5,6 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from datetime import date
 from abc import ABCMeta, abstractmethod
-from distbuilder.util import IS_WINDOWS
 
 QT_IFW_DEFAULT_VERSION = "3.1.1"
 QT_IFW_DOWNLOAD_URL_BASE = "https://download.qt.io/official_releases/qt-installer-framework"
