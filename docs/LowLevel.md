@@ -423,7 +423,7 @@ Static Functions:
     	(Note: checkbox controls also work on radio buttons)
 	enableCheckBox( checkboxName )                
     disableCheckBox( checkboxName )               
-    setCheckBox( checkboxName, boolean )                  
+    setCheckBox( checkboxName, boolean )              
 
 If writing scripts directly for distbulder integration, you may also employ the 
 following add-on **QT SCRIPT** functions:
@@ -431,6 +431,9 @@ following add-on **QT SCRIPT** functions:
 	execute( binPath, args )
 	
 	sleep( seconds )
+	
+    writeFile( path, content ) <path can include native env vars>
+    deleteFile( path ) 	       <path can include native env vars>	
 	
 	clearErrorLog()
 	writeErrorLog( msg )
@@ -446,9 +449,14 @@ following add-on **QT SCRIPT** functions:
 	maintenanceToolExists( dir )
 	toMaintenanceToolPath( dir )
 	
-	WINDOWS ONLY: (resolves via registry lookups)  
-	maintenanceToolPaths()
-	isOsRegisteredProgram()
+	<Windows Only>   
+	maintenanceToolPaths()	<resolves via registry lookups>
+	isOsRegisteredProgram()	
+	executeVbScript( vbs )
+	
+	<Windows Only, In Package Context>
+	addVbsOperation( component, isElevated, vbs )
+	setShortcutWindowStyleVbs( shortcutPath, styleCode )
 
 ### QtIfwPackage list manipulation
 

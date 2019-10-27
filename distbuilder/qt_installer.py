@@ -51,7 +51,8 @@ DESKTOP_X11_SHORTCUT = 1
 SHORTCUT_WIN_MINIMIZED = 7
 
 # TODO: move these to _QtIfwScript 
-#       add more (both built-in and custom) 
+#       add more (both built-in and custom)
+# NOTE: must update Wrapper Example when moving these  
 QT_IFW_PRODUCT_NAME  = "@ProductName@"
 
 QT_IFW_TARGET_DIR    = "@TargetDir@"
@@ -1625,7 +1626,7 @@ class QtIfwExeWrapper:
         self.isElevated    = isElevated
         
         self._winPsStartArgs  = None
-        self._winCmdStartArgs = None
+        #self._winCmdStartArgs = None
         
         self.refresh()
             

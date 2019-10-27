@@ -433,8 +433,11 @@ Attributes & default values:
     
     script = None <or loaded via scriptPath>
     
-    shortcuts = shortcuts
+    shortcuts = []
     
+    packageGlobals = None
+    isAutoGlobals = True
+            
     componentConstructorBody = None
     isAutoComponentConstructor = True
     
@@ -451,18 +454,24 @@ environments.
 Constructor:       
 
 	QtIfwShortcut( productName=QT_IFW_PRODUCT_NAME, 
-                   command=None, exeName=None, 
-                   exeVersion="0.0.0.0",        
-                   pngIconResPath=None, isGui=True )
+                   command=None, args=[], 
+                   exeName=None, exeVersion="0.0.0.0",
+                   isGui=True, pngIconResPath=None )
                   
 Attributes & default values:
       
 	productName       = "@ProductName@" <QtIfw Built-in Variable>
 	command           = None
-    exeName           = None  
-    isGui             = True <used in Mac / Linux>
-    exeVersion        = "0.0.0.0"        
-    pngIconResPath    = None <used in Linux>        
+    exeName           = None
+    args           	  = None  
+
+    isGui             = True <used in Mac / Linux>       
+    
+    windowStyle       = None <used in Windows>        
+
+    exeVersion        = "0.0.0.0" <used in Linux>        
+    pngIconResPath    = None <used in Linux>   
+    
     isAppShortcut     = True
     isDesktopShortcut = False
 
@@ -518,28 +527,34 @@ possiblities are really boundless.
 
 Constructor:
 
-    QtIfwExeWrapper( exeName, exeDir=QT_IFW_TARGET_DIR,                   
-                     workingDir=None,
-                     isElevated=False,
-                     exeArgs=None, wrapperArgs=None,
-                     wrapperScript=None ) :    
+    QtIfwExeWrapper( exeName, 
+    				 wrapperScript=None, isContainer=False,
+                     exeDir=QT_IFW_TARGET_DIR, workingDir=None, 
+                     args=None, envVars=None, isElevated=False )    
 
 Attributes & default values:
+        
+        exeName       = <required>        
+        
+        wrapperScript = None
+        isContainer   = False   
 
-        exeName       = exeName
         exeDir        = "@TargetDir@" <QtIfw Built-in Variable>
-        workingDir    = None
-        isElevated    = False
-        envVars       = None    # TODO
-        isHard        = False   # TODO: option to encapsulate with a binary  
-        exeArgs       = None      
-        wrapperArgs   = None  
-        wrapperScript = None            
+        workingDir    = None  <None=don't impose here, use QT_IFW_TARGET_DIR via other means>
 
-        _runProgram        
-        _runProgramArgList 
-        _shortcutCmd       
-                    
+        args          = None      
+        envVars       = None         
+        isElevated    = False
+
+        _winPsStartArgs  = None  <Windows only>
+
+		<Auto defined via refresh>
+        _runProgram       
+        _runProgArgs      
+        _shortcutCmd      
+        _shortcutArgs     
+        _shortcutWinStyle 
+                            
 Functions:
       
 		refresh()

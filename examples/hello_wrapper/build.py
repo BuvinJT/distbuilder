@@ -25,7 +25,8 @@ p.isTestingInstall = True
 #------------------------------------------------------------------------------
 f.productName      = "Hello WorkDir Example"
 f.setupName        = "HelloWorkDirSetup"
-f.pkgExeWrapper    = QtIfwExeWrapper( f.binaryName, workingDir=QT_IFW_TARGET_DIR )
+f.pkgExeWrapper    = QtIfwExeWrapper( f.binaryName, 
+                                      workingDir=QT_IFW_TARGET_DIR )
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
 #p.run()       
@@ -49,8 +50,8 @@ f.productName      = "Hello WrapperScript Example"
 f.setupName        = "HelloWrapperScriptSetup"
 f.distResources    = ["../hello_world/{0}".format( licenseName ) ]
 f.pkgExeWrapper    = QtIfwExeWrapper( f.binaryName, 
-        wrapperScript=launchScript )
-        #wrapperScript=launchScript, isElevated=True, workingDir=QT_IFW_HOME_DIR )
+                                      wrapperScript=launchScript )
+    #wrapperScript=launchScript, isElevated=True, workingDir=QT_IFW_HOME_DIR )
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
 p.run()       
