@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from datetime import date
 from abc import ABCMeta, abstractmethod
+from distbuilder.util import IS_WINDOWS
 
 QT_IFW_DEFAULT_VERSION = "3.1.1"
 QT_IFW_DOWNLOAD_URL_BASE = "https://download.qt.io/official_releases/qt-installer-framework"
@@ -47,6 +48,8 @@ DESKTOP_MAC_SHORTCUT = 1
                 
 APPS_X11_SHORTCUT    = 0
 DESKTOP_X11_SHORTCUT = 1
+
+SHORTCUT_WIN_MINIMIZED = 7
 
 # TODO: move these to _QtIfwScript 
 #       add more (both built-in and custom) 
@@ -378,6 +381,7 @@ class _QtIfwScript:
     
     VERBOSE_CMD_SWITCH_ARG = "-v"    
     TARGET_DIR_KEY         = "TargetDir"
+    STARTMENU_DIR_KEY      = "StartMenuDir"
     PRODUCT_NAME_KEY       = "ProductName"
     
     ERR_LOG_PATH_CMD_ARG      = "errlog"
@@ -483,6 +487,10 @@ class _QtIfwScript:
         return _QtIfwScript.lookupValue( _QtIfwScript.TARGET_DIR_KEY )
 
     @staticmethod        
+    def startMenuDir(): 
+        return _QtIfwScript.lookupValue( _QtIfwScript.STARTMENU_DIR_KEY )
+
+    @staticmethod        
     def productName(): 
         return _QtIfwScript.lookupValue( _QtIfwScript.PRODUCT_NAME_KEY )
     
@@ -580,11 +588,159 @@ class _QtIfwScript:
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
         
     def __init__( self, fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
-                  script=None, scriptPath=None ) :
+                  script=None, scriptPath=None, isAutoLib=True ) :
         self.fileName = fileName
         if scriptPath :
             with open( scriptPath, 'rb' ) as f: self.script = f.read()
         else : self.script = script  
+        self.isAutoLib   = True
+        self.qtScriptLib = None
+
+    def _genLib( self ):
+        NEW = _QtIfwScript.NEW_LINE
+        END = _QtIfwScript.END_LINE
+        TAB = _QtIfwScript.TAB
+        SBLK =_QtIfwScript.START_BLOCK
+        EBLK =_QtIfwScript.END_BLOCK
+        self.qtScriptLib = (
+            'function execute( binPath, args ) ' + SBLK +
+            TAB + 'var cmd = "\\"" + binPath + "\\""' + END +
+            TAB + 'for( i=0; i < args.length; i++ )' + NEW +
+            (2*TAB) + 'cmd += (" " + args[i])' + END +
+            TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
+            TAB + 'return installer.execute( binPath, args )' + END +
+            EBLK + NEW +
+            'function sleep( seconds ) ' + SBLK +
+            TAB + 'var sleepCmd = "' +  # note Batch timeout doesn't work in a "non-interactive" shell, but this ping kludge does!                 
+                ('ping 192.0.2.1 -n 1 -w " + seconds + "000\\n"' if IS_WINDOWS else
+                 'sleep " + seconds' ) + END +                                                                                                
+            TAB + 'var result = installer.execute( ' +
+                ('"cmd.exe", ["/k"], sleepCmd' if IS_WINDOWS else
+                 '"sh", ["-c", sleepCmd]' ) + ' )' + END +             
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("Sleep operation failed.")' + END +
+            EBLK + NEW +      
+            'function escapeEchoText( echo ) ' + SBLK +
+                (TAB + 'if( echo.trim()=="" ) return "."' + END if IS_WINDOWS else '' ) +
+                TAB + 'var escaped = echo' + END +                      
+                TAB + 'return " " + escaped' + END +                                                                                          
+            EBLK + NEW +      
+            'function writeFile( path, content ) ' + SBLK +            
+                TAB + 'var lines = content.split(\"\\n\")' + END +                                             
+                TAB + 'var redirect = " >"' + END +      
+                TAB + 'var writeCmd = ""' + END +
+                (TAB + 'writeCmd += "echo off && "' + END if IS_WINDOWS else "" ) +
+                TAB + 'for( i=0; i < lines.length; i++ )' + SBLK +                
+                (2*TAB) + 'var echo = escapeEchoText( lines[i] )' + END +
+                (2*TAB) + 'writeCmd += "echo" + echo + redirect + ' + NEW +
+                    (3*TAB) + '" \\"" + path + "\\"' + ('\\n"' if IS_WINDOWS else ';"' ) + END +
+                (2*TAB) + 'redirect = " >>"' + END +                                               
+                TAB + EBLK + 
+                TAB + 'writeCmd += "echo " + path' + 
+                        ( '+ "\\n"' if IS_WINDOWS else '' ) + END +                                  
+                TAB + 'var result = installer.execute( ' +
+                    ('"cmd.exe", ["/k"], writeCmd' if IS_WINDOWS else
+                     '"sh", ["-c", writeCmd]' ) + ' )' + END +                
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("Write file failed.")' + END +
+                TAB + 'try' + SBLK +
+                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
+                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+                TAB + 'catch(e){ path = "";' + EBLK +
+                TAB + 'if( path=="" || !' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                (2*TAB) + 'throw new Error("Write file failed. (file does not exists)")' + END +
+                TAB + _QtIfwScript.log( '"Wrote file to: " + path', isAutoQuote=False ) +
+                TAB + 'return path' + END +
+            EBLK + NEW +                   
+            'function deleteFile( path ) ' + SBLK +
+                TAB + 'var deleteCmd = "' +                    
+                    ('echo off && del \\"" + path + "\\" /q\\necho " + path + "\\n"' 
+                     if IS_WINDOWS else
+                     'rm \\"" + path + "\\"; echo " + path' ) + END +                                                                                                
+                TAB + 'var result = installer.execute( ' +
+                    ('"cmd.exe", ["/k"], deleteCmd' if IS_WINDOWS else
+                     '"sh", ["-c", deleteCmd]' ) + ' )' + END +             
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("Delete file failed.")' + END +
+                TAB + 'try' + SBLK +
+                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
+                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+                TAB + 'catch(e){ path = "";' + EBLK +                
+                TAB + 'if( path=="" || ' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                (2*TAB) + 'throw new Error("Delete file failed. (file exists)")' + END +
+                TAB + _QtIfwScript.log( '"Deleted file: " + path', isAutoQuote=False ) + 
+                TAB + 'return path' + END +                                                                                                                                       
+            EBLK + NEW +                                                                     
+            'function clearErrorLog() ' + SBLK + # TODO: Call deleteFile()
+                TAB + 'var path = ' + _QtIfwScript.cmdLineArg( 
+                    _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
+                    _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END + 
+                TAB + 'var deleteCmd = "' +                    
+                    ('echo off && del \\"" + path + "\\" /q\\necho " + path + "\\n"' 
+                     if IS_WINDOWS else
+                     'rm \\"" + path + "\\"; echo " + path' ) + END +                                                                                                
+                TAB + 'var result = installer.execute( ' +
+                    ('"cmd.exe", ["/k"], deleteCmd' if IS_WINDOWS else
+                     '"sh", ["-c", deleteCmd]' ) + ' )' + END +             
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("Clear error log failed.")' + END +
+                TAB + 'try' + SBLK +
+                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
+                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+                TAB + 'catch(e){ path = "";' + EBLK +                
+                TAB + 'if( path=="" || ' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                (2*TAB) + 'throw new Error("Clear error log failed. (file exists)")' + END +
+                TAB + _QtIfwScript.log( '"Cleared error log: " + path', isAutoQuote=False ) +                                                                                                                                        
+            EBLK + NEW +                           
+            'function writeErrorLog( msg ) ' + SBLK +   # TODO: Call writeFile()
+                TAB + 'var path = ' + _QtIfwScript.cmdLineArg( 
+                    _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
+                    _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END +                
+                TAB + 'var writeCmd = "' +
+                    ('echo off && '
+                     'echo " + msg + " > \\"" + path + "\\"\n'
+                     'echo " + path + "\\n"' 
+                     if IS_WINDOWS else
+                     'echo " + msg + " > \\"" + path + "\\";'
+                     'echo " + path' ) + END +      
+                TAB + 'var result = installer.execute( ' +
+                    ('"cmd.exe", ["/k"], writeCmd' if IS_WINDOWS else
+                     '"sh", ["-c", writeCmd]' ) + ' )' + END +                
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("Write error log failed.")' + END +
+                TAB + 'try' + SBLK +
+                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
+                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+                TAB + 'catch(e){ path = "";' + EBLK +
+                TAB + 'if( path=="" || !' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                (2*TAB) + 'throw new Error("Write error log failed. (file does not exists)")' + END +
+                TAB + _QtIfwScript.log( '"Wrote error log to: " + path', isAutoQuote=False ) +                                                                                                
+            EBLK + NEW +                                                 
+            'function silentAbort( msg ) ' + SBLK +
+                TAB + 'writeErrorLog( msg )' + END +
+                TAB + 'throw new Error( msg )' + END +                    
+            EBLK + NEW                 
+        )        
+        if IS_WINDOWS : 
+            # EMBEDDED VB SCRIPT
+            self.qtScriptLib += (
+            'function executeVbScript( vbs ) ' + SBLK +
+                TAB + _QtIfwScript.log( "Executing VbScript:" ) +
+                TAB + _QtIfwScript.log( "vbs", isAutoQuote=False ) +          
+                TAB + 'var path = writeFile( "%temp%/__qtIfwInstaller.vbs", vbs )' + END +
+                TAB + 'var result = installer.execute(' + 
+                    #'"cmd.exe", ["/k"], "cscript //Nologo \\"" + path + "\\"\\n" )' + END +
+                    '"cscript", ["//Nologo", path])' + END +
+                TAB + _QtIfwScript.log( "Result:" ) +                
+                TAB + _QtIfwScript.log( "result[0]", isAutoQuote=False ) + 
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("VbScript operation failed.")' + END +
+                TAB + 'for( i=0; i < 3; i++ )' + SBLK +
+                (2*TAB) + 'try{ deleteFile( path ); break; }' + NEW +                          
+                (2*TAB) + 'catch(e){ sleep(1); }' + NEW +
+                TAB + EBLK + NEW +
+            EBLK + NEW                                                          
+            )
                                                     
     def __str__( self ) :
         if not self.script: self._generate()
@@ -739,7 +895,10 @@ Controller.prototype.%s = function(){
                                                                 
     def _generate( self ) :        
         self.script = ""
-        
+                
+        if self.isAutoLib: _QtIfwScript._genLib( self )        
+        if self.qtScriptLib: self.script += self.qtScriptLib
+
         if self.isAutoGlobals: self.__genGlobals()
         if self.controllerGlobals: self.script += self.controllerGlobals
         
@@ -807,116 +966,7 @@ Controller.prototype.%s = function(){
         TAB = _QtIfwScript.TAB
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK
-        self.controllerGlobals = (
-            'function execute( binPath, args ) ' + SBLK +
-            TAB + 'var cmd = "\\"" + binPath + "\\""' + END +
-            TAB + 'for( i=0; i < args.length; i++ )' + NEW +
-            (2*TAB) + 'cmd += (" " + args[i])' + END +
-            TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
-            TAB + 'return installer.execute( binPath, args )' + END +
-            EBLK + NEW +
-            'function sleep( seconds ) ' + SBLK +
-            TAB + 'var sleepCmd = "' +  # note Batch timeout doesn't work in a "non-interactive" shell, but this ping kludge does!                 
-                ('ping 192.0.2.1 -n 1 -w " + seconds + "000\\n"' if IS_WINDOWS else
-                 'sleep " + seconds' ) + END +                                                                                                
-            TAB + 'var result = installer.execute( ' +
-                ('"cmd.exe", ["/k"], sleepCmd' if IS_WINDOWS else
-                 '"sh", ["-c", sleepCmd]' ) + ' )' + END +             
-            TAB + 'if( result[1] != 0 ) ' + NEW +
-            (2*TAB) + 'throw new Error("Sleep operation failed.")' + END +
-            EBLK + NEW +                                                                                          
-            'function clearErrorLog() ' + SBLK +
-                TAB + 'var path = ' + _QtIfwScript.cmdLineArg( 
-                    _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
-                    _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END + 
-                TAB + 'var deleteCmd = "' +                    
-                    ('echo off && del \\"" + path + "\\" /q\\necho " + path + "\\n"' 
-                     if IS_WINDOWS else
-                     'rm \\"" + path + "\\"; echo " + path' ) + END +                                                                                                
-                TAB + 'var result = installer.execute( ' +
-                    ('"cmd.exe", ["/k"], deleteCmd' if IS_WINDOWS else
-                     '"sh", ["-c", deleteCmd]' ) + ' )' + END +             
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("Clear error log failed.")' + END +
-                TAB + 'try' + SBLK +
-                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
-                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
-                TAB + 'catch(e){ path = "";' + EBLK +                
-                TAB + 'if( path=="" || ' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-                (2*TAB) + 'throw new Error("Clear error log failed. (file exists)")' + END +
-                TAB + _QtIfwScript.log( '"Cleared error log: " + path', isAutoQuote=False ) +                                                                                                                                        
-            EBLK + NEW +                           
-            'function writeErrorLog( msg ) ' + SBLK +
-                TAB + 'var path = ' + _QtIfwScript.cmdLineArg( 
-                    _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
-                    _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END +                
-                TAB + 'var writeCmd = "' +
-                    ('echo off && '
-                     'echo " + msg + " > \\"" + path + "\\"\n'
-                     'echo " + path + "\\n"' 
-                     if IS_WINDOWS else
-                     'echo " + msg + " > \\"" + path + "\\";'
-                     'echo " + path' ) + END +      
-                TAB + 'var result = installer.execute( ' +
-                    ('"cmd.exe", ["/k"], writeCmd' if IS_WINDOWS else
-                     '"sh", ["-c", writeCmd]' ) + ' )' + END +                
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("Write error log failed.")' + END +
-                TAB + 'try' + SBLK +
-                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
-                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
-                TAB + 'catch(e){ path = "";' + EBLK +
-                TAB + 'if( path=="" || !' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-                (2*TAB) + 'throw new Error("Write error log failed. (file does not exists)")' + END +
-                TAB + _QtIfwScript.log( '"Wrote error log to: " + path', isAutoQuote=False ) +                                                                                                
-            EBLK + NEW +                                                 
-            'function silentAbort( msg ) ' + SBLK +
-                TAB + 'writeErrorLog( msg )' + END +
-                TAB + 'throw new Error( msg )' + END +                    
-            EBLK + NEW                 
-        )        
-        if IS_WINDOWS : 
-            # To query to the Windows registry for uninstall strings registered by
-            # QtIFW for a program of a given name, this example command works when 
-            # run directly on the command prompt. 
-            #             
-            # cmd.exe /k "@echo off & for /f delims^=^ eol^= %i in ('REG QUERY HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\ /s /f "Hello Packages Example" /t REG_SZ /c /e ^| find "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\"') do ( for /f "tokens=2*" %a in ('REG QUERY %i /v "UninstallString" ^| find "UninstallString"') do echo %b )"
-            #
-            # Unfortunately, it only seemed to be 
-            # possible to run this via an stdin pipe with the QtIFW execute function, 
-            # rather than passing it as a direct cmd argument.
-            #
-            # Note the regQueryUninstallKeys string is defined below with 
-            # multiple levels of escape. Reviewing the resulting QScript maybe easier
-            # for initial debugging than doing so in this Python layer.                
-            regQueryUninstallKeys = '@echo off & for /f delims^=^ eol^= %i in (\\\'REG QUERY HKCU\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\ /s /f \\"" + installer.value("ProductName") + "\\" /t REG_SZ /c /e ^| find \\"HKEY_CURRENT_USER\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\\\"\\\') do ( for /f \\"tokens=2*\\" %a in (\\\'REG QUERY %i /v \\"UninstallString\\" ^| find \\"UninstallString\\"\\\') do echo %b )\\n'          
-            self.controllerGlobals += (
-            '// returns null if no installation is registered OR an array,' + NEW +
-            '// accounting for the fact that, while unlikely,' + NEW +
-            '// it is possible to have multiple installations of the product' + NEW +
-            '// (with different paths to them)' + NEW +
-            'function maintenanceToolPaths() ' + SBLK +
-                TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
-                (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +
-                TAB + ('var regQuery = "%s"' % (regQueryUninstallKeys,) ) + END +
-                TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("Registry query failed.")' + END +
-                TAB + '// remove the first line (which is a command echo)' + NEW +
-                TAB + '// remove blank lines & convert an empty array to null' + NEW +                
-                TAB + 'var retArr = result[0].split(\"\\n\")' + END +
-                TAB + 'try{ retArr.splice(0, 1)' + END + EBLK +
-                TAB + 'catch(e){ throw new Error("Registry query failed.")' + END + EBLK +
-                TAB + 'for( i=0; i < retArr.length; i++ )' + SBLK + 
-                (2*TAB) + 'retArr[i] = retArr[i].trim()' + END + 
-                (2*TAB) + 'if( retArr[i]==\"\" ) retArr.splice(i, 1)' + END + 
-                EBLK +
-                TAB + 'return retArr.length == 0 ? null : retArr' + END +                  
-            EBLK + NEW +
-            'function isOsRegisteredProgram() ' + SBLK +
-                TAB + 'return maintenanceToolPaths() != null' + END + 
-            EBLK + NEW                                              
-            )            
+        self.controllerGlobals=""
         self.controllerGlobals += (
             'function toMaintenanceToolPath( dir ) ' + SBLK +
                 TAB + 'return dir + ' + _QtIfwScript.PATH_SEP + ' + ' +
@@ -1015,7 +1065,50 @@ Controller.prototype.%s = function(){
                 EBLK +                         
             EBLK + NEW                                                              
             )
-        
+
+        if IS_WINDOWS : 
+            # To query to the Windows registry for uninstall strings registered by
+            # QtIFW for a program of a given name, this example command works when 
+            # run directly on the command prompt. 
+            #             
+            # cmd.exe /k "@echo off & for /f delims^=^ eol^= %i in ('REG QUERY HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\ /s /f "Hello Packages Example" /t REG_SZ /c /e ^| find "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\"') do ( for /f "tokens=2*" %a in ('REG QUERY %i /v "UninstallString" ^| find "UninstallString"') do echo %b )"
+            #
+            # Unfortunately, it only seemed to be 
+            # possible to run this via an stdin pipe with the QtIFW execute function, 
+            # rather than passing it as a direct cmd argument.
+            #
+            # Note the regQueryUninstallKeys string is defined below with 
+            # multiple levels of escape. Reviewing the resulting QScript maybe easier
+            # for initial debugging than doing so in this Python layer.                
+            regQueryUninstallKeys = '@echo off & for /f delims^=^ eol^= %i in (\\\'REG QUERY HKCU\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\ /s /f \\"" + installer.value("ProductName") + "\\" /t REG_SZ /c /e ^| find \\"HKEY_CURRENT_USER\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\\\"\\\') do ( for /f \\"tokens=2*\\" %a in (\\\'REG QUERY %i /v \\"UninstallString\\" ^| find \\"UninstallString\\"\\\') do echo %b )\\n'          
+            self.controllerGlobals += (
+            '// returns null if no installation is registered OR an array,' + NEW +
+            '// accounting for the fact that, while unlikely,' + NEW +
+            '// it is possible to have multiple installations of the product' + NEW +
+            '// (with different paths to them)' + NEW +
+            'function maintenanceToolPaths() ' + SBLK +
+                TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
+                (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +
+                TAB + ('var regQuery = "%s"' % (regQueryUninstallKeys,) ) + END +
+                TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("Registry query failed.")' + END +
+                TAB + '// remove the first line (which is a command echo)' + NEW +
+                TAB + '// remove blank lines & convert an empty array to null' + NEW +                
+                TAB + 'var retArr = result[0].split(\"\\n\")' + END +
+                TAB + 'try{ retArr.splice(0, 1)' + END + EBLK +
+                TAB + 'catch(e){ throw new Error("Registry query failed.")' + END + EBLK +
+                TAB + 'for( i=0; i < retArr.length; i++ )' + SBLK + 
+                (2*TAB) + 'retArr[i] = retArr[i].trim()' + END + 
+                (2*TAB) + 'if( retArr[i]==\"\" ) retArr.splice(i, 1)' + END + 
+                EBLK +
+                TAB + 'return retArr.length == 0 ? null : retArr' + END +                  
+            EBLK + NEW +
+            'function isOsRegisteredProgram() ' + SBLK +
+                TAB + 'return maintenanceToolPaths() != null' + END + 
+            EBLK + NEW           
+            )
+
     def __genControllerConstructorBody( self ):
         NEW = _QtIfwScript.NEW_LINE
         END = _QtIfwScript.END_LINE
@@ -1197,6 +1290,12 @@ class QtIfwPackageScript( _QtIfwScript ):
             "iconId=[ICON_ID]"        
         );    
 """ )
+    
+    __WIN_SET_SHORTCUT_STYLE_TMPLT = ( 
+"""
+        addVbsOperation( component, true, // Elevated             
+            setShortcutWindowStyleVbs( "[SHORTCUT_PATH]", [STYLE_CODE] ) ); 
+""" )
 
     __MAC_ADD_SYMLINK_TMPLT = ( 
 """
@@ -1241,12 +1340,16 @@ class QtIfwPackageScript( _QtIfwScript ):
 
     @staticmethod
     def __winAddShortcut( location, exeName, command=None, args=[], 
+                          windowStyle=None,
                           label=QT_IFW_PRODUCT_NAME, 
                           directory=QT_IFW_TARGET_DIR, 
-                          iconId=0 ):        
+                          iconId=0 ):
         if command is None :
-            command = "%s/%s" % (directory, normBinaryName( exeName ))
-        args = "".join([ '\"%s\",' % (a.replace('"','\\"'),) for a in args ]) 
+            command = "%s/%s" % (directory, normBinaryName( exeName ))        
+        args = [ a.replace('"','\\"').replace( 
+                 '@TargetDir@', '" + ' + _QtIfwScript.targetDir() + ' + "') 
+                for a in args ]
+        args = '\"%s\",' % (" ".join(args),)            
         iconPath = "%s/%s" % (directory, normBinaryName( exeName ) )   
         locDir = QtIfwPackageScript.__WIN_SHORTCUT_LOCATIONS[location]             
         shortcutPath = "%s/%s.lnk" % (locDir, label)        
@@ -1257,6 +1360,12 @@ class QtIfwPackageScript( _QtIfwScript ):
         s = s.replace( "[WORKING_DIR]", directory )
         s = s.replace( "[ICON_PATH]", iconPath )
         s = s.replace( "[ICON_ID]", str(iconId) )
+        if windowStyle:            
+            style = QtIfwPackageScript.__WIN_SET_SHORTCUT_STYLE_TMPLT
+            style = style.replace( "[SHORTCUT_PATH]", shortcutPath )
+            style = style.replace( "[STYLE_CODE]", 
+                                   str(SHORTCUT_WIN_MINIMIZED) )
+            s += style
         return s 
 
     @staticmethod
@@ -1308,6 +1417,9 @@ class QtIfwPackageScript( _QtIfwScript ):
         self.pkgName  = pkgName
         self.shortcuts = shortcuts
 
+        self.packageGlobals = None
+        self.isAutoGlobals = True
+
         self.componentConstructorBody = None
         self.isAutoComponentConstructor = True
         
@@ -1316,10 +1428,18 @@ class QtIfwPackageScript( _QtIfwScript ):
                                                         
     def _generate( self ) :        
         self.script = ""
+        
+        if self.isAutoLib: _QtIfwScript._genLib( self )        
+        if self.qtScriptLib: self.script += self.qtScriptLib
+
+        if self.isAutoGlobals: self.__genGlobals()
+        if self.packageGlobals: self.script += self.packageGlobals
+
         if self.isAutoComponentConstructor:
             self.__genComponentConstructorBody()
         self.script += ( "function Component() {\n%s\n}\n" % 
                          (self.componentConstructorBody,) )
+        
         if self.isAutoComponentCreateOperations:
             self.__genComponentCreateOperationsBody()
         if self.componentCreateOperationsBody:
@@ -1328,6 +1448,36 @@ class QtIfwPackageScript( _QtIfwScript ):
                 "    component.createOperations(); // call to super class\n" +
                 "%s\n}\n" % (self.componentCreateOperationsBody,) )
 
+    def __genGlobals( self ):
+        NEW = _QtIfwScript.NEW_LINE
+        END = _QtIfwScript.END_LINE
+        TAB = _QtIfwScript.TAB
+        SBLK =_QtIfwScript.START_BLOCK
+        EBLK =_QtIfwScript.END_BLOCK
+        self.packageGlobals=""
+        if IS_WINDOWS :
+            self.packageGlobals += (
+                'function setShortcutWindowStyleVbs( shortcutPath, styleCode ) ' + SBLK +
+                    TAB + 'var vbs  = "Set WshShell = CreateObject(\\"Wscript.shell\\")\\n"' + END +
+                    TAB + '    vbs += "Set oShortcut = WshShell.CreateShortcut(\\"" + shortcutPath + "\\")\\n"' + END +
+                    TAB + '    vbs += "oShortcut.WindowStyle = " + styleCode + "\\n"' + END +
+                    TAB + '    vbs += "oShortcut.Save\\n"' + END +
+                    TAB + 'return vbs' + END +
+                EBLK + NEW + #TODO: Add UNDO operation
+                'function addVbsOperation( component, isElevated, vbs ) ' + SBLK +
+                    TAB + 'var vbsPath = installer.environmentVariable("temp")' + 
+                            '+ "/__qtIfwInstaller.vbs"' + END +
+                    TAB + 'var cmd = ["cscript", vbsPath]' + END +
+                    TAB + 'component.addOperation( "Delete", vbsPath )' + END +
+                    TAB + 'component.addOperation( "AppendFile", vbsPath , vbs )' + END +
+                    TAB + 'if( isElevated )' + NEW +
+                    (2*TAB) + 'component.addElevatedOperation( "Execute", cmd )' + END +    
+                    TAB + 'else' + NEW +
+                    (2*TAB) + 'component.addOperation( "Execute", cmd )' + END +                
+                    TAB + 'component.addOperation( "Delete", vbsPath )' + END +            
+                EBLK + NEW 
+                )
+            
     def __genComponentConstructorBody( self ):
         """ No logic yet provided... """
         self.componentConstructorBody = ""   
@@ -1347,12 +1497,14 @@ class QtIfwPackageScript( _QtIfwScript ):
                             STARTMENU_WIN_SHORTCUT, shortcut.exeName,
                             command=shortcut.command,
                             args=shortcut.args,
+                            windowStyle=shortcut.windowStyle,
                             label=shortcut.productName )              
                 if shortcut.exeName and shortcut.isDesktopShortcut:
                     winOps += QtIfwPackageScript.__winAddShortcut(
                             DESKTOP_WIN_SHORTCUT, shortcut.exeName,
                             command=shortcut.command,
                             args=shortcut.args,
+                            windowStyle=shortcut.windowStyle,
                             label=shortcut.productName ) 
                 if winOps!="" :    
                     self.componentCreateOperationsBody += (             
@@ -1425,8 +1577,14 @@ class QtIfwShortcut:
         self.args           = args      
         self.exeName        = exeName           
         self.isGui          = isGui
-        self.exeVersion     = exeVersion        
+        
+        # Windows only
+        self.windowStyle    = None        
+
+        # Linux only
+        self.exeVersion     = exeVersion
         self.pngIconResPath = pngIconResPath        
+ 
         self.isAppShortcut     = True
         self.isDesktopShortcut = False
 
@@ -1435,8 +1593,7 @@ class QtIfwExeWrapper:
     
     if IS_WINDOWS :
         __WIN_CMD                   = "cmd"
-        __WIN_CMD_EXECUTE_SWITCH    = "/k"
-        __WIN_CMD_START_TMPLT       = 'START "%s"'
+        __WIN_CMD_START_TMPLT       = '/c START "%s"'
         __WIN_CMD_START_PWD_TMPLT   = ' /D "%s"'   
                      
         __WIN_PS                    = "powershell"
@@ -1473,10 +1630,11 @@ class QtIfwExeWrapper:
             
     def refresh( self ):
                 
-        self._runProgram   = None
-        self._runProgArgs  = None
-        self._shortcutCmd  = None
-        self._shortcutArgs = None
+        self._runProgram       = None
+        self._runProgArgs      = None
+        self._shortcutCmd      = None
+        self._shortcutArgs     = None
+        self._shortcutWinStyle = None
         
         # Wrapper script
         if isinstance( self.wrapperScript, string_types ):
@@ -1500,7 +1658,7 @@ class QtIfwExeWrapper:
             # Start-Process [-FilePath] <String> 
             #    [[-ArgumentList] <String[]>]
             #    [-WorkingDirectory <String>] ...                    
-            if self.isElevated or self._winPsStartArgs:                
+            if self.isElevated or self.workingDir or self._winPsStartArgs:                
                 self._runProgram  = QtIfwExeWrapper.__WIN_PS
                 self._shortcutCmd = QtIfwExeWrapper.__WIN_PS
                 psCmd = QtIfwExeWrapper.__WIN_PS_START_TMPLT % (targetPath,)
@@ -1518,6 +1676,8 @@ class QtIfwExeWrapper:
                 self._runProgArgs=[ psCmd ]                                                                        
                 # the psCmd is one long quoted argument for PS
                 self._shortcutArgs = [ psCmd ] #['"%s"' % (psCmd,)]
+                self._shortcutWinStyle = SHORTCUT_WIN_MINIMIZED
+            """
             # CMD Start    
             # START "title" [/D path] [options] "command" [parameters]
             elif self.workingDir or self._winCmdStartArgs:
@@ -1534,10 +1694,9 @@ class QtIfwExeWrapper:
                 cmd +=  ' "%s"' % (targetPath,)
                 if self._shortcutArgs : # use in both context, these are already wrapped in quotes 
                     cmd += (" " + " ".join(self._shortcutArgs))
-                self._runProgArgs = [ 
-                    QtIfwExeWrapper.__WIN_CMD_EXECUTE_SWITCH, cmd ]               
-                self._shortcutArgs = [ # the cmd is one long quoted argument 
-                    QtIfwExeWrapper.__WIN_CMD_EXECUTE_SWITCH, '"%s"' % (cmd,) ]
+                self._runProgArgs = [ cmd ]
+                self._shortcutArgs = [ cmd ]
+            """    
         else:
             pass            
             # TODO : FILL IN!

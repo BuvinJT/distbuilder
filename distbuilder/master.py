@@ -200,7 +200,9 @@ class ConfigFactory:
         shortcutCmd = ( self.pkgExeWrapper._shortcutCmd
                         if self.pkgExeWrapper else None )
         shortcutArgs = ( self.pkgExeWrapper._shortcutArgs
-                         if self.pkgExeWrapper else [] )                
+                         if self.pkgExeWrapper else [] )
+        shortcutWinStyle = ( self.pkgExeWrapper._shortcutWinStyle
+                             if self.pkgExeWrapper else None )                        
         if IS_LINUX:
             if self.__pkgPyInstConfig: 
                 pngIconResPath = self.__pkgPyInstConfig._pngIconResPath
@@ -216,7 +218,7 @@ class ConfigFactory:
                         exeVersion=self.__versionStr(),
                         isGui=self.isGui,                                  
                         pngIconResPath=pngIconResPath )  
-        
+        defShortcut.windowStyle = shortcutWinStyle
         script = QtIfwPackageScript( self.__ifwPkgName(), 
                     shortcuts=[ defShortcut ],
                     fileName=self.ifwPkgScriptName,

@@ -16,7 +16,7 @@ f.pkgExeWrapper    = QtIfwExeWrapper( f.binaryName, isElevated=True )
 
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
-#p.run()       
+p.run()       
 
 
 f.productName      = "Hello WorkDir Example"
@@ -24,4 +24,4 @@ f.setupName        = "HelloWorkDirSetup"
 f.pkgExeWrapper    = QtIfwExeWrapper( f.binaryName, workingDir="@TargetDir@" )
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
-p.run()       
+#p.run()       
