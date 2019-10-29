@@ -1336,7 +1336,7 @@ class QtIfwPackageScript( _QtIfwScript ):
     __X11_SHORTCUT_LOCATIONS = {
           DESKTOP_X11_SHORTCUT : QT_IFW_DESKTOP_DIR
         , APPS_X11_SHORTCUT    : "/usr/share/applications" 
-    }   # �~/.local/share/applications� - current user location?
+    }   # ~/.local/share/applications - current user location?
 
     @staticmethod
     def __winAddShortcut( location, exeName, command=None, args=[], 

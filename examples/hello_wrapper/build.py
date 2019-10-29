@@ -35,16 +35,38 @@ p.isTestingInstall = True
 licenseName = "LICENSE"
 
 if IS_WINDOWS :
+    textViewer = "notepad"
     launchScript = (
-"""@echo off
-set PROG_DIR=%~dp0
-start "{0}" "%PROG_DIR%\{1}"
-start "Display License" notepad "%PROG_DIR%\{2}"
-""".format( f.productName, f.binaryName, licenseName ) )
+"""
+@echo off
+set appname=%~n0
+set dirname=%~dp0
+start "" "%dirname%\%appname%"
+start "" {0} "%dirname%\{1}"
+""")
 elif IS_MACOS :
     launchScript = None # TODO
 elif IS_LINUX :
-    launchScript = None # TODO        
+    # not a "perfect" cross Linux distro / environment example,
+    # as this depends upon `gedit` and `screen` being present...
+    textViewer = "gedit"
+    launchScript = (
+"""
+appname=`basename "$0" | sed s,\.sh$,,`
+dirname=`dirname "$0"`
+tmp="${dirname#?}"
+if [ "${dirname%$tmp}" != "/" ]; then
+    dirname="$PWD/$dirname"
+fi
+screen -d -m "$dirname/$appname" "$@"
+screen -d -m {0} "$dirname/{1}"
+""")
+
+# Using explicit string replace because standard string 
+# formatting functions took issue with some of the characters
+# in the scripts 
+launchScript = launchScript.replace( "{0}", textViewer )
+launchScript = launchScript.replace( "{1}", licenseName )
         
 f.productName      = "Hello WrapperScript Example"
 f.setupName        = "HelloWrapperScriptSetup"
