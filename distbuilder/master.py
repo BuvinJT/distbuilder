@@ -203,17 +203,30 @@ class ConfigFactory:
                          if self.pkgExeWrapper else [] )
         shortcutWinStyle = ( self.pkgExeWrapper._shortcutWinStyle
                              if self.pkgExeWrapper else None )                        
+        
         if IS_LINUX:
-            if self.__pkgPyInstConfig: 
-                pngIconResPath = self.__pkgPyInstConfig._pngIconResPath
-                relTo = (THIS_DIR if self.__pkgPyInstConfig.sourceDir is None 
-                         else self.__pkgPyInstConfig.sourceDir )                                            
-                pngIconResPath = relpath( pngIconResPath, relTo )                         
+            # TODO: fix this to handle relative source paths
+            #       and nested destination paths
+            # Currently just cheating by assuming png icon is going on app dir root...             
+            if self.__pkgPyInstConfig:
+                cfg=self.__pkgPyInstConfig                 
+                pngIconPath = cfg._pngIconResPath
+            #    relSrcDir = dirPath( 
+            #        cfg.sourceDir if cfg.sourceDir else THIS_DIR )                
             elif self.iconFilePath:    
-                pngIconResPath = relpath( normIconName(
-                        self.iconFilePath, isPathPreserved=True ),
-                    dirPath( self.iconFilePath ) )                
-        else : pngIconResPath = None                         
+                pngIconPath = self.iconFilePath
+                #pngIconPath = normIconName( self.iconFilePath, 
+                #                            isPathPreserved=True )
+                #relSrcDir = dirPath( self.iconFilePath )
+            #if pngIconPath:
+            #    srcDir, srcFile = splitPath( pngIconPath )
+            #    if srcDir=="" or not isParentDir( relSrcDir, srcDir ):
+            #        pngIconPath = joinPath( 
+            #            relpath( srcDir, relSrcDir ), srcFile )            
+            pngIconPath = normIconName( self.iconFilePath, 
+                                        isPathPreserved=False )                   
+        else : pngIconPath = None                         
+        
         defShortcut = QtIfwShortcut(                    
                         productName=self.productName,
                         command=shortcutCmd,
@@ -221,7 +234,7 @@ class ConfigFactory:
                         exeName=self.__pkgExeName(),                            
                         exeVersion=self.__versionStr(),
                         isGui=self.isGui,                                  
-                        pngIconResPath=pngIconResPath )  
+                        pngIconResPath=pngIconPath )  
         defShortcut.windowStyle = shortcutWinStyle
         script = QtIfwPackageScript( self.__ifwPkgName(), 
                     shortcuts=[ defShortcut ],

@@ -1312,7 +1312,8 @@ class QtIfwPackageScript( _QtIfwScript ):
             "[SHORTCUT_PATH]",
             "Type=Application\\n" 
           + "Terminal=[IS_TERMINAL]\\n" 
-          + "Exec=bash -c '[CMD]'\\n"
+          + "Exec=[CMD]\\n"
+          + "Path=[WORKING_DIR]\\n"
           + "Name=[LABEL]\\n" 
           + "Name[en_US]=[LABEL]\\n" 
           + "Version=[VERSION]\\n" 
@@ -1393,8 +1394,7 @@ class QtIfwPackageScript( _QtIfwScript ):
                                 pngPath=None,
                                 isGui=True ):        
         if command is None :
-            command = 'cd "{0}" && "{0}/{1}"'.format( 
-                        directory, normBinaryName( exeName ))
+            command = '"{0}/{1}"'.format( directory, normBinaryName( exeName ))
         if args and len(args) > 0 : command += " " + ' '.join(args)            
         command = command.replace('"','\\"')            
         locDir = QtIfwPackageScript.__X11_SHORTCUT_LOCATIONS[location]             
@@ -1592,16 +1592,20 @@ class QtIfwShortcut:
 # -----------------------------------------------------------------------------    
 class QtIfwExeWrapper:
     
-    if IS_WINDOWS :
-        __WIN_CMD                   = "cmd"
-        __WIN_CMD_START_TMPLT       = '/c START "%s"'
-        __WIN_CMD_START_PWD_TMPLT   = ' /D "%s"'   
-                     
+    if IS_WINDOWS :                    
         __WIN_PS                    = "powershell"
         __WIN_PS_START_TMPLT        = "Start-Process -FilePath '%s'"
         __WIN_PS_START_ADMIN_SWITCH = " -Verb RunAs"
         __WIN_PS_START_PWD_TMPLT    = " -WorkingDirectory '%s'"                       
         __WIN_PS_START_ARGS_SWITCH  = " -ArgumentList "
+        
+        #__WIN_CMD                   = "cmd"
+        #__WIN_CMD_START_TMPLT       = '/c START "%s"'
+        #__WIN_CMD_START_PWD_TMPLT   = ' /D "%s"'           
+    else:
+        __SHELL            = "sh"
+        __SHELL_CMD_SWITCH = "-c"
+        __SHELL_CMD_TMPLT  = __SHELL_CMD_SWITCH + " '%s'"
     
     __CD_PREFIX_CMD_TMPLT = 'cd "%s" && ' 
     
@@ -1645,10 +1649,11 @@ class QtIfwExeWrapper:
             self._runProgram = joinPathQtIfw( 
                 self.exeDir, self.wrapperScript.fileName() )            
             self._shortcutCmd = self._runProgram
-            if self.args : 
-                self._runProgArgs = self.args
-                self._shortcutArgs = [ 
-                    ('"%s"' % (a,)) if " " in a else a for a in self.args ]
+            
+        if self.args : 
+            self._runProgArgs = self.args
+            self._shortcutArgs = [ 
+                ('"%s"' % (a,)) if " " in a else a for a in self.args ]
 
         targetPath =( self._runProgram if self._runProgram else
             joinPathQtIfw( self.exeDir, normBinaryName(self.exeName) ) )            
@@ -1699,9 +1704,24 @@ class QtIfwExeWrapper:
                 self._shortcutArgs = [ cmd ]
             """    
         else:
-            pass            
-            # TODO : FILL IN!
-
+            if self.isElevated or self.workingDir:                
+                self._runProgram  = QtIfwExeWrapper.__SHELL
+                self._shortcutCmd = QtIfwExeWrapper.__SHELL
+                shCmd = ""
+                if self.workingDir :
+                    shCmd += QtIfwExeWrapper.__CD_PREFIX_CMD_TMPLT % (
+                        self.workingDir,)
+                shCmd += ('"%s"' % (targetPath,))           
+                ##if self.isElevated: TODO                                     
+                if self._runProgArgs :                        
+                    shCmd += ",".join([ 
+                        ('"%s"' % (a,) if ' ' in a else '%s' % (a,))
+                        for a in self._runProgArgs ])
+                self._runProgArgs = [ 
+                    QtIfwExeWrapper.__SHELL_CMD_SWITCH, shCmd ]
+                self._shortcutArgs = [ 
+                    QtIfwExeWrapper.__SHELL_CMD_TMPLT % (shCmd,) ]
+                
         # TODO: check this...
         if util._isMacApp( self.exeName ):
             programPath = self._runProgram   

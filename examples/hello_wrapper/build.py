@@ -9,10 +9,16 @@ f.companyTradeName = "Some Company"
 f.companyLegalName = "Some Company Inc."    
 f.binaryName       = "HelloWrapper"
 f.isGui            = True        
-f.sourceDir        = "../hello_world_tk"
 f.entryPointPy     = "hello.py"  
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
 f.version          = (1,0,0,0)
+
+#------------------------------------------------------------------------------
+f.productName      = "Hello UnWrapped Example"
+f.setupName        = "HelloUnWrappedSetup"
+p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
+p.isTestingInstall = True
+#p.run()       
 
 #------------------------------------------------------------------------------
 f.productName      = "Hello Elevated Example"
@@ -29,7 +35,7 @@ f.pkgExeWrapper    = QtIfwExeWrapper( f.binaryName,
                                       workingDir=QT_IFW_TARGET_DIR )
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
-#p.run()       
+p.run()       
 
 #------------------------------------------------------------------------------
 licenseName = "LICENSE"
@@ -76,4 +82,4 @@ f.pkgExeWrapper    = QtIfwExeWrapper( f.binaryName,
     #wrapperScript=launchScript, isElevated=True, workingDir=QT_IFW_HOME_DIR )
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
-p.run()       
+#p.run()       

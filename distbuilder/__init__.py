@@ -57,6 +57,7 @@ from distbuilder.util import \
     , exists \
     , isFile \
     , isDir \
+    , isParentDir \
     , copyFile \
     , removeFile \
     , makeDir \

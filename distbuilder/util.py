@@ -2,10 +2,11 @@ from six import PY2, PY3, string_types  # @UnusedImport
 from six.moves import urllib
 from sys import argv, stdout, stderr, exit, \
     executable as PYTHON_PATH
-from os import system, sep as PATH_DELIM, remove as removeFile, \
+from os import system, sep as PATH_DELIM, pardir as PARENT_DIR, \
+    remove as removeFile, \
     fdopen, getcwd, chdir, walk, environ, devnull, \
     chmod, getenv, listdir, makedirs as makeDir, rename # @UnusedImport   
-from os.path import exists, isfile, \
+from os.path import exists, isfile, islink, \
     dirname as dirPath, normpath, realpath, isabs, \
     join as joinPath, split as splitPath, splitext as splitExt, \
     expanduser, basename as fileBaseName, \
@@ -518,11 +519,18 @@ def joinExt( rootName, extension=None ):
     if extension.startswith("."): extension=extension[1:]
     return "%s.%s" % ( rootName, extension )
 
-def isFile( path ): 
-    return path is not None and isfile( path )       
+def isFile( path ): # declaring any symbolic link to be a file! 
+    return path is not None and (isfile( path ) or islink( path ))        
 
 def isDir( path ): 
     return path is not None and exists( path ) and not isFile( path )
+
+def isParentDir( parent, child, basePath=None ):
+    if parent.endswith( PATH_DELIM ): parent=parent[:-1]
+    if child.endswith(  PATH_DELIM ): child=child[:-1]
+    child  = absPath( child,  basePath )
+    parent = absPath( parent, basePath )
+    return child.startswith( parent ) and child != parent  
 
 def absPath( relativePath, basePath=None ):
     if relativePath is None : return None
