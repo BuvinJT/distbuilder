@@ -28,6 +28,7 @@ from distbuilder.qt_installer import \
     , QtIfwPackageXml \
     , QtIfwPackageScript \
     , QtIfwShortcut \
+    , QtIfwExeWrapper \
     , DEFAULT_SETUP_NAME \
     , DEFAULT_QT_IFW_SCRIPT_NAME \
     , QT_IFW_VERBOSE_SWITCH \
@@ -85,7 +86,7 @@ class ConfigFactory:
         self.pkgType       = None
         self.pkgSrcDirPath = None
         self.pkgSrcExePath = None
-        self.pkgExeWrapper = None # class QtIfwExeWrapper
+        self.pkgExeWrapper = None 
        
         self.qtCppConfig = None
        
@@ -165,8 +166,8 @@ class ConfigFactory:
                 pkgXml=self.qtIfwPackageXml(), 
                 pkgScript=self.qtIfwPackageScript( self.__pkgPyInstConfig ) )
         
-        pkg.exeName = self.__pkgExeName()
-        pkg.isGui = self.isGui
+        pkg.exeName    = self.__pkgExeName()
+        pkg.isGui      = self.isGui
         pkg.exeWrapper = self.pkgExeWrapper
          
         # Add additional distribution resources 
@@ -236,12 +237,25 @@ class ConfigFactory:
                         isGui=self.isGui,                                  
                         pngIconResPath=pngIconPath )  
         defShortcut.windowStyle = shortcutWinStyle
+        
         script = QtIfwPackageScript( self.__ifwPkgName(), 
                     shortcuts=[ defShortcut ],
                     fileName=self.ifwPkgScriptName,
                     script=self.ifwPkgScriptText, 
                     scriptPath=self.ifwPkgScriptPath )
+        
+        if IS_LINUX and self.pkgExeWrapper:
+            script.isAskPassProgRequired = self.pkgExeWrapper.isElevated
+            
         return script
+
+    def qtIfwExeWrapper( self, isContainer=False, wrapperScript=None,
+                         workingDir=None, isElevated=False, 
+                         envVars=None, args=None ) :
+        return QtIfwExeWrapper( self.binaryName, isGui=self.isGui, 
+                isContainer=isContainer, wrapperScript=wrapperScript,
+                workingDir=workingDir, isElevated=isElevated, 
+                envVars=envVars, args=args )
 
     def __versionTuple( self ): return versionTuple( self.version )
                     

@@ -189,6 +189,7 @@ class QtCppConfig:
                 script=( None if _isCqtdeployerInstalled() else   
                          QtCppConfig.__DEFAULT_LINUX_BIN_WRAPPER_SCRIPT ) )            
             return QtIfwExeWrapper( normBinaryName(exePath, isGui),
+                                    isGui=isGui,
                                     wrapperScript=exeScript )            
         else: return None
 
@@ -257,7 +258,7 @@ if IS_LINUX:
     def _installCqtdeployer():
         cmdList = ["sudo", __SNAP_CMD,
                    __SNAP_INSTALL_OPT, __C_QT_DEPLOYER_SNAP_NAME]
-        _system( list2cmdline(cmdList) )
+        util._system( list2cmdline(cmdList) )
     
     def _isSnapdInstalled():
         try: 

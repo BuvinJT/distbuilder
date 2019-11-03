@@ -50,6 +50,10 @@ DESKTOP_X11_SHORTCUT = 1
 
 SHORTCUT_WIN_MINIMIZED = 7
 
+QT_IFW_ASKPASS_KEY = "askpass"
+QT_IFW_ASKPASS_PLACEHOLDER = "[%s]" % (QT_IFW_ASKPASS_KEY,)
+QT_IFW_ASKPASS_TEMP_FILE_PATH = "/tmp/{0}.path".format( QT_IFW_ASKPASS_KEY )
+
 # TODO: move these to _QtIfwScript 
 #       add more (both built-in and custom)
 # NOTE: must update Wrapper Example when moving these  
@@ -439,6 +443,8 @@ class _QtIfwScript:
     __VALUE_LIST_TMPL = "installer.values( %s, %s )"
     __SET_VALUE_TMPL  = "installer.setValue( %s, %s )"
 
+    __GET_ENV_VAR_TMPL = "installer.environmentVariable( %s )"
+
     __FILE_EXITS_TMPL = "installer.fileExists( %s )"
 
     @staticmethod        
@@ -481,6 +487,11 @@ class _QtIfwScript:
         return _QtIfwScript.__VALUE_LIST_TMPL % (
             _QtIfwScript._autoQuote( key, isAutoQuote ),
             defList )
+        
+    @staticmethod        
+    def getEnv( varName, isAutoQuote=True ):                  
+        return _QtIfwScript.__GET_ENV_VAR_TMPL % (
+            _QtIfwScript._autoQuote( varName, isAutoQuote ) )
 
     @staticmethod        
     def targetDir(): 
@@ -741,6 +752,45 @@ class _QtIfwScript:
                 TAB + EBLK + NEW +
             EBLK + NEW                                                          
             )
+        elif IS_LINUX:
+            self.qtScriptLib += (    
+            'function isPackageManagerInstalled( prog ) ' + SBLK +
+                TAB + 'return installer.execute( prog, ["--help"] )[1] == 0' + END +
+            EBLK + NEW +
+            'function isAptInstalled() ' + SBLK +
+                TAB + 'return isPackageManagerInstalled( "apt" )' + END +             
+            EBLK + NEW +
+            'function isDpkgInstalled() ' + SBLK +
+                TAB + 'return isPackageManagerInstalled( "dpkg" )' + END +             
+            EBLK + NEW +
+            'function isYumInstalled() ' + SBLK +
+                TAB + 'return isPackageManagerInstalled( "yum" )' + END +             
+            EBLK + NEW +
+            'function isRpmInstalled() ' + SBLK +
+                TAB + 'return isPackageManagerInstalled( "rpm" )' + END +             
+            EBLK + NEW +
+            'function isPackageInstalled( pkg ) ' + SBLK +
+                TAB + 'if( isDpkgInstalled() )' + NEW +             
+                (2*TAB) + 'return installer.execute( "dpkg", ["-l", pkg] )[1] == 0' + END +
+                TAB + 'else if( isRpmInstalled() )' + NEW +             
+                (2*TAB) + 'return installer.execute( "rpm", ["-q", pkg] )[1] == 0' + END +
+                TAB + 'throw new Error("No supported package manager found.")' + END +                                                     
+            EBLK + NEW +
+            'function installPackage( pkg ) ' + SBLK +
+                TAB + 'if( isAptInstalled() )' + NEW +             
+                (2*TAB) + 'return installer.execute( "apt-get", ["install", "-y", pkg] )[1] == 0' + END +
+                TAB + 'else if( isYumInstalled() )' + NEW +             
+                (2*TAB) + 'return installer.execute( "yum", ["install", "-y", pkg] )[1] == 0' + END +
+                TAB + 'throw new Error("No supported package manager found.")' + END +                                                     
+            EBLK + NEW +
+            'function unInstallPackage( pkg ) ' + SBLK +
+                TAB + 'if( isAptInstalled() )' + NEW +             
+                (2*TAB) + 'return installer.execute( "apt-get", ["remove", "-y", pkg] )[1] == 0' + END +
+                TAB + 'else if( isYumInstalled() )' + NEW +             
+                (2*TAB) + 'return installer.execute( "yum", ["remove", "-y", pkg] )[1] == 0' + END +
+                TAB + 'throw new Error("No supported package manager found.")' + END +                                                     
+            EBLK + NEW 
+            )
                                                     
     def __str__( self ) :
         if not self.script: self._generate()
@@ -889,7 +939,7 @@ Controller.prototype.%s = function(){
         self.registerAutoPilotSlot( 
             'installer.uninstallationFinished', 'onUninstallFinished',
             QtIfwControlScript.clickButton( QtIfwControlScript.NEXT_BUTTON ) );                                                                 
-
+        
     def registerAutoPilotSlot( self, signalName, slotName, slotBody ) :
         self.__autoPilotSlots[signalName] = (slotName, slotBody)
                                                                 
@@ -1250,7 +1300,7 @@ Controller.prototype.%s = function(){
             )
 
     def __genFinishedPageCallbackBody( self ):
-        self.finishedPageCallbackBody = (                
+        self.finishedPageCallbackBody = (                                
             _QtIfwScript.ifCmdLineArg( 
                 _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +               
                 _QtIfwScript.TAB + QtIfwControlScript.setCheckBox( 
@@ -1396,7 +1446,9 @@ class QtIfwPackageScript( _QtIfwScript ):
         if command is None :
             command = '"{0}/{1}"'.format( directory, normBinaryName( exeName ))
         if args and len(args) > 0 : command += " " + ' '.join(args)            
-        command = command.replace('"','\\"')            
+        command = command.replace('"','\\"').replace( 
+            QT_IFW_ASKPASS_PLACEHOLDER, 
+            '" + ' + _QtIfwScript.lookupValue( QT_IFW_ASKPASS_KEY ) + ' + "' )                        
         locDir = QtIfwPackageScript.__X11_SHORTCUT_LOCATIONS[location]             
         shortcutPath = "%s/%s.desktop" % (locDir, label.replace(" ","_"))        
         s = QtIfwPackageScript.__X11_ADD_DESKTOP_ENTRY_TMPLT
@@ -1411,13 +1463,16 @@ class QtIfwPackageScript( _QtIfwScript ):
         return s 
     
     def __init__( self, pkgName,
-                  shortcuts=[],                   
+                  shortcuts=[],                    
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
         _QtIfwScript.__init__( self, fileName, script, scriptPath )
 
         self.pkgName  = pkgName
         self.shortcuts = shortcuts
+        
+        # Linux Only
+        self.isAskPassProgRequired = False
 
         self.packageGlobals = None
         self.isAutoGlobals = True
@@ -1479,6 +1534,29 @@ class QtIfwPackageScript( _QtIfwScript ):
                     TAB + 'component.addOperation( "Delete", vbsPath )' + END +            
                 EBLK + NEW 
                 )
+        else :    
+            self.packageGlobals += (               
+                'function getAskPassProg() ' + SBLK +
+                    TAB + 'var pkg' + END +
+                    TAB + 'var progPath' + END +
+                    TAB + 'switch( systemInfo.productType )' + SBLK +
+                    TAB + '////TODO: Insert Distro specific paths/package names' + NEW +
+                    TAB + 'default: ' + NEW +
+                    (2*TAB) + 'pkg="ssh-askpass-gnome"' + END +
+                    (2*TAB) + 'progPath="/usr/bin/ssh-askpass"' + END +
+                    EBLK +
+                    TAB + _QtIfwScript.ifFileExists( 'progPath', isAutoQuote=False ) + NEW +
+                    (2*TAB) + 'return progPath' + END +                    
+                    TAB + 'if( !isPackageInstalled( pkg ) )' + SBLK +
+                    (2*TAB) + 'if( !installPackage( pkg ) )' + NEW +                    
+                        (3*TAB) + 'throw new Error("Could not install package: " + pkg )' + END +
+                    EBLK +                                                                    
+                    TAB + _QtIfwScript.ifFileExists( 'progPath', isAutoQuote=False ) + NEW +
+                    (2*TAB) + 'return progPath' + END +
+                    TAB + 'else' + NEW +
+                    (2*TAB) + 'throw new Error("Ask Pass program path is not valid: " + progPath )' + END +
+                EBLK + NEW                  
+            )
             
     def __genComponentConstructorBody( self ):
         """ No logic yet provided... """
@@ -1486,6 +1564,8 @@ class QtIfwPackageScript( _QtIfwScript ):
             
     def __genComponentCreateOperationsBody( self ):
         self.componentCreateOperationsBody = ""
+        if IS_LINUX and self.isAskPassProgRequired:
+            self.__addAskPassProgResolution()
         self.__addShortcuts()
         if self.componentCreateOperationsBody == "" :
             self.componentCreateOperationsBody = None
@@ -1554,7 +1634,18 @@ class QtIfwPackageScript( _QtIfwScript ):
                 if x11Ops!="" :    
                     self.componentCreateOperationsBody += (             
                         '    if( systemInfo.kernelType === "linux" ){\n' +
-                        '%s\n    }' % (x11Ops,) )                                
+                        '%s\n    }' % (x11Ops,) )
+                                                    
+    def __addAskPassProgResolution( self ):
+        TAB = _QtIfwScript.TAB 
+        END = _QtIfwScript.END_LINE
+        self.componentCreateOperationsBody += ( 
+            TAB + _QtIfwScript.setValue( 
+                '"' + QT_IFW_ASKPASS_KEY + '"', 
+                'getAskPassProg()', isAutoQuote=False ) + END +
+            TAB + 'writeFile( "' + QT_IFW_ASKPASS_TEMP_FILE_PATH + '", ' +
+            _QtIfwScript.lookupValue( QT_IFW_ASKPASS_KEY ) + ')' + END
+        )
 
     def path( self ) :   
         return joinPath( BUILD_SETUP_DIR_PATH, 
@@ -1606,10 +1697,18 @@ class QtIfwExeWrapper:
         __SHELL            = "sh"
         __SHELL_CMD_SWITCH = "-c"
         __SHELL_CMD_TMPLT  = __SHELL_CMD_SWITCH + " '%s'"
+
+        __SUDO = 'sudo '        
+        if IS_LINUX : 
+            __GUI_SUDO = ( 'export ' + util._ASKPASS_ENV_VAR + '="' +
+                QT_IFW_ASKPASS_PLACEHOLDER + '"; sudo ' ) 
+            __CAT_GUI_SUDO = ( 'export ' + util._ASKPASS_ENV_VAR + '=' +
+                '$(cat "' + QT_IFW_ASKPASS_TEMP_FILE_PATH + '"); sudo ' )
     
     __CD_PREFIX_CMD_TMPLT = 'cd "%s" && ' 
     
-    def __init__( self, exeName, wrapperScript=None,
+    def __init__( self, exeName, isGui=False, 
+                  wrapperScript=None,
                   isContainer=False,
                   exeDir=QT_IFW_TARGET_DIR, 
                   workingDir=None, # None=don't impose here, use QT_IFW_TARGET_DIR via other means
@@ -1618,6 +1717,8 @@ class QtIfwExeWrapper:
         self.isContainer   = False   # TODO: option to encapsulate within a binary (use PyInst) 
         
         self.exeName       = exeName
+        self.isGui         = isGui
+        
         self.wrapperScript = wrapperScript
 
         self.exeDir        = exeDir
@@ -1706,21 +1807,32 @@ class QtIfwExeWrapper:
         else:
             if self.isElevated or self.workingDir:                
                 self._runProgram  = QtIfwExeWrapper.__SHELL
-                self._shortcutCmd = QtIfwExeWrapper.__SHELL
-                shCmd = ""
+                self._shortcutCmd = QtIfwExeWrapper.__SHELL                
+                cdCmd = ""
                 if self.workingDir :
-                    shCmd += QtIfwExeWrapper.__CD_PREFIX_CMD_TMPLT % (
-                        self.workingDir,)
-                shCmd += ('"%s"' % (targetPath,))           
-                ##if self.isElevated: TODO                                     
+                    cdCmd += QtIfwExeWrapper.__CD_PREFIX_CMD_TMPLT % (
+                        self.workingDir,)                                
+                runLaunch = ('"%s"' % (targetPath,))
+                shortLaunch = runLaunch            
+                if self.isElevated:
+                    if self.isGui :                        
+                        runLaunch = QtIfwExeWrapper.__CAT_GUI_SUDO + runLaunch
+                        shortLaunch = QtIfwExeWrapper.__GUI_SUDO + runLaunch 
+                    else:
+                        runLaunch = QtIfwExeWrapper.__SUDO + runLaunch
+                        shortLaunch = runLaunch                            
+                args=""
                 if self._runProgArgs :                        
-                    shCmd += ",".join([ 
+                    args += ",".join([ 
                         ('"%s"' % (a,) if ' ' in a else '%s' % (a,))
-                        for a in self._runProgArgs ])
+                        for a in self._runProgArgs ])                
+                cmdTmplt = "%s %s %s"
+                runCmd   = ( cmdTmplt % (cdCmd, runLaunch,   args) ).strip()
+                shortCmd = ( cmdTmplt % (cdCmd, shortLaunch, args) ).strip()
                 self._runProgArgs = [ 
-                    QtIfwExeWrapper.__SHELL_CMD_SWITCH, shCmd ]
+                    QtIfwExeWrapper.__SHELL_CMD_SWITCH, runCmd ]
                 self._shortcutArgs = [ 
-                    QtIfwExeWrapper.__SHELL_CMD_TMPLT % (shCmd,) ]
+                    QtIfwExeWrapper.__SHELL_CMD_TMPLT % (shortCmd,) ]
                 
         # TODO: check this...
         if util._isMacApp( self.exeName ):

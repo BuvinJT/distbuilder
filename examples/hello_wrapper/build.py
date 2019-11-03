@@ -21,18 +21,17 @@ p.isTestingInstall = True
 #p.run()       
 
 #------------------------------------------------------------------------------
-f.productName      = "Hello Elevated Example"
-f.setupName        = "HelloElevatedSetup"
-f.pkgExeWrapper    = QtIfwExeWrapper( f.binaryName, isElevated=True )
+f.productName   = "Hello WorkDir Example"
+f.setupName     = "HelloWorkDirSetup"
+f.pkgExeWrapper = f.qtIfwExeWrapper( workingDir=QT_IFW_TARGET_DIR )  
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
 #p.run()       
 
 #------------------------------------------------------------------------------
-f.productName      = "Hello WorkDir Example"
-f.setupName        = "HelloWorkDirSetup"
-f.pkgExeWrapper    = QtIfwExeWrapper( f.binaryName, 
-                                      workingDir=QT_IFW_TARGET_DIR )
+f.productName   = "Hello Elevated Example"
+f.setupName     = "HelloElevatedSetup"
+f.pkgExeWrapper = f.qtIfwExeWrapper( isElevated=True )  
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
 p.run()       
@@ -74,12 +73,12 @@ screen -d -m {0} "$dirname/{1}"
 launchScript = launchScript.replace( "{0}", textViewer )
 launchScript = launchScript.replace( "{1}", licenseName )
         
-f.productName      = "Hello WrapperScript Example"
-f.setupName        = "HelloWrapperScriptSetup"
-f.distResources    = ["../hello_world/{0}".format( licenseName ) ]
-f.pkgExeWrapper    = QtIfwExeWrapper( f.binaryName, 
-                                      wrapperScript=launchScript )
-    #wrapperScript=launchScript, isElevated=True, workingDir=QT_IFW_HOME_DIR )
+f.productName   = "Hello WrapperScript Example"
+f.setupName     = "HelloWrapperScriptSetup"
+f.distResources = ["../hello_world/{0}".format( licenseName ) ]
+f.pkgExeWrapper = f.qtIfwExeWrapper( wrapperScript=launchScript ) 
+#f.pkgExeWrapper.isElevated    = True 
+#f.pkgExeWrapper.workingDir    = QT_IFW_TARGET_DIR 
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
 #p.run()       

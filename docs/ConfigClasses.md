@@ -443,6 +443,9 @@ Attributes & default values:
     
     componentCreateOperationsBody = None
     isAutoComponentCreateOperations = True        
+    
+    <Linux Only>
+    isAskPassProgRequired = False
                                                    
 ## QtIfwShortcut
 

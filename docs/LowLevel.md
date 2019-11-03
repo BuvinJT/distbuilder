@@ -256,7 +256,7 @@ returning a "success code" (0) even when the installation fails.
 
 ### Silent Installer Arguments
 
-One of the core features of [Silent Installers](#silient-installers) is that they can
+One of the core features of [Silent Installers](#silent-installers) is that they can
 be driven by command line arguments.  The following switches have been provided for 
 this type of distbuilder installer. Note these differ from the 
 [Standard Installer Arguments](#standard-installer-arguments).
@@ -367,11 +367,12 @@ Static Functions:
     log( msg, isAutoQuote=True )            
 	debugPopup( msg, isAutoQuote=True )
                       
-    setValue( key, value, isAutoQuote=True )          
-     
+    setValue( key, value, isAutoQuote=True )               
     lookupValue( key, default="", isAutoQuote=True )            
     lookupValueList( key, defaultList=[], isAutoQuote=True, 
                      delimiter=None )
+                          
+	getEnv( varName, isAutoQuote=True )
                           
     targetDir()
     productName() 
@@ -450,13 +451,24 @@ following add-on **QT SCRIPT** functions:
 	toMaintenanceToolPath( dir )
 	
 	<Windows Only>   
-	maintenanceToolPaths()	<resolves via registry lookups>
-	isOsRegisteredProgram()	
-	executeVbScript( vbs )
+		maintenanceToolPaths()	<resolves via registry lookups>
+		isOsRegisteredProgram()	
+		executeVbScript( vbs )
 	
-	<Windows Only, In Package Context>
-	addVbsOperation( component, isElevated, vbs )
-	setShortcutWindowStyleVbs( shortcutPath, styleCode )
+		<Package Context Only>
+			addVbsOperation( component, isElevated, vbs )
+			setShortcutWindowStyleVbs( shortcutPath, styleCode )
+
+    <Linux Only>        
+	    isAptInstalled() 
+	    isDpkgInstalled()
+	    isYumInstalled()
+	    isRpmInstalled()
+	    isPackageManagerInstalled( prog )
+	    
+	    isPackageInstalled( pkg )
+	    installPackage( pkg ) 
+	    unInstallPackage( pkg ) 
 
 ### QtIfwPackage list manipulation
 
@@ -957,6 +969,14 @@ Covert a relative path to an absolute path. If a `basePath`
 is not specified, the path is re resolved relative to `THIS_DIR` 
 (which may or **MAY NOT** be the *current working directory*).  
 
+### isParentDir 
+
+    isParentDir( parent, child, basePath=None ):
+
+**Returns**: boolean, the parent / child paths specified, exist
+and have such a relationship to one another.  The paths maybe
+relative or absolute. `basePath` is optionally used for relative paths.  
+
 ### Copy or Move To Dir
 
     copyToDir( srcPaths, destDirPath )
@@ -979,7 +999,7 @@ path specified, it does not leave a copy of the source). This
 When relative paths are specified, they are resolved via [absPath](#abspath).
 
     copyToDesktop( path )            
-	moveToDesktop( path )
+    moveToDesktop( path )
     copyToHomeDir( path )   
     moveToHomeDir( path )
 
@@ -1171,7 +1191,7 @@ new download will overwrite the prior file.
 ### Aliased standard python functions
        
         exists                 os.path.exists 
-        isFile                 os.path.isfile
+        isFile                 os.path.isfile or os.path.islink 
         isDir                  exists AND not isFile
         copyFile               shutil.copyFile 
         removeFile             os.remove

@@ -849,7 +849,7 @@ if IS_LINUX:
          "/usr/X11R6/bin/ssh-askpass"
         ,"/usr/bin/ssh-askpass"
     ]
-    __ASKPASS_ENV_VAR="SUDO_ASKPASS"
+    _ASKPASS_ENV_VAR="SUDO_ASKPASS"
     __askpassSv=None
     def _assertAskPassAvailable( askpassPath=None ):
         # if running in a standard tty context, or if
@@ -857,18 +857,18 @@ if IS_LINUX:
         if stdout.isatty() or geteuid() == 0: return
              
         # if the askpass env var is already defined, just use that
-        askpass = getEnv( __ASKPASS_ENV_VAR )
+        askpass = getEnv( _ASKPASS_ENV_VAR )
         if askpass: return 
         
         global __askpassSv
         __askpassSv = askpass
         if askpassPath: 
             if isFile( askpassPath ):
-                setEnv( __ASKPASS_ENV_VAR, askpassPath )
+                setEnv( _ASKPASS_ENV_VAR, askpassPath )
                 return 
         for path in __commonAskpassPaths:
             if isFile( path ):    
-                setEnv( __ASKPASS_ENV_VAR, path )
+                setEnv( _ASKPASS_ENV_VAR, path )
                 return
         
         # Invoke a fatal error if nothing succeeded    
@@ -883,7 +883,7 @@ if IS_LINUX:
         
     def _restoreAskPass():
         global __askpassSv
-        if __askpassSv: setEnv( __ASKPASS_ENV_VAR, __askpassSv )
-        else          : delEnv( __ASKPASS_ENV_VAR )    
+        if __askpassSv: setEnv( _ASKPASS_ENV_VAR, __askpassSv )
+        else          : delEnv( _ASKPASS_ENV_VAR )    
         __askpassSv = None                
         
