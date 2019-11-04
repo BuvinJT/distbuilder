@@ -6,15 +6,19 @@
  
 ## v.0.7.6
 
-* TEST (and develop as needed) QtIFW packages for Qt C++ exes, 
-to confirm auto dependency collection (include QML based projects).
+* Develop formal Qt C++ integration (and documentation).
+
+* Start "QtIfwExeWrapper" class, to provide extended features for launching 
+distributions.
+
+## v.0.7.7
+
+* Finish "QtIfwExeWrapper" class.
 
 * TEST (and develop as needed) QtIFW packages which: 
 	* contain only "data" (no exe)
 	* do not install shortcuts
 	* are not enabled for install by default
-
-## v.0.7.7
 
 * Test, and confirm / fix uninstallation mechanism for silent installers,
 notably in non GUI environments. Can this be done via the Maintenance Tool
@@ -29,16 +33,17 @@ and / or the original installer?
 * Further develop the Qt IFW script generation features.
 	* Directory creation on target (e.g. user data directories)		
 	* Resource installation outside of the target directory
-	* Windows Registry functions     
+	* Windows Registry functions, analogous settings on other platforms
+	(e.g. plist on Mac)     
 
 ## v.0.8.x
-
-* Add git integration: Clone/pull to build project from multiple remote sources
 			
 * Improve and stabilize Opy to the point it can handle *most* scripts without *any*
 manual intervention. 
    
 * "Perfect" Opy "library bundling" (for both private and PyPi libraries). 
+
+* Add git integration: Clone/pull to build project from multiple remote sources
 
 ## v.0.9.x
 
