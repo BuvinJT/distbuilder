@@ -148,6 +148,10 @@ error messages there, indicating why the configuration cannot be used. If everyt
 order, however, you should see your Python version displayed, the version of distbuilder 
 being used, and the command which will be executed to run the build script.
 
+When you run the **REBUILD** operation, you will find important debugging information in 
+the "Compile Output" pane of Creator.  All messages produced the Python script will 
+appear at the end of the build log.  
+
 For more details regarding the QMake script involved, and for ways to modify (or fix)
 your integration, please refer to the [Hello World Qt Example](#hello-world-qt-example) 
 section.
