@@ -1702,8 +1702,10 @@ class QtIfwExeWrapper:
         if IS_LINUX : 
             __GUI_SUDO = ( 'export ' + util._ASKPASS_ENV_VAR + '="' +
                 QT_IFW_ASKPASS_PLACEHOLDER + '"; sudo ' ) 
-            __CAT_GUI_SUDO = ( 'export ' + util._ASKPASS_ENV_VAR + '=' +
-                '$(cat "' + QT_IFW_ASKPASS_TEMP_FILE_PATH + '"); sudo ' )
+            __TMP_GUI_SUDO = ( 'export ' + util._ASKPASS_ENV_VAR + '=' +
+                '$(cat "' + QT_IFW_ASKPASS_TEMP_FILE_PATH + '"); ' +
+                'rm "' + QT_IFW_ASKPASS_TEMP_FILE_PATH + '"; ' +
+                'sudo ' )
     
     __CD_PREFIX_CMD_TMPLT = 'cd "%s" && ' 
     
@@ -1816,7 +1818,7 @@ class QtIfwExeWrapper:
                 shortLaunch = runLaunch            
                 if self.isElevated:
                     if self.isGui :                        
-                        runLaunch = QtIfwExeWrapper.__CAT_GUI_SUDO + runLaunch
+                        runLaunch = QtIfwExeWrapper.__TMP_GUI_SUDO + runLaunch
                         shortLaunch = QtIfwExeWrapper.__GUI_SUDO + runLaunch 
                     else:
                         runLaunch = QtIfwExeWrapper.__SUDO + runLaunch

@@ -5,7 +5,7 @@
 # Global constants
 
 # Hardcode the path to your Python interpreter here.
-# Or, alternatively, use the (commented out) environmental varibale method
+# Or, alternatively, use the (commented out) environmental variable method
 PY_PATH=python
 #PY_PATH=$$getenv( PYTHON_PATH )
 
