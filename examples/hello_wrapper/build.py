@@ -34,7 +34,7 @@ f.setupName     = "HelloElevatedSetup"
 f.pkgExeWrapper = f.qtIfwExeWrapper( isElevated=True )  
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
-p.run()       
+#p.run()       
 
 #------------------------------------------------------------------------------
 licenseName = "LICENSE"
@@ -81,4 +81,4 @@ f.pkgExeWrapper = f.qtIfwExeWrapper( wrapperScript=launchScript )
 #f.pkgExeWrapper.workingDir    = QT_IFW_TARGET_DIR 
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
-#p.run()       
+p.run()       

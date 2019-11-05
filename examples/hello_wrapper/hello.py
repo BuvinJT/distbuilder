@@ -8,12 +8,12 @@ from os import curdir
 from os.path import abspath
 
 def isElevated():
-    try: 
+    try:    # Nix  
         from os import geteuid
         return geteuid()==0  
-    except:
-        """TODO: Add Windows equivalent"""
-        return False
+    except: # Windows
+        import ctypes
+        return ctypes.windll.shell32.IsUserAnAdmin()==1
 
 text=(
     "Directory: {0}".format( abspath(curdir) ) + "\n" +
