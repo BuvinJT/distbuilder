@@ -11,15 +11,16 @@ the [Qt Installer Framework](http://doc.qt.io/qtinstallerframework),
 [pip](https://pypi.org/project/pip/), and more.  
 
 As one might guess, the primary role which Distribution Builder can serve for your development 
-need, is packaging and deploying Python based programs. It can, however, be employed for 
-distributing software of all sorts.  To this end, a dedicated module (and set of examples), 
-have been provided for [Qt C++ Integration](QtCpp.md).    
+needs is packaging and deploying Python based programs. It can, however, be employed for 
+distributing software of all sorts.  To this end, a dedicated module, has been provided for 
+[Qt C++ Integration](QtCpp.md).  More cross lanaguage / framework integration modules 
+will become available in the future.
 
 This library is compatible with both Python 2 and 3.  It has been tested on recent versions of 
 Windows, macOS, and multiple Linux distros. It features the ability to create standalone 
 binaries from Python scripts (via PyInstaller), and is capable of building installers in a 
 cross platform manner (via QtIFW) which work in either gui or *non-gui* contexts (note 
-QtIFW does NOT naturally provide a *non-gui* option!). The library can also be used to 
+QtIFW does not naturally provide a *non-gui* option!). The library can also be used to 
 **obfuscate** code (via Opy), so as to protect proprietary work.
 
 See the [Quick Start Guide](QuickStart.md) for instructions on installation 
@@ -62,10 +63,10 @@ of the larger product.
 Producing software in this manner, allows engineers to work together 
 on endeavors where there are gray areas pertaining to intellectual rights and/or the
 legalities of such have yet to be solidified.  This mechanism mitigates the risk
-of an individual stealing an entire code base, or being boxed out of a project for
+of an individual stealing an entire code base, or being "boxed out" of a project for
 which they made considerable contributions.  
 
-While this overarching concept has long been available with other languages (e.g. with 
+While this overarching *concept* has long been available with other languages (e.g. with 
 C++ dll's and other analogous compiled components), this has not generally been an option 
 for Python.  Even in those languages where such is a "ready option", a development scheme 
 of this nature is often too cumbersome to employ, or simply not an option developers have
