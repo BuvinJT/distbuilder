@@ -178,7 +178,7 @@ Upon opening the project, follow the instructions in the above
 through the QMake.  
 
 The place to begin this code review is in the 
-[hello.pro](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello/hello_qt/hello.pro) 
+[hello.pro](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qt/hello/hello.pro) 
 file.  It starts with pure boiler plate QMake, and then ends with the following:
 
 
@@ -199,7 +199,7 @@ If you expand the "package" sub project in the side bar, you'll find the `pri`, 
 not conflate the meaning of "build" in C++ with this additional step.       
 
 Next, let's look over 
-[package.pri](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello/hello_qt/package/package.pri).  At the top of that, you'll find:
+[package.pri](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qt/hello/package/package.pri).  At the top of that, you'll find:
 
 	# Hardcode the path to your Python interpreter here.
 	# Or, alternatively, use the (commented out) environmental variable method
@@ -231,7 +231,7 @@ In this section, the custom details are defined for the name of the product, and
 company, etc. Note, these values cascade down in the C++ in addition to being 
 passed the QMake build process and finally onto distbuilder.  This provides the means
 to define such info in a single "master" location.  If you check out the
-[mainwindow.cpp](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello/hello_qt/mainwindow.cpp) C++ implementation file, you will see this in action on 
+[mainwindow.cpp](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qt/hello/mainwindow.cpp) C++ implementation file, you will see this in action on 
 that side of the equation.
 
 Just below, the `.pri` contains:
@@ -264,7 +264,7 @@ or have that installed in a path the script can't locate, uncomment this QMake
 directive and provide that detail.
 
 Now, onto the Python script 
-[package.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello/hello_qt/package/package.py).  It simply contains: 
+[package.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qt/hello/package/package.py).  It simply contains: 
 
 	from distbuilder import RobustInstallerProcess   
 	from distbuilder.qt_cpp import qmakeInit
@@ -314,7 +314,7 @@ Upon opening the project, follow the instructions in the above
 
 Other than the C++ side of this, this example is nearly identical to the more primitive
 [Hello World Qt Example](#hello-world-qt-example). There is one key difference.
-In [package.pri](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello/hello_qml/package/package.pri), 
+In [package.pri](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qml/hello/package/package.pri), 
 near the end you find this line:
 
     qmlSourcePath = $${_PRO_FILE_PWD_}/ux 
