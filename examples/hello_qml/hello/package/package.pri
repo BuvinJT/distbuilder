@@ -113,26 +113,26 @@ CONFIG(package){  # detect the "package" build configuration
     message( Distribution Builder: $${distBuilderVersion} )
 
     # Build a shell command to run to the package script
+
     win32: exePath=$$OUT_PWD/release/$${TARGET}.exe
     else:  exePath=$$OUT_PWD/$${TARGET}
-
-    qtBinDirPath = $$dirname(QMAKE_QMAKE)
-
+    qtBinDirPath=$$dirname(QMAKE_QMAKE)
+    projectRootPath=$${_PRO_FILE_PWD_}
     qmlSourcePath = $${_PRO_FILE_PWD_}/ux
 
     packageCmd=$${PY_PATH} \
         $$quot( $$clean_path( $${packageScriptPath} ) ) \
         $$quot( $$clean_path( $${exePath} ) ) \
         $$quot( $$clean_path( $${qtBinDirPath} ) ) \
-        --gui \
+        -s $$quot( $$clean_path( $${projectRootPath} ) ) \
+        -q $$quot( $$clean_path( $${qmlSourcePath} ) ) \
+        -i $$quot( $$clean_path( $${ICON_PATH} ) ) \
+        -n $$quot( $${SETUP_NAME} ) \
         -t $$quot( $${PRODUCT_TITLE} ) \
         -d $$quot( $${PRODUCT_DESCRIPTION} ) \
         -v $$quot( $${APP_VERSION} ) \
         -c $$quot( $${COMPANY_TRADE_NAME} ) \
-        -l $$quot( $${COMPANY_LEGAL_NAME} ) \
-        -s $$quot( $${SETUP_NAME} ) \
-        -i $$quot( $$clean_path( $${ICON_PATH} ) ) \
-        -q $$quot( $$clean_path( $${qmlSourcePath} ) )
+        -l $$quot( $${COMPANY_LEGAL_NAME} )
 
     # Detect and pass pertinent compiler details
     win32-msvc*: packageCmd += -b msvc

@@ -2,10 +2,10 @@ from six import PY2, PY3, string_types  # @UnusedImport
 from six.moves import urllib
 from sys import argv, stdout, stderr, exit, \
     executable as PYTHON_PATH
-from os import system, sep as PATH_DELIM, pardir as PARENT_DIR, \
+from os import system, sep as PATH_DELIM, \
     remove as removeFile, \
     fdopen, getcwd, chdir, walk, environ, devnull, \
-    chmod, getenv, listdir, makedirs as makeDir, rename # @UnusedImport   
+    chmod, getenv, listdir, makedirs as makeDir, rename, pardir as PARENT_DIR # @UnusedImport   
 from os.path import exists, isfile, islink, \
     dirname as dirPath, normpath, realpath, isabs, \
     join as joinPath, split as splitPath, splitext as splitExt, \
@@ -224,7 +224,7 @@ def __batchOneLinerOutput( batch ):
     return p.communicate( cmd )[1].rstrip()  
 
 def __windowsIsElevated():
-    return ctypes.windll.shell32.IsUserAnAdmin()
+    return ctypes.windll.shell32.IsUserAnAdmin()==1
 
 # returns  (isRun, retCode, output)            
 def __windowsElevated( exePath, args=[], wrkDir=None ):

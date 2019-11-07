@@ -36,31 +36,43 @@ def installDeployTools( askPassPath=None ):
 def qmakeMasterConfigFactory( args=None ): 
     if args is None: args = qmakeArgs()
     f = ConfigFactory()
+    
+    f.isGui               = args.gui
+    f.iconFilePath        = args.icon    
+    f.setupName           = args.setupName
+
     f.productName         = args.title
     f.description         = args.descr
     f.companyTradeName    = args.company
-    f.companyLegalName    = args.legal    
-    f.iconFilePath        = args.icon
+    f.companyLegalName    = args.legal
     f.version             = args.version
-    f.setupName           = args.setup
+            
     return f
 
 def qmakePackageConfigFactory( args=None ): 
     if args is None: args = qmakeArgs()
-    cppConfig = QtCppConfig( args.qtBinDirPath, args.binCompiler, 
-                             qmlScrDirPath=args.qml )
+    cppConfig = QtCppConfig( args.qtBinDir, args.binCompiler, 
+                             qmlScrDirPath=args.qmlDir )
     f = ConfigFactory()
+    
     f.pkgType             = QtIfwPackage.Type.QT_CPP
     f.qtCppConfig         = cppConfig               
-    f.pkgSrcExePath       = args.srcExePath
-    f.pkgExeWrapper       = QtCppConfig.exeWrapper( args.srcExePath, args.gui )
+    
+    f.sourceDir           =( args.srcDir if args.srcDir else 
+                             dirPath( args.exePath ) )
+    f.pkgSrcExePath       = args.exePath
+    f.pkgExeWrapper       = QtCppConfig.exeWrapper( args.exePath, args.gui )
+
     f.isGui               = args.gui
+    f.iconFilePath        = args.icon    
+    f.distResources       = [r for r in args.resource]
+    
     f.productName         = args.title
     f.description         = args.descr
     f.companyTradeName    = args.company
-    f.companyLegalName    = args.legal    
-    f.iconFilePath        = args.icon
+    f.companyLegalName    = args.legal        
     f.version             = args.version
+    
     return f
 
 def qmakeArgs(): 
@@ -71,22 +83,50 @@ def qmakeArgs():
 
 def qmakeArgParser():      
     parser = ArgumentParser( description="Build a Qt installer." )
-    parser.add_argument( "srcExePath", help="path to the source executable" )
-    parser.add_argument( "qtBinDirPath", help="path to the Qt Bin directory" )
-    parser.add_argument( "-g", "--gui", default=False, action='store_true', help="is gui exe" )
-    parser.add_argument( "-t", "--title", default="?", help="Product title" )
-    parser.add_argument( "-d", "--descr", default="?", help="Product description" )
-    parser.add_argument( "-c", "--company", default="?", help="Company trade name" )
-    parser.add_argument( "-l", "--legal", default=None, help="Company legal name" )
-    parser.add_argument( "-i", "--icon", default=None, help="Icon path" )
-    parser.add_argument( "-v", "--version", default="0.0.0.0", help="Product version" )
-    parser.add_argument( "-s", "--setup", default=None, help="Setup name" )
-    parser.add_argument( "-b", '--binCompiler', default=None, 
+    
+    # required paths
+    parser.add_argument( "exePath", 
+                         help="executable path (within Qt build directory)" )
+    parser.add_argument( "qtBinDir", 
+                         help="Qt Bin directory path (QMake directory)" )
+    
+    # optional paths
+    parser.add_argument( "-s", "--srcDir", default=None, 
+                         help="project (root) source directory" )
+    parser.add_argument( "-q", "--qmlDir", default=None, 
+                         help="QML source directory" )
+    parser.add_argument( "-i", "--icon", default=None, 
+                         help="icon path" )
+    parser.add_argument( "-r", "--resource", default=[], action="append", 
+                         help="resource path (repeatable option)" )    
+
+    # build details
+    parser.add_argument( "-g", "--gui", default=True, action='store_true', 
+                         help="is a GUI program" )
+    parser.add_argument( "-b", "--binCompiler", default=None, 
                          choices=QtCppConfig.srcCompilerOptions(),
-                         help='compiler used (for dependency gathering)' )
-    parser.add_argument( "-q", "--qml", default=None, help="path to the QML source directory" )
+                         help="compiler used (dependency gathering)" )
+    parser.add_argument( "-n", "--setupName", default=None, 
+                         help="setup name" )   
+    parser.add_argument( "-e", "--exeName", default=None, 
+                         help="executable REname" )
+
+    # meta info / product branding
+    parser.add_argument( "-t", "--title", default="?", 
+                         help="product title" )
+    parser.add_argument( "-d", "--descr", default="?", 
+                         help="product description" )
+    parser.add_argument( "-c", "--company", default="?", 
+                         help="company trade name" )
+    parser.add_argument( "-l", "--legal", default=None, 
+                         help="company legal name" )
+    parser.add_argument( "-v", "--version", default="0.0.0.0", 
+                         help="product version" )
+    
+    # build utilities    
     if IS_LINUX :
-        parser.add_argument( "-a", "--askPass", default=None, help='Path to an "AskPass" program' )    
+        parser.add_argument( "-a", "--askPass", default=None, 
+                             help='Path to an "AskPass" program' )    
     return parser
 
 # -----------------------------------------------------------------------------

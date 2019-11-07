@@ -117,7 +117,7 @@ class ConfigFactory:
     
     def opyConfig( self ):
         return OpyConfig( self.binaryName, self.entryPointPy,
-                          sourceDir = self.sourceDir,
+                          sourceDir=self.sourceDir,
                           bundleLibs=self.opyBundleLibs,
                           patches=self.opyPatches )                 
     
@@ -183,6 +183,10 @@ class ConfigFactory:
             pkg.distResources = list( set().union(
                 pkg.distResources if pkg.distResources else [], 
                 self.distResources if self.distResources else [] ) )
+            # Resolve relative resource paths to absolute paths
+            # (note if self.sourceDir is None, THIS_DIR is used as the base) 
+            pkg.distResources = [ 
+                absPath(res, self.sourceDir) for res in pkg.distResources ]
                                                 
         pkg.qtCppConfig = self.qtCppConfig
         return pkg
@@ -290,7 +294,9 @@ class ConfigFactory:
     def __pkgSrcDirPath( self ):
         if self.__pkgPyInstConfig : return absPath( self.__pkgPyInstConfig.name )
         if self.pkgSrcDirPath : return self.pkgSrcDirPath
-        if self.binaryName : return absPath( self.binaryName )
+        if( self.__ifwPkgType()==QtIfwPackage.Type.PY_INSTALLER and 
+            self.binaryName ): 
+            return absPath( self.binaryName )               
         return None                 
 
     def __pkgExeName( self ):

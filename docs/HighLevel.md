@@ -138,9 +138,12 @@ either a [Stand Alone Executable](LowLevel.md#stand-alone-executables)
 or an [Installer](LowLevel.md#installers) based on the context of what uses
 the config factory.
 
-A version must be defined as a 4 part tuple of unsigned integers, in the form:
+A version should be defined as a 4 part tuple of unsigned integers, in the form:
 
-    ( MAJOR version, MINOR version, PATCH, BUILD )
+    ( MAJOR, MINOR, PATCH, BUILD )
+
+Alternatively, a string representation may be supplied.
+See [versionTuple, versionStr](LowLevel.md#versiontuple,-versionstr).
 
 Note that each part maybe any number of digits long.  i.e. this is a perfectly 
 valid version stamp: `2.11.6.139`.  That example would be denoted in tuple form 
@@ -149,21 +152,26 @@ as: `(2,11,6,139)`
 #### binaryName, isGui           
 
 These are attrubte used for a vareity of purposes, which would be difficult to 
-list here. Most notably, they are applied diecrtly to the production of  
+list here. Most notably, they are applied directly to the production of  
 [Stand Alone Executables](LowLevel.md#stand-alone-executables). In that specific 
 process these details are set on a [PyInstallerConfig](ConfigClasses.md#pyinstconfig) 
 object when invoking the `pyInstallerConfig()` function for this class.
   
-#### sourceDir, entryPointPy 
+#### sourceDir
 
-Akin to `binaryName` and `isGui` attributes, these are specific to use when 
-producing a given [Stand Alone Executable](LowLevel.md#stand-alone-executables).
+This attribute is used to resolve relative paths to absolute paths in various 
+contexts. When ommited, such paths are normally resolved relative to the directory 
+contating the build script (NOT the current working directory!).
 
-Specifically, these are used to point PyInstaller to the source from which to build 
-a binary.
+#### entryPointPy 
 
-These details are used when generating a [PyInstallerConfig](ConfigClasses.md#pyinstconfig)
-object when invoking the `pyInstallerConfig()` function for this class.
+This attribute is most notably used when producing a 
+[Stand Alone Executable](LowLevel.md#stand-alone-executables).
+In that context, it points PyInstaller to the starting point for the source from which 
+to build a binary.
+
+This is also used during an [Executable Obfuscation](LowLevel.md#executable-obfuscation)
+process.  The entry point module **name** is **not** obfuscated (though its contents are). 
 
 #### specFilePath
 
@@ -196,20 +204,21 @@ Such will be automatically determined per the platform at runtime.
 
 #### distResources        
 
-Akin to `binaryName` and `isGui` attributes, these is employed for  
-producing a given [Stand Alone Executable](LowLevel.md#stand-alone-executables).
-
 The `distResources` attribute is an optional list of external resources to bundle 
-into the distribution package along side of the binary. See [buildExecutable](LowLevel.md#buildExecutable)
-for more information.
-    
-This detail is used when generating a [PyInstallerConfig](ConfigClasses.md#pyinstconfig)
-object when invoking the `pyInstallerConfig()` function for this class.
+into the distribution package. 
+
+Notably, this is used when generating a [PyInstallerConfig](ConfigClasses.md#pyinstconfig)
+object when invoking the `pyInstallerConfig()` function for this class, and 
+with the low level [buildExecutable](LowLevel.md#buildExecutable) operation.
+
+This will attibrute may also be used for producing a
+[QtIfwPackage](ConfigClasses.md#qtifwpackage) object when invoking the
+`qtIfwPackage()` function for this class.
 
 #### setupName
 
-The file name given to a QtIFW installer when the config factory is used in a context to 
-produce one. This attribute is specifically applied when generating a 
+This is the file name given to a QtIFW installer when the config factory is used in a 
+context to produce one. This attribute is specifically applied when generating a 
 [QtIfwConfig](ConfigClasses.md#qtifwconfig) object upon invoking the `qtIfwConfig()`
 function for this class.
 

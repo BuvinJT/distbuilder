@@ -28,25 +28,49 @@ A module has been provided in distbuilder which is specifically dedicated to Qt 
 integration, i.e. `distbuilder.qt_cpp`.  The following functions / classes can be imported 
 from that: 
 
+	qmakeInit()     
+	installDeployTools( askPassPath=None )             
+	qmakeMasterConfigFactory( args=None ) 
+	qmakePackageConfigFactory( args=None ) 
+	qmakeArgs()
+	qmakeArgParser()      
+
+Under most circumstances, you will only need to call `qmakeInit`.  If you wish to 
+customize that process or recieve additional specifications from an external source 
+(e.g. QMake), you may use the other functions to emulate what the vanilla `qmakeInit`
+does for you.   
+
 ### qmakeInit     
 
 This function provides the standard way to set up the mechanism to have QMake
 drive the build process in distbuilder. The function receives parameters passed to the  
 script externally (normally as arguments from a QMake invocation), and returns a tuple of 
-[ConfigFactory](HighLevel.md#configfactory) objects. This first of these is intended for 
-use as a "master" for building robust multi-package distributions.  The other, to build 
-the C++ program package specifically.  
+[ConfigFactory](HighLevel.md#configfactory) objects. The first factory in the tuple is 
+intended for use as a "master" from which to build robust multi-package distributions.  
+The other, is to build the C++ program package.  
 
 Example:         
             
 	masterFactory, packageFactory = qmakeInit()
             
-Note, to modify a Qt C++ package, it is strongly advised that you modify the factory
-used to produce it, rather than creating the package and then altering that product.  
-This prevents the need to also regenerate nested components, which may not align as 
-desired otherwise and could lead to subtle problems.  While this practice is applicable
-to distbuilder in general, it is pointed out here because this standard Qt integration
-pattern directly involves the creation of factories for the client to then implement.    
+Note, to modify an "product" of the library, it is strongly advised that you modify the 
+factory used to produce it, when possible, rather than creating a object with it first 
+and then altering that.  Changing the factory attributes can prevent the need to also 
+regenerate nested components, which may not align as desired otherwise and could lead to 
+subtle problems.  While this practice is applicable to distbuilder in general, it is 
+pointed out here because this standard Qt integration pattern directly involves the 
+creation of factories for the client to implement, as opposed to "configuration objects" 
+or "process objects".    
+
+### installDeployTools
+
+Normally, you would not have to call this directly, as `qmakeInit` will for you.
+This function will install any tools required to produce distributions for 
+Qt C++ based programs.  
+
+On Linux, you may wish to pass a value for the `askPassPath` argument.  That is 
+needed to invoke the function from a non-tty gui context.  The value should 
+define the path to a "ask password" utility e.g. "OpenSSH Askpass"   
             
 ### qmakeMasterConfigFactory, qmakePackageConfigFactory
 
@@ -63,17 +87,6 @@ functions directly, in order to subsequently call `qmakeMasterConfigFactory` and
 from the script arguments. In contrast, `qmakeArgParser` returns a raw 
 [ArgParse](https://docs.python.org/3/library/argparse.html) object, which may be 
 *customized* to collect additional / alternate script arguments.   
-
-### installDeployTools
-
-Normally, you should not have to call this directly, as the library will as needed.
-It has been made public though, in the event you wish to explicitly, on demand.  
-This function will install any tools required to produce distributions for 
-Qt C++ based programs.  
-
-On Linux, you may wish to pass a value for the `askPassPath` argument.  That is 
-needed to invoke the function from a non-tty gui context.  The value should 
-define the path to a "ask password" utility e.g. "OpenSSH Askpass"   
    
 ### QtCppConfig:
 
@@ -103,16 +116,17 @@ Static Functions:
 
 ## QMake Integration
 
-To produce an executable binary from Qt C++ source, a developer normally defines (static) 
-build configurations in the form of a "project file" (`.pro`). Then, that `.pro` file is 
-processed by [QMake](https://doc.qt.io/qt-5/qmake-manual.html). Typically, the `.pro` file 
-initially originates from some basic template, and QMake is simply run automatically from 
-Qt Creator upon selecting a "build" action.  
+To produce an executable binary from Qt C++ source, a developer normally defines (scripted)
+build configurations in the form of a "project file" (`.pro`). That `.pro` file is 
+processed by [QMake](https://doc.qt.io/qt-5/qmake-manual.html) to produce the program. 
+Typically, the `.pro` file initially originates from some basic template, and QMake is simply 
+run automatically from Qt Creator upon selecting a "build" action from the menu.  
 
 QMake is a very powerful mechanism, and these `.pro` files can be customized extensively to 
 setup complex build processes. In addition to `.pro` files, Qt uses more dynamic, user 
-specific `.pro.user` files. These are normally managed via Qt Creator tools. For extended
-information about such, you may wish to refer to any/all of the following links:
+specific `.pro.user` files. These are normally managed via Qt Creator tools, and not directly
+edited. For extended information about such, you may wish to refer to any/all of the 
+following links:
 
 * [Opening Projects](https://doc.qt.io/qtcreator/creator-project-opening.html)
 
@@ -132,29 +146,32 @@ you open one of these `.pro` files for the first time on a given machine:
 
 * From the "Projects" screen, **clone** a "Release" build configuration.
 
-* Name the new configuration "Package".
+* Name the new configuration "Package" (or a similiar name of your choice).
 
-* For this configuration, add "CONFIG+=package" to the **Build steps...Additional arguments** section.
+* For this configuration, find the **Build steps... qmake... Additional arguments**
+input field and add `CONFIG+=package`.
 
 To then use the new build option, choose the configuration (found along with Debug, 
 Release, etc.) from the menu in the bottom left corner of Creator (above the big green
-"play" button). Then, select **REBUILD** from the menu.  Do NOT chose "deploy" or "run" 
-for this configuration.
+"play" button). Then, select **Build... REBUILD Project** from the menu.
+Do NOT chose "deploy" or "run" for this configuration, as they are not applicable.
 
-Upon selecting the build option, a key portion of the custom QMake logic should 
+Upon selecting this build option, a key portion of the custom QMake logic should 
 be executed.  When it is, you will find important debugging information in the "General 
-Messages" output pane of Creator.  If this library can't be reached, will you see critical 
-error messages there, indicating why the configuration cannot be used. If everything is in 
+Messages" output pane of Creator.  If this library can't be reached, you will see critical 
+error messages there, indicating what has gone wrong. If everything is in 
 order, however, you should see your Python version displayed, the version of distbuilder 
-being used, and the command which will be executed to run the build script.
+being used, and the **command which will be executed to run the build script**. Note that
+you may wish to copy that command and execute it directly from the command prompt / terminal
+in the event you want to run the build script again without having to recompile the C++
+project.
 
 When you run the **REBUILD** operation, you will find important debugging information in 
-the "Compile Output" pane of Creator.  All messages produced the Python script will 
-appear at the end of the build log.  
+the "Compile Output" pane of Creator.  All messages produced by the Python script will 
+appear at the end of that build log.  
 
 For more details regarding the QMake script involved, and for ways to modify (or fix)
-your integration, please refer to the [Hello World Qt Example](#hello-world-qt-example) 
-section.
+your integration, please continue on to the [Hello World Qt Example](#hello-world-qt-example).
 
 ## Hello World Qt Example
 
@@ -250,19 +267,6 @@ As you continue on, the script effectively builds a command to append onto
 `QMAKE_POST_LINK`.  That is way in which the Python script is executed upon rebuilding
 the project using the "Package" build configuration.
 
-Of note for Linux users, this is found near the end of the QMake:  
-  
-    # On Linux, you may optionally provide a custom "AskPass" program to handle
-    # password input for root/sudo privileges if required
-    #linux: packageCmd += --askPass $$quot( $$clean_path( /usr/share/git-cola/bin/ssh-askpass ) )
-
-In order to run the integration from a non-tty gui context (e.g. Qt Creator!).
-You will need to lean on an "ask password" utility.  When you attempt to use the 
-package script for the first time, it may fail because it has no such tool found on the
-system. It will suggest you install "OpenSSH Askpass".  If you prefer something else,
-or have that installed in a path the script can't locate, uncomment this QMake
-directive and provide that detail.
-
 Now, onto the Python script 
 [package.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qt/hello/package/package.py).  It simply contains: 
 
@@ -330,6 +334,51 @@ project.  The process works ideally if it scans a directory (recursively) which 
 reserved primarily for these specific files.  It is a good practice to keep your C++ 
 and QML split apart anyway, so this is a logical design either way. 
 
+## Additional Options
 
+In addition to the options for the QMake integration demoed and discussed, there are 
+a handful more worth noting. These are all optional command line switches provided by
+the default `qmakeInit` mechanism.
+
+### srcDir
+  
+While this parameter is optional, it's generally a good idea to specify it.  This is used
+to resolve relative paths to resources.  If ommited, the "source directory" will be the
+parent directory to the requisite `exePath` value (i.e. the dynamic *build directory*)
+where QMake produced the C++ binary.  
+
+In the demos, as is more likely desirable, the root directory to the project's source has
+been passed.  If you wish to point this base path for resources to some other location
+(e.g. a specific sub directory within your project), you may do so with this option.
+
+### resource 
+
+The `--resource` switch (or `-r` for short) maybe passed repeatedly.  Use this
+to bundle additional resources into the package.  Note that relative paths will be
+resolved against the `--scrDir` path.  
+
+You may, of course, added resources to the package from within the Python build script,
+rather than passing that in from an external source in this manner.    
+
+### exeName
+
+In some contexts, it is desirable to rename the exe which was built by QMake, when it
+comes time to package and distribute it.  This is convenience option for that purpose.
+
+### askPass
 	
+This option is only pertinent for Linux users.
+
+In the examples, you'll find this near the end of the package QMake script:  
+  
+    # On Linux, you may optionally provide a custom "AskPass" program to handle
+    # password input for root/sudo privileges if required
+    #linux: packageCmd += --askPass $$quot( $$clean_path( /usr/share/git-cola/bin/ssh-askpass ) )
+
+In order to run the integration from a non-tty gui context (e.g. Qt Creator),
+you will need to lean on an "ask password" utility.  When you attempt to use the 
+package script for the first time, it may fail because no such tool is found on the
+system. It will suggest you install "OpenSSH Askpass".  If you prefer something else,
+or have that installed in a path the script can't locate, uncomment this QMake
+directive and provide that detail (e.g. the git-cola path demoed).
     
