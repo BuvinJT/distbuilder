@@ -2073,10 +2073,12 @@ def __addInstallerResources( qtIfwConfig ) :
             
 def __addResources( package ) :    
     print( "Adding additional resources..." )
-    destPath = package.contentDirPath()            
+    destDir = package.contentDirPath()            
     for srcPath in package.distResources:
-        if isDir( srcPath ) : copyDir( srcPath, destPath )
-        else : copyFile( srcPath, joinPath( destPath, fileBaseName( srcPath ) ) )
+        destPath=joinPath( destDir, fileBaseName( srcPath ) )        
+        print( "src: %s dest: %s" % (srcPath, destPath) )
+        if isDir( srcPath ) :  copyDir( srcPath, destPath )
+        else                : copyFile( srcPath, destPath )
 
 def __addExeWrapper( package ) :
     exeWrapperScript = package.exeWrapper.wrapperScript
