@@ -161,7 +161,8 @@ class ConfigFactory:
                 pkgType=pkgType, 
                 name=self.__ifwPkgName(), 
                 srcDirPath=self.__pkgSrcDirPath(),
-                srcExePath=self.pkgSrcExePath,                  
+                srcExePath=self.pkgSrcExePath,            
+                resBasePath=self.sourceDir,      
                 isTempSrc = isTempSrc,
                 pkgXml=self.qtIfwPackageXml(), 
                 pkgScript=self.qtIfwPackageScript( self.__pkgPyInstConfig ) )
@@ -183,10 +184,6 @@ class ConfigFactory:
             pkg.distResources = list( set().union(
                 pkg.distResources if pkg.distResources else [], 
                 self.distResources if self.distResources else [] ) )
-            # Resolve relative resource paths to absolute paths
-            # (note if self.sourceDir is None, THIS_DIR is used as the base) 
-            pkg.distResources = [ 
-                absPath(res, self.sourceDir) for res in pkg.distResources ]
                                                 
         pkg.qtCppConfig = self.qtCppConfig
         return pkg
@@ -212,7 +209,8 @@ class ConfigFactory:
         if IS_LINUX:
             # TODO: fix this to handle relative source paths
             #       and nested destination paths
-            # Currently just cheating by assuming png icon is going on app dir root...             
+            #       (use util._toSrcDestPair)
+            # Currently just cheating by assuming png icon is going on app dir root...  
             if self.__pkgPyInstConfig:
                 cfg=self.__pkgPyInstConfig                 
                 pngIconPath = cfg._pngIconResPath

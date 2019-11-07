@@ -323,7 +323,7 @@ Constructor:
 
     QtIfwPackage( pkgId=None, pkgType=None, name=None, 
                   srcDirPath=None, srcExePath=None,    
-                  isTempSrc=False,
+                  resBasePath=None, isTempSrc=False,
                   pkgXml=None, pkgScript=None ) 
 
 Attributes:    
@@ -340,6 +340,7 @@ Attributes:
 	<content>        
 	srcDirPath    = None
 	srcExePath    = None
+	resBasePath   = None
 	distResources = None	
 	isTempSrc     = False
 	                     

@@ -300,7 +300,7 @@ class QtIfwPackage:
     
     def __init__( self, pkgId=None, pkgType=None, name=None, 
                   srcDirPath=None, srcExePath=None, 
-                  isTempSrc=False, 
+                  resBasePath=None, isTempSrc=False, 
                   pkgXml=None, pkgScript=None ) :
         # internal id / type
         self.pkgId     = pkgId
@@ -312,6 +312,7 @@ class QtIfwPackage:
         # content        
         self.srcDirPath    = srcDirPath
         self.srcExePath    = srcExePath
+        self.resBasePath   = resBasePath
         self.distResources = None        
         self.isTempSrc     = isTempSrc                     
         # extended content detail        
@@ -2074,11 +2075,20 @@ def __addInstallerResources( qtIfwConfig ) :
 def __addResources( package ) :    
     print( "Adding additional resources..." )
     destDir = package.contentDirPath()            
-    for srcPath in package.distResources:
-        destPath=joinPath( destDir, fileBaseName( srcPath ) )        
-        print( "src: %s dest: %s" % (srcPath, destPath) )
-        if isDir( srcPath ) :  copyDir( srcPath, destPath )
-        else                : copyFile( srcPath, destPath )
+    basePath = package.resBasePath
+    for res in package.distResources:
+        src, dest = util._toSrcDestPair( res, destDir, basePath )
+        print( 'Copying "%s" to "%s"...' % ( src, dest ) )
+        if isFile( src ) :
+            destDir = dirPath( dest )
+            if not exists( destDir ): makeDir( destDir )
+            try: copyFile( src, dest ) 
+            except Exception as e: printExc( e )
+        elif isDir( src ):
+            try: copyDir( src, dest ) 
+            except Exception as e: printExc( e )
+        else:
+            printErr( 'Invalid path: "%s"' % (src,) )                            
 
 def __addExeWrapper( package ) :
     exeWrapperScript = package.exeWrapper.wrapperScript

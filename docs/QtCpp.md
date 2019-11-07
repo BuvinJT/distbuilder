@@ -342,22 +342,36 @@ the default `qmakeInit` mechanism.
 
 ### srcDir
   
-While this parameter is optional, it's generally a good idea to specify it.  This is used
-to resolve relative paths to resources.  If ommited, the "source directory" will be the
-parent directory to the requisite `exePath` value (i.e. the dynamic *build directory*)
-where QMake produced the C++ binary.  
+While this parameter is optional, it's generally a good idea to specify it.  The 
+`packageConfigFactory` object returned by `qmakeInit()` will have the `sourceDir`
+attribute set to this. That attibute is used to resolve relative paths to resources.  
+If ommited, the "source directory" will become the parent directory to the requisite 
+`exePath` value (i.e. the dynamic *build directory*) where QMake produced the C++ binary.  
 
-In the demos, as is more likely desirable, the root directory to the project's source has
-been passed.  If you wish to point this base path for resources to some other location
-(e.g. a specific sub directory within your project), you may do so with this option.
+In the exmples provided, as is more then likely desirable, the root directory to the 
+project's source has been explictly passed.  If you wish to point this base path for 
+resources to some other location (e.g. a sub directory within your project), you may 
+do so with this option.
 
 ### resource 
 
 The `--resource` switch (or `-r` for short) maybe passed repeatedly.  Use this
-to bundle additional resources into the package.  Note that relative paths will be
-resolved against the `--scrDir` path.  
+to bundle additional files or directories into the package.  Note that relative paths 
+will be resolved against the `--srcDir` switch.
 
-You may, of course, added resources to the package from within the Python build script,
+If you need to place the resource within a **nested** subdirectory in the target package
+(or simply rename the resource in the product), you may pass a semicolon `;` delimited
+pair of paths.  The first value in the pair is the source, and the second is the target
+path relative to the target package root.  
+
+Example:
+
+	-r "readme.txt;docs/help.txt"
+	
+This would bundle the `readme.txt` (on the `--srcDir` root) into the package within a
+sub directory called "docs" and would rename the file "help.txt". 	   
+
+You may, of course, add resources to the package from within the Python build script,
 rather than passing that in from an external source in this manner.    
 
 ### exeName

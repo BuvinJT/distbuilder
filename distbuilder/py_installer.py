@@ -177,43 +177,8 @@ class PyInstallerConfig:
     def _absPath( self, path ): return absPath( path, self.sourceDir )
     
     def _toSrcDestPair( self, pathPair, destDir=None ):
-        ''' UGLY "Protected" function for internal library uses ONLY! '''
-        
-        # this is private implementation detail
-        isPyInstallerArg = (destDir is None) 
-        
-        src = dest = None             
-        if( isinstance(pathPair, str) or
-            isinstance(pathPair, unicode) ):  # @UndefinedVariable
-            # shortcut syntax - only provide the source,
-            # (the destination is relative)
-            src = pathPair
-        elif isinstance(pathPair, dict) :
-            # if a dictionary is provided, use the first k/v pair  
-            try : src, dest = pathPair.iteritems().next() 
-            except: pass
-        else: 
-            # a two element tuple (or list) is the expected format
-            try : src = pathPair[0] 
-            except: pass
-            try : dest = pathPair[1] 
-            except: pass
-        if src is None: return None
-        relSrcDir = self.sourceDir if self.sourceDir else THIS_DIR  
-        src = normpath( src )
-        srcHead, srcTail = splitPath( src )
-        if srcHead=="" or not isParentDir( relSrcDir, srcHead ):
-            # NOTE: for a relative source path to have a **nested** destination 
-            # path, the destination MUST be explicitly provided (see dest logic)            
-            srcHead = relSrcDir                                
-            src = self._absPath( src )
-        if isPyInstallerArg:
-            if dest is None: dest = relpath( srcHead, THIS_DIR )                    
-        else :
-            if dest is None:
-                dest = joinPath( relpath( srcHead, relSrcDir ), srcTail )         
-            dest = self._absPath( joinPath( destDir, dest ) )                             
-        return (src, dest) 
+        return util._toSrcDestPair( pathPair, destDir, 
+                                    basePath=self.sourceDir )
 
 class PyInstSpec:
 

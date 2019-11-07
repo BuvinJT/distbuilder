@@ -1,4 +1,4 @@
-from six import PY2, PY3, string_types  # @UnusedImport
+from six import PY2, PY3, string_types, iteritems  # @UnusedImport
 from six.moves import urllib
 from sys import argv, stdout, stderr, exit, \
     executable as PYTHON_PATH
@@ -36,6 +36,8 @@ PY_DIR             = dirPath( PYTHON_PATH )
 SITE_PACKAGES_PATH = get_python_lib()
 
 THIS_DIR           = dirPath( realpath( argv[0] ) )
+
+PATH_PAIR_DELIMITER=";"
 
 # Windows 
 PY_SCRIPTS_DIR     = joinPath( PY_DIR, "Scripts" ) 
@@ -588,6 +590,59 @@ def __getFolderPathByCSIDL( csidl ):
     return buf.value 
 
 # -----------------------------------------------------------------------------
+def _toSrcDestPair( pathPair, destDir=None, basePath=None ):
+
+    src = dest = None             
+    if isinstance( pathPair, string_types ):  
+        # string pair representation
+        if PATH_PAIR_DELIMITER in pathPair:
+            pathPair = pathPair.split( PATH_PAIR_DELIMITER )
+            try : src = pathPair[0].strip() 
+            except: pass
+            try : dest = pathPair[1].strip() 
+            except: pass
+        # shortcut syntax - only provide the source,
+        # (the destination is relative)        
+        else: src = pathPair
+    elif isinstance( pathPair, dict ) :
+        # if a dictionary is provided, use the first k/v pair  
+        try : src, dest = iteritems( pathPair ).next() 
+        except: pass
+    else: 
+        # a two element tuple (or list) is the expected src/dest format
+        try : src = pathPair[0] 
+        except: pass
+        try : dest = pathPair[1] 
+        except: pass
+    
+    if src is None: return None
+    src = normpath( src )
+    if dest: dest = normpath( dest )
+    
+    relSrcDir = basePath if basePath else THIS_DIR  
+    srcHead, srcTail = splitPath( src )
+
+    # NOTE: for a relative source path to have a **nested** destination 
+    # path, the destination MUST be explicitly provided                     
+    if srcHead=="" or not isParentDir( relSrcDir, srcHead ):
+        srcHead = relSrcDir                                
+        src = absPath( src, basePath )
+
+    if destDir is None: # (e.g. PyInstaller Argument)
+        if dest is None: dest = relpath( srcHead, THIS_DIR )                    
+    else :
+        if dest is None:
+            dest = joinPath( relpath( srcHead, relSrcDir ), srcTail )        
+        if dest.startswith( PATH_DELIM ) : 
+            # must remove a leading slash from dest for joinPath to 
+            # make the dest a child of destDir
+            try: dest=dest[1:]
+            except: pass
+        dest = absPath( joinPath( destDir, dest ), basePath )
+                                     
+    return (src, dest) 
+
+# -----------------------------------------------------------------------------
 def versionTuple( ver, parts=4 ): return tuple( __versionList( ver, parts ) )
                 
 def versionStr( ver, parts=4 ): 
@@ -597,7 +652,7 @@ def versionStr( ver, parts=4 ):
 
 def __versionList( ver, parts=4 ):        
     try:
-        if isinstance(ver, string_types ):                 
+        if isinstance( ver, string_types ):                 
             ver = ver.replace(",",".").replace(" ","").replace("(","").replace(")","")
             verList = ver.split(".")
         elif isinstance(ver, tuple): verList = list(ver)
