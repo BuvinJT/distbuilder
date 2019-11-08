@@ -1145,6 +1145,20 @@ The purpose of this to test for library installation
 success, or to preemptively confirm the presence
 of dependencies.
 
+	importFromPath( path, memberName=None )
+	
+Imports a module, or a select member from it, via the 
+explicit path to that script, and returns the reference.
+Example:
+	
+    myFunc = importFromPath( "/path/to/myscript.py", "myFunc" )
+    myFunc( someArg )
+
+This can be very useful for cross project integrations where
+you want to import modules, or members of them, which are not
+part of an installed system library or if they are located in 
+a path where a standard import cannot be employed directly.
+
 ### halt
 	
 	halt()

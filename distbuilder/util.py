@@ -1,7 +1,7 @@
 from six import PY2, PY3, string_types, iteritems  # @UnusedImport
 from six.moves import urllib
 from sys import argv, stdout, stderr, exit, \
-    executable as PYTHON_PATH
+    executable as PYTHON_PATH, path as sysPath
 from os import system, sep as PATH_DELIM, \
     remove as removeFile, \
     fdopen, getcwd, chdir, walk, environ, devnull, \
@@ -430,8 +430,9 @@ def __renameInDir( namePair, parentDirPath ):
     return newPath
 
 # -----------------------------------------------------------------------------
-__IMPORT_TMPLT       = "import %s"
-__FROM_IMPORT_TMPLT  = "from %s import %s"
+__IMPORT_TMPLT               = "import %s"
+__FROM_IMPORT_TMPLT          = "from %s import %s"
+
 __GET_MOD_PATH_TMPLT = "inspect.getfile( %s )"
 
 def isImportableModule( moduleName ):
@@ -460,10 +461,19 @@ def sitePackagePath( packageName ):
     packagePath = joinPath( SITE_PACKAGES_PATH, packageName )
     return packagePath if exists( packagePath ) else None
 
+def importFromPath( path, memberName=None ):
+    scriptDir, scriptName = splitPath( path )
+    moduleName = rootFileName( scriptName )
+    sysPath.append( scriptDir )    
+    if memberName is None : exec( __IMPORT_TMPLT % (moduleName,) )
+    else: exec( __FROM_IMPORT_TMPLT % (moduleName, memberName) )
+    sysPath.remove( scriptDir )
+    return locals()[memberName] if memberName else locals()[moduleName]  
+
 def __importByStr( moduleName, memberName=None ):
     if memberName is None : exec( __IMPORT_TMPLT % (moduleName,) )
     else: exec( __FROM_IMPORT_TMPLT % (moduleName, memberName) )
-
+    
 # -----------------------------------------------------------------------------
 def toZipFile( sourceDir, zipDest=None, removeScr=True, 
                isWrapperDirIncluded=False ):

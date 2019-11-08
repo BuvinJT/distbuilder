@@ -96,6 +96,7 @@ from distbuilder.util import \
     , modulePath \
     , modulePackagePath \
     , sitePackagePath \
+    , importFromPath \
     , printErr \
     , printExc \
     , halt \

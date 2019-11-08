@@ -38,7 +38,9 @@ def renameExe( args=None ):
     if args.exeName is None: return
     parentDir, oldName = splitPath( args.exePath )
     newName = normBinaryName( args.exeName, isGui=args.gui )
-    args.exePath = renameInDir( (oldName, newName), parentDir )
+    newPath = joinPath( parentDir, newName )
+    if isFile( newPath  ): args.exePath = newPath  
+    else: args.exePath = renameInDir( (oldName, newName), parentDir )
          
 def qmakeMasterConfigFactory( args=None ): 
     if args is None: args = qmakeArgs()
