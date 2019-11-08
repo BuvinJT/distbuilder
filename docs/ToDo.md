@@ -31,6 +31,8 @@ Installer building process.
   
 ## v.0.7.8
 
+* Add Qt IFW Package Licenses (EULAs)
+
 * Add these Qt IFW script generation features:
 	* Directory creation on target (e.g. user data directories)		
 	* Resource installation outside of the target directory

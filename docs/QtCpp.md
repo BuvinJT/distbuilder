@@ -28,39 +28,59 @@ A module has been provided in distbuilder which is specifically dedicated to Qt 
 integration, i.e. `distbuilder.qt_cpp`.  The following functions / classes can be imported 
 from that: 
 
-	qmakeInit()     
-	installDeployTools( askPassPath=None )             
+	qmakeInit()
+	
+    qmakeArgParser()
+    qmakeArgs()
+
+	installDeployTools( askPassPath=None )
+	renameExe( args )
+	             
 	qmakeMasterConfigFactory( args=None ) 
 	qmakePackageConfigFactory( args=None ) 
-	qmakeArgs()
-	qmakeArgParser()      
-
+	
+	QtCppConfig( qtBinDirPath, exeCompiler, qmlScrDirPath=None )
+	
 Under most circumstances, you will only need to call `qmakeInit`.  If you wish to 
 customize that process or recieve additional specifications from an external source 
-(e.g. QMake), you may use the other functions to emulate what the vanilla `qmakeInit`
-does for you.   
+(e.g. QMake), you may use the other functions to emulate and custom define what the 
+vanilla `qmakeInit` does for you.   
 
 ### qmakeInit     
 
-This function provides the standard way to set up the mechanism to have QMake
+This function provides the standard way to set up an integration which allows QMake to
 drive the build process in distbuilder. The function receives parameters passed to the  
-script externally (normally as arguments from a QMake invocation), and returns a tuple of 
+script externally (normally via a system call from QMake), and returns a tuple of 
 [ConfigFactory](HighLevel.md#configfactory) objects. The first factory in the tuple is 
 intended for use as a "master" from which to build robust multi-package distributions.  
 The other, is to build the C++ program package.  
 
-Example:         
+Since you may wish to roll your own equivalent of this, here is the entire source for 
+this function:         
             
-	masterFactory, packageFactory = qmakeInit()
+	def qmakeInit():     
+	    args = qmakeArgs()
+	    installDeployTools( args.askPass )
+	    if args.exeName: renameExe( args )    
+	    return qmakeMasterConfigFactory( args ), qmakePackageConfigFactory( args )
             
-Note, to modify an "product" of the library, it is strongly advised that you modify the 
-factory used to produce it, when possible, rather than creating a object with it first 
+**Note:** to modify a "product" of the library, it is strongly advised that you modify the 
+factory used to produce it, when possible, rather than creating an object with it first 
 and then altering that.  Changing the factory attributes can prevent the need to also 
-regenerate nested components, which may not align as desired otherwise and could lead to 
+regenerate *nested* components, which may not align as desired otherwise and could lead to 
 subtle problems.  While this practice is applicable to distbuilder in general, it is 
 pointed out here because this standard Qt integration pattern directly involves the 
-creation of factories for the client to implement, as opposed to "configuration objects" 
-or "process objects".    
+creation of factories for the client to implement, as opposed to Qt C++ 
+"configuration objects" or "process objects".    
+
+### qmakeArgParser, qmakeArgs      
+
+If overwriting the standard `qmakeInit` function, you may call either of these 
+functions directly, in order to subsequently call `qmakeMasterConfigFactory` and/or 
+`qmakePackageConfigFactory`. `qmakeArgs()` directly collects the required parameters
+from the script arguments. In contrast, `qmakeArgParser` returns a raw 
+[ArgParse](https://docs.python.org/3/library/argparse.html) object, which may be 
+*customized* to collect additional / alternate script arguments.   
 
 ### installDeployTools
 
@@ -70,33 +90,40 @@ Qt C++ based programs.
 
 On Linux, you may wish to pass a value for the `askPassPath` argument.  That is 
 needed to invoke the function from a non-tty gui context.  The value should 
-define the path to a "ask password" utility e.g. "OpenSSH Askpass"   
+define the path to an "ask password" utility e.g. "OpenSSH Askpass"   
+
+### renameExe
+
+In some contexts, it is desirable to rename the exe which was built by QMake, when it
+comes time to package and distribute it. This is a primitive convenience function for that 
+purpose.  Using the `args` object, i.e. [qmakeArgs](#qmakeArgs), passed to it to determine 
+the old and new path, the orginal executable will simply be renamed (i.e. literally - on 
+the file system) and the `exePath` attribute of `args` will be revised to reflect the change. 
+This takes place within `qmakeInit`, allowing the rest of the subsequent configurations 
+and processes to remain oblivious to this initialization task.  
             
 ### qmakeMasterConfigFactory, qmakePackageConfigFactory
 
 You may bypass the `qmakeInit` function, and call either of these functions directly
-to generate the corresponding ConfigFactory.  Both of the functions take an optional argument called `args`, which is the product of a call to `parse_args()` from an 
+to generate the corresponding ConfigFactory.  Both of the functions take an optional 
+argument called `args`, which is the product of a call to `parse_args()` from an 
 [ArgParse](https://docs.python.org/3/library/argparse.html) object.  If that 
-is not provided, those values will be collected via the standard mechanism.  
-  
-### qmakeArgs, qmakeArgParser      
-
-If overwriting the standard `qmakeInit` function, you may call either of these 
-functions directly, in order to subsequently call `qmakeMasterConfigFactory` and/or 
-`qmakePackageConfigFactory`. `qmakeArgs()` directly collects the required parameters
-from the script arguments. In contrast, `qmakeArgParser` returns a raw 
-[ArgParse](https://docs.python.org/3/library/argparse.html) object, which may be 
-*customized* to collect additional / alternate script arguments.   
+is not provided, those values will be collected via the default command line mechanism.  
    
-### QtCppConfig:
+### QtCppConfig
 
-This class is used for Qt C++ integration.  It is employed by a 
-[ConfigFactory](HighLevel.md#configfactory) when producing a package for
-a Qt C++ program.  
+This class is used for low level Qt C++ packaging configurations. You will NOT likely 
+need to maniuplate this type of class directly, but it is included in this documentation 
+for the sake of completeness.
+
+This type of object is owned by a [ConfigFactory](HighLevel.md#configfactory), and 
+(as a product of that) by a [QtIfwPackage](ConfigClasses.md#qtifwpackage) object. 
+It is ultimately employed by the [buildInstaller](LowLevel.md#buildinstaller) function, 
+normally invoked via a [Process Class](HighLevel.md#process-classes).  
 
 Constructor:
 
-    QtCppConfig( qtBinDirPath, exeCompiler, qmlScrDirPath=None  )
+    QtCppConfig( qtBinDirPath, exeCompiler, qmlScrDirPath=None )
     
 Attributes:                    
 
@@ -377,7 +404,8 @@ rather than passing that in from an external source in this manner.
 ### exeName
 
 In some contexts, it is desirable to rename the exe which was built by QMake, when it
-comes time to package and distribute it.  This is convenience option for that purpose.
+comes time to package and distribute it.  This switch is employed by the simple 
+[renameExe](#renameExe) function via the the default `qmakeInit` mechanism.
 
 ### askPass
 	

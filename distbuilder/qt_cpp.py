@@ -9,7 +9,8 @@ QT_BIN_DIR_ENV_VAR = "QT_BIN_DIR"
  
 def qmakeInit():     
     args = qmakeArgs()
-    installDeployTools( args.askPass )    
+    installDeployTools( args.askPass )
+    if args.exeName: renameExe( args )    
     return qmakeMasterConfigFactory( args ), qmakePackageConfigFactory( args )
 
 def installDeployTools( askPassPath=None ):             
@@ -33,6 +34,12 @@ def installDeployTools( askPassPath=None ):
                 except Exception as e: printExc( e )
         util._restoreAskPass()        
 
+def renameExe( args=None ):
+    if args.exeName is None: return
+    parentDir, oldName = splitPath( args.exePath )
+    newName = normBinaryName( args.exeName, isGui=args.gui )
+    args.exePath = renameInDir( (oldName, newName), parentDir )
+         
 def qmakeMasterConfigFactory( args=None ): 
     if args is None: args = qmakeArgs()
     f = ConfigFactory()

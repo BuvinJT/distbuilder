@@ -359,7 +359,7 @@ Functions:
 
 Objects of this type define the a QtIFW `package.xml` 
 file which will be dynamically generated 
-when invoking the buildInstaller function. This file
+when invoking the [buildInstaller](LowLevel.md#buildinstaller) function. This file
 defines a component within the installer which maybe
 selected by the user to install. Most of the attributes 
 in these objects correspond directly to the name of tags 
