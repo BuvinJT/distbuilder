@@ -654,7 +654,7 @@ needed for your implementation.
 #### onQtIfwConfig( cfg )              
 
 After building a "package" from the Python source, QtIFW is employed to build
-installer for deploying that content.  Those tasks are driven by a master   
+an installer for deploying that content.  Those tasks are driven by a master   
 [QtIfwConfig](ConfigClasses.md#qtifwconfig) object.  A collection of related
 sub components are nested inside of that (e.g. [QtIfwPackage](ConfigClasses.md#qtifwpackage)).
 
@@ -733,7 +733,8 @@ Attributes & default values:
     onMakeSpec( key, spec )   
     onPyPackageFinalize( key )
     onPyPackagesBuilt( pkgs )
-    onQtIfwConfig( cfg )            
+    onQtIfwConfig( cfg )
+    onPackagesStaged( cfg, pkgs )            
     onFinalize()
                
 Use:
@@ -830,10 +831,19 @@ those defined in the `pyPkgConfigFactoryDict` argument passed to the constructor
 
 #### onPyPackagesBuilt( pkgs )
 
-After ALL of the Python packages have been built, this function is invoked
+After all of the Python packages have been built (if applicable), this function is invoked
 prior to running the installer building process.  The `pkgs` parameter this 
 receives is the list of corresponding [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
-objects which have been generated.
+objects, including those which have been generated from Python source.
+
+#### onPackagesStaged( cfg, pkgs )
+
+After ALL of the packages have been fully staged, just prior to running the QtIFW process,
+this function is invoked. The `cfg` parameter this receives is the master   
+[QtIfwConfig](ConfigClasses.md#qtifwconfig) object used to drive the installer build.   
+The `pkgs` parameter this receives is the list of  
+[QtIfwPackage](ConfigClasses.md#qtifwpackage) objects. Note, you could also access those
+via `cfg.packages`.  The `pkgs` parameter is provided for convenience . 
 
 This function maybe used to manipulate the packages before the final send off
 to QtIFW.  See [QtIfwPackage list manipulation](LowLevel.md#qtifwpackage-list-manipulation) 

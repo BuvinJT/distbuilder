@@ -1,4 +1,5 @@
-from distbuilder import RobustInstallerProcess, ConfigFactory, mergeQtIfwPackages
+from distbuilder import RobustInstallerProcess, ConfigFactory, \
+    mergeQtIfwPackages, nestQtIfwPackage  
   
 f = masterConfigFactory = ConfigFactory()
 f.productName      = "Hello Merge Example"
@@ -41,14 +42,21 @@ class BuildProcess( RobustInstallerProcess ):
         if key==TK_CONFIG_KEY:    
             cfg.external_modules.extend( [ 'tkinter', 'tkinter.ttk' ] )
             
-    def onPyPackagesBuilt( self, pkgs ):
-        comboPkg = mergeQtIfwPackages( pkgs, CLI_CONFIG_KEY, TK_CONFIG_KEY )
-        comboPkg.pkgXml.DisplayName = "Hello World Examples"
-        comboPkg.pkgXml.Description = "Tk and CLI Examples"
-    
-    def onQtIfwConfig( self, cfg ):
-        cfg.configXml.RunProgramDescription = "Start Hello World Tk Example"
-            
+    def onPackagesStaged( self, cfg, pkgs ):
+        #comboPkg = mergeQtIfwPackages( pkgs, CLI_CONFIG_KEY, TK_CONFIG_KEY )
+        comboPkg = nestQtIfwPackage( pkgs, CLI_CONFIG_KEY, TK_CONFIG_KEY )
+
+        configXml = cfg.configXml
+        configXml.RunProgramDescription = "Start Hello World Tk Example"
+        configXml.debug()
+        configXml.write()
+        
+        pkgXml = comboPkg.pkgXml
+        pkgXml.DisplayName = "Hello World Examples"
+        pkgXml.Description = "Tk and CLI Examples"
+        pkgXml.debug()
+        pkgXml.write()
+                    
 p = BuildProcess( masterConfigFactory, pyPkgConfigFactoryDict=pkgFactories, 
                   isDesktopTarget=True )
 p.isTestingInstall = True

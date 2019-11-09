@@ -353,7 +353,12 @@ Attributes:
  
 Functions:      
 
+	dirPath()
     contentDirPath() 
+
+Static Functions:   
+ 
+    topDirPath()
  
 ## QtIfwPackageXml
 
@@ -459,13 +464,15 @@ Constructor:
 
 	QtIfwShortcut( productName=QT_IFW_PRODUCT_NAME, 
                    command=None, args=[], 
-                   exeName=None, exeVersion="0.0.0.0",
+                   exeDir=QT_IFW_TARGET_DIR, exeName=None, 
+                   exeVersion="0.0.0.0",
                    isGui=True, pngIconResPath=None )
                   
 Attributes & default values:
       
 	productName       = "@ProductName@" <QtIfw Built-in Variable>
-	command           = None
+	command           = None	
+    exeDir            = "@TargetDir@" <QtIfw Built-in Variable>
     exeName           = None
     args           	  = None  
 

@@ -96,7 +96,7 @@ class QtIfwConfig:
     def __str__( self ) :
         configSpec   = '-c "%s"' % (self.configXml.path() if self.configXml 
                                     else QtIfwConfigXml().path(),)
-        packageDirSpec = ' -p "%s"' % (QtIfwPackage.dirPath(),)        
+        packageDirSpec = ' -p "%s"' % (QtIfwPackage.topDirPath(),)        
         verboseSpec  = '-v' if self.isDebugMode else ''                
         tokens = (configSpec, packageDirSpec, verboseSpec, self.otherQtIfwArgs)
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )         
@@ -290,10 +290,11 @@ class QtIfwPackage:
     class Type: DATA, PY_INSTALLER, QT_CPP = range(3)  
     
     __PACKAGES_PATH_TMPLT = "%s/packages"
-    __CONTENT_PATH_TMPLT = "%s/packages/%s/data" 
+    __DIR_PATH_TMPLT      = "%s/packages/%s"
+    __CONTENT_PATH_TMPLT  = "%s/packages/%s/data" 
 
     @staticmethod
-    def dirPath() :  
+    def topDirPath() :  
         return joinPath( BUILD_SETUP_DIR_PATH,
             normpath( QtIfwPackage.__PACKAGES_PATH_TMPLT 
                       % (INSTALLER_DIR_PATH,) ) )
@@ -320,6 +321,11 @@ class QtIfwPackage:
         self.isGui       = False
         self.exeWrapper  = None # class QtIfwExeWrapper
         self.qtCppConfig = None
+    
+    def dirPath( self ) :
+        return joinPath( BUILD_SETUP_DIR_PATH,
+            normpath( QtIfwPackage.__DIR_PATH_TMPLT 
+                      % (INSTALLER_DIR_PATH, self.name,) ) )
            
     def contentDirPath( self ) :
         return joinPath( BUILD_SETUP_DIR_PATH,
@@ -1393,25 +1399,26 @@ class QtIfwPackageScript( _QtIfwScript ):
     @staticmethod
     def __winAddShortcut( location, exeName, command=None, args=[], 
                           windowStyle=None,
-                          label=QT_IFW_PRODUCT_NAME, 
-                          directory=QT_IFW_TARGET_DIR, 
+                          label=QT_IFW_PRODUCT_NAME,
+                          exeDir=QT_IFW_TARGET_DIR,                          
+                          wrkDir=QT_IFW_TARGET_DIR,                     
                           iconId=0 ):
         if command is None :
-            command = "%s/%s" % (directory, normBinaryName( exeName ))
+            command = "%s/%s" % (exeDir, normBinaryName( exeName ))
         if args and len(args) > 0 :            
             args = [ a.replace('"','\\"').replace( 
                      '@TargetDir@', '" + ' + _QtIfwScript.targetDir() + ' + "') 
                     for a in args ]
             args = '\"%s\",' % (" ".join(args),)     
         else : args=""           
-        iconPath = "%s/%s" % (directory, normBinaryName( exeName ) )   
+        iconPath = "%s/%s" % (exeDir, normBinaryName( exeName ) )   
         locDir = QtIfwPackageScript.__WIN_SHORTCUT_LOCATIONS[location]             
         shortcutPath = "%s/%s.lnk" % (locDir, label)        
         s = QtIfwPackageScript.__WIN_ADD_SHORTCUT_TMPLT
         s = s.replace( "[CMD]", command )
         s = s.replace( "[ARGS]", args )
         s = s.replace( "[SHORTCUT_PATH]", shortcutPath )
-        s = s.replace( "[WORKING_DIR]", directory )
+        s = s.replace( "[WORKING_DIR]", wrkDir )
         s = s.replace( "[ICON_PATH]", iconPath )
         s = s.replace( "[ICON_ID]", str(iconId) )
         if windowStyle:            
@@ -1425,10 +1432,10 @@ class QtIfwPackageScript( _QtIfwScript ):
     @staticmethod
     def __macAddShortcut( location, exeName, isGui, command=None, 
                           label=QT_IFW_PRODUCT_NAME, 
-                          directory=QT_IFW_TARGET_DIR ):    
+                          exeDir=QT_IFW_TARGET_DIR ):    
         if command : linkToPath = command 
         else :
-            linkToPath = "%s/%s" % (directory, 
+            linkToPath = "%s/%s" % (exeDir, 
                                     normBinaryName( exeName, isGui=isGui ))
         locDir = QtIfwPackageScript.__MAC_SHORTCUT_LOCATIONS[location]             
         shortcutPath = "%s/%s" % (locDir, label)        
@@ -1441,11 +1448,12 @@ class QtIfwPackageScript( _QtIfwScript ):
     def __linuxAddDesktopEntry( location, exeName, version,
                                 command=None, args=[], 
                                 label=QT_IFW_PRODUCT_NAME, 
-                                directory=QT_IFW_TARGET_DIR, 
+                                exeDir=QT_IFW_TARGET_DIR,                          
+                                wrkDir=QT_IFW_TARGET_DIR, 
                                 pngPath=None,
                                 isGui=True ):        
         if command is None :
-            command = '"{0}/{1}"'.format( directory, normBinaryName( exeName ))
+            command = '"{0}/{1}"'.format( exeDir, normBinaryName( exeName ))
         if args and len(args) > 0 : command += " " + ' '.join(args)            
         command = command.replace('"','\\"').replace( 
             QT_IFW_ASKPASS_PLACEHOLDER, 
@@ -1460,7 +1468,7 @@ class QtIfwPackageScript( _QtIfwScript ):
         s = s.replace( "[PNG_PATH]", "" if pngPath is None else 
                        joinPathQtIfw( QT_IFW_TARGET_DIR, pngPath ) )
         s = s.replace( "[IS_TERMINAL]", "false" if isGui else "true" )
-        s = s.replace( "[WORKING_DIR]", directory )        
+        s = s.replace( "[WORKING_DIR]", wrkDir )        
         return s 
     
     def __init__( self, pkgName,
@@ -1580,6 +1588,8 @@ class QtIfwPackageScript( _QtIfwScript ):
                             STARTMENU_WIN_SHORTCUT, shortcut.exeName,
                             command=shortcut.command,
                             args=shortcut.args,
+                            exeDir=shortcut.exeDir,
+                            wrkDir=shortcut.exeDir, # forced via command                            
                             windowStyle=shortcut.windowStyle,
                             label=shortcut.productName )              
                 if shortcut.exeName and shortcut.isDesktopShortcut:
@@ -1587,6 +1597,8 @@ class QtIfwPackageScript( _QtIfwScript ):
                             DESKTOP_WIN_SHORTCUT, shortcut.exeName,
                             command=shortcut.command,
                             args=shortcut.args,
+                            exeDir=shortcut.exeDir,
+                            wrkDir=shortcut.exeDir, # forced via command                            
                             windowStyle=shortcut.windowStyle,
                             label=shortcut.productName ) 
                 if winOps!="" :    
@@ -1601,12 +1613,14 @@ class QtIfwPackageScript( _QtIfwScript ):
                             APPS_MAC_SHORTCUT, 
                             shortcut.exeName, shortcut.isGui, 
                             command=shortcut.command,
+                            exeDir=shortcut.exeDir,
                             label=shortcut.productName )              
                 if shortcut.exeName and shortcut.isDesktopShortcut:
                     macOps += QtIfwPackageScript.__macAddShortcut(
                             DESKTOP_MAC_SHORTCUT, 
                             shortcut.exeName, shortcut.isGui, 
                             command=shortcut.command,
+                            exeDir=shortcut.exeDir,
                             label=shortcut.productName )             
                 if macOps!="" :    
                     self.componentCreateOperationsBody += (             
@@ -1621,6 +1635,8 @@ class QtIfwPackageScript( _QtIfwScript ):
                             command=shortcut.command,
                             args=shortcut.args,
                             label=shortcut.productName,
+                            exeDir=shortcut.exeDir,
+                            wrkDir=shortcut.exeDir, # forced via command
                             pngPath=shortcut.pngIconResPath,
                             isGui=shortcut.isGui )                
                 if shortcut.exeName and shortcut.isDesktopShortcut:
@@ -1630,6 +1646,8 @@ class QtIfwPackageScript( _QtIfwScript ):
                             command=shortcut.command,
                             args=shortcut.args,
                             label=shortcut.productName,
+                            exeDir=shortcut.exeDir,
+                            wrkDir=shortcut.exeDir, # forced via command                            
                             pngPath=shortcut.pngIconResPath,
                             isGui=shortcut.isGui )                               
                 if x11Ops!="" :    
@@ -1663,11 +1681,13 @@ class QtIfwPackageScript( _QtIfwScript ):
 class QtIfwShortcut:
     def __init__( self, productName=QT_IFW_PRODUCT_NAME, 
                   command=None, args=[], 
-                  exeName=None, exeVersion="0.0.0.0",
+                  exeDir=QT_IFW_TARGET_DIR, exeName=None, 
+                  exeVersion="0.0.0.0",
                   isGui=True, pngIconResPath=None ) :
         self.productName    = productName
         self.command        = command   
-        self.args           = args      
+        self.args           = args
+        self.exeDir         = exeDir       
         self.exeName        = exeName           
         self.isGui          = isGui
         
@@ -1934,6 +1954,8 @@ def removeQtIfwPackage( pkgs, pkgId ):
     for i, pkg in enumerate( pkgs ):
         if pkg.pkgId==pkgId: 
             pkgIndex=i
+            if isDir( pkg.dirPath() ):
+                removeDir( pkg.dirPath() )
             break 
     if pkgIndex : del pkgs[ pkgIndex ]               
 
@@ -1942,19 +1964,59 @@ def mergeQtIfwPackages( pkgs, srcId, destId ):
     destPkg = findQtIfwPackage( pkgs, destId )
     if not srcPkg or not destPkg:
         raise Exception( "Cannot merge QtIfw packages. " +
-                         "Invalid id(s) provided." ) 
-    mergeDirs( srcPkg.srcDirPath, destPkg.srcDirPath )
-    destPkg.pkgScript.shortcuts.extend( 
-        srcPkg.pkgScript.shortcuts )
-    removeQtIfwPackage( pkgs, srcId )        
+                         "Invalid id(s) provided." )     
+    mergeDirs( srcPkg.contentDirPath(), destPkg.contentDirPath() )    
+    __mergePackageObjects( srcPkg, destPkg )    
+    removeQtIfwPackage( pkgs, srcId )    
     return destPkg
-    
+
+def nestQtIfwPackage( pkgs, childId, parentId, subDir=None ):                
+    childPkg  = findQtIfwPackage( pkgs, childId )
+    parentPkg = findQtIfwPackage( pkgs, parentId )
+    if not childPkg or not parentPkg:
+        raise Exception( "Cannot nest QtIfw package. " +
+                         "Invalid id(s) provided." ) 
+    if subDir is None:        
+        def prefix( name ): return ".".join( name.split(".")[:-1] ) + "." 
+        def suffix( name ): return name.split(".")[-1]        
+        subDir = ( suffix( childPkg.name ) 
+                   if prefix( childPkg.name ) == prefix( parentPkg.name )
+                   else childPkg.name )     
+    childHead, childTail = splitPath( childPkg.contentDirPath() )
+    srcDir = renameInDir( (childTail, subDir), childHead )
+    destDir = parentPkg.contentDirPath()    
+    copyToDir( srcDir, destDir )
+    __mergePackageObjects( childPkg, parentPkg )         
+    removeQtIfwPackage( pkgs, childId )            
+    return parentPkg
+
+def __mergePackageObjects( srcPkg, destPkg, subDir=None ):
+    try: 
+        srcShortcuts = srcPkg.pkgScript.shortcuts
+        if subDir:
+            for s in srcShortcuts: 
+                s.exeDir = joinPathQtIfw( QT_IFW_TARGET_DIR, subDir )              
+    except: srcShortcuts = []        
+    destScript = destPkg.pkgScript
+    if destScript:    
+        destScript.shortcuts.extend( srcShortcuts )
+        print( "Regenerating installer package script: %s..." 
+                % (destScript.fileName) )
+        destScript.debug()
+        destScript.write()    
+        
 # -----------------------------------------------------------------------------            
 def buildInstaller( qtIfwConfig, isSilent ):
     ''' returns setupExePath '''
+    _stageInstallerPackages( qtIfwConfig )
+    return _buildInstaller( qtIfwConfig, isSilent )
+
+def _stageInstallerPackages( qtIfwConfig ):
     __validateConfig( qtIfwConfig )        
     __initBuild( qtIfwConfig )    
     __addInstallerResources( qtIfwConfig )     
+
+def _buildInstaller( qtIfwConfig, isSilent ):
     setupExePath = __build( qtIfwConfig )    
     __postBuild( qtIfwConfig )
     if isSilent : setupExePath = __buildSilentWrapper( qtIfwConfig )

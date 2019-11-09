@@ -28,6 +28,7 @@ from distbuilder.qt_installer import \
     , findQtIfwPackage \
     , removeQtIfwPackage \
     , mergeQtIfwPackages \
+    , nestQtIfwPackage \
     , QT_IFW_VERBOSE_SWITCH
 
 from distbuilder.pip_installer import \

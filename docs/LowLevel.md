@@ -490,11 +490,36 @@ within the *pkgs* argument with the id supplied by *pkgId*.
 	
 Merges the [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
 objects within the *pkgs* argument with the ids supplied by 
-*srcId* and *destId*.  "Merging" entails a recursive 
-directory merge of the source into the target via [mergeDirs](#mergedirs)
-as well as combining the [QtIfwShortcut](ConfigClasses.md#qtifwshortcut)
+*srcId* and *destId*.  
+"Merging" entails a recursive *content* merge of the source into the target 
+via [mergeDirs](#mergedirs) as well as combining the 
+[QtIfwShortcut](ConfigClasses.md#qtifwshortcut)
 list nested inside the [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript)
-objects.	
+objects, followed by script regeneration to reflect that. Note that all other
+attributes of the source package are lost!  Any complex customizations which need 
+to be made must be applied post merge.
+
+This function ultimately consolidates the package items in the list and returns
+the destination object.	
+
+    nestQtIfwPackage( pkgs, childId, parentId, subDir=None )
+    
+"Nests" the "child" [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
+object within the "parent", using the *pkgs* argument as the collection by 
+which to resolve the ids supplied.  "Nesting" entails moving the child *content* 
+into a sub directory of the parentas well as combining the 
+[QtIfwShortcut](ConfigClasses.md#qtifwshortcut)
+list nested inside the [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript)
+objects, followed by script regeneration to reflect that. Note that all other
+attributes of the source package are lost!  Any complex customizations which need 
+to be made must be applied post merge.
+
+If a `subDir` value is provided, that will be used to name the nested directory.
+If ommited, the child's package name will be used (or a truncated version of that 
+if the child and parent share a common package name "prefix").
+
+This function ultimately consolidates the package items in the list and returns
+the destination object.	
 
 ## Code Obfuscation
 

@@ -20,7 +20,8 @@ from distbuilder.opy_library import \
     , OpyConfigExt as OpyConfig
     
 from distbuilder.qt_installer import \
-      buildInstaller \
+      _stageInstallerPackages \
+    , _buildInstaller \
     , QtIfwConfig \
     , QtIfwConfigXml \
     , QtIfwControlScript \
@@ -454,9 +455,13 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
         self.onPyPackagesBuilt( self.ifwPackages )
             
         ifwConfig = self.configFactory.qtIfwConfig( packages=self.ifwPackages )
-        self.onQtIfwConfig( ifwConfig )                
-        self.setupPath = buildInstaller( ifwConfig, 
-                                         self.configFactory.isSilentSetup )
+        self.onQtIfwConfig( ifwConfig )     
+        
+        _stageInstallerPackages( ifwConfig )
+        self.onPackagesStaged( ifwConfig, ifwConfig.packages )
+                   
+        self.setupPath = _buildInstaller( 
+            ifwConfig, self.configFactory.isSilentSetup )
         
         if self.isDesktopTarget :
             self.setupPath = moveToDesktop( self.setupPath )
@@ -474,10 +479,11 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
         
     # Override these to further customize the build process once the 
     # ConfigFactory has produced the initial config object
-    def onInitialize( self ):             """VIRTUAL"""
-    def onPyPackagesBuilt( self, pkgs ):  """VIRTUAL"""
-    def onQtIfwConfig( self, cfg ):       """VIRTUAL"""                
-    def onFinalize( self ):               """VIRTUAL"""
+    def onInitialize( self ):                """VIRTUAL"""
+    def onPyPackagesBuilt( self, pkgs ):     """VIRTUAL"""
+    def onQtIfwConfig( self, cfg ):          """VIRTUAL"""
+    def onPackagesStaged( self, cfg, pkgs ): """VIRTUAL"""     
+    def onFinalize( self ):                  """VIRTUAL"""
     
 # -----------------------------------------------------------------------------                        
 class PyToBinInstallerProcess( _BuildInstallerProcess ):
@@ -564,5 +570,6 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
     def onMakeSpec( self, key, spec ):            """VIRTUAL"""
     def onPyPackageFinalize( self, key ):         """VIRTUAL"""           
     def onPyPackagesBuilt( self, pkgs ):          """VIRTUAL"""
-    def onQtIfwConfig( self, cfg ):               """VIRTUAL"""                                                                
+    def onQtIfwConfig( self, cfg ):               """VIRTUAL"""     
+    def onPackagesStaged( self, cfg, pkgs ):      """VIRTUAL"""                                                     
     def onFinalize( self ):                       """VIRTUAL"""
