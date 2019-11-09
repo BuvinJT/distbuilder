@@ -143,15 +143,20 @@ for instance, only needs two specific imports, and so it starts out
 ## Getting Started
 
 The easiest way for most people to learn how to use distbuilder is to view
-an example.  All of the examples discussed here are included in the
+some examples.  All of those discussed here are included in the
 "source distribution" of the library. The [PyPi downloads](https://pypi.org/project/distbuilder/#files) 
 page for this project is arguably the fastest route to acquire the examples.
 See [From source installation](#from-source-installation) for other means
 of achieving this.
 
+It is not practical to provide, and describe, examples of all the 
+library's features. (And no reader would likely wish invest the time required 
+for such an envadevar!) If you step through each of these, however, you
+will come away with a solid base from which start employing this tool.  
+
 ## Hello World Example
 
-The Hello World Example is a demonstration of using the 
+The Hello World Example is a simple demonstration of using the 
 [PyToBinPackageProcess](HighLevel.md#pytobinpackageprocess) class. 
 This is one of the most straightforward, and typical use cases for the library.  
 
@@ -347,7 +352,7 @@ This is another demonstration of using the
 Similar to the Hello Packages Example, Hello Merge demonstrates 
 how you can "merge" multiple "packages" into a *single package* within
 an installer.  The content of the two programs, which worked independently,
-become one component which may *NOT* be installed selectively by the user. 
+will become one component which may *NOT* be installed selectively by the user. 
 
 This example requires that both of the first examples 
 (Hello World & Hello World Tk) be present in the testing environment 
@@ -359,6 +364,20 @@ You may download/copy the example file directly from GitHub
 (into a `hello_merge` directory):   
 
 Build script: [build.py](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_merge/build.py)
+
+The key points to this example are to demo the implementation of the  
+[onPackagesStaged](HighLevel.md#onPackagesStaged) virtual function of
+[RobustInstallerProcess](HighLevel.md#robust-installer-process).
+Within that, [QtIfwPackage list manipulation](LowLevel.md#qtifwpackage-list-manipulation) 
+is shown (by default) via [mergeQtIfwPackages](LowLevel.md#mergeQtIfwPackages).
+If you comment that line out, and uncomment the call to 
+[nestQtIfwPackage](LowLevel.md#nestQtIfwPackage) below it,
+you may test the results of these alternate ways to combine packages.
+
+The demo goes on to show low-level manipulations, and regenerations of the files
+produced by, [QtIfwConfigXml](ConfigClasses.md#qtifwpackage) and 
+[QtIfwPackageXml](ConfigClasses.md#qtifwpackage) objects to give you further
+insight into the design patterns and functionality of the library. 
 
 ## Learn More  
 

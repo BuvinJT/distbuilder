@@ -43,17 +43,23 @@ class BuildProcess( RobustInstallerProcess ):
             cfg.external_modules.extend( [ 'tkinter', 'tkinter.ttk' ] )
             
     def onPackagesStaged( self, cfg, pkgs ):
-        #comboPkg = mergeQtIfwPackages( pkgs, CLI_CONFIG_KEY, TK_CONFIG_KEY )
-        comboPkg = nestQtIfwPackage( pkgs, CLI_CONFIG_KEY, TK_CONFIG_KEY )
+        # Swap these commented out functions to test alternate merge types
+        comboPkg = mergeQtIfwPackages( pkgs, CLI_CONFIG_KEY, TK_CONFIG_KEY )
+        #comboPkg = nestQtIfwPackage( pkgs, CLI_CONFIG_KEY, TK_CONFIG_KEY )
 
+        # Note: it would be more efficient to set these to the desired values
+        # prior to the package merge, but this illustrates how you can revise 
+        # these configurations manually at this point of the build process.  
         configXml = cfg.configXml
         configXml.RunProgramDescription = "Start Hello World Tk Example"
+        print( "Regenerating {0}...".format( configXml.path() ) )
         configXml.debug()
         configXml.write()
         
         pkgXml = comboPkg.pkgXml
         pkgXml.DisplayName = "Hello World Examples"
         pkgXml.Description = "Tk and CLI Examples"
+        print( "Regenerating {0}...".format( pkgXml.path() ) )
         pkgXml.debug()
         pkgXml.write()
                     
