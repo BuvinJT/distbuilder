@@ -1738,7 +1738,6 @@ class QtIfwExeWrapper:
                 QT_IFW_ASKPASS_PLACEHOLDER + '"; sudo ' ) 
             __TMP_GUI_SUDO = ( 'export ' + util._ASKPASS_ENV_VAR + '=' +
                 '$(cat "' + QT_IFW_ASKPASS_TEMP_FILE_PATH + '"); ' +
-                'rm "' + QT_IFW_ASKPASS_TEMP_FILE_PATH + '"; ' +
                 'sudo ' )
     
     __CD_PREFIX_CMD_TMPLT = 'cd "%s" && ' 
