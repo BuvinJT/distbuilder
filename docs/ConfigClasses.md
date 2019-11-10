@@ -322,6 +322,7 @@ for extended configuration details.
 Constructor:  
 
     QtIfwPackage( pkgId=None, pkgType=None, name=None, 
+    			  subDirName=None,
                   srcDirPath=None, srcExePath=None,    
                   resBasePath=None, isTempSrc=False,
                   pkgXml=None, pkgScript=None ) 
@@ -330,30 +331,33 @@ Attributes:
 
 	<internal id / type>
 	pkgId           = None       
-	pkgType	       = None
+	pkgType	        = None
 	
 	<QtIFW definition>
 	name            = None
 	pkgXml          = None
 	pkgScript       = None
 	        
-	<content>        
-	srcDirPath    = None
+	<source content>        
+	srcDirPath    = None <package ENTIRE source directory>
 	srcExePath    = None
 	resBasePath   = None
 	distResources = None	
 	isTempSrc     = False
 	                     
-	<extended content detail>
+	<destination content>
+	subDirName  = None
 	exeName     = None   
-	isGui       = False
 	exeWrapper  = None
-
+	
+	<other configuration details>
+	isGui       = False
 	qtCppConfig = None
  
 Functions:      
 
 	dirPath()
+	contentTopDirPath()
     contentDirPath() 
 
 Static Functions:   

@@ -49,7 +49,7 @@ class BuildProcess( RobustInstallerProcess ):
 
         # Note: it would be more efficient to set these to the desired values
         # prior to the package merge, but this illustrates how you can revise 
-        # these configurations manually at this point of the build process.  
+        # these configurations manually at this point in the build process.  
         configXml = cfg.configXml
         configXml.RunProgramDescription = "Start Hello World Tk Example"
         print( "Regenerating {0}...".format( configXml.path() ) )

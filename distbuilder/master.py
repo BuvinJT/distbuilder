@@ -22,6 +22,7 @@ from distbuilder.opy_library import \
 from distbuilder.qt_installer import \
       _stageInstallerPackages \
     , _buildInstaller \
+    , joinPathQtIfw \
     , QtIfwConfig \
     , QtIfwConfigXml \
     , QtIfwControlScript \
@@ -33,6 +34,7 @@ from distbuilder.qt_installer import \
     , DEFAULT_SETUP_NAME \
     , DEFAULT_QT_IFW_SCRIPT_NAME \
     , QT_IFW_VERBOSE_SWITCH \
+    , QT_IFW_TARGET_DIR \
     , _SILENT_FORCED_ARGS \
     , _LOUD_FORCED_ARGS
 
@@ -85,6 +87,7 @@ class ConfigFactory:
         self.ifwPkgScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
         
         self.pkgType       = None
+        self.pkgSubDirName = None
         self.pkgSrcDirPath = None
         self.pkgSrcExePath = None
         self.pkgExeWrapper = None 
@@ -161,6 +164,7 @@ class ConfigFactory:
                 pkgId=self.__ifwPkgId(),
                 pkgType=pkgType, 
                 name=self.__ifwPkgName(), 
+                subDirName=self.pkgSubDirName,
                 srcDirPath=self.__pkgSrcDirPath(),
                 srcExePath=self.pkgSrcExePath,            
                 resBasePath=self.sourceDir,      
@@ -206,7 +210,10 @@ class ConfigFactory:
                          if self.pkgExeWrapper else [] )
         shortcutWinStyle = ( self.pkgExeWrapper._shortcutWinStyle
                              if self.pkgExeWrapper else None )                        
-        
+        shortcutExeDir = ( 
+            joinPathQtIfw( QT_IFW_TARGET_DIR, self.pkgSubDirName )
+            if self.pkgSubDirName else QT_IFW_TARGET_DIR )
+                
         if IS_LINUX:
             # TODO: fix this to handle relative source paths
             #       and nested destination paths
@@ -235,6 +242,7 @@ class ConfigFactory:
                         productName=self.productName,
                         command=shortcutCmd,
                         args=shortcutArgs,
+                        exeDir=shortcutExeDir,
                         exeName=self.__pkgExeName(),                            
                         exeVersion=self.__versionStr(),
                         isGui=self.isGui,                                  

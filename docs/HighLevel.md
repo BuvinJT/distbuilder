@@ -64,13 +64,14 @@ Attributes & default values:
     ifwPkgId         = None
     ifwPkgName       = None
     ifwPkgNamePrefix = "com"        
-       
+	       
     ifwPkgScript     = None           
     ifwPkgScriptText = None
     ifwPkgScriptPath = None        
     ifwPkgScriptName = "installscript.qs"
 
     pkgType       = None    
+	pkgSubDirName = None
     pkgSrcDirPath = None
     pkgSrcExePath = None
     pkgExeWrapper = None
@@ -347,6 +348,18 @@ provided, and no `binaryName`, the `DATA` type is assumed.  Other options are al
 	QtIfwPackage.Type.DATA
 	QtIfwPackage.Type.PY_INSTALLER
 	QtIfwPackage.Type.QT_CPP
+
+#### pkgSubDirName
+
+If a `pkgSubDirName` is specificied, this places the package inside of sub directory, 
+rather than having the contents there of installed directly to the top level directory
+of the target.
+
+By default, this attribute is `None`, which is ideal for single package products. 
+When multiple packages are present, however, the content of each will be merged into 
+one directory during installation (if the end user selects more than one package).  
+In the event "collisions" could occur (at installation or run time) due to this, 
+the suggested resolution is to employ this option, thereby encapsulating the package(s). 
 
 #### pkgSrcDirPath, pkgSrcExePath
 

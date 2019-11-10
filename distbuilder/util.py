@@ -300,7 +300,8 @@ def __mergeDirs( srcDirPath, destDirPath, isRecursive=True ):
     over writing the target contents where applicable.
     If performed recursively, the destination contents contained 
     within merged sub directory are all preserved. Otherwise,
-    the source sub directories replace the target sub directories. 
+    the source sub directories replace the target sub directories 
+    in their entirety. 
     """    
     srcDirPath  = absPath( srcDirPath )
     destDirPath = absPath( destDirPath )    
@@ -378,6 +379,7 @@ def __moveToDir( srcPath, destDirPath ):
     destPath = joinPath( destDirPath, srcTail )
     if srcPath == destPath: return
     __removeFromDir( srcTail, destDirPath )
+    if not isDir( destDirPath ): makeDir( destDirPath )
     move( srcPath, destDirPath )    
     print( 'Moved "%s" to "%s"' % (srcPath, destPath) )
     return destPath

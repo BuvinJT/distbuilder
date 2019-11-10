@@ -289,9 +289,10 @@ class QtIfwPackage:
 
     class Type: DATA, PY_INSTALLER, QT_CPP = range(3)  
     
-    __PACKAGES_PATH_TMPLT = "%s/packages"
-    __DIR_PATH_TMPLT      = "%s/packages/%s"
-    __CONTENT_PATH_TMPLT  = "%s/packages/%s/data" 
+    __PACKAGES_PATH_TMPLT       = "%s/packages"
+    __DIR_PATH_TMPLT            = "%s/packages/%s"
+    __CONTENT_PATH_TMPLT        = "%s/packages/%s/data" 
+    __CONTENT_SUBDIR_PATH_TMPLT = "%s/packages/%s/data/%s"
 
     @staticmethod
     def topDirPath() :  
@@ -299,7 +300,8 @@ class QtIfwPackage:
             normpath( QtIfwPackage.__PACKAGES_PATH_TMPLT 
                       % (INSTALLER_DIR_PATH,) ) )
     
-    def __init__( self, pkgId=None, pkgType=None, name=None, 
+    def __init__( self, pkgId=None, pkgType=None, name=None,
+                  subDirName=None,  
                   srcDirPath=None, srcExePath=None, 
                   resBasePath=None, isTempSrc=False, 
                   pkgXml=None, pkgScript=None ) :
@@ -317,6 +319,7 @@ class QtIfwPackage:
         self.distResources = None        
         self.isTempSrc     = isTempSrc                     
         # extended content detail        
+        self.subDirName  = subDirName 
         self.exeName     = None           
         self.isGui       = False
         self.exeWrapper  = None # class QtIfwExeWrapper
@@ -326,11 +329,21 @@ class QtIfwPackage:
         return joinPath( BUILD_SETUP_DIR_PATH,
             normpath( QtIfwPackage.__DIR_PATH_TMPLT 
                       % (INSTALLER_DIR_PATH, self.name,) ) )
-           
+
+    def contentTopDirPath( self ) :
+        return joinPath( BUILD_SETUP_DIR_PATH, 
+             normpath( QtIfwPackage.__CONTENT_PATH_TMPLT 
+                       % (INSTALLER_DIR_PATH, self.name,) ) )
+
     def contentDirPath( self ) :
-        return joinPath( BUILD_SETUP_DIR_PATH,
-            normpath( QtIfwPackage.__CONTENT_PATH_TMPLT 
-                      % (INSTALLER_DIR_PATH, self.name,) ) )
+        subDir = normpath(
+            QtIfwPackage.__CONTENT_SUBDIR_PATH_TMPLT 
+                % (INSTALLER_DIR_PATH, self.name, self.subDirName)
+            if self.subDirName else
+            QtIfwPackage.__CONTENT_PATH_TMPLT 
+                % (INSTALLER_DIR_PATH, self.name,)
+        ) 
+        return joinPath( BUILD_SETUP_DIR_PATH, subDir )
     
     def __str__(self): return self.dirPath()
     
@@ -1580,7 +1593,7 @@ class QtIfwPackageScript( _QtIfwScript ):
             self.componentCreateOperationsBody = None
         
     def __addShortcuts( self ):
-        for shortcut in self.shortcuts :                
+        for shortcut in self.shortcuts :   
             if IS_WINDOWS:
                 winOps=""
                 if shortcut.exeName and shortcut.isAppShortcut :
@@ -1959,49 +1972,51 @@ def removeQtIfwPackage( pkgs, pkgId ):
             break 
     if pkgIndex : del pkgs[ pkgIndex ]               
 
-def mergeQtIfwPackages( pkgs, srcId, destId ):                
+def mergeQtIfwPackages( pkgs, srcId, destId ):            
     srcPkg  = findQtIfwPackage( pkgs, srcId )
     destPkg = findQtIfwPackage( pkgs, destId )
     if not srcPkg or not destPkg:
         raise Exception( "Cannot merge QtIfw packages. " +
                          "Invalid id(s) provided." )     
-    mergeDirs( srcPkg.contentDirPath(), destPkg.contentDirPath() )    
+    mergeDirs( srcPkg.contentTopDirPath(), destPkg.contentDirPath() )    
     __mergePackageObjects( srcPkg, destPkg )    
     removeQtIfwPackage( pkgs, srcId )    
     return destPkg
 
-def nestQtIfwPackage( pkgs, childId, parentId, subDir=None ):                
+def nestQtIfwPackage( pkgs, childId, parentId, subDirName=None ):                
     childPkg  = findQtIfwPackage( pkgs, childId )
     parentPkg = findQtIfwPackage( pkgs, parentId )
     if not childPkg or not parentPkg:
         raise Exception( "Cannot nest QtIfw package. " +
                          "Invalid id(s) provided." ) 
-    if subDir is None:        
+    if subDirName is None:        
         def prefix( name ): return ".".join( name.split(".")[:-1] ) + "." 
         def suffix( name ): return name.split(".")[-1]        
-        subDir = ( suffix( childPkg.name ) 
+        subDirName = ( suffix( childPkg.name ) 
                    if prefix( childPkg.name ) == prefix( parentPkg.name )
                    else childPkg.name )     
     childHead, childTail = splitPath( childPkg.contentDirPath() )
-    srcDir = renameInDir( (childTail, subDir), childHead )
+    srcDir = renameInDir( (childTail, subDirName), childHead )
     destDir = parentPkg.contentDirPath()    
     copyToDir( srcDir, destDir )
-    __mergePackageObjects( childPkg, parentPkg )         
+    __mergePackageObjects( childPkg, parentPkg, subDirName )         
     removeQtIfwPackage( pkgs, childId )            
     return parentPkg
 
-def __mergePackageObjects( srcPkg, destPkg, subDir=None ):
+def __mergePackageObjects( srcPkg, destPkg, subDirName=None ):
     try: 
         srcShortcuts = srcPkg.pkgScript.shortcuts
-        if subDir:
-            for s in srcShortcuts: 
-                s.exeDir = joinPathQtIfw( QT_IFW_TARGET_DIR, subDir )              
+        if subDirName:
+            for i, _ in enumerate( srcShortcuts ): 
+                srcShortcuts[i].exeDir = joinPathQtIfw( 
+                    QT_IFW_TARGET_DIR, subDirName )                
     except: srcShortcuts = []        
     destScript = destPkg.pkgScript
     if destScript:    
         destScript.shortcuts.extend( srcShortcuts )
-        print( "Regenerating installer package script: %s..." 
-                % (destScript.fileName) )
+        print( "\nRegenerating installer package script: %s...\n" 
+                % (destScript.path()) )
+        destScript._generate()
         destScript.debug()
         destScript.write()    
         
