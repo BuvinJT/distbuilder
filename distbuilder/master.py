@@ -263,7 +263,7 @@ class ConfigFactory:
     def qtIfwExeWrapper( self, isContainer=False, wrapperScript=None,
                          workingDir=None, isElevated=False, 
                          envVars=None, args=None ) :
-        return QtIfwExeWrapper( self.binaryName, isGui=self.isGui, 
+        return QtIfwExeWrapper( self.__pkgExeName(), isGui=self.isGui, 
                 isContainer=isContainer, wrapperScript=wrapperScript,
                 workingDir=workingDir, isElevated=isElevated, 
                 envVars=envVars, args=args )

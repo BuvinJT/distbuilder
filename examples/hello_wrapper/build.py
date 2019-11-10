@@ -46,7 +46,7 @@ if IS_WINDOWS :
 @echo off
 set appname=%~n0
 set dirname=%~dp0
-start "" "%dirname%\%appname%"
+start "" "%dirname%\%appname%" %*
 start "" {0} "%dirname%\{1}"
 """)
 elif IS_MACOS :
