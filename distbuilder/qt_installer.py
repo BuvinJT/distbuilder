@@ -1967,10 +1967,15 @@ def removeQtIfwPackage( pkgs, pkgId ):
     for i, pkg in enumerate( pkgs ):
         if pkg.pkgId==pkgId: 
             pkgIndex=i
-            if isDir( pkg.dirPath() ):
-                removeDir( pkg.dirPath() )
-            break 
-    if pkgIndex : del pkgs[ pkgIndex ]               
+            break
+    if not pkgIndex: return    
+    if isDir( pkg.dirPath() ): removeDir( pkg.dirPath() )
+    if pkg.isTempSrc:
+        if pkg.srcDirPath and isDir( pkg.srcDirPath ): 
+            removeDir( pkg.srcDirPath )
+        elif pkg.srcExePath and isFile( pkg.srcExePath ): 
+            removeFile( pkg.srcExePath )                                    
+    del pkgs[ pkgIndex ]               
 
 def mergeQtIfwPackages( pkgs, srcId, destId ):            
     srcPkg  = findQtIfwPackage( pkgs, srcId )
