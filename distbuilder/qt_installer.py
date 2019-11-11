@@ -54,17 +54,15 @@ QT_IFW_ASKPASS_KEY = "askpass"
 QT_IFW_ASKPASS_PLACEHOLDER = "[%s]" % (QT_IFW_ASKPASS_KEY,)
 QT_IFW_ASKPASS_TEMP_FILE_PATH = "/tmp/{0}.path".format( QT_IFW_ASKPASS_KEY )
 
-# TODO: move these to _QtIfwScript 
-#       add more (both built-in and custom)
-# NOTE: must update Wrapper Example when moving these  
-QT_IFW_PRODUCT_NAME  = "@ProductName@"
-
+# TODO: add more (both built-in and custom)
 QT_IFW_TARGET_DIR    = "@TargetDir@"
 QT_IFW_HOME_DIR      = "@HomeDir@" 
 QT_IFW_DESKTOP_DIR   = ("@DesktopDir@" if IS_WINDOWS else
                         "%s/%s" % (QT_IFW_HOME_DIR,"Desktop") ) # Valid on osMac and Ubuntu at least (other Linux desktops?)
 QT_IFW_APPS_DIR      = "@ApplicationsDir@"
 QT_IFW_STARTMENU_DIR = "@StartMenuDir@"
+
+QT_IFW_PRODUCT_NAME  = "@ProductName@"
 
 # don't use back slash on Windows!
 def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )

@@ -1,7 +1,5 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
-    QtIfwExeWrapper, \
-    IS_WINDOWS, IS_MACOS, IS_LINUX
-from distbuilder.qt_installer import QT_IFW_TARGET_DIR, QT_IFW_HOME_DIR
+    IS_WINDOWS, IS_MACOS, IS_LINUX, QT_IFW_TARGET_DIR
 
 f = configFactory  = ConfigFactory()
 f.description      = "A Distribution Builder Example"
@@ -77,8 +75,8 @@ f.productName   = "Hello WrapperScript Example"
 f.setupName     = "HelloWrapperScriptSetup"
 f.distResources = ["../hello_world/{0}".format( licenseName ) ]
 f.pkgExeWrapper = f.qtIfwExeWrapper( wrapperScript=launchScript ) 
-#f.pkgExeWrapper.isElevated    = True 
-#f.pkgExeWrapper.workingDir    = QT_IFW_TARGET_DIR 
+#f.pkgExeWrapper.isElevated = True 
+#f.pkgExeWrapper.workingDir = QT_IFW_TARGET_DIR 
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
 p.run()       

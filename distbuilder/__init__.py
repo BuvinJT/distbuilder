@@ -29,7 +29,14 @@ from distbuilder.qt_installer import \
     , removeQtIfwPackage \
     , mergeQtIfwPackages \
     , nestQtIfwPackage \
-    , QT_IFW_VERBOSE_SWITCH
+    , joinPathQtIfw \
+    , QT_IFW_VERBOSE_SWITCH \
+    , QT_IFW_TARGET_DIR \
+    , QT_IFW_HOME_DIR \
+    , QT_IFW_DESKTOP_DIR  \
+    , QT_IFW_APPS_DIR  \
+    , QT_IFW_STARTMENU_DIR  \
+    , QT_IFW_PRODUCT_NAME 
 
 from distbuilder.pip_installer import \
       PipConfig \

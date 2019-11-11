@@ -297,6 +297,26 @@ truncated for the user's benefit.  So, rather than "com.company.product", the id
 simply "product".  If any of the packages do not have the same prefix as the rest, they
 will all be be listed in the long manner.
 
+### Installer Variables
+
+The following constants have been provided, which correspond to dynamic varibles
+resolved at *runtime* by QtIFW.  Note these are applicable for **BOTH** direct 
+[Installer Script](#installer-scripting) generation, and as parameters
+and attributes for many higher level functions and objects in this library.   
+
+	QT_IFW_TARGET_DIR 
+	
+	QT_IFW_HOME_DIR 
+	QT_IFW_DESKTOP_DIR  
+	QT_IFW_APPS_DIR  
+	QT_IFW_STARTMENU_DIR  
+	
+	QT_IFW_PRODUCT_NAME 
+
+There are a many more of these to come in future versions...
+
+Note : use [joinPathQtIfw](#joinpathqtifw) to build paths with these constants. 
+
 ### Installer Scripting
 
 While both QtIFW, and the distbuilder additions to it, provide many build-in features
@@ -1001,13 +1021,24 @@ Covert a relative path to an absolute path. If a `basePath`
 is not specified, the path is re resolved relative to `THIS_DIR` 
 (which may or **MAY NOT** be the *current working directory*).  
 
+### joinPathQtIfw
+
+Use this to build paths which will be utilized by QtIFW scripts
+(directly or indirectly) on a target machine.  The paths will be 
+joined (and used) in a platform agonistic manner.  
+
+Note, use `joinPath` to build paths in a platform specific manner,
+applicable to where a build script will be employing it to *create* 
+a distribution.    
+
 ### isParentDir 
 
     isParentDir( parent, child, basePath=None ):
 
-**Returns**: boolean, the parent / child paths specified, exist
+**Returns**: true/false, the parent / child paths specified, exist
 and have such a relationship to one another.  The paths maybe
-relative or absolute. `basePath` is optionally used for relative paths.  
+relative or absolute. `basePath` is optionally used for relative paths.
+To actually get the parent directory, use `dirPath`.  
 
 ### Copy or Move To Dir
 
@@ -1255,7 +1286,7 @@ new download will overwrite the prior file.
         splitExt               os.path.splitext 
         joinExt 				<custom> inverse of splitExt   
         
-### Constants
+### General Purpose Constants
         
 	IS_WINDOWS 
     IS_LINUX 
