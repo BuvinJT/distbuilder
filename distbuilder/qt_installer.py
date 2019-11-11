@@ -2161,8 +2161,8 @@ def __addResources( package ) :
         src, dest = util._toSrcDestPair( res, destDir, basePath )
         print( 'Copying "%s" to "%s"...' % ( src, dest ) )
         if isFile( src ) :
-            destDir = dirPath( dest )
-            if not exists( destDir ): makeDir( destDir )
+            destParent = dirPath( dest )
+            if not exists( destParent ): makeDir( destParent )
             try: copyFile( src, dest ) 
             except Exception as e: printExc( e )
         elif isDir( src ):

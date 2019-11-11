@@ -605,7 +605,8 @@ def __getFolderPathByCSIDL( csidl ):
 
 # -----------------------------------------------------------------------------
 def _toSrcDestPair( pathPair, destDir=None, basePath=None ):
-
+    #print( "_toSrcDestPair: pathPair=%s, destDir=%s, basePath=%s" % (pathPair, destDir, basePath) )
+    
     src = dest = None             
     if isinstance( pathPair, string_types ):  
         # string pair representation
@@ -642,18 +643,18 @@ def _toSrcDestPair( pathPair, destDir=None, basePath=None ):
         srcHead = relSrcDir                                
         src = absPath( src, basePath )
 
-    if destDir is None: # (e.g. PyInstaller Argument)
+    if destDir is None: # (i.e. PyInstaller Argument)
         if dest is None: dest = relpath( srcHead, THIS_DIR )                    
     else :
-        if dest is None:
-            dest = joinPath( relpath( srcHead, relSrcDir ), srcTail )        
+        if dest is None: dest = srcTail         
         if dest.startswith( PATH_DELIM ) : 
             # must remove a leading slash from dest for joinPath to 
             # make the dest a child of destDir
             try: dest=dest[1:]
             except: pass
-        dest = absPath( joinPath( destDir, dest ), basePath )
-                                     
+        dest = absPath( joinPath( destDir, dest ), relSrcDir )
+
+    #print( "result: src=%s, dest=%s" % (src, dest) )
     return (src, dest) 
 
 # -----------------------------------------------------------------------------
