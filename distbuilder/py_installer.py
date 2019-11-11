@@ -98,6 +98,10 @@ class PyInstallerConfig:
                 
     def toArgs( self, isMakeSpec=False ) :
 
+        # new feature not supported in OLD versions of PyInstaller!
+        #workDirSpec = '--workpath="%s"' % ( 
+        #    self.sourceDir if self.sourceDir else THIS_DIR,)      
+
         entryPointSpec = ""
         specFileSpec   = ""
         if isMakeSpec:       
@@ -497,7 +501,10 @@ def __runPyInstaller( pyInstConfig, isMakeSpec=False ) :
     else : isPyScript = True       
     runAsScriptPrefix = '"%s" ' % (PYTHON_PATH,) if isPyScript else ""           
     args = pyInstConfig.toArgs( isMakeSpec )
-    util._system( '%s"%s" %s' % (runAsScriptPrefix, progPath, args) )   
+    # the cd is required to support legacy versions of PyInstaller, which lacked
+    # the workpath switch
+    util._system( 'cd "%s" %s %s"%s" %s' % 
+                  (THIS_DIR, SYS_CMD_DELIM, runAsScriptPrefix, progPath, args) )   
 
 def __clean( pyInstConfig, isBuildPrep ) :     
     if exists( OBFUS_DIR_PATH ) : removeDir( OBFUS_DIR_PATH )    

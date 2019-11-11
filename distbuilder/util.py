@@ -38,6 +38,8 @@ SITE_PACKAGES_PATH = get_python_lib()
 THIS_DIR           = dirPath( realpath( argv[0] ) )
 
 PATH_PAIR_DELIMITER=";"
+SYS_CMD_DELIM = "&" if IS_WINDOWS else ";"
+SYS_CMD_COND_DELIM = "&&"
 
 # Windows 
 PY_SCRIPTS_DIR     = joinPath( PY_DIR, "Scripts" ) 
