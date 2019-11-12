@@ -41,6 +41,9 @@ from that:
 	
 	QtCppConfig( qtBinDirPath, exeCompiler, qmlScrDirPath=None )
 	
+	<Linux Only>
+	QtCppConfig.CQtDeployerConfig
+	
 Under most circumstances, you will only need to call `qmakeInit`.  If you wish to 
 customize that process or recieve additional specifications from an external source 
 (e.g. QMake), you may use the other functions to emulate and custom define what the 
@@ -129,17 +132,54 @@ Attributes:
 
     qtBinDirPath             
     exeCompiler    
-    qmlScrDirPath     
+    qmlScrDirPath
+      
+    cQtDeployerConfig   
 
 Object Functions:
     
-    validate
+    qtDirPath()
+    validate()
     addDependencies( package )
 
 Static Functions:
 
     srcCompilerOptions() 
     exeWrapper( exePath, isGui )    
+    
+### QtCppConfig.CQtDeployerConfig
+
+On Linux, distbuilder uses a tool called
+[CQtDeployer](https://github.com/QuasarApp/CQtDeployer/wiki)
+to assist with the build process for Qt C++ deployments.  This class
+allows you to customize how that utility is employed.  Please refer
+to that documentation for help.
+
+Constructor:
+
+    CQtDeployerConfig()
+    
+Attributes:      
+
+    libDirs = []
+    plugins = []
+    
+    <custom addition, use package names>           
+    hiddenQml = []
+            
+    ignoreLibs = [] 
+    ignoreEnv  = [] 
+            
+    recurseDepth = 0
+    deploySystem = False            
+    deployLibc   = False
+    allQml       = False
+
+    strip        = True 
+    translations = True
+
+    <open ended string to append>
+    otherArgs = None
 
 ## QMake Integration
 

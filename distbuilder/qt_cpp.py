@@ -143,10 +143,18 @@ class QtCppConfig:
         
     def __init__( self, qtBinDirPath, binCompiler,  
                   qmlScrDirPath=None ):
-        self.qtBinDirPath   = qtBinDirPath          
-        self.binCompiler    = binCompiler
-        self.qmlScrDirPath  = qmlScrDirPath   
+        self.qtBinDirPath  = qtBinDirPath          
+        self.binCompiler   = binCompiler
+        self.qmlScrDirPath = qmlScrDirPath
+                
+        self.cQtDeployerConfig = None
 
+    def qtDirPath( self ):
+        qtDir = self.qtBinDirPath
+        head, tail = splitPath( qtDir )
+        if tail=="bin" : qtDir=head
+        return qtDir 
+        
     def validate( self ):
         if IS_WINDOWS or ( IS_LINUX and _isCqtdeployerInstalled() ):
             if self.qtBinDirPath is None:
@@ -187,26 +195,10 @@ class QtCppConfig:
             for fileName in QtCppConfig.__MINGW_DLL_LIST:
                 copyToDir( joinPath( self.qtBinDirPath, fileName ), 
                            destDirPath=destDirPath )
-                
-    def __useCqtdeployer( self, destDirPath, exePath ):             
-        # collect required dependencies via the third party cqtdeployer utility
-        qmakePath = normpath( joinPath( 
-            self.qtBinDirPath, QtCppConfig.__QMAKE_EXE_NAME ) )
-        cmdList = [QtCppConfig.__C_QT_DEPLOYER_CMD,                   
-                   QtCppConfig.__C_QT_DEPLOYER_BIN_SWITCH, exePath,
-                   QtCppConfig.__C_QT_DEPLOYER_QMAKE_SWITCH, qmakePath,
-                   QtCppConfig.__C_QT_DEPLOYER_TARGET_SWITCH, destDirPath ]
-        # optionally detect and bundle QML resources
-        if self.qmlScrDirPath is not None:
-            cmdList.extend( [QtCppConfig.__C_QT_DEPLOYER_QML_SWITCH,
-                             normpath( self.qmlScrDirPath )] )                    
-        util._system( list2cmdline( cmdList ) )
-        # return where the exe ends up
-        exePath = joinPath( joinPath( 
-            destDirPath, QtCppConfig.__C_QT_DEPLOYER_TARGET_BIN_DIR ),
-            normBinaryName(exePath) )
-        return exePath
-    
+
+    # This a fallback (limited) option to attempt on Linux systems which don't
+    # have the cqtdeploy utility installed.  
+    # TODO: continue to develop this, so it more closely revivals cqtdeploy...    
     def __useLdd( self, destDirPath, exePath ):             
         # get the list of .so libraries the binary links against within the 
         # local environment, via the standard Linux utility for this.  
@@ -223,7 +215,92 @@ class QtCppConfig:
             except: pass
         # The Qt produced binary does not have execute permissions automatically!
         chmod( exePath, 0o755 )
-        #TODO: continue to develop this, so it almost revivals cqtdeploy
+                
+    def __useCqtdeployer( self, destDirPath, exePath ):             
+        # collect required dependencies via the third party cqtdeployer utility
+        qmakePath = normpath( joinPath( 
+            self.qtBinDirPath, QtCppConfig.__QMAKE_EXE_NAME ) )
+        cmdList = [QtCppConfig.__C_QT_DEPLOYER_CMD,                   
+                   QtCppConfig.__C_QT_DEPLOYER_BIN_SWITCH, exePath,
+                   QtCppConfig.__C_QT_DEPLOYER_QMAKE_SWITCH, qmakePath,
+                   QtCppConfig.__C_QT_DEPLOYER_TARGET_SWITCH, destDirPath ]
+        # optionally detect and bundle QML resources
+        if self.qmlScrDirPath:
+            cmdList.extend( [QtCppConfig.__C_QT_DEPLOYER_QML_SWITCH,
+                             normpath( self.qmlScrDirPath )] )
+        cmd = list2cmdline( cmdList )
+        # optionally tack on extended cQtDeployer options
+        cfg = self.cQtDeployerConfig
+        if cfg:
+            extArgs = cfg._extendedCmdArgs()
+            if len(extArgs) > 0: cmd = "%s %s" % (cmd, extArgs)            
+        util._system( cmd )
+        # resolve where the exe ends up
+        exePath = joinPath( joinPath( 
+            destDirPath, QtCppConfig.__C_QT_DEPLOYER_TARGET_BIN_DIR ),
+            normBinaryName(exePath) )
+        # inject missing qml packages
+        if cfg and len(cfg.hiddenQml) > 0:
+            qmlSrcDirPath = joinPath( self.qtDirPath(), "qml" )
+            qmlDestDirPath = joinPath( 
+                destDirPath, QtCppConfig.__C_QT_DEPLOYER_TARGET_QML_DIR )            
+            for pkg in cfg.hiddenQml:
+                subDir = pkg.replace( ".", PATH_DELIM )
+                src  = joinPath( qmlSrcDirPath,  subDir )
+                dest = joinPath( qmlDestDirPath, subDir )
+                print( "Copying %s to %s..." % (src, dest) )
+                copyDir( src, dest )    
+        # return the path to the exe produced  
+        return exePath
+
+    class CQtDeployerConfig:
+            
+        def __init__( self ):            
+            self.libDirs    = []
+            self.plugins    = []           
+            self.hiddenQml  = []
+            
+            self.ignoreLibs = [] 
+            self.ignoreEnv  = [] 
+            
+            self.recurseDepth = 0
+            self.deploySystem = False            
+            self.deployLibc   = False
+            self.allQml       = False
+
+            self.strip        = True 
+            self.translations = True
+
+            self.otherArgs = None
+            
+        def _extendedCmdArgs( self ):
+            def _argList( l ): return ",".join(l)
+            
+            args = ""
+
+            if len(self.libDirs) > 0: 
+                args += " -libDir " + _argList(self.libDirs) 
+            if len(self.plugins) > 0: 
+                args += " -extraPlugin " + _argList(self.plugins)
+                 
+            if len(self.ignoreLibs) > 0: 
+                args += " -ignore " + _argList(self.ignoreLibs)
+            if len(self.ignoreEnv) > 0: 
+                args += " -ignoreEnv " + _argList(self.ignoreEnv)         
+                    
+            if self.recurseDepth > 0: 
+                args += " -recursiveDepth %d" % (self.recurseDepth,)            
+            if self.deploySystem: args += " deploySystem" 
+            if self.deployLibc:   args += " deploySystem-with-libc"
+            if self.allQml:       args += " allQmlDependes"
+
+            if not self.strip:        args += " noStrip"
+            if not self.translations: args += " noTranslations"
+            
+            if self.otherArgs: args += " " + self.otherArgs
+            
+            return args.strip()
+             
         
     @staticmethod    
     def srcCompilerOptions(): 
@@ -263,6 +340,7 @@ class QtCppConfig:
     __C_QT_DEPLOYER_QMAKE_SWITCH   = "-qmake" 
     __C_QT_DEPLOYER_TARGET_SWITCH  = "-targetDir"
     __C_QT_DEPLOYER_TARGET_BIN_DIR = "bin"
+    __C_QT_DEPLOYER_TARGET_QML_DIR = "qml"
     __C_QT_DEPLOYER_QML_SWITCH     = "-qmlDir"    
 
     __LDD_CMD            = "ldd"
@@ -285,7 +363,7 @@ LD_LIBRARY_PATH="$dirname"
 export LD_LIBRARY_PATH
 "$dirname/$appname" "$@"
 """)
-
+        
 # -----------------------------------------------------------------------------
 
 if IS_LINUX:
