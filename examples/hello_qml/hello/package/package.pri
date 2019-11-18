@@ -4,10 +4,11 @@
 
 # Global constants
 
-# Hardcode the path to your Python interpreter here.
-# Or, alternatively, use the (commented out) environmental variable method
-PY_PATH=python
-#PY_PATH=$$getenv( PYTHON_PATH )
+# Get the python interpreter path from an environmental variable, if possible.
+# Note, that may be assigned in a .pro.user. If that is not defined, fallback to
+# a hardcoded value which assumes you want to use "python" from the system path.
+PY_PATH=$$getenv( PYTHON_PATH )
+isEmpty(PY_PATH){ PY_PATH=python }
 
 #------------------------------------------------------------------------------
 # Function: pyOut

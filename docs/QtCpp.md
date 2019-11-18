@@ -285,22 +285,24 @@ not conflate the meaning of "build" in C++ with this additional step.
 Next, let's look over 
 [package.pri](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qt/hello/package/package.pri).  At the top of that, you'll find:
 
-	# Hardcode the path to your Python interpreter here.
-	# Or, alternatively, use the (commented out) environmental variable method
-	PY_PATH=python
-	#PY_PATH=$$getenv( PYTHON_PATH )
+	# Get the python interpreter path from an environmental variable, if possible.
+	# Note, that may be assigned in a .pro.user. If that is not defined, fallback to
+	# a hardcoded value which assumes you want to use "python" from the system path.
+	PY_PATH=$$getenv( PYTHON_PATH )
+	isEmpty(PY_PATH){ PY_PATH=python }
    
 As denoted by the comment, this is how Python is integrated in the most elementary 
-aspect of the mechanism.  In the example, it is simply assumed you wish to use 
-`python` on the system path.  If that is not correct for your environment, you may 
-change that here.  Alternatively, define environmental variable called `PYTHON_PATH` 
-and use that configuration method.  You may either do so universally on your system,
-or add that to your "Package" build configuration "run settings" (i.e. via a `pro.user`
-modification).  Note that interpreter path will also dictate the availability of the  
+aspect of the mechanism.  If an environmental variable called `PYTHON_PATH` is defined, that
+is how the interpreter will be called upon. Note that may be either universally set on your 
+system, or added to your "Package" build configuration's "run settings" (i.e. in `pro.user`).  
+Alternatively, a hardcoded fall back to `python` on the system path is used.  
+If desired, you might change that to another fallback e.g. `python3`.   
+Note that finding the interpreter will also dictate the availability of the  
 library.  If you have multiple instances of Python installed, make sure you use the 
-same one where you ran the pip install.
+same one where you ran the pip installation for this library.
 
-The next portion of `package.pri` is comprised of assorted support functions.  Scroll down a bit, and you'll find the following:
+The next portion of `package.pri` is comprised of assorted support functions.  
+Scroll down a bit, and you'll find the following:
 
 	# Global application info shared across the C++ layer,
 	# the binary branding, and the Python installation builder!
@@ -313,7 +315,7 @@ The next portion of `package.pri` is comprised of assorted support functions.  S
 
 In this section, the custom details are defined for the name of the product, and 
 company, etc. Note, these values cascade down in the C++ in addition to being 
-passed the QMake build process and finally onto distbuilder.  This provides the means
+passed around the QMake build process and finally onto distbuilder.  This provides the means
 to define such info in a single "master" location.  If you check out the
 [mainwindow.cpp](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qt/hello/mainwindow.cpp) C++ implementation file, you will see this in action on 
 that side of the equation.
