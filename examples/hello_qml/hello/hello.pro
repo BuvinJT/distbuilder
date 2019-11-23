@@ -24,5 +24,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 # DISTRIBUTION BUILDER INTEGRATION
 #==============================================================================
 include(package/package.pri)
-message(Commands to execute upon rebuild:)
-message($${QMAKE_POST_LINK})
+!isEmpty(QMAKE_POST_LINK){
+    message(Commands to execute upon rebuild:)
+    message($${QMAKE_POST_LINK})
+}
+

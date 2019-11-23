@@ -50,9 +50,9 @@ Window {
     }
 
     Timer {
-        id: rotateTimer
+        id: tumbleTimer
         interval: 10; running: true; repeat: true
-        onTriggered: GLCode.rotateGL(canvas3d);
+        onTriggered: GLCode.tumbleCube(canvas3d);
     }
 
     SoundEffect {

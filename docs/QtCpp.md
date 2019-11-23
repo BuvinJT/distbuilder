@@ -269,8 +269,10 @@ file.  It starts with pure boiler plate QMake, and then ends with the following:
 	# DISTRIBUTION BUILDER INTEGRATION
 	#==============================================================================
 	include(package/package.pri)
-	message(Commands to execute upon rebuild:)
-	message($${QMAKE_POST_LINK})
+	!isEmpty(QMAKE_POST_LINK){
+    		message(Commands to execute upon rebuild:)
+    		message($${QMAKE_POST_LINK})
+	}
 
 What this accomplishes is the inclusion of a "sub project" within the main one called 
 "package".  That sub project has a corresponding sub directory, and `.pri` file of the same 

@@ -32,7 +32,7 @@ function paintGL(canvas) {
     renderer.render(scene, camera);
 }
 
-function rotateGL(canvas) {
+function tumbleCube(canvas) {
     if( !cube ) return;
     cube.rotation.x += 0.01;
     cube.rotation.y += 0.01;
