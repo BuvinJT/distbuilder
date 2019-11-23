@@ -2052,7 +2052,8 @@ def __validateConfig( qtIfwConfig ):
         if p.srcDirPath is None:
             if p.srcExePath is None:
                 raise Exception( "Package Source directory OR exe path required" )
-            elif not isFile(p.srcExePath) :        
+            elif not ( isFile(p.srcExePath) or 
+                  (IS_MACOS and util._isMacApp(p.srcExePath)) ) :        
                 raise Exception( "Package Source exe path is not valid" )    
         elif not isDir(p.srcDirPath) :        
             raise Exception( "Package Source directory path is not valid" )

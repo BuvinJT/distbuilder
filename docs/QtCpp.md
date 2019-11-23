@@ -183,8 +183,8 @@ Attributes:
 
 ## QMake Integration
 
-To produce an executable binary from Qt C++ source, a developer normally defines (scripted)
-build configurations in the form of a "project file" (`.pro`). That `.pro` file is 
+To produce an executable binary from Qt C++ source, a developer normally defines a (scripted)
+build configuration in the form of a "project file" (`.pro`). That `.pro` file is 
 processed by [QMake](https://doc.qt.io/qt-5/qmake-manual.html) to produce the program. 
 Typically, the `.pro` file initially originates from some basic template, and QMake is simply 
 run automatically from Qt Creator upon selecting a "build" action from the menu.  
@@ -192,7 +192,7 @@ run automatically from Qt Creator upon selecting a "build" action from the menu.
 QMake is a very powerful mechanism, and these `.pro` files can be customized extensively to 
 setup complex build processes. In addition to `.pro` files, Qt uses more dynamic, user 
 specific `.pro.user` files. These are normally managed via Qt Creator tools, and not directly
-edited. For extended information about such, you may wish to refer to any/all of the 
+edited (though they may be). For extended information about such, you may wish to refer to any/all of the 
 following links:
 
 * [Opening Projects](https://doc.qt.io/qtcreator/creator-project-opening.html)
@@ -209,7 +209,7 @@ and sweet, but they do span both `.pro` and `.pro.user` files.
 Since `.pro.user` files are specific to a user's environment, there is no way to 
 distribute those in a manner which would work anything close to universally.  As such, to
 run the demos, you must first **manually** perform the following tasks when 
-you open one of these `.pro` files for the first time on a given machine:
+you open one of these `.pro` files (which can be distributed) for the first time on a given machine:
 
 * From the "Projects" screen, **clone** a "Release" build configuration.
 
@@ -217,6 +217,11 @@ you open one of these `.pro` files for the first time on a given machine:
 
 * For this configuration, find the **Build steps... qmake... Additional arguments**
 input field and add `CONFIG+=package`.
+
+* *CONDITIONALLY*: within the Build Environment, add an enviromental variable named 
+`PYTHON_PATH` and define its value to be the path to the specific interpreter 
+you wish to use.  If you skip this, the build process will attempt to use `python` 
+from the system path.
 
 To then use the new build option, choose the configuration (found along with Debug, 
 Release, etc.) from the menu in the bottom left corner of Creator (above the big green

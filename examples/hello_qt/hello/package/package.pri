@@ -88,7 +88,6 @@ DEFINES += $$globalStrDef( PRODUCT_DESCRIPTION, A Distribution Builder Example )
 SETUP_NAME=HelloQtSetup
 
 win32: ICON_PATH=$${_PRO_FILE_PWD_}/icons/demo.ico
-win64: ICON_PATH=$${_PRO_FILE_PWD_}/icons/demo.ico
 macx:  ICON_PATH=$${_PRO_FILE_PWD_}/icons/demo.icns
 linux: ICON_PATH=$${_PRO_FILE_PWD_}/icons/demo.png
 
@@ -98,7 +97,8 @@ QMAKE_TARGET_COMPANY=$${COMPANY_NAME}
 QMAKE_TARGET_COPYRIGHT=Copyright (c) $${COPYRIGHT_YEAR}. $${COMPANY_LEGAL_NAME}
 QMAKE_TARGET_PRODUCT=$${PRODUCT_TITLE}
 QMAKE_TARGET_DESCRIPTION=$${PRODUCT_DESCRIPTION}
-RC_ICONS=$${ICON_PATH}
+win32: RC_ICONS=$${ICON_PATH}
+macx:      ICON=$${ICON_PATH}
 
 #------------------------------------------------------------------------------
 # Build an installer when the project is rebuilt via the "Package" build config
@@ -116,6 +116,7 @@ CONFIG(package){  # detect the "package" build configuration
     # Build a shell command to run to the package script
 
     win32: exePath=$$OUT_PWD/release/$${TARGET}.exe
+    macx:  exePath=$$OUT_PWD/$${TARGET}.app
     else:  exePath=$$OUT_PWD/$${TARGET}
     qtBinDirPath=$$dirname(QMAKE_QMAKE)
     projectRootPath=$${_PRO_FILE_PWD_}
