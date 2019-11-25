@@ -1617,7 +1617,6 @@ class QtIfwPackageScript( _QtIfwScript ):
                         '    if( systemInfo.kernelType === "winnt" ){\n' +
                         '%s\n    }' % (winOps,) )
             elif IS_MACOS:
-                # TODO: Handle having a wrapper script PLUS an icon
                 macOps = ""
                 if shortcut.exeName and shortcut.isAppShortcut :
                     macOps += QtIfwPackageScript.__macAddShortcut(
@@ -1737,8 +1736,23 @@ class QtIfwExeWrapper:
             __TMP_GUI_SUDO = ( 'export ' + util._ASKPASS_ENV_VAR + '=' +
                 '$(cat "' + QT_IFW_ASKPASS_TEMP_FILE_PATH + '"); ' +
                 'sudo ' )
-    
-    __CD_PREFIX_CMD_TMPLT = 'cd "%s" && ' 
+        elif IS_MACOS :
+            __SCRIPT_HDR = (
+"""
+appname=_`basename "$0"`
+dirname=`dirname "$0"`
+tmp="${dirname#?}"
+if [ "${dirname%$tmp}" != "/" ]; then dirname="$PWD/$dirname"; fi
+""") 
+            __TARGET_DIR = '"${0%/*}"'
+            __EXECUTE_PROG = '"$dirname/$appname"'
+            __GUI_SUDO_EXE = (
+"""
+shscript="\\\\\\"$dirname/$appname\\\\\\""
+osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
+""")
+ 
+    __PWD_PREFIX_CMD_TMPLT = 'cd "%s" && ' 
     
     def __init__( self, exeName, isGui=False, 
                   wrapperScript=None,
@@ -1775,11 +1789,24 @@ class QtIfwExeWrapper:
         self._shortcutArgs     = None
         self._shortcutWinStyle = None
         
-        # Wrapper script
+        # wrapperScript string to ExecutableScript
         if isinstance( self.wrapperScript, string_types ):
             self.wrapperScript = ExecutableScript( 
                 rootFileName( self.exeName ), script=self.wrapperScript )
-        if isinstance( self.wrapperScript, ExecutableScript ):
+        
+        isScript = isinstance( self.wrapperScript, ExecutableScript )
+
+        # no "light weight" shortcut wrappers are offered on macOS, 
+        # so forced the use of a script to apply built-in wrapper features
+        if IS_MACOS and not isScript:
+            isScript = isAutoScript = (self.isElevated or self.workingDir or
+                                       self.args or self.envVars)
+            self.wrapperScript = ExecutableScript( rootFileName( self.exeName ), 
+                extension=None # strip the extension, replace the original exe 
+            )   
+        else: isAutoScript = False
+             
+        if isScript:
             self._runProgram = joinPathQtIfw( 
                 self.exeDir, self.wrapperScript.fileName() )            
             self._shortcutCmd = self._runProgram
@@ -1792,7 +1819,6 @@ class QtIfwExeWrapper:
         targetPath =( self._runProgram if self._runProgram else
             joinPathQtIfw( self.exeDir, normBinaryName(self.exeName) ) )            
                   
-        # Light weight wrappers
         if IS_WINDOWS :
             # PowerShell Start-Process   
             # Start-Process [-FilePath] <String> 
@@ -1837,13 +1863,13 @@ class QtIfwExeWrapper:
                 self._runProgArgs = [ cmd ]
                 self._shortcutArgs = [ cmd ]
             """    
-        else:
+        elif IS_LINUX :
             if self.isElevated or self.workingDir:                
                 self._runProgram  = QtIfwExeWrapper.__SHELL
                 self._shortcutCmd = QtIfwExeWrapper.__SHELL                
                 cdCmd = ""
                 if self.workingDir :
-                    cdCmd += QtIfwExeWrapper.__CD_PREFIX_CMD_TMPLT % (
+                    cdCmd += QtIfwExeWrapper.__PWD_PREFIX_CMD_TMPLT % (
                         self.workingDir,)                                
                 runLaunch = ('"%s"' % (targetPath,))
                 shortLaunch = runLaunch            
@@ -1866,15 +1892,28 @@ class QtIfwExeWrapper:
                     QtIfwExeWrapper.__SHELL_CMD_SWITCH, runCmd ]
                 self._shortcutArgs = [ 
                     QtIfwExeWrapper.__SHELL_CMD_TMPLT % (shortCmd,) ]
-                
-        # TODO: check this...
-        if util._isMacApp( self.exeName ):
-            programPath = self._runProgram   
-            self._runProgram = util._LAUNCH_MACOS_APP_CMD
-            self._args = self.exeArgs 
-            if not isinstance( self._args, list ) :
-                self._args = []
-            self._args.insert(0, programPath)
+        elif IS_MACOS:
+            if isAutoScript:
+                script=QtIfwExeWrapper.__SCRIPT_HDR
+                cdCmd = ""
+                if self.workingDir :
+                    pwdPath =( QtIfwExeWrapper.__TARGET_DIR 
+                               if self.workingDir==QT_IFW_TARGET_DIR 
+                               else self.workingDir ) 
+                    cdCmd += QtIfwExeWrapper.__PWD_PREFIX_CMD_TMPLT % (pwdPath,)      
+                launch =( QtIfwExeWrapper.__GUI_SUDO_EXE if self.isElevated 
+                          else QtIfwExeWrapper.__EXECUTE_PROG )
+                args=""
+                if self._runProgArgs :                        
+                    args += ",".join([ 
+                        ('"%s"' % (a,) if ' ' in a else '%s' % (a,))
+                        for a in self._runProgArgs ])                
+                cmdTmplt = "\n%s %s %s"
+                script += ( cmdTmplt % (cdCmd, launch, args) ).strip()                  
+                self.wrapperScript.script=script                   
+            if util._isMacApp( self.exeName ):
+                self._args = [self._runProgram]
+                self._runProgram = util._LAUNCH_MACOS_APP_CMD
                             
 # -----------------------------------------------------------------------------    
 def installQtIfw( installerPath=None, version=None, targetPath=None ):    
@@ -2172,10 +2211,21 @@ def __addResources( package ) :
 
 def __addExeWrapper( package ) :
     exeWrapperScript = package.exeWrapper.wrapperScript
-    if isinstance( exeWrapperScript, ExecutableScript ):
+    if isinstance( exeWrapperScript, ExecutableScript ):            
         dirPath = package.contentDirPath()
         fileName = exeWrapperScript.fileName()
         filePath = joinPath( dirPath, fileName )
+        
+        # For macOS apps, the wrapper will replace the orginal executable
+        # binary and the original will be renamed with a leading underscore 
+        # (which is indictive of being protected and/or hidden)
+        if IS_MACOS and package.exeWrapper.isGui :
+            appPath = normBinaryName( filePath, isPathPreserved=True, isGui=True )
+            binPath = util._macAppBinaryPath( appPath )
+            if isFile( binPath ):
+                dirPath, binName = splitPath( binPath ) 
+                renameInDir( (binName, "_%s" % (binName,)), dirPath )
+        
         isFound = isFile( filePath )
         isCustom = exeWrapperScript.script is not None    
         if isFound:

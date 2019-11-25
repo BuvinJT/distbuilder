@@ -522,6 +522,9 @@ def _isMacApp( path ):
     if path is None : return False 
     return IS_MACOS and splitExt(path)[1]==".app"
 
+def _macAppBinaryPath( appPath ):
+    return __INTERNAL_MACOS_APP_BINARY_TMPLT % ( appPath, rootFileName( appPath ) )
+
 # ----------------------------------------------------------------------------- 
 def rootFileName( path ): 
     if path is None : return None
@@ -755,6 +758,7 @@ class ExecutableScript:
         if extension==True:
             self.extension = ( ExecutableScript.__WIN_DEFAULT_EXT 
                 if IS_WINDOWS else ExecutableScript.__NIX_DEFAULT_EXT )
+        elif extension==False: self.extension = None
         else: self.extension = extension    
         if shebang==True and scriptPath is None :
             self.shebang =( None if IS_WINDOWS else 
@@ -783,7 +787,7 @@ class ExecutableScript:
         filePath = joinPath( dirPath, self.fileName() )
         print("Writing script: %s\n\n%s\n" % (filePath,str(self)) )                               
         with open( filePath, 'w' ) as f: f.write( str(self) ) 
-        if IS_LINUX : chmod( filePath, 0o755 )
+        if not IS_WINDOWS : chmod( filePath, 0o755 )
     
 # -----------------------------------------------------------------------------           
 if IS_WINDOWS :
