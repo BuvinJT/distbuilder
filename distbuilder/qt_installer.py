@@ -1747,10 +1747,12 @@ tmp="${dirname#?}"
 if [ "${dirname%$tmp}" != "/" ]; then dirname="$PWD/$dirname"; fi
 """) 
             __TARGET_DIR = '"${0%/*}"'
-            __EXECUTE_PROG = '"$dirname/$appname"'
+            # must run in detached process to allow terminal app to close
+            __EXECUTE_PROG = '"$dirname/$appname" &' 
+            # osascript must additionally be detached from stdout/err streams
             __GUI_SUDO_EXE = (
 """
-shscript="\\\\\\"$dirname/$appname\\\\\\""
+shscript="\\\\\\"$dirname/$appname\\\\\\" >/dev/null 2>&1 &"
 osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
 """)
  
