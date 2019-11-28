@@ -55,7 +55,8 @@ DESKTOP_DIR_NAME   = "Desktop"
 
 # strictly Apple
 _MACOS_APP_EXT                     = ".app"
-_LAUNCH_MACOS_APP_CMD             = "open"
+_LAUNCH_MACOS_APP_CMD              = "open"
+_LAUNCH_MACOS_APP_ARGS_SWITCH      = "--args"
 __LAUNCH_MACOS_APP_NEW_SWITCH      = "-n"
 __LAUNCH_MACOS_APP_BLOCK_SWITCH    = "-W"
 __INTERNAL_MACOS_APP_BINARY_TMPLT  = "%s/Contents/MacOS/%s"
@@ -157,7 +158,8 @@ def _run( binPath, args=[],
                   , __LAUNCH_MACOS_APP_BLOCK_SWITCH 
                   , fileName
         ]
-        if isinstance( args, list ): newArgs.extend( args ) 
+        if isinstance( args, list ): 
+            newArgs.extend( [_LAUNCH_MACOS_APP_ARGS_SWITCH] + args ) 
         args=newArgs
         binPath = fileName = _LAUNCH_MACOS_APP_CMD
     if isinstance(args,list): args = list2cmdline(args)

@@ -483,6 +483,7 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
                   _LOUD_FORCED_ARGS ) 
                 if self.isAutoTestInstall else [] )
             run( self.setupPath, verboseArgs + autoArgs,
+                 isDebug=True,
                  isElevated=self.isAutoTestInstall )
         
     # Override these to further customize the build process once the 

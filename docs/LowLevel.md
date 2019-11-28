@@ -888,6 +888,11 @@ inoperable e.g. Eclipse/PyDev on Windows, in which case
 simply run the build script directly from the terminal
 when employing isDebug.  
 
+Note: On Windows, when using this option in combination
+with isElevated enabled, if you are not already running
+as an admin, you will not see the debugging output
+until the executable has terminated.   
+
 ### runPy   
 
 Upon creating a Python obfuscation, you may wish the 

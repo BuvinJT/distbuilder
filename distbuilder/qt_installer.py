@@ -261,6 +261,8 @@ class QtIfwConfigXml( _QtIfwXml ):
                 self.RunProgram = util._LAUNCH_MACOS_APP_CMD 
                 if not isinstance( self.runProgramArgList, list ) :
                     self.runProgramArgList = []
+                else :
+                    self.runProgramArgList.insert(0, util._LAUNCH_MACOS_APP_ARGS_SWITCH)     
                 self.runProgramArgList.insert(0, programPath)
             else : self.RunProgram = programPath                    
                                          
@@ -1809,6 +1811,9 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
         if isScript:
             self._runProgram = joinPathQtIfw( 
                 self.exeDir, self.wrapperScript.fileName() )            
+            if IS_MACOS and self.isGui :            
+                self._runProgram = util._macAppBinaryPath( normBinaryName( 
+                    self._runProgram, isPathPreserved=True, isGui=True ) )
             self._shortcutCmd = self._runProgram
             
         if self.args : 
