@@ -53,6 +53,9 @@ OPT_LOCAL_BIN_DIR  = "/opt/local/bin"
 # (though can vary by os language and configuration...)
 DESKTOP_DIR_NAME   = "Desktop"
 
+DEBUG_ENV_VAR_NAME="DEBUG_MODE"
+DEBUG_ENV_VAR_VALUE="1"
+
 # strictly Apple
 _MACOS_APP_EXT                     = ".app"
 _LAUNCH_MACOS_APP_CMD              = "open"
@@ -116,12 +119,13 @@ def _run( binPath, args=[],
     # Handle elevated sub processes in Windows
     if IS_WINDOWS and isElevated and not __windowsIsElevated():        
         __printCmd( "", binPath, args, wrkDir )
-        retCode = __windowsElevated( binPath, args, wrkDir )
+        retCode = __windowsElevated( binPath, args, wrkDir ) # always in debug
         if isDebug and retCode is not None : __printRetCode( retCode )  
         return
     
     # "Debug" mode    
     if isDebug :
+        setEnv( DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE )
         if isMacApp:                
             binPath = __INTERNAL_MACOS_APP_BINARY_TMPLT % (
                   normBinaryName( fileName, isGui=True )
@@ -150,6 +154,7 @@ def _run( binPath, args=[],
             sharedFile.write( __SHARED_RET_CODE_TMPLT % (p.returncode,) )
             sharedFile.close()
         else : __printRetCode( p.returncode )
+        delEnv( DEBUG_ENV_VAR_NAME )
         return 
     
     # All other run conditions...    

@@ -1748,13 +1748,19 @@ if [ "${dirname%$tmp}" != "/" ]; then dirname="$PWD/$dirname"; fi
 """) 
             __TARGET_DIR = '"${0%/*}"'
             # must run in detached process to allow terminal app to close
-            __EXECUTE_PROG = '"$dirname/$appname" &' 
+            __EXECUTE_PROG = (
+                'if [ "${%s}" == "%s" ]; then "$dirname/$appname" &; '
+                'else "$dirname/$appname"; fi' % (DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE) )
             # osascript must additionally be detached from stdout/err streams
             __GUI_SUDO_EXE = (
 """
-shscript="\\\\\\"$dirname/$appname\\\\\\" >/dev/null 2>&1 &"
-osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
-""")
+if [ "${%s}" == "%s" ]; then
+    "$dirname/$appname"
+else
+    shscript="\\\\\\"$dirname/$appname\\\\\\" >/dev/null 2>&1 &"
+    osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
+fi   
+""") % (DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE)
  
     __PWD_PREFIX_CMD_TMPLT = 'cd "%s" && ' 
     
