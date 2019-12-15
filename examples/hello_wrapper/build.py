@@ -20,7 +20,7 @@ f.productName      = "Hello UnWrapped Example"
 f.setupName        = "HelloUnWrappedSetup"
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
-#p.run()       
+p.run()       
 
 #------------------------------------------------------------------------------
 f.productName   = "Hello WorkDir Example"
@@ -52,7 +52,7 @@ f.setupName     = "HelloArgsSetup"
 f.pkgExeWrapper = f.qtIfwExeWrapper( args=["arg1", "arg 2 w spaces", "arg3"] )  
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
-p.run()       
+#p.run()       
 
 #------------------------------------------------------------------------------
 licenseName = "LICENSE"
