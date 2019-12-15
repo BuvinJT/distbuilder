@@ -493,16 +493,16 @@ Attributes & default values:
 ## QtIfwExeWrapper
 
 This class provides a means to "wrap" your exe inside of additional external layers.
-Such layers may take a series of forms, and be nested inside of one another.
+Such layers may take different forms, and be nested inside of one another.
 The benefit of this is to impose a specific environment and or set of parameters 
 onto the exe without having to modify it internally.  These options work cross
 platform, and could be slapped over the top of a program written in any language.
-You may, in fact, even wrap third-party (freeware) programs in these layers!
+You may, in fact, even wrap third-party (precompiled) programs in these layers!
 
 The easiest way to use this class is to set some of its basic attributes. For
 example, `workingDir`, `isElevated`, `envVars`, or `args`.  The approach taken by the 
 library is to use the "lightest touch" possible.  If you simply changed the 
-default values for those example attributes, their shortcuts (on applicable plafforms) 
+default values for those example attributes, their shortcuts (on applicable platforms) 
 and the way QtIFW would run the program post installation, would be altered to provided 
 the functionality.  
 
@@ -512,7 +512,7 @@ a persistent "companion" to your binary.  Executing the script rather then the
 binary itself would be the intended means for launching the program.  If this attribute 
 is set, "shortcuts" which would normally point a user to the binary, will instead run this 
 wrapper layer.  On Windows, this (normally) equates to having a batch file companion. 
-On Linux, as shell script companion is created (with an explict `.sh` extension). On macOS, 
+On Linux, a shell script companion is created (with an explict `.sh` extension). On macOS, 
 a shell script with no extension is embedded into the .app file when producing a gui application, 
 else the same design used on Linux is employed for non-gui programs.  
 
@@ -537,6 +537,17 @@ then downloading and installing them as needed.  Or, doing something simliar for
 to your software. Using a wrapper, you could launch a "companion application" along side the 
 primary target. You could start a background service, or open help documentation... The
 possiblities are really boundless.  
+
+Note: On Windows and Linux desktops (e.g. Ubuntu) for a gui application with shortcuts,  
+the "built-in wrapper" features (`workingDir`, `isElevated`, `envVars`, `args`) maybe 
+used in combinatoin with a custom `wrapperScript`, as those options are applied via the shortcut
+launching the script OR the executable.  On **macOS**, however, if using a custom script, you will have 
+to **manully** include these other features in that script, as the way they are applied 
+automatically by distibuilder is through the generation of one. If doing this, the easiest approach
+maybe to first use the built-ins without the custom script, and then duplicate the pertinent parts
+in your own.  Alternately, you could programmatically manipluate the `wrapperScript` attribute referrencing an
+[ExecutableScript](LowLevel.md#executablescript) generated for you by this class upon it's construction
+or upon a call to `refresh()`. 
 
 Constructor:
 

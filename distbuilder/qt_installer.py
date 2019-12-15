@@ -1753,24 +1753,25 @@ if [ "${dirname%$tmp}" != "/" ]; then dirname="$PWD/$dirname"; fi
 """) 
             __TARGET_DIR = '"$dirname/../../.."'
             # must run in detached process to allow terminal app to close
-            __EXECUTE_PROG = (
+            __EXECUTE_PROG_TMPLT = (
 """                
 if [ "${%s}" == "%s" ]; then 
-    "$dirname/$appname" 
+    {0}{1}"$dirname/$appname" {2} 
 else 
-    "$dirname/$appname" &
+    {0}{1}"$dirname/$appname" {2}&
 fi 
 """) % (DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE) 
             # osascript must additionally be detached from stdout/err streams
-            __GUI_SUDO_EXE = (
+            __GUI_SUDO_EXE_TMPLT = (
 """
 if [ "${%s}" == "%s" ]; then
-    "$dirname/$appname"
+    {0}%s"$dirname/$appname" {2}
 else
-    shscript="\\\\\\"$dirname/$appname\\\\\\" >/dev/null 2>&1 &"
+    {0}echo ""
+    shscript="\\\\\\"$dirname/$appname\\\\\\" {2} >/dev/null 2>&1 &"
     osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
 fi   
-""") % (DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE)
+""") % (DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE, __SUDO )
  
     __PWD_PREFIX_CMD_TMPLT = 'cd "%s" && ' 
     
@@ -1929,15 +1930,21 @@ fi
                                if self.workingDir==QT_IFW_TARGET_DIR 
                                else self.workingDir ) 
                     cdCmd += QtIfwExeWrapper.__PWD_PREFIX_CMD_TMPLT % (pwdPath,)      
-                launch =( QtIfwExeWrapper.__GUI_SUDO_EXE if self.isElevated 
-                          else QtIfwExeWrapper.__EXECUTE_PROG )
                 args=""
                 if self._runProgArgs :                        
-                    args += ",".join([ 
+                    args += " ".join([ 
                         ('"%s"' % (a,) if ' ' in a else '%s' % (a,))
-                        for a in self._runProgArgs ])                
-                cmdTmplt = "\n%s %s %s"
-                script += ( cmdTmplt % (cdCmd, launch, args) ).strip()                  
+                        for a in self._runProgArgs ])     
+                    self._runProgArgs = None # don't need, as they've been baked in               
+                launch =( QtIfwExeWrapper.__GUI_SUDO_EXE_TMPLT 
+                          if self.isElevated and self.isGui 
+                          else QtIfwExeWrapper.__EXECUTE_PROG_TMPLT )
+                sudo =( QtIfwExeWrapper.__SUDO 
+                        if self.isElevated and not self.isGui else "") 
+                launch = launch.replace( "{0}", cdCmd )
+                launch = launch.replace( "{1}", sudo )
+                launch = launch.replace( "{2}", args )
+                script += launch                 
                 self.wrapperScript.script=script                   
             if util._isMacApp( self.exeName ):
                 self._args = [self._runProgram]

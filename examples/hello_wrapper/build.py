@@ -8,10 +8,13 @@ f.companyTradeName = "Some Company"
 f.companyLegalName = "Some Company Inc."    
 f.binaryName       = "HelloWrapper"
 f.isGui            = True        
-f.entryPointPy     = "hello.py"  
+f.entryPointPy     = "hello_gui.py"  
+#f.isGui            = False 
+#f.entryPointPy     = "hello_terminal.py"  
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
 f.version          = (1,0,0,0)
 
+# "STANDARD" for direct comparision
 #------------------------------------------------------------------------------
 f.productName      = "Hello UnWrapped Example"
 f.setupName        = "HelloUnWrappedSetup"
@@ -39,6 +42,14 @@ p.isTestingInstall = True
 f.productName   = "Hello EnvVars Example"
 f.setupName     = "HelloEnvVarsSetup"
 f.pkgExeWrapper = f.qtIfwExeWrapper( envVars={ "TEST_ENV_VAR": "test" } )  
+p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
+p.isTestingInstall = True
+#p.run()       
+
+#------------------------------------------------------------------------------
+f.productName   = "Hello Args Example"
+f.setupName     = "HelloArgsSetup"
+f.pkgExeWrapper = f.qtIfwExeWrapper( args=["arg1", "arg 2 w spaces", "arg3"] )  
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
 p.run()       
@@ -100,6 +111,8 @@ f.distResources = ["../hello_world/{0}".format( licenseName ) ]
 f.pkgExeWrapper = f.qtIfwExeWrapper( wrapperScript=launchScript ) 
 #f.pkgExeWrapper.isElevated = True 
 #f.pkgExeWrapper.workingDir = QT_IFW_TARGET_DIR 
+#f.pkgExeWrapper.envVars={ "TEST_ENV_VAR": "test" }
+#f.pkgExeWrapper.args=["arg1", "arg 2 w spaces", "arg3"]
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
 #p.run()       
