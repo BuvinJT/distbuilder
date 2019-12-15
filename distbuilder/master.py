@@ -260,11 +260,11 @@ class ConfigFactory:
             
         return script
 
-    def qtIfwExeWrapper( self, isContainer=False, wrapperScript=None,
+    def qtIfwExeWrapper( self, wrapperScript=None,
                          workingDir=None, isElevated=False, 
                          envVars=None, args=None ) :
         return QtIfwExeWrapper( self.__pkgExeName(), isGui=self.isGui, 
-                isContainer=isContainer, wrapperScript=wrapperScript,
+                wrapperScript=wrapperScript,
                 workingDir=workingDir, isElevated=isElevated, 
                 envVars=envVars, args=args )
 

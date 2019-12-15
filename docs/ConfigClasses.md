@@ -500,27 +500,25 @@ platform, and could be slapped over the top of a program written in any language
 You may, in fact, even wrap third-party (freeware) programs in these layers!
 
 The easiest way to use this class is to set some of its basic attributes. For
-example, `workingDir`, `isElevated`, `envVars`, or `exeArgs`.  The approach taken by the 
+example, `workingDir`, `isElevated`, `envVars`, or `args`.  The approach taken by the 
 library is to use the "lightest touch" possible.  If you simply changed the 
-default values for those example attributes, their shortcuts and the way QtIFW
-would run the program post intallation, would be altered to provided the functionality.
-If you went to the other extreme, you could set the `isHard` attribute to `True`.
-Doing that, results in the production of a new binary, which contains the orginal
-and imposes these external conditions upon it, such that they are *always* applied
-even when the user "side steps" the shortcut and directly executes the program.     
+default values for those example attributes, their shortcuts (on applicable plafforms) 
+and the way QtIFW would run the program post installation, would be altered to provided 
+the functionality.  
 
 The most flexible attribute you may impose is a `wrapperScript` layer.
 This is an [ExecutableScript](LowLevel.md#executablescript) object, used to produce
 a persistent "companion" to your binary.  Executing the script rather then the 
 binary itself would be the intended means for launching the program.  If this attribute 
 is set, "shortcuts" which would normally point a user to the binary, will instead run this 
-wrapper layer.  If you set the `isHard` attribute to `True`, this script would also be bundled
-into a standalone binary with the program, and there would be no option for the 
-user to "side step" it. 
+wrapper layer.  On Windows, this (normally) equates to having a batch file companion. 
+On Linux, as shell script companion is created (with an explict `.sh` extension). On macOS, 
+a shell script with no extension is embedded into the .app file when producing a gui application, 
+else the same design used on Linux is employed for non-gui programs.  
 
-The application of a wrapper script of this nature is not uncommon.  This is most 
-commonly done on Linux. As an example when deploying Qt C++ applications which are 
-dynamically linked, the standard procedure (per Qt documentation) is to use this 
+The application of a wrapper script of this nature is not entirely uncommon - especailly on Linux. 
+As an example, when deploying Qt C++ applications on Linux which are 
+dynamically linked, the **standard procedure** (per Qt documentation) is to use this 
 (slightly modifed) shell script to load the required libraries: 
  
     #!/bin/sh
@@ -535,24 +533,24 @@ dynamically linked, the standard procedure (per Qt documentation) is to use this
 	"$dirname/$appname" "$@"
 
 Other ways for using a wrapper like this include automatically detecting dependencies, and
-then downloading and installing them as needed.  )r, doing somehting simliar for updates
+then downloading and installing them as needed.  Or, doing something simliar for updates
 to your software. Using a wrapper, you could launch a "companion application" along side the 
 primary target. You could start a background service, or open help documentation... The
 possiblities are really boundless.  
 
 Constructor:
 
-    QtIfwExeWrapper( exeName, 
-    				 wrapperScript=None, isContainer=False,
+    QtIfwExeWrapper( exeName, isGui=False, 
+                     wrapperScript=None, 
                      exeDir=QT_IFW_TARGET_DIR, workingDir=None, 
                      args=None, envVars=None, isElevated=False )    
 
 Attributes & default values:
         
-        exeName       = <required>        
+        exeName = <required>        
+        isGui   = False
         
         wrapperScript = None
-        isContainer   = False   
 
         exeDir        = "@TargetDir@" <QtIfw Built-in Variable>
         workingDir    = None  <None=don't impose here, use QT_IFW_TARGET_DIR via other means>
@@ -561,7 +559,7 @@ Attributes & default values:
         envVars       = None         
         isElevated    = False
 
-        _winPsStartArgs  = None  <Windows only>
+        _winPsStartArgs = None  <Windows only>
 
 		<Auto defined via refresh>
         _runProgram       

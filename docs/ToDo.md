@@ -8,9 +8,7 @@
 
 **WORK IN PROGRESS**
 
-* Develop formal Qt C++ integration (and documentation).
-
-* Start "QtIfwExeWrapper" class, to provide extended features for launching 
+* Finish "QtIfwExeWrapper" class to provide extended features for launching 
 distributions.
 
 ## v.0.7.7
@@ -20,20 +18,16 @@ distributions.
 	* do not install shortcuts
 	* are not enabled for install by default
 
-* Finish "QtIfwExeWrapper" class features and refinements.
-
-* Test, and confirm / fix uninstallation mechanism for silent installers,
-notably in non GUI environments. Can this be done via the Maintenance Tool
-and / or the original installer?
-
-* Consolidate code between QtIfwExeWrapper "isContainer" feature and Silent 
-Installer building process.
+* Test, and confirm / fix UNinstallation mechanism for silent installers,
+notably in non GUI environments. (Can this already be done via the Maintenance Tool
+and / or the original installer?)
   
 ## v.0.7.8
 
 * Add Qt IFW Package Licenses (EULAs)
 
 * Add these Qt IFW script generation features:
+	* Dependency installation via package managers (paritally developed already)
 	* Directory creation on target (e.g. user data directories)		
 	* Resource installation outside of the target directory
 	* Windows Registry functions, analogous settings on other platforms

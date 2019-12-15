@@ -88,7 +88,7 @@ Object creation functions:
     qtIfwPackage( pyInstConfig=None, isTempSrc=False )
     qtIfwPackageXml()    
     qtIfwPackageScript( pyInstConfig=None )
-    qtIfwExeWrapper( isContainer=False, wrapperScript=None,
+    qtIfwExeWrapper( wrapperScript=None,
                      workingDir=None, isElevated=False, 
                      envVars=None, args=None )
 Cloning:

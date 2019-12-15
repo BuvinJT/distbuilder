@@ -1726,12 +1726,17 @@ class QtIfwExeWrapper:
         #__WIN_CMD                   = "cmd"
         #__WIN_CMD_START_TMPLT       = '/c START "%s"'
         #__WIN_CMD_START_PWD_TMPLT   = ' /D "%s"'           
+        
+        __SET_ENV_VAR_TMPLT = 'set %s="%s"'
+        
     else:
         __SHELL            = "sh"
         __SHELL_CMD_SWITCH = "-c"
         __SHELL_CMD_TMPLT  = __SHELL_CMD_SWITCH + " '%s'"
 
-        __SUDO = 'sudo '        
+        __SUDO = 'sudo '      
+        __SET_ENV_VAR_TMPLT = 'export %s="%s"'
+          
         if IS_LINUX : 
             __GUI_SUDO = ( 'export ' + util._ASKPASS_ENV_VAR + '="' +
                 QT_IFW_ASKPASS_PLACEHOLDER + '"; sudo ' ) 
@@ -1749,8 +1754,13 @@ if [ "${dirname%$tmp}" != "/" ]; then dirname="$PWD/$dirname"; fi
             __TARGET_DIR = '"$dirname/../../.."'
             # must run in detached process to allow terminal app to close
             __EXECUTE_PROG = (
-                'if [ "${%s}" == "%s" ]; then "$dirname/$appname" &; '
-                'else "$dirname/$appname"; fi' % (DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE) )
+"""                
+if [ "${%s}" == "%s" ]; then 
+    "$dirname/$appname" 
+else 
+    "$dirname/$appname" &
+fi 
+""") % (DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE) 
             # osascript must additionally be detached from stdout/err streams
             __GUI_SUDO_EXE = (
 """
@@ -1766,13 +1776,10 @@ fi
     
     def __init__( self, exeName, isGui=False, 
                   wrapperScript=None,
-                  isContainer=False,
                   exeDir=QT_IFW_TARGET_DIR, 
                   workingDir=None, # None=don't impose here, use QT_IFW_TARGET_DIR via other means
                   args=None, envVars=None, isElevated=False ) :
-        
-        self.isContainer   = False   # TODO: option to encapsulate within a binary (use PyInst) 
-        
+               
         self.exeName       = exeName
         self.isGui         = isGui
         
@@ -1908,7 +1915,12 @@ fi
                     QtIfwExeWrapper.__SHELL_CMD_TMPLT % (shortCmd,) ]
         elif IS_MACOS:
             if isAutoScript:
-                script=QtIfwExeWrapper.__SCRIPT_HDR
+                script=QtIfwExeWrapper.__SCRIPT_HDR                
+                if isinstance( self.envVars, dict):
+                    for k,v in six.iteritems( self.envVars ):
+                        script += ( '\n' + 
+                            (QtIfwExeWrapper.__SET_ENV_VAR_TMPLT % (k, v)) )
+                    script += '\n'     
                 cdCmd = ""
                 if self.workingDir :
                     pwdPath =( QtIfwExeWrapper.__TARGET_DIR 

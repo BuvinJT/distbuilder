@@ -36,6 +36,14 @@ p.isTestingInstall = True
 #p.run()       
 
 #------------------------------------------------------------------------------
+f.productName   = "Hello EnvVars Example"
+f.setupName     = "HelloEnvVarsSetup"
+f.pkgExeWrapper = f.qtIfwExeWrapper( envVars={ "TEST_ENV_VAR": "test" } )  
+p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
+p.isTestingInstall = True
+p.run()       
+
+#------------------------------------------------------------------------------
 licenseName = "LICENSE"
 
 if IS_WINDOWS :
@@ -94,4 +102,4 @@ f.pkgExeWrapper = f.qtIfwExeWrapper( wrapperScript=launchScript )
 #f.pkgExeWrapper.workingDir = QT_IFW_TARGET_DIR 
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
-p.run()       
+#p.run()       
