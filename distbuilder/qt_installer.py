@@ -1746,7 +1746,7 @@ dirname=`dirname "$0"`
 tmp="${dirname#?}"
 if [ "${dirname%$tmp}" != "/" ]; then dirname="$PWD/$dirname"; fi
 """) 
-            __TARGET_DIR = '"${0%/*}"'
+            __TARGET_DIR = '"$dirname/../../.."'
             # must run in detached process to allow terminal app to close
             __EXECUTE_PROG = (
                 'if [ "${%s}" == "%s" ]; then "$dirname/$appname" &; '
@@ -1805,17 +1805,18 @@ fi
                 rootFileName( self.exeName ), script=self.wrapperScript )
         
         isScript = isinstance( self.wrapperScript, ExecutableScript )
-
-        # no "light weight" shortcut wrappers are offered on macOS, 
-        # so forced the use of a script to apply built-in wrapper features
-        if IS_MACOS and not isScript:
-            isScript = isAutoScript = (self.isElevated or self.workingDir or
-                                       self.args or self.envVars)
-            self.wrapperScript = ExecutableScript( rootFileName( self.exeName ), 
-                extension=None # strip the extension, replace the original exe 
-            )   
-        else: isAutoScript = False
-             
+        isAutoScript = False
+        
+        if IS_MACOS : 
+            if not isScript:
+                # there are no "light weight" shortcut wrappers employed on macOS, 
+                # so forced the use of a script to apply built-in wrapper features
+                isScript = isAutoScript = (self.isElevated or self.workingDir or
+                                           self.args or self.envVars)
+                self.wrapperScript = ExecutableScript( rootFileName( self.exeName ) )
+            # strip the extension on a wrapper inside a .app - it will masquerade as the original exe  
+            if self.isGui: self.wrapperScript.extension=None
+        
         if isScript:
             self._runProgram = joinPathQtIfw( 
                 self.exeDir, self.wrapperScript.fileName() )            

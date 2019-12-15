@@ -883,21 +883,45 @@ exceptions maybe thrown when the app launches.  Without this
 debugging feature, you may have no information regarding the 
 fatal error.  
 
-Note: some IDE / platform combinations may render this 
-inoperable e.g. Eclipse/PyDev on Windows, in which case 
-simply run the build script directly from the terminal
-when employing isDebug.  
+Note: When `run` employees the debugging feature, it will set
+an environmental variable named `DEBUG_MODE` to `1`.  Some contexts
+require this in order to allow this mode to work correctly.
+You may wish to include your own custom logic within your
+program to pivot on this environmental condition as well.
+In case you wish to avoid hardcoded referrences for these checks, 
+the library includes the following constants:
 
-Note: On Windows, when using this option in combination
-with isElevated enabled, if you are not already running
-as an admin, you will not see the debugging output
-until the executable has terminated.   
+    DEBUG_ENV_VAR_NAME
+    DEBUG_ENV_VAR_VALUE
+
+You may also wish to include and employ this function in your
+program, which checks for this condition. 
+
+    from os import environ    
+    def isDebug(): 
+        try: return isDebug.__CACHE
+        except:
+            isDebug.__CACHE = environ.get("DEBUG_MODE")=="1"
+            return isDebug.__CACHE
+            
+Note: In some contexts, **you will NOT see the debugging output
+until the executable has terminated.**
+On Windows, this will occur when using debug mode in combination
+with `isElevated` enabled, if you are NOT already running 
+as an admin. On macOS, this will occur whenever using a "wrapper script" 
+(see [QtIfwExeWrapper](ConfigClasses.md#qtifwexewrapper)) over the binary.
+
+Note: some IDE / platform combinations may render this feature 
+inoperable due to a conflict with output stream handling 
+(e.g. Eclipse/PyDev on Windows), in which case 
+simply execute the build script, or the `run` function, from a terminal
+outside of the IDE when employing `isDebug`.  
 
 ### runPy   
 
-Upon creating a Python obfuscation, you may wish the 
+Perhaps most notable, upon creating a Python obfuscation, you may wish the 
 to test the success of that operation. The following
-was provided with that in mind:    
+was provided with that in mind specifically:    
 
     runPy( pyPath, args=[], isElevated=False )
 
@@ -1293,7 +1317,7 @@ new download will overwrite the prior file.
         
 ### General Purpose Constants
         
-	IS_WINDOWS 
+    IS_WINDOWS 
     IS_LINUX 
     IS_MACOS 
     
@@ -1301,4 +1325,7 @@ new download will overwrite the prior file.
     PY3
     
     THIS_DIR 
+    
+    DEBUG_ENV_VAR_NAME
+    DEBUG_ENV_VAR_VALUE
         
