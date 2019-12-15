@@ -1825,12 +1825,14 @@ fi
             if self.isGui: self.wrapperScript.extension=None
         
         if isScript:
-            self._runProgram = joinPathQtIfw( 
-                self.exeDir, self.wrapperScript.fileName() )            
-            if IS_MACOS and self.isGui :            
-                self._runProgram = util._macAppBinaryPath( normBinaryName( 
-                    self._runProgram, isPathPreserved=True, isGui=True ) )
+            self._runProgram = joinPathQtIfw( self.exeDir, 
+                                              self.wrapperScript.fileName() )            
             self._shortcutCmd = self._runProgram
+            if IS_MACOS and self.isGui :        
+                appPath = normBinaryName( self._runProgram, 
+                                          isPathPreserved=True, isGui=True )   
+                self._shortcutCmd = appPath
+                self._runProgram = util._macAppBinaryPath( appPath )
             
         if self.args : 
             self._runProgArgs = self.args
