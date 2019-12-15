@@ -55,6 +55,19 @@ p.isTestingInstall = True
 #p.run()       
 
 #------------------------------------------------------------------------------
+f.productName   = "Hello MulitWrap Example"
+f.setupName     = "HelloMulitWrapSetup"
+f.pkgExeWrapper = f.qtIfwExeWrapper(
+      isElevated = True 
+    , workingDir = QT_IFW_TARGET_DIR 
+    , envVars={ "TEST_ENV_VAR": "test" }
+    , args=["arg1", "arg 2 w spaces", "arg3"]
+)  
+p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
+p.isTestingInstall = True
+#p.run()       
+
+#------------------------------------------------------------------------------
 licenseName = "LICENSE"
 
 if IS_WINDOWS :

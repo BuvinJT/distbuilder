@@ -1924,6 +1924,11 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                         script += ( '\n' + 
                             (QtIfwExeWrapper.__SET_ENV_VAR_TMPLT % (k, v)) )
                     script += '\n'     
+                launch =( QtIfwExeWrapper.__GUI_SUDO_EXE_TMPLT 
+                          if self.isElevated and self.isGui 
+                          else QtIfwExeWrapper.__EXECUTE_PROG_TMPLT )
+                sudo =( QtIfwExeWrapper.__SUDO 
+                        if self.isElevated and not self.isGui else "") 
                 cdCmd = ""
                 if self.workingDir :
                     pwdPath =( QtIfwExeWrapper.__TARGET_DIR 
@@ -1931,16 +1936,12 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                                else self.workingDir ) 
                     cdCmd += QtIfwExeWrapper.__PWD_PREFIX_CMD_TMPLT % (pwdPath,)      
                 args=""
-                if self._runProgArgs :                        
+                if self._runProgArgs :             
+                    quot = '\\\\\\"' if launch==QtIfwExeWrapper.__GUI_SUDO_EXE_TMPLT else '"'          
                     args += " ".join([ 
-                        ('"%s"' % (a,) if ' ' in a else '%s' % (a,))
+                        ('%s%s%s' % (quot,a,quot) if ' ' in a else '%s' % (a,))
                         for a in self._runProgArgs ])     
-                    self._runProgArgs = None # don't need, as they've been baked in               
-                launch =( QtIfwExeWrapper.__GUI_SUDO_EXE_TMPLT 
-                          if self.isElevated and self.isGui 
-                          else QtIfwExeWrapper.__EXECUTE_PROG_TMPLT )
-                sudo =( QtIfwExeWrapper.__SUDO 
-                        if self.isElevated and not self.isGui else "") 
+                    self._runProgArgs = None # don't need now, as they're being baked in               
                 launch = launch.replace( "{0}", cdCmd )
                 launch = launch.replace( "{1}", sudo )
                 launch = launch.replace( "{2}", args )
