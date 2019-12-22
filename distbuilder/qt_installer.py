@@ -1734,7 +1734,7 @@ class QtIfwExeWrapper:
         __SHELL_CMD_SWITCH = "-c"
         __SHELL_CMD_TMPLT  = __SHELL_CMD_SWITCH + " '%s'"
 
-        __SUDO = 'sudo '      
+        __SUDO = 'sudo -E ' # -E preserves environment within the new context     
         __SET_ENV_VAR_TMPLT = 'export %s="%s"'
           
         if IS_LINUX : 
@@ -1746,14 +1746,27 @@ class QtIfwExeWrapper:
         elif IS_MACOS :
             __SCRIPT_HDR = (
 """
+appname=`basename "$0" | sed s,\.sh$,,`
+dirname=`dirname "$0"`
+tmp="${dirname#?}"
+if [ "${dirname%$tmp}" != "/" ]; then dirname="$PWD/$dirname"; fi
+""") 
+            __GUI_SCRIPT_HDR = (
+"""
 appname=_`basename "$0"`
 dirname=`dirname "$0"`
 tmp="${dirname#?}"
 if [ "${dirname%$tmp}" != "/" ]; then dirname="$PWD/$dirname"; fi
 """) 
-            __TARGET_DIR = '$dirname/../../..'
-            # must run in detached process to allow terminal app to close
+            __TARGET_DIR = '$dirname'
+            __GUI_TARGET_DIR = '$dirname/../../..'
+            
             __EXECUTE_PROG_TMPLT = (
+"""
+{0}{1}"$dirname/$appname" {2} 
+""")
+            # must run in detached process to allow terminal app to close
+            __GUI_EXECUTE_PROG_TMPLT = (
 """                
 if [ "${%s}" == "%s" ]; then 
     {0}{1}"$dirname/$appname" {2} 
@@ -1918,26 +1931,32 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                     QtIfwExeWrapper.__SHELL_CMD_TMPLT % (shortCmd,) ]
         elif IS_MACOS:
             if isAutoScript:
-                script=QtIfwExeWrapper.__SCRIPT_HDR                
+                script=( QtIfwExeWrapper.__GUI_SCRIPT_HDR if self.isGui 
+                         else QtIfwExeWrapper.__SCRIPT_HDR )                
                 if isinstance( self.envVars, dict):
                     for k,v in six.iteritems( self.envVars ):
                         script += ( '\n' + 
                             (QtIfwExeWrapper.__SET_ENV_VAR_TMPLT % (k, v)) )
                     script += '\n'     
-                launch =( QtIfwExeWrapper.__GUI_SUDO_EXE_TMPLT 
-                          if self.isElevated and self.isGui 
-                          else QtIfwExeWrapper.__EXECUTE_PROG_TMPLT )
+                if self.isGui :    
+                    launch =( QtIfwExeWrapper.__GUI_SUDO_EXE_TMPLT 
+                              if self.isElevated 
+                              else QtIfwExeWrapper.__GUI_EXECUTE_PROG_TMPLT )
+                else : launch = QtIfwExeWrapper.__EXECUTE_PROG_TMPLT    
                 sudo =( QtIfwExeWrapper.__SUDO 
                         if self.isElevated and not self.isGui else "") 
                 cdCmd = ""
                 if self.workingDir :
-                    pwdPath =( QtIfwExeWrapper.__TARGET_DIR 
-                               if self.workingDir==QT_IFW_TARGET_DIR 
-                               else self.workingDir ) 
+                    if self.workingDir==QT_IFW_TARGET_DIR :
+                        pwdPath =( QtIfwExeWrapper.__GUI_TARGET_DIR if self.isGui
+                                   else QtIfwExeWrapper.__TARGET_DIR ) 
+                    else : pwdPath = self.workingDir  
                     cdCmd += QtIfwExeWrapper.__PWD_PREFIX_CMD_TMPLT % (pwdPath,)      
                 args=""
                 if self._runProgArgs :             
-                    quot = '\\\\\\"' if launch==QtIfwExeWrapper.__GUI_SUDO_EXE_TMPLT else '"'          
+                    quot =( '\\\\\\"' 
+                            if launch==QtIfwExeWrapper.__GUI_SUDO_EXE_TMPLT 
+                            else '"' )       
                     args += " ".join([ 
                         ('%s%s%s' % (quot,a,quot) if ' ' in a else '%s' % (a,))
                         for a in self._runProgArgs ])     

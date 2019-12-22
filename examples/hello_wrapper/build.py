@@ -20,7 +20,7 @@ f.productName      = "Hello UnWrapped Example"
 f.setupName        = "HelloUnWrappedSetup"
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
-p.run()       
+#p.run()       
 
 #------------------------------------------------------------------------------
 f.productName   = "Hello WorkDir Example"
@@ -55,8 +55,8 @@ p.isTestingInstall = True
 #p.run()       
 
 #------------------------------------------------------------------------------
-f.productName   = "Hello MulitWrap Example"
-f.setupName     = "HelloMulitWrapSetup"
+f.productName   = "Hello MultiWrap Example"
+f.setupName     = "HelloMultiWrapSetup"
 f.pkgExeWrapper = f.qtIfwExeWrapper(
       isElevated = True 
     , workingDir = QT_IFW_TARGET_DIR 
@@ -81,8 +81,9 @@ start "" "%dirname%\%appname%" %*
 start "" {0} "%dirname%\{1}"
 """)
 elif IS_MACOS :
+    # Note: this script is specific for use with a GUI app (on several points)
     textViewer = "TextEdit"
-    launchScript = (
+    launchScript = ( 
 """
 appname=_`basename "$0"`
 dirname=`dirname "$0"`
@@ -97,7 +98,7 @@ else
 fi   
 """)
 elif IS_LINUX :
-    # not a "perfect" cross Linux distro / environment example,
+    # Note this is not a "perfect" cross Linux distro / environment example,
     # as this depends upon `gedit` and `screen` being present...
     textViewer = "gedit"
     launchScript = (
@@ -122,10 +123,11 @@ f.productName   = "Hello WrapperScript Example"
 f.setupName     = "HelloWrapperScriptSetup"
 f.distResources = ["../hello_world/{0}".format( licenseName ) ]
 f.pkgExeWrapper = f.qtIfwExeWrapper( wrapperScript=launchScript ) 
-#f.pkgExeWrapper.isElevated = True 
-#f.pkgExeWrapper.workingDir = QT_IFW_TARGET_DIR 
-#f.pkgExeWrapper.envVars={ "TEST_ENV_VAR": "test" }
-#f.pkgExeWrapper.args=["arg1", "arg 2 w spaces", "arg3"]
+#    , isElevated = True 
+#    , workingDir = QT_IFW_TARGET_DIR 
+#    , envVars={ "TEST_ENV_VAR": "test" }
+#    , args=["arg1", "arg 2 w spaces", "arg3"]
+#)
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
 #p.run()       
