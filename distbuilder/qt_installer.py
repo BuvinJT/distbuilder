@@ -1722,13 +1722,11 @@ class QtIfwExeWrapper:
         __WIN_PS_START_ADMIN_SWITCH = " -Verb RunAs"
         __WIN_PS_START_PWD_TMPLT    = " -WorkingDirectory '%s'"                       
         __WIN_PS_START_ARGS_SWITCH  = " -ArgumentList "
+        __WIN_PS_SET_ENV_VAR_TMPLT  = "$env:%s='%s';"
         
         #__WIN_CMD                   = "cmd"
         #__WIN_CMD_START_TMPLT       = '/c START "%s"'
-        #__WIN_CMD_START_PWD_TMPLT   = ' /D "%s"'           
-        
-        __SET_ENV_VAR_TMPLT = 'set %s="%s"'
-        
+        #__WIN_CMD_START_PWD_TMPLT   = ' /D "%s"'                           
     else:
         __SHELL            = "sh"
         __SHELL_CMD_SWITCH = "-c"
@@ -1803,7 +1801,7 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
         self.workingDir    = workingDir
 
         self.args          = args      
-        self.envVars       = envVars # TODO
+        self.envVars       = envVars 
         
         self.isElevated    = isElevated
         
@@ -1831,7 +1829,7 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
         if IS_MACOS : 
             if not isScript:
                 # there are no "light weight" shortcut wrappers employed on macOS, 
-                # so forced the use of a script to apply built-in wrapper features
+                # so force the use of a script to apply built-in wrapper features
                 isScript = isAutoScript = (self.isElevated or self.workingDir or
                                            self.args or self.envVars)
                 self.wrapperScript = ExecutableScript( rootFileName( self.exeName ) )
@@ -1861,10 +1859,15 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
             # Start-Process [-FilePath] <String> 
             #    [[-ArgumentList] <String[]>]
             #    [-WorkingDirectory <String>] ...                    
-            if self.isElevated or self.workingDir or self._winPsStartArgs:                
+            if self.isElevated or self.workingDir or self.envVars or self._winPsStartArgs:                
                 self._runProgram  = QtIfwExeWrapper.__WIN_PS
                 self._shortcutCmd = QtIfwExeWrapper.__WIN_PS
-                psCmd = QtIfwExeWrapper.__WIN_PS_START_TMPLT % (targetPath,)
+                psCmd = ""
+                if isinstance( self.envVars, dict ):
+                    for k,v in six.iteritems( self.envVars ):
+                        psCmd += ( QtIfwExeWrapper.__WIN_PS_SET_ENV_VAR_TMPLT 
+                                   % (k, v) )
+                psCmd += QtIfwExeWrapper.__WIN_PS_START_TMPLT % (targetPath,)
                 if self.isElevated: 
                     psCmd += QtIfwExeWrapper.__WIN_PS_START_ADMIN_SWITCH
                 if self.workingDir :
@@ -1933,7 +1936,7 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
             if isAutoScript:
                 script=( QtIfwExeWrapper.__GUI_SCRIPT_HDR if self.isGui 
                          else QtIfwExeWrapper.__SCRIPT_HDR )                
-                if isinstance( self.envVars, dict):
+                if isinstance( self.envVars, dict ):
                     for k,v in six.iteritems( self.envVars ):
                         script += ( '\n' + 
                             (QtIfwExeWrapper.__SET_ENV_VAR_TMPLT % (k, v)) )
