@@ -1845,6 +1845,9 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                                           isPathPreserved=True, isGui=True )   
                 self._shortcutCmd = appPath
                 self._runProgram = util._macAppBinaryPath( appPath )
+        else:
+            self._runProgram = joinPathQtIfw( self.exeDir, self.exeName )            
+            self._shortcutCmd = self._runProgram
             
         if self.args : 
             self._runProgArgs = self.args
@@ -1875,13 +1878,14 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                         self.workingDir,)
                 if self._runProgArgs :    
                     psCmd += QtIfwExeWrapper.__WIN_PS_START_ARGS_SWITCH
-                    psCmd += ",".join([ '"%s"' % (a,) for a in self._runProgArgs ])
+                    # don't mess with this multi-level escape hell!
+                    psCmd += ",".join([ '\'\"%s\"\'' % (a,) for a in self._runProgArgs ])
                 # Custom additions to Start-Process 
                 if self._winPsStartArgs: 
                     psCmd += (" " + " ".join(self._winPsStartArgs)) 
                 self._runProgArgs=[ psCmd ]                                                                        
-                # the psCmd is one long quoted argument for PS
-                self._shortcutArgs = [ psCmd ] #['"%s"' % (psCmd,)]
+                # the psCmd is one long argument for PS
+                self._shortcutArgs = [ psCmd ] 
                 self._shortcutWinStyle = SHORTCUT_WIN_MINIMIZED
             """
             # CMD Start    
