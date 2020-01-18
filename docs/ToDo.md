@@ -8,34 +8,9 @@
 
 **WORK IN PROGRESS**
 
-* Finish "QtIfwExeWrapper" class to provide extended features for launching 
-distributions.
+* Finish initial features/functionality for "QtIfwExeWrapper".
 
-## v.0.7.7
-
-* TEST (and develop as needed) QtIFW packages which: 
-	* contain only "data" (no exe)
-	* do not install shortcuts
-	* are not enabled for install by default
-
-* Test, and confirm / fix UNinstallation mechanism for silent installers,
-notably in non GUI environments. (Can this already be done via the Maintenance Tool
-and / or the original installer?)
-  
-## v.0.7.8
-
-* Add Qt IFW Package Licenses (EULAs)
-
-* Add these Qt IFW script generation features:
-	* Dependency installation via package managers (paritally developed already)
-	* Directory creation on target (e.g. user data directories)		
-	* Resource installation outside of the target directory
-	* Windows Registry functions, analogous settings on other platforms
-	(e.g. plist on Mac)     
-
-## v.0.7.9
-
-* Test and develop "update installer" features as needed.
+* Test Qt integration with Windows MSVC compiler.
 
 ## v.0.8.x
 			
@@ -46,7 +21,37 @@ manual intervention.
 
 * Add git integration: Clone/pull to build project from multiple remote sources
 
-## v.0.9.x
+## v.0.9.0
+
+* TEST (and develop as needed) QtIFW packages which: 
+	* contain only "data" (no exe)
+	* are not enabled for install by default
+	* do not install shortcuts
+
+* Test, and confirm / fix UNinstallation mechanism for silent installers,
+notably in non GUI environments. (Can this already be done via the Maintenance Tool
+and / or the original installer?)
+
+## v.0.9.1
+
+* Add Qt IFW Package Licenses (EULAs)
+
+* Test and develop "update installer" features as needed.
+  
+## v.0.9.2
+
+* Add these Qt IFW script generation features:
+	* Dependency installation via package managers (paritally developed already)
+	* Directory creation on target (e.g. user data directories)		
+	* Resource installation outside of the target directory
+	* Windows Registry functions, analogous settings on other platforms
+	(e.g. plist on Mac)     
+
+* Provide *dynamically* assigned values for "QtIfwExeWrapper" via Installer. 
+
+* Revisit "QtIfwExeWrapper" details.  Non gui on Windows?
+
+## v.0.9.3
 
 * Add option for appending platform suffix onto installer file names. 
 
@@ -66,19 +71,23 @@ manual intervention.
 
 * TEST on OSes with alternate language settings? (Hunting for path names or unicode glitches, etc.?) 
 
+* Continue to expand upon / clean up the documentation.
+
 ## v.1.1.x 
+
+* Add Anaconda integration
+
+## v.1.2.x 
 
 * Add QtIFW "online" installer features.
 
-* Add additional examples.
-
-* Continue to expand upon the documentation.
+* Add auto conversion of alternate icon formats, so a project only needs one file for such.
 
 * Add more git integration: auto commit / push / tag...
 
 ## v.1.5.x
 
-* Provide forward/backward across OS versions.
+* Provide PyInstaller forward/backward compatiblity across OS versions.
 
 Currently, (depending upon the platform) building with PyInstaller (and/or QtIFW?) 
 on an older or newer version of an OS can result in the product NOT being forwards 
@@ -94,9 +103,7 @@ Notably, there are known complications e.g. GCC .so dynamic linkage:
 	* https://pythonhosted.org/PyInstaller/usage.html#supporting-multiple-python-environments 
 	* https://pythonhosted.org/PyInstaller/usage.html#supporting-multiple-operating-systems
 
-* Add auto conversion of alternate icon formats, so a project only needs one file for such.
-
-## v.2.x+ Spitballs 		
+## v.2 Spitballs... 		
 
 * Add a Py2Exe wrapper as alternative to PyInstaller.
 

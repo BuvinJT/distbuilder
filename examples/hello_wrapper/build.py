@@ -14,7 +14,7 @@ f.entryPointPy     = "hello_gui.py"
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
 f.version          = (1,0,0,0)
 
-# "STANDARD" for direct comparision
+# "STANDARD" for direct comparison
 #------------------------------------------------------------------------------
 f.productName      = "Hello UnWrapped Example"
 f.setupName        = "HelloUnWrappedSetup"
