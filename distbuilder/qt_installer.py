@@ -1716,17 +1716,45 @@ class QtIfwShortcut:
 # -----------------------------------------------------------------------------    
 class QtIfwExeWrapper:
     
-    if IS_WINDOWS :                    
+    if IS_WINDOWS :
         __WIN_PS                    = "powershell"
         __WIN_PS_START_TMPLT        = "Start-Process -FilePath '%s'"
         __WIN_PS_START_ADMIN_SWITCH = " -Verb RunAs"
         __WIN_PS_START_PWD_TMPLT    = " -WorkingDirectory '%s'"                       
         __WIN_PS_START_ARGS_SWITCH  = " -ArgumentList "
         __WIN_PS_SET_ENV_VAR_TMPLT  = "$env:%s='%s';"
-        
+
         #__WIN_CMD                   = "cmd"
         #__WIN_CMD_START_TMPLT       = '/c START "%s"'
         #__WIN_CMD_START_PWD_TMPLT   = ' /D "%s"'                           
+        
+        __SCRIPT_HDR = (
+"""
+@echo off
+set appname=%~n0
+set dirname=%~dp0
+""")
+        __TARGET_DIR = '%dirname%'
+         
+        __EXECUTE_PROG_TMPLT = (
+"""
+{0}"%dirname%\%appname%" {2}
+""")        
+        __GUI_EXECUTE_PROG_TMPLT = (
+"""                
+if "%{DEBUG_VAR}%"=="{DEBUG_VAL}" ( 
+    {0}"%dirname%\%appname%" {2} 
+) else ( 
+    {0}start "" "%dirname%\%appname%" {2} 
+)
+""") 
+        __GUI_EXECUTE_PROG_TMPLT = __GUI_EXECUTE_PROG_TMPLT.replace( 
+            "{DEBUG_VAR}", DEBUG_ENV_VAR_NAME )
+        __GUI_EXECUTE_PROG_TMPLT = __GUI_EXECUTE_PROG_TMPLT.replace( 
+            "{DEBUG_VAL}", DEBUG_ENV_VAR_VALUE )
+
+        __SET_ENV_VAR_TMPLT = 'set %s=%s'
+        
     else:
         __SHELL            = "sh"
         __SHELL_CMD_SWITCH = "-c"
@@ -1824,18 +1852,31 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                 rootFileName( self.exeName ), script=self.wrapperScript )
         
         isScript = isinstance( self.wrapperScript, ExecutableScript )
-        isAutoScript = False
         
-        if IS_MACOS : 
+        # In various contexts, some features, or combos there of, can only 
+        # be provided by forcing the use of a script
+        isAutoScript = False
+        if IS_WINDOWS :
+            if not isScript:
+                # we must use a script to set envVars when auto elevating,
+                # else they are lost when the non-admin to admin context is changed 
+                isScript = isAutoScript = self.isElevated and self.envVars
+                if isAutoScript :
+                    self.wrapperScript = ExecutableScript( 
+                                            rootFileName( self.exeName ) )        
+        elif IS_MACOS : 
             if not isScript:
                 # there are no "light weight" shortcut wrappers employed on macOS, 
                 # so force the use of a script to apply built-in wrapper features
-                isScript = isAutoScript = (self.isElevated or self.workingDir or
-                                           self.args or self.envVars)
-                self.wrapperScript = ExecutableScript( rootFileName( self.exeName ) )
+                isScript = isAutoScript = (self.isElevated or self.workingDir
+                                           or self.args or self.envVars)
+                self.wrapperScript = ExecutableScript( 
+                                        rootFileName( self.exeName ) )
             # strip the extension on a wrapper inside a .app - it will masquerade as the original exe  
             if self.isGui: self.wrapperScript.extension=None
         
+        # Set the "primary" launch commands to be executed. 
+        # If applicable, point the run target at the script rather than the binary.        
         if isScript:
             self._runProgram = joinPathQtIfw( self.exeDir, 
                                               self.wrapperScript.fileName() )            
@@ -1858,28 +1899,54 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
             joinPathQtIfw( self.exeDir, normBinaryName(self.exeName) ) )            
                   
         if IS_WINDOWS :
-            # PowerShell Start-Process   
-            # Start-Process [-FilePath] <String> 
-            #    [[-ArgumentList] <String[]>]
-            #    [-WorkingDirectory <String>] ...                    
-            if self.isElevated or self.workingDir or self.envVars or self._winPsStartArgs:                
+            if isAutoScript :
+                script=QtIfwExeWrapper.__SCRIPT_HDR                
+                if isinstance( self.envVars, dict ):
+                    for k,v in six.iteritems( self.envVars ):
+                        script += ( '\n' + 
+                            (QtIfwExeWrapper.__SET_ENV_VAR_TMPLT % (k, v)) )
+                    script += '\n'     
+                launch =( QtIfwExeWrapper.__GUI_EXECUTE_PROG_TMPLT
+                          if self.isGui 
+                          else QtIfwExeWrapper.__EXECUTE_PROG_TMPLT )
+                cdCmd = ""
+                if self.workingDir :
+                    if self.workingDir==QT_IFW_TARGET_DIR :
+                        pwdPath = QtIfwExeWrapper.__TARGET_DIR  
+                    else : pwdPath = self.workingDir  
+                    cdCmd += QtIfwExeWrapper.__PWD_PREFIX_CMD_TMPLT % (pwdPath,)      
+                args=""
+                if self._runProgArgs :             
+                    quot = '"'        
+                    args += " ".join([ 
+                        ('%s%s%s' % (quot,a,quot) if ' ' in a else '%s' % (a,))
+                        for a in self._runProgArgs ])     
+                    self._runProgArgs = None # don't need now, as they're being baked in                                                                       
+                launch = launch.replace( "{0}", cdCmd )                
+                launch = launch.replace( "{2}", args )
+                script += launch                 
+                self.wrapperScript.script=script
+                                            
+            if self.isElevated or self.workingDir or self.envVars or self._winPsStartArgs:                                                
                 self._runProgram  = QtIfwExeWrapper.__WIN_PS
                 self._shortcutCmd = QtIfwExeWrapper.__WIN_PS
                 psCmd = ""
-                if isinstance( self.envVars, dict ):
-                    for k,v in six.iteritems( self.envVars ):
-                        psCmd += ( QtIfwExeWrapper.__WIN_PS_SET_ENV_VAR_TMPLT 
-                                   % (k, v) )
+                if not isAutoScript :
+                    if isinstance( self.envVars, dict ):
+                        for k,v in six.iteritems( self.envVars ):
+                            psCmd += ( QtIfwExeWrapper.__WIN_PS_SET_ENV_VAR_TMPLT 
+                                       % (k, v) )
                 psCmd += QtIfwExeWrapper.__WIN_PS_START_TMPLT % (targetPath,)
                 if self.isElevated: 
                     psCmd += QtIfwExeWrapper.__WIN_PS_START_ADMIN_SWITCH
-                if self.workingDir :
-                    psCmd += QtIfwExeWrapper.__WIN_PS_START_PWD_TMPLT % (
-                        self.workingDir,)
-                if self._runProgArgs :    
-                    psCmd += QtIfwExeWrapper.__WIN_PS_START_ARGS_SWITCH
-                    # don't mess with this multi-level escape hell!
-                    psCmd += ",".join([ '\'\"%s\"\'' % (a,) for a in self._runProgArgs ])
+                if not isAutoScript:    
+                    if self.workingDir :
+                        psCmd += QtIfwExeWrapper.__WIN_PS_START_PWD_TMPLT % (
+                            self.workingDir,)
+                    if self._runProgArgs :    
+                        psCmd += QtIfwExeWrapper.__WIN_PS_START_ARGS_SWITCH
+                        # don't mess with this multi-level escape hell!
+                        psCmd += ",".join([ '\'\"%s\"\'' % (a,) for a in self._runProgArgs ])
                 # Custom additions to Start-Process 
                 if self._winPsStartArgs: 
                     psCmd += (" " + " ".join(self._winPsStartArgs)) 
