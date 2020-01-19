@@ -1324,6 +1324,10 @@ new download will overwrite the prior file.
     PY2
     PY3
     
+    BIT_CONTEXT
+    IS_32_BIT_CONTEXT
+    IS_64_BIT_CONTEXT
+    
     THIS_DIR 
     
     DEBUG_ENV_VAR_NAME

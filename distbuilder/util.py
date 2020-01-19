@@ -24,12 +24,17 @@ import traceback
 from distutils.sysconfig import get_python_lib
 import inspect  # @UnusedImport
 from time import sleep
+from struct import calcsize
 
 # -----------------------------------------------------------------------------   
 __plat = platform.system()
 IS_WINDOWS         = __plat == "Windows"
 IS_LINUX           = __plat == "Linux"
 IS_MACOS           = __plat == "Darwin"
+
+BIT_CONTEXT = calcsize('P') * 8
+IS_32_BIT_CONTEXT = BIT_CONTEXT==32
+IS_64_BIT_CONTEXT = BIT_CONTEXT==64
 
 PY_EXT             = ".py"
 PY_DIR             = dirPath( PYTHON_PATH )
