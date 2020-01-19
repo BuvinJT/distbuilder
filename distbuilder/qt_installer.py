@@ -1760,6 +1760,8 @@ if "%{DEBUG_VAR}%"=="{DEBUG_VAL}" (
         __SHELL_CMD_SWITCH = "-c"
         __SHELL_CMD_TMPLT  = __SHELL_CMD_SWITCH + " '%s'"
 
+        __CMD_DELIM = ";"
+
         __SUDO = 'sudo -E ' # -E preserves environment within the new context     
         __SET_ENV_VAR_TMPLT = 'export %s="%s"'
           
@@ -1946,7 +1948,8 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                     if self._runProgArgs :    
                         psCmd += QtIfwExeWrapper.__WIN_PS_START_ARGS_SWITCH
                         # don't mess with this multi-level escape hell!
-                        psCmd += ",".join([ '\'\"%s\"\'' % (a,) for a in self._runProgArgs ])
+                        psCmd += ",".join(
+                            [ '\'\"%s\"\'' % (a,) for a in self._runProgArgs ])
                 # Custom additions to Start-Process 
                 if self._winPsStartArgs: 
                     psCmd += (" " + " ".join(self._winPsStartArgs)) 
@@ -1975,9 +1978,15 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                 self._shortcutArgs = [ cmd ]
             """    
         elif IS_LINUX :
-            if self.isElevated or self.workingDir:                
+            if self.isElevated or self.workingDir or self.envVars or self.args:                
                 self._runProgram  = QtIfwExeWrapper.__SHELL
-                self._shortcutCmd = QtIfwExeWrapper.__SHELL                
+                self._shortcutCmd = QtIfwExeWrapper.__SHELL      
+                setVarsCmd = "" 
+                if isinstance( self.envVars, dict ):
+                    for k,v in six.iteritems( self.envVars ):
+                        setVarsCmd += "%s%s" % (
+                            (QtIfwExeWrapper.__SET_ENV_VAR_TMPLT % (k, v)),
+                            QtIfwExeWrapper.__CMD_DELIM )                                                   
                 cdCmd = ""
                 if self.workingDir :
                     cdCmd += QtIfwExeWrapper.__PWD_PREFIX_CMD_TMPLT % (
@@ -1993,12 +2002,14 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                         shortLaunch = runLaunch                            
                 args=""
                 if self._runProgArgs :                        
-                    args += ",".join([ 
+                    args += " ".join([ 
                         ('"%s"' % (a,) if ' ' in a else '%s' % (a,))
                         for a in self._runProgArgs ])                
-                cmdTmplt = "%s %s %s"
-                runCmd   = ( cmdTmplt % (cdCmd, runLaunch,   args) ).strip()
-                shortCmd = ( cmdTmplt % (cdCmd, shortLaunch, args) ).strip()
+                cmdTmplt = "%s %s %s %s"
+                runCmd   =( 
+                    cmdTmplt % (setVarsCmd, cdCmd, runLaunch,   args) ).strip()
+                shortCmd =( 
+                    cmdTmplt % (setVarsCmd, cdCmd, shortLaunch, args) ).strip()
                 self._runProgArgs = [ 
                     QtIfwExeWrapper.__SHELL_CMD_SWITCH, runCmd ]
                 self._shortcutArgs = [ 
