@@ -13,11 +13,11 @@ the [Qt Installer Framework](http://doc.qt.io/qtinstallerframework),
 As one might guess, the primary role which Distribution Builder can serve for your development 
 needs is packaging and deploying Python based programs. It can, however, be employed for 
 distributing software of all sorts.  To this end, a dedicated module, has been provided for 
-[Qt C++ Integration](QtCpp.md).  More cross lanaguage / framework integration modules 
+[Qt C++ Integration](QtCpp.md).  More cross language / framework integration modules 
 will become available in the future.
 
 This library is compatible with both Python 2 and 3.  It has been tested on recent versions of 
-Windows, macOS, and multiple Linux distros. It features the ability to create standalone 
+Windows, macOS, and multiple Linux distros. It features the ability to create stand-alone 
 binaries from Python scripts (via PyInstaller), and is capable of building installers in a 
 cross platform manner (via QtIFW) which work in either gui or *non-gui* contexts (note 
 QtIFW does not naturally provide a *non-gui* option!). The library can also be used to 

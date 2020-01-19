@@ -129,7 +129,7 @@ For more information, refer to the following:
 
 - [Executable Obfuscation](LowLevel.md#executable-obfuscation)  
 - [Obfuscation Features](LowLevel.md#obfuscation-features)  
-- [Hello World Tk Example](QuickStart.md#hello-world-tk-example)    
+- [Hello World Tk Example](Examples.md#hello-world-tk-example)    
 - [Opy for Distribution Builder](https://pypi.org/project/opy-distbuilder/)
 
 #### version
@@ -198,7 +198,7 @@ Based upon context, this attribute is used to embedded (or bundle) an icon for
 a [Stand Alone Executable](LowLevel.md#stand-alone-executables) or an
 [Installer](LowLevel.md#installers). 
 
-As demoed in the [Hello World Example](QuickStart.md#hello-world-example),
+As demoed in the [Hello World Example](Examples.md#hello-world-example),
 on Windows you must use a ".ico" file, on macOS a ".icns", or on Linux a ".png".
 You do NOT have to specify the extension, however, when setting this attribute.
 Such will be automatically determined per the platform at runtime. 
@@ -234,7 +234,7 @@ For more information refer to:
 
 - [buildInstaller](LowLevel.md#buildInstaller)
 - [Silent Installers](LowLevel.md#silent-installers)
-- [Hello Silent Example](QuickStart.md#hello-silent-example)        
+- [Hello Silent Example](Examples.md#hello-silent-example)        
 
 #### ifwDefDirPath
 
@@ -269,7 +269,7 @@ function for this class.
 For more information refer to: 
 
 - [RobustInstallerProcess](#robustinstallerprocess)
-- [QtIfwPackage list manipulation](QuickStart.md#qtifwpackage-list-manipulation) 
+- [QtIfwPackage list manipulation](LowLevel.md#qtifwpackage-list-manipulation) 
 
 #### ifwCntrlScript, ifwCntrlScriptText, ifwCntrlScriptPath, ifwCntrlScriptName
 
@@ -333,7 +333,7 @@ involved. For more information refer to:
 
 [RobustInstallerProcess](#robustinstallerprocess). 
 
-[QtIfwPackage list manipulation](QuickStart.md#qtifwpackage-list-manipulation) 
+[QtIfwPackage list manipulation](LowLevel.md#qtifwpackage-list-manipulation) 
 
 `ifwPkgName` and `ifwPkgNamePrefix` are provided to override the name used by the
 QtInstaller for deployment on a target environment.  Normally, you may allow
@@ -388,7 +388,7 @@ being built using the factory provided configurations.
 
 Such a wrapper can super impose environmental conditions on the context
 within which the binary is run.  Notably, this may include an 
-[ExecutableScript](LowLevel.md#executablescript) for maximum flexiblity.
+[ExecutableScript](LowLevel.md#executablescript) for maximum flexibility.
 Follow the links to learn to more.
 
 #### qtCppConfig
@@ -464,7 +464,7 @@ Simply invoke the `run()` function to execute the process.
 
 Examples:
 	
-[Hello World Example](QuickStart.md#hello-world-example)        
+[Hello World Example](Examples.md#hello-world-example)        
 
 #### configFactory                                        
 
@@ -619,8 +619,8 @@ Simply invoke the `run()` function to execute the process.
 
 Examples:
 	
-[Hello World Tk Example](QuickStart.md#hello-world-tk-example)        
-[Hello Silent Example](QuickStart.md#hello-silent-example)
+[Hello World Tk Example](Examples.md#hello-world-tk-example)        
+[Hello Silent Example](Examples.md#hello-silent-example)
                                                
 #### configFactory, name 
 
@@ -756,8 +756,8 @@ Simply invoke the `run()` function to execute the process.
 
 Examples:
 	
-[Hello Packages Example](QuickStart.md#hello-packages-example)        
-[Hello Merge Example](QuickStart.md#hello-merge-example)
+[Hello Packages Example](Examples.md#hello-packages-example)        
+[Hello Merge Example](Examples.md#hello-merge-example)
 
 #### configFactory, name 
 

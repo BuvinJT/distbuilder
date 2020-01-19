@@ -2,6 +2,7 @@ site_name: Distribution Builder
 pages:
     - Home: index.md
     - Quick Start Guide: QuickStart.md
+    - Examples: Examples.md
     - High Level Classes: HighLevel.md
     - Configuration Classes: ConfigClasses.md
     - Low Level Functions: LowLevel.md

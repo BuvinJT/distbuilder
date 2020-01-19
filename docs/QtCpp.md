@@ -357,8 +357,7 @@ Now, onto the Python script
 	p.run()
 
 Most of this has been explained the [Qt C++ Module](#qt-c++-module) section and / or
-the basic examples in [Getting Started](QuickStart.md#getting-started).  The key points
-to point out are:
+the basic [examples](Examples.md).  The key points to to focus upon are:
 
 	masterFactory, packageFactory = qmakeInit()
   
