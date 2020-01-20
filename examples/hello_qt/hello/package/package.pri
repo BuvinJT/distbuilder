@@ -117,7 +117,8 @@ CONFIG(package){  # detect the "package" build configuration
 
     win32: exePath=$$OUT_PWD/release/$${TARGET}.exe
     macx:  exePath=$$OUT_PWD/$${TARGET}.app
-    else:  exePath=$$OUT_PWD/$${TARGET}
+    linux: exePath=$$OUT_PWD/$${TARGET}
+
     qtBinDirPath=$$dirname(QMAKE_QMAKE)
     projectRootPath=$${_PRO_FILE_PWD_}
 

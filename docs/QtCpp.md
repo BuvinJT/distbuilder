@@ -332,7 +332,6 @@ Just below, the `.pri` contains:
 	SETUP_NAME=HelloQtSetup
 	
 	win32: ICON_PATH=$${_PRO_FILE_PWD_}/icons/demo.ico
-	win64: ICON_PATH=$${_PRO_FILE_PWD_}/icons/demo.ico
 	macx:  ICON_PATH=$${_PRO_FILE_PWD_}/icons/demo.icns
 	linux: ICON_PATH=$${_PRO_FILE_PWD_}/icons/demo.png
 
