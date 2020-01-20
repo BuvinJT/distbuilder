@@ -56,7 +56,10 @@ defineReplace( globalStrDef ){
     # \040 (the octal code for space), having escaped it multiple times
     # (for the various layers it must pass through), and wrap it in quotes,
     # to create a C++ string literal
-    win32:space=\\\040
+    win32 {
+        win32-msvc*: space=\\040
+        else:        space=\\\040
+    }
     else: space=\\\\\040
     defineValue=$$join($${valueList}, $${space}, \\\", \\\")
     # escape some other specific chars...
