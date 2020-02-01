@@ -383,6 +383,11 @@ select components into a "ux" sub project.  This illustrates how you can rapidly
 package a QML based program, (with some dependencies and resources) for distribution
 via this Python library.  
 
+**NOTE:**
+Please refer to [Hello World QML New Example](#hello-world-qml-new-example) 
+if you are using a recent version of the Qt Library, as the 
+[Canvas3D module was deprecated in Qt 5.12.](https://doc.qt.io/qt-5.12/qtcanvas3d-index.html) and entirely removed from later versions!
+
 Assuming you already have the examples source, launch Qt Creator. Then select 
 `File... Open File Or Project...`, browse to the examples sub directory named `hello_qml`,
 and select `hello.pro`.   
@@ -407,6 +412,24 @@ for QML components require a directory path to where the QML source resides for 
 project.  The process works ideally if it scans a directory (recursively) which is 
 reserved primarily for these specific files.  It is a good practice to keep your C++ 
 and QML split apart anyway, so this is a logical design either way. 
+
+## Hello World QML New Example
+
+This example was added to replace the original QML example, for use with newer
+versions of Qt.  This was based on the standard "Qt 3D: Scene3dView QML Example", 
+which can be readily found from within the Creator.  
+
+Aside from the Qt specific / UX changes, it is *nearly* identical to the original 
+[Hello World QML Example](#hello-world-qml-example).
+
+One notable difference from the original example, is that one demonstrates the use
+of the `hiddenQml` attribute of class 
+[QtCppConfig.CQtDeployerConfig](#qtCppConfig.cqtdeployerconfig).  It would seem
+that the [CQtDeployer](https://github.com/QuasarApp/CQtDeployer/wiki) tool used
+on Linux, is not able to bundle those resources automatically because Qt did not
+follow the path conventions for this QML module and/or do not reference it in the 
+example code in a manner which aligns with that.  This example, therefore, shows
+how to solve that problem!   
 
 ## Additional Options
 

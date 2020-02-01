@@ -286,5 +286,8 @@ The [Hello World Qt Example](QtCpp.md#hello-world-qt-example) demos the
 
 ## Hello World QML Example
 
-The [Hello World QML Example](QtCpp.md#hello-world-qml-example) demos the 
-[Qt C++ Integration](QtCpp.md) feature. If you wish to review / test the code, it is strongly recommended you read that section of the documentation in its entirety.  
+See [Hello World QML Example](QtCpp.md#hello-world-qml-example) 
+
+## Hello World QML New Example
+
+See [Hello World QML New Example](QtCpp.md#hello-world-qml-new-example) 

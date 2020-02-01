@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>AnimatedEntity.qml</file>
+        <file>main.qml</file>
+        <file>drumroll.wav</file>
+    </qresource>
+</RCC>
