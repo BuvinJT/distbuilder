@@ -31,9 +31,9 @@ OS Language:
 
 PyInstaller:  
 
-* Binary / Script
 * 2.1
 * 3.4
+* Binary / Script
 
 Qt Installer Framework:  
 
@@ -50,6 +50,15 @@ Pip:
 Opy distbuilder:  
 
 * 0.9+  
+
+Qt C++ Integration:
+
+* Qt 5.8
+* Qt 5.14
+* MSVC
+* MinGW
+* Clang
+* GCC/G++
 
 ## Binary launching runtime issues
 
