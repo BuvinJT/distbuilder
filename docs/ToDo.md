@@ -4,14 +4,6 @@
  The following is a loose, ever evolving "road map" for planned releases of the library, 
  grouped / ordered by release number:
  
-## v.0.7.6
-
-**WORK IN PROGRESS**
-
-* Finish initial features/functionality for "QtIfwExeWrapper".
-
-* Test Qt integration with Windows MSVC compiler.
-
 ## v.0.8.x
 			
 * Improve and stabilize Opy to the point it can handle *most* scripts without *any*

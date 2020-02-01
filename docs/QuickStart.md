@@ -141,25 +141,27 @@ off to selectively import them.  The first example project
 for instance, only needs two specific imports, and so it starts out
 `from distbuilder import PyToBinPackageProcess, ConfigFactory`.      
 
-Additionally, distbuilder may serve you well as a resource for a `setup.py` script,
+Additionally, distbuilder may serve you well as a `setup.py` script,
 which you run within a given development environment to install dependencies
 and/or perform other initialization tasks for working on the project.
 For more on this usage, refer to:
 
-[Library Installation](LowLevel.md#library-installation)
-[Module import utilities](LowLevel.md#module-import-utilities) 
-[download](LowLevel.md#download)
-[run](LowLevel.md#run)
-[runPy](LowLevel.md#runPy)
+* [Library Installation](LowLevel.md#library-installation)
+
+* [Module import utilities](LowLevel.md#module-import-utilities) 
+
+* [download](LowLevel.md#download)
+
+* [run](LowLevel.md#run)
 
 ## Getting Started
 
 The easiest way for most people to learn how to use distbuilder is to step through
-some [EXAMPLES](Examples.md). Unfortunately, it is not practical to provide, and
-describe, examples of all of the library's features (and no reader would likely
-wish invest the time required for such an endeavor!) If you just spend 15 minutes
-stepping through a handful of the ones provided, however, you
-will come away with a solid base from which start employing this tool.  
+some [examples](Examples.md). Unfortunately, it is not practical to provide, and
+describe, demonstrations of all of the library's features (and no reader would likely
+wish to invest the time required for such an endeavor!) If you spend just 10 minutes
+reviewing a handful of the ones provided, however, you should come away with a solid 
+base from which start employing this tool.  
 
 ## Learn More  
 

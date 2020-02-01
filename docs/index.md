@@ -36,7 +36,7 @@ releases.
 	
 ## Additional Project Goals
 
-In addition to everything which is already flesh out and functional within it, 
+In addition to everything which is already fleshed out and functional within it, 
 "Distribution Builder" will soon supply a **new development paradigm**...  Using the 
 obfuscation and library management features, it will provide the ability for collaborators 
 to work on a **Python** project together, **without directly sharing source code**!
