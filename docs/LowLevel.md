@@ -54,7 +54,7 @@ program, invoke the buildExecutable function:
     you want specified relative to the package being 
     created. Note that when using a **relative** source
     **outside** of the build directory, you MUST specify 
-    the corresponding the destination explictly if you 
+    the corresponding the destination explicitly if you 
     wish for that to be **nested**, rather than placed
     on the package root.    
     
@@ -99,7 +99,7 @@ interface...).
 
 ### installQtIfw    
  
-When the QtIFW utlity is required for use by the library 
+When the QtIFW utility is required for use by the library 
 (i.e. when [buildInstaller](#buildinstaller) is invoked), 
 an attempt will be made to resolve the path to it via a collection 
 of methods.  First, if a [QtIfwConfig](ConfigClasses.md#qtifwconfig) object is provided
@@ -142,7 +142,7 @@ an existing installation of the QtIFW utility.
 **Returns**: a boolean to indicate success or failure.
 
 **qtIfwDirPath**: (Optional) The absolute path to the directory where the 
-utlility was installed. (i.e. the return value of `installQtIfw()`).  If omitted,
+utility was installed. (i.e. the return value of `installQtIfw()`).  If omitted,
 the `version` argument will be looked to next.
 
 **version**:  (Optional) The version of QtIFW to uninstall. If `qtIfwDirPath` is 
@@ -218,9 +218,9 @@ here, as they are already "included" implicitly.
 represented as a space delimited list of package ids.  Only default components need to be listed
 here, those not automatically included they are already "excluded" implicitly.
 
-**accept=[true/false]**: Enable the checkbox for accepting the end user license agreement.
+**accept=[true/false]**: Enable the check box for accepting the end user license agreement.
 
-**run=[true/false]**: Enable the checkbox for running the target program at the end of 
+**run=[true/false]**: Enable the check box for running the target program at the end of 
 the installation.
        
 **onexist=[fail/remove/prompt]**: Define the action taken when an existing (conflicting)
@@ -299,7 +299,7 @@ will all be be listed in the long manner.
 
 ### Installer Variables
 
-The following constants have been provided, which correspond to dynamic varibles
+The following constants have been provided, which correspond to dynamic variables
 resolved at *runtime* by QtIFW.  Note these are applicable for **BOTH** direct 
 [Installer Script](#installer-scripting) generation, and as parameters
 and attributes for many higher level functions and objects in this library.   
@@ -441,7 +441,7 @@ Static Functions:
     
     clickButton( buttonName, delayMillis=None )                
 
-    	(Note: checkbox controls also work on radio buttons)
+    	(Note: check box controls also work on radio buttons)
 	enableCheckBox( checkboxName )                
     disableCheckBox( checkboxName )               
     setCheckBox( checkboxName, boolean )              
@@ -540,9 +540,9 @@ generated content, e.g. wrapper scripts, which were already added to the content
 Other customizations which need to be made must be applied post merge.
 
 If a `subDirName` value is provided, that will be used to name the nested directory.
-If ommited, the child's package name will be used (or a truncated version of that 
+If omitted, the child's package name will be used (or a truncated version of that 
 if the child and parent share a common package name "prefix"). If the source package 
-has a  `subDirName` attribute, that detail will be overidden by this nesting.  I.e.
+has a  `subDirName` attribute, that detail will be overridden by this nesting.  I.e.
 this will *NOT* nest the content two levels deep.   
 
 This function ultimately consolidates the package items in the list and returns
@@ -591,7 +591,7 @@ the horse's mouth:
 
 One "solution" to this problem is to bundle `.pye` files instead of `.pyc`.  PyInstaller
 provides built-in support for this, in fact.  The alternate `.pye` is an *encrypted* 
-equilavent to a `.pyc`.  If your end user is in possession of the decryption key, they can run
+equivalent to a `.pyc`.  If your end user is in possession of the decryption key, they can run
 the code, because it will be unlocked for them to begin the process of running it.
 Unfortunately, that still ultimately exposes the code!  It merely restricts access.
 If your goal is to distribute a program, for which you want to prevent access 
@@ -888,7 +888,7 @@ an environmental variable named `DEBUG_MODE` to `1`.  Some contexts
 require this in order to allow this mode to work correctly.
 You may wish to include your own custom logic within your
 program to pivot on this environmental condition as well.
-In case you wish to avoid hardcoded referrences for these checks, 
+In case you wish to avoid hard-coded references for these checks, 
 the library includes the following constants:
 
     DEBUG_ENV_VAR_NAME
@@ -1054,7 +1054,7 @@ is not specified, the path is re resolved relative to `THIS_DIR`
 
 Use this to build paths which will be utilized by QtIFW scripts
 (directly or indirectly) on a target machine.  The paths will be 
-joined (and used) in a platform agonistic manner.  
+joined (and used) in a platform agnostic manner.  
 
 Note, use `joinPath` to build paths in a platform specific manner,
 applicable to where a build script will be employing it to *create* 
@@ -1151,7 +1151,7 @@ normally have a ".app" extension (vs none when they do not have
 a GUI).  That additional logic is applied when `isGui` is `True`. 
 When `isPathPreserved` is `True`, the entire path is returned rather 
 than only the file name.  When `False` (the default) a full path 
-is stripped down to the basename.
+is stripped down to the base name.
 
 ### normIconName
     
@@ -1166,7 +1166,7 @@ For Linux desktops, however, it is common place to use external ".png" files
 to create icons which point to binaries. 
 When `isPathPreserved` is `True`, the entire path is returned rather 
 than only the file name. When `False` (the default) a full path 
-is stripped down to the basename.
+is stripped down to the base name.
 
 ### getEnv, setEnv, delEnv
 
