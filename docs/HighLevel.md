@@ -103,7 +103,7 @@ are often employed by a [RobustInstallerProcess](#robustinstallerprocess).
 #### productName, description
 
 The name and description for the product on the whole, or a sub component
-withn it (based upon the context of how the factory object is used).  Such
+within it (based upon the context of how the factory object is used).  Such
 will appear as "brandings" upon a [Stand Alone Executable](LowLevel.md#stand-alone-executables) 
 and/or as labels/details within [Installer](LowLevel.md#installers) menus.  
 
@@ -152,7 +152,7 @@ as: `(2,11,6,139)`
 
 #### binaryName, isGui           
 
-These are attrubte used for a vareity of purposes, which would be difficult to 
+These are attribute used for a variety of purposes, which would be difficult to 
 list here. Most notably, they are applied directly to the production of  
 [Stand Alone Executables](LowLevel.md#stand-alone-executables). In that specific 
 process these details are set on a [PyInstallerConfig](ConfigClasses.md#pyinstconfig) 
@@ -161,8 +161,8 @@ object when invoking the `pyInstallerConfig()` function for this class.
 #### sourceDir
 
 This attribute is used to resolve relative paths to absolute paths in various 
-contexts. When ommited, such paths are normally resolved relative to the directory 
-contating the build script (NOT the current working directory!).
+contexts. When omitted, such paths are normally resolved relative to the directory 
+containing the build script (NOT the current working directory!).
 
 #### entryPointPy 
 
@@ -212,7 +212,7 @@ Notably, this is used when generating a [PyInstallerConfig](ConfigClasses.md#pyi
 object when invoking the `pyInstallerConfig()` function for this class, and 
 with the low level [buildExecutable](LowLevel.md#buildExecutable) operation.
 
-This will attibrute may also be used for producing a
+This attribute may also be used for producing a
 [QtIfwPackage](ConfigClasses.md#qtifwpackage) object when invoking the
 `qtIfwPackage()` function for this class.
 
@@ -241,7 +241,7 @@ For more information refer to:
 When producing a QtIFW installer this attribute may *optionally* be used to specify 
 an external, hard coded definition for the installer.  This is useful when either 
 integrating the distbuilder library with an existing QtIFW installer, or when a 
-developer would perfer to use the traditional QtIFW approach (perhaps due to extensive 
+developer would prefer to use the traditional QtIFW approach (perhaps due to extensive 
 customizations).    
 
 Note: This hard coded definition may include target installation content, and it 
@@ -351,7 +351,7 @@ provided, and no `binaryName`, the `DATA` type is assumed.  Other options are al
 
 #### pkgSubDirName
 
-If a `pkgSubDirName` is specificied, this places the package inside of sub directory, 
+If a `pkgSubDirName` is specified, this places the package inside of sub directory, 
 rather than having the contents there of installed directly to the top level directory
 of the target.
 
@@ -374,7 +374,7 @@ or assumed to simply be a sub directory adjacent to the build script
 
 The attribute `pkgSrcExePath` must only be supplied when the package contains a
 "primary" executable which was not produced by a process with the library (i.e. 
-it was compliled previously by some other build system).  Note, that if `binaryName`
+it was complied previously by some other build system).  Note, that if `binaryName`
 is also defined, the `pkgSrcExePath` file will be renamed to that name upon building
 the package. 
 

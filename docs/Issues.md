@@ -168,7 +168,7 @@ See [Relative resources](relative-resources) for more help.
 If Qt does not finally resolve this themselves sometime in 
 an upcoming IFW release, then distbuilder will provide a built-in
 work around.  Note, this is also a known issue on macOS, when launching 
-via symlinks added to Applications or the desktop.  That is NOT
+via symbolic links added to Applications or the desktop.  That is NOT
 a problem via Windows shortcuts or Linux desktops entries.
 
 ### Windows 8 (and earlier?): Crash at end of install
@@ -180,7 +180,7 @@ reported to Qt and they appear to be actively patching it.
 https://bugreports.qt.io/browse/QTIFW-1248
 
 The current work around is to directly launch the installer 
-with elevated priviledges (i.e as an administrator) on this
+with elevated privileges (i.e as an administrator) on this
 version of Windows.
 
 ### Linux sudo password not accepted
@@ -190,7 +190,7 @@ not accepted by the installer when it prompts for it. The
 contexts and details have yet to be narrowed down.
 
 The current work around is to directly launch the installer 
-with elevated priviledges (i.e as root / sudo) if you encounter
+with elevated privileges (i.e as root / sudo) if you encounter
 this (inconsistent/odd) behavior.
 
 ## Get Help 

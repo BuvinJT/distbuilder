@@ -45,7 +45,7 @@ from that:
 	QtCppConfig.CQtDeployerConfig
 	
 Under most circumstances, you will only need to call `qmakeInit`.  If you wish to 
-customize that process or recieve additional specifications from an external source 
+customize that process or receive additional specifications from an external source 
 (e.g. QMake), you may use the other functions to emulate and custom define what the 
 vanilla `qmakeInit` does for you.   
 
@@ -100,7 +100,7 @@ define the path to an "ask password" utility e.g. "OpenSSH Askpass"
 In some contexts, it is desirable to rename the exe which was built by QMake, when it
 comes time to package and distribute it. This is a primitive convenience function for that 
 purpose.  Using the `args` object, i.e. [qmakeArgs](#qmakeArgs), passed to it to determine 
-the old and new path, the orginal executable will simply be renamed (i.e. literally - on 
+the old and new path, the original executable will simply be renamed (i.e. literally - on 
 the file system) and the `exePath` attribute of `args` will be revised to reflect the change. 
 This takes place within `qmakeInit`, allowing the rest of the subsequent configurations 
 and processes to remain oblivious to this initialization task.  
@@ -116,7 +116,7 @@ is not provided, those values will be collected via the default command line mec
 ### QtCppConfig
 
 This class is used for low level Qt C++ packaging configurations. You will NOT likely 
-need to maniuplate this type of class directly, but it is included in this documentation 
+need to manipulate this type of class directly, but it is included in this documentation 
 for the sake of completeness.
 
 This type of object is owned by a [ConfigFactory](HighLevel.md#configfactory), and 
@@ -201,7 +201,7 @@ following links:
 
 * [Editing Build Configurations](https://doc.qt.io/qtcreator/creator-build-settings.html#editing-build-configurations)
 
-As illustrated in the Qt demos here, you can setup an easy workflow to allow use of this 
+As illustrated in the Qt demos here, you can setup an easy work flow to allow use of this 
 Python library from Qt Creator.  The demos include custom QMake scripting which you may 
 copy into your own projects. Using these demo templates, the setup procedures are short 
 and sweet, but they do span both `.pro` and `.pro.user` files.   
@@ -218,7 +218,7 @@ you open one of these `.pro` files (which can be distributed) for the first time
 * For this configuration, find the **Build steps... qmake... Additional arguments**
 input field and add `CONFIG+=package`.
 
-* *CONDITIONALLY*: within the Build Environment, add an enviromental variable named 
+* *CONDITIONALLY*: within the Build Environment, add an environmental variable named 
 `PYTHON_PATH` and define its value to be the path to the specific interpreter 
 you wish to use.  If you skip this, the build process will attempt to use `python` 
 from the system path.
@@ -293,8 +293,8 @@ Next, let's look over
 [package.pri](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qt/hello/package/package.pri).  At the top of that, you'll find:
 
 	# Get the python interpreter path from an environmental variable, if possible.
-	# Note, that may be assigned in a .pro.user. If that is not defined, fallback to
-	# a hardcoded value which assumes you want to use "python" from the system path.
+	# Note, that may be assigned in a .pro.user. If that is not defined, fall-back to
+	# a hard-coded value which assumes you want to use "python" from the system path.
 	PY_PATH=$$getenv( PYTHON_PATH )
 	isEmpty(PY_PATH){ PY_PATH=python }
    
@@ -302,8 +302,8 @@ As denoted by the comment, this is how Python is integrated in the most elementa
 aspect of the mechanism.  If an environmental variable called `PYTHON_PATH` is defined, that
 is how the interpreter will be called upon. Note that may be either universally set on your 
 system, or added to your "Package" build configuration's "run settings" (i.e. in `pro.user`).  
-Alternatively, a hardcoded fall back to `python` on the system path is used.  
-If desired, you might change that to another fallback e.g. `python3`.   
+Alternatively, a hard-coded fall back to `python` on the system path is used.  
+If desired, you might change that to another fall-back e.g. `python3`.   
 Note that finding the interpreter will also dictate the availability of the  
 library.  If you have multiple instances of Python installed, make sure you use the 
 same one where you ran the pip installation for this library.
@@ -441,12 +441,12 @@ the default `qmakeInit` mechanism.
   
 While this parameter is optional, it's generally a good idea to specify it.  The 
 `packageConfigFactory` object returned by `qmakeInit()` will have the `sourceDir`
-attribute set to this. That attibute is used to resolve relative paths to resources.  
-If ommited, the "source directory" will become the parent directory to the requisite 
+attribute set to this. That attribute is used to resolve relative paths to resources.  
+If omitted, the "source directory" will become the parent directory to the requisite 
 `exePath` value (i.e. the dynamic *build directory*) where QMake produced the C++ binary.  
 
-In the exmples provided, as is more then likely desirable, the root directory to the 
-project's source has been explictly passed.  If you wish to point this base path for 
+In the examples provided, as is more then likely desirable, the root directory to the 
+project's source has been explicitly passed.  If you wish to point this base path for 
 resources to some other location (e.g. a sub directory within your project), you may 
 do so with this option.
 

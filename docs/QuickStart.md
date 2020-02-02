@@ -58,7 +58,7 @@ Python 2 is now officially "dead" to begin with...
 
 Both the distbuilder installation, and the use of *some features within it*, 
 require [pip](https://docs.python.org/3/installing/index.html). 
-More than likley, you already have that installed.  If not, note that the installation 
+More than likely, you already have that installed.  If not, note that the installation 
 process may be slightly different based on your platform or environmental details 
 (e.g. having multiple Python installations).  The scope of such matters is beyond what 
 can be addressed here.  Refer to these links as a starting point: 

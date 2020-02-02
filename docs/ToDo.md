@@ -33,7 +33,7 @@ and / or the original installer?)
 ## v.0.9.2
 
 * Add these Qt IFW script generation features:
-	* Dependency installation via package managers (paritally developed already)
+	* Dependency installation via package managers (partially developed already)
 	* Directory creation on target (e.g. user data directories)		
 	* Resource installation outside of the target directory
 	* Windows Registry functions, analogous settings on other platforms
@@ -79,7 +79,7 @@ and / or the original installer?)
 
 ## v.1.5.x
 
-* Provide PyInstaller forward/backward compatiblity across OS versions.
+* Provide PyInstaller forward/backward compatibility across OS versions.
 
 Currently, (depending upon the platform) building with PyInstaller (and/or QtIFW?) 
 on an older or newer version of an OS can result in the product NOT being forwards 

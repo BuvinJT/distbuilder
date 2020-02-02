@@ -97,7 +97,7 @@ Object Methods:
 
 ## WindowsExeVersionInfo
 
-Objects of this type define metadata branded into Windows 
+Objects of this type define meta data branded into Windows 
 executables. This is the object type intended for 
 PyInstallerConfig.versionInfo attributes. 
 
@@ -220,7 +220,7 @@ a given package.  See [QtIfwPackageScript](#qtifwpackagescript) for more info.
 The QtIfwControlScript class provides an abstraction layer for QtIfw script
 generation.  QtIfw scripts are written in [Qt Script](https://doc.qt.io/qt-5/qtscript-index.html) 
 (which is conceptually a spin off from JavaScript), with additional custom objects and 
-methods for this context. Using this abstracion, you can achieve a great many custom 
+methods for this context. Using this abstraction, you can achieve a great many custom 
 behaviors without having to learn much about the language yourself. Refer to the details on 
 [Installer Scripting](LowLevel.md#installer-scripting) to learn more about 
 the low level helpers provided by the library for this purpose. 
@@ -229,10 +229,10 @@ For maximum flexibility, rather than using the dynamic methods, you may directly
 the entire script via a raw string, by setting the `script` attribute.  Or, you may 
 specify an external file as the source instead via `script_path`. In addition, you may 
 always delegate scripts to a traditional QtIFW definition by using a higher level 
-config [QtIfwConfig](#qtifwconfig) to specify such.
+configuration [QtIfwConfig](#qtifwconfig) to specify such.
 
 The way this class works, in summary, is that you may provide an optional script 
-as a raw string, or a path to script you wish to load directly.  If specificied, 
+as a raw string, or a path to script you wish to load directly.  If specified, 
 those resources act as a *base*, from which you may continue to add on to.
 
 Along with being able to add your own custom functions to use as "helpers"
@@ -240,9 +240,9 @@ a QtIFW Control script is driven by the framework which calls functions of
 specific names, if they exist, in order to apply custom coding during a given
 event.  A QtIfwControlScript object has a pair of attributes related to each such 
 event in the framework.  One is a boolean, dictating whether to auto generate this 
-event handler using a set of fixed, builtin logic provided by distbuilder to add a 
+event handler using a set of fixed, built-in logic provided by distbuilder to add a 
 fair amount of additional features to your installers "for free".  The other attribute 
-in ecah pair is the body of the function (which is normally auto generated).   
+in each pair is the body of the function (which is normally auto generated).   
   
 When the `write()` function is invoked, the actual script file to be embedded 
 in the installer is generated from the attributes.  Prior to calling that, you
@@ -420,9 +420,9 @@ For maximum flexibility, rather than using the dynamic methods, you may directly
 the entire script via a raw string, by setting the `script` attribute.  Or, you may 
 specify an external file as the source instead via `script_path`. In addition, you may 
 always delegate scripts to a traditional QtIFW definition by using a higher level 
-config [QtIfwConfig](#qtifwconfig) to specify such.
+configuration [QtIfwConfig](#qtifwconfig) to specify such.
 
-This class works in an analagous manner to [QtIfwControlScript](#qtifwcontrolscript).
+This class works in an analogous manner to [QtIfwControlScript](#qtifwcontrolscript).
 Please refer to the that documentation for an explanation of how use these script
 objects in general. 
 
@@ -497,7 +497,7 @@ Such layers may take different forms, and be nested inside of one another.
 The benefit of this is to impose a specific environment and or set of parameters 
 onto the exe without having to modify it internally.  These options work cross
 platform, and could be slapped over the top of a program written in any language.
-You may, in fact, even wrap third-party (precompiled) programs in these layers!
+You may, in fact, even wrap third-party (pre-compiled) programs in these layers!
 
 The easiest way to use this class is to set some of its basic attributes. For
 example, `workingDir`, `isElevated`, `envVars`, or `args`.  The approach taken by the 
@@ -512,11 +512,11 @@ a persistent "companion" to your binary.  Executing the script rather then the
 binary itself would be the intended means for launching the program.  If this attribute 
 is set, "shortcuts" which would normally point a user to the binary, will instead run this 
 wrapper layer.  On Windows, this (normally) equates to having a batch file companion. 
-On Linux, a shell script companion is created (with an explict `.sh` extension). On macOS, 
+On Linux, a shell script companion is created (with an explicit `.sh` extension). On macOS, 
 a shell script with no extension is embedded into the .app file when producing a gui application, 
 else the same design used on Linux is employed for non-gui programs.  
 
-The application of a wrapper script of this nature is not entirely uncommon - especailly on Linux. 
+The application of a wrapper script of this nature is not entirely uncommon - especially on Linux. 
 As an example, when deploying Qt C++ applications on Linux which are 
 dynamically linked, the **standard procedure** (per Qt documentation) is to use this 
 (slightly modifed) shell script to load the required libraries: 
@@ -533,19 +533,19 @@ dynamically linked, the **standard procedure** (per Qt documentation) is to use 
 	"$dirname/$appname" "$@"
 
 Other ways for using a wrapper like this include automatically detecting dependencies, and
-then downloading and installing them as needed.  Or, doing something simliar for updates
+then downloading and installing them as needed.  Or, doing something similar for updates
 to your software. Using a wrapper, you could launch a "companion application" along side the 
 primary target. You could start a background service, or open help documentation... The
-possiblities are really boundless.  
+possibilities are really boundless.  
 
 Note: On Windows and Linux desktops (e.g. Ubuntu) for a gui application with shortcuts,  
 the "built-in wrapper" features (`workingDir`, `isElevated`, `envVars`, `args`) maybe 
-used in combinatoin with a custom `wrapperScript`, as those options are applied via the shortcut
+used in combination with a custom `wrapperScript`, as those options are applied via the shortcut
 launching the script OR the executable.  On **macOS**, however, if using a custom script, you will have 
-to **manully** include these other features in that script, as the way they are applied 
+to **manually** include these other features in that script, as the way they are applied 
 automatically by distibuilder is through the generation of one. If doing this, the easiest approach
 maybe to first use the built-ins without the custom script, and then duplicate the pertinent parts
-in your own.  Alternately, you could programmatically manipluate the `wrapperScript` attribute referrencing an
+in your own.  Alternately, you could programmatically manipulate the `wrapperScript` attribute referencing an
 [ExecutableScript](LowLevel.md#executablescript) generated for you by this class upon it's construction
 or upon a call to `refresh()`. 
 
