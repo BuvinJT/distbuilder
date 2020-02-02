@@ -12,20 +12,20 @@ the [Qt Installer Framework](http://doc.qt.io/qtinstallerframework),
 
 As one might guess, the primary role which Distribution Builder can serve for your development 
 needs is packaging and deploying Python based programs. It can, however, be employed for 
-distributing software of all sorts.  To this end, a dedicated module, has been provided for 
-[Qt C++ Integration](QtCpp.md).  More cross language / framework integration modules 
-will become available in the future.
+distributing software written in other languages as well.  To this end, a dedicated module, 
+has been provided which is specific for [Qt C++ Integration](QtCpp.md).  More cross language / 
+cross framework integration modules will become available in the future.
 
 This library is compatible with both Python 2 and 3.  It has been tested on recent versions of 
 Windows, macOS, and multiple Linux distros. It features the ability to create stand-alone 
 binaries from Python scripts (via PyInstaller), and is capable of building installers in a 
-cross platform manner (via QtIFW) which work in either gui or *non-gui* contexts (note 
-QtIFW does not naturally provide a *non-gui* option!). The library can also be used to 
-**obfuscate** code (via Opy), so as to protect proprietary work.
+cross platform manner (via QtIFW). These installers can be produced for either gui or 
+*non-gui* (i.e terminal interface) contexts. Note that the later is a feature QtIFW does not naturally provide. 
+The library can also be used to **obfuscate** code (via Opy), so as to protect proprietary work.
 
 See the [Quick Start Guide](QuickStart.md) for instructions on installation 
 and getting started with the tool. For a more thorough explanation of how to use it, 
-it is recommended you next proceed to [High Level Classes](HighLevel.md).
+it is recommended you proceed to [High Level Classes](HighLevel.md).
 Then, as needed, move on to [Configuration Classes](ConfigClasses.md) and/or
 [Low Level Classes And Functions](LowLevel.md).
 	
