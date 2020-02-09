@@ -1,6 +1,6 @@
 from distbuilder import util 
 from distbuilder.util import *  # @UnusedWildImport
-from distbuilder.opy_library import obfuscatePyLib, OBFUS_DIR_PATH
+from distbuilder.opy_library import obfuscatePy, OBFUS_DIR_PATH
 
 PIP_CMD_BASE = '"' + PYTHON_PATH + '" -m pip'
 
@@ -92,12 +92,14 @@ def installLibrary( name, opyConfig=None, pipConfig=None ):
     
     # Set the pip source and working directory. 
     # Optionally, create obfuscated version of source
-    if opyConfig is None:
+    if opyConfig :
+        opyConfig.name = name
+        opyConfig.isLibrary = True
+        wrkDir, _ = obfuscatePy( opyConfig )
+        pipConfig.source = None
+    else :                
         wrkDir = None
         if pipConfig.source is None: pipConfig.source = name
-    else:
-        wrkDir, _ = obfuscatePyLib( name, opyConfig )
-        pipConfig.source = None
 
     util._system( __PIP_INSTALL_TMPLT % 
         ( pipConfig.pipCmdBase, PIP_INSTALL, str(pipConfig) ), wrkDir )  
