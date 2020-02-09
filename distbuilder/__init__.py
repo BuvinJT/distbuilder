@@ -48,6 +48,7 @@ from distbuilder.pip_installer import \
 from distbuilder.opy_library import \
       OpyConfigExt as OpyConfig \
     , OpyPatch \
+    , obfuscatedId \
     , LibToBundle \
     , obfuscatePy \
     , obfuscatePyLib \

@@ -31,10 +31,10 @@ setup (
     ],    
 	packages         = ["distbuilder"],
 	install_requires = [		  
-          "six"           # Forced as a prerequisite too
+          "six"           
 		, "PyInstaller"   
-		, "opy_distbuilder"  
-        , "argparse"
+		, "argparse"
+		, "opy_distbuilder>=0.9.2"  
 	],
 	include_package_data=True, # extra files defined in MANIFEST.in
 )

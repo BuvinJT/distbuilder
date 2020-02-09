@@ -1,6 +1,6 @@
 import os
 import opy  # Custom Library
-from opy import OpyConfig, analyze, patch  
+from opy import OpyConfig, analyze, patch, obfuscatedId
 from distbuilder.util import *  # @UnusedWildImport
 
 OBFUS_DIR_PATH = absPath( "obfuscated" )
@@ -40,24 +40,32 @@ class OpyPatch:
         self.path    = normpath(joinPath( parentDir, relPath )).replace("\\","/")
         self.patches = patches
 
-    def obfuscatePath( self, obfuscatedFileDict ):
+    def obfuscatePath( self, obfuscatedFiles ):
         try: 
-            self.path = obfuscatedFileDict[ self.relPath ]
+            self.path = obfuscatedFiles[ self.relPath ]
             return True
         except: 
             printErr( "OpyPatch cannot map %s" % (self.relPath,) )
             return False
         
-    def apply(self): patch( self.path, self.patches )
+    def apply(self, opyResults): patch( self.path, opyResults, self.patches )
 
 # -----------------------------------------------------------------------------    
+def analyze( opyConfig ):
+    ''' returns: OpyResults '''
+    
+def analyzeLib( opyConfig, 
+                isExposingPackageImports=True, 
+                isExposingPublic=True ):
+    ''' returns: OpyResults '''
+
 def obfuscatePy( opyConfig ):
     ''' returns: (obDir, obPath) '''
          
     # Discard prior obfuscated source   
     if exists( OBFUS_DIR_PATH ) : removeDir( OBFUS_DIR_PATH )
     
-    # Using a staging directory is a bundleLibs list was provided 
+    # Using a staging directory if a bundleLibs list was provided 
     if opyConfig.bundleLibs: sourceDir = createStageDir( 
         opyConfig.bundleLibs, opyConfig.sourceDir )
     elif opyConfig.sourceDir : sourceDir = opyConfig.sourceDir 
@@ -70,7 +78,7 @@ def obfuscatePy( opyConfig ):
     # Don't obfuscate the name of the entry point module
     try : 
         opyConfig.plain_names.append( 
-            splitExt(splitPath(opyConfig.entryPointPy)[1])[0] )
+            rootFileName( opyConfig.entryPointPy ) )
     except : pass         
     
     # Suffix all obfuscated names with the project name
@@ -89,7 +97,8 @@ def obfuscatePy( opyConfig ):
     # Optionally, apply patches
     if opyConfig.patches :
         for p in opyConfig.patches:
-            if p.obfuscatePath( opyResults.obfuscatedFileDict ): p.apply()
+            if p.obfuscatePath( opyResults.obfuscatedFiles ): 
+                p.apply( opyResults )
     
     # Return the paths generated 
     return _toObfuscatedPaths( opyConfig )
@@ -126,7 +135,7 @@ def obfuscatePyLib( opyConfig,
     # (e.g. public module constants or class functions/attributes)
     opyConfig.skip_public = isExposingPublic
     
-    # Create obfuscated the library, designating setup as the entry point
+    # Create an obfuscated library, designating setup as the entry point
     opyConfig.entryPointPy = LIBRARY_SETUP_FILE_NAME    
     return obfuscatePy( opyConfig ) 
 
@@ -139,6 +148,8 @@ def createStageDir( bundleLibs=[], sourceDir=THIS_DIR ):
     for lib in bundleLibs :        
         destPath = joinPath( STAGE_DIR_PATH, lib.name )
         if lib.pipConfig is None :
+            if lib.localDirPath is None:
+                lib.localDirPath = modulePackagePath( lib.name )            
             copyDir( lib.localDirPath, destPath )         
         else:    
             lib.pipConfig.destPath = destPath
