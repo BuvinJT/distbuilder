@@ -1,17 +1,13 @@
 from sys import stdout
-
-# OPY GLITCH! WANT TO USE:
 # cross environment Tkinter import    
-#try:    from tkinter import Tk 
-#except: from Tkinter import Tk
-#try:    from tkinter.ttk import Button 
-#except: from ttk import Button
-
-from tkinter import Tk
-#from Tkinter import Tk
-from tkinter.ttk import Button
-#from ttk import Button
-
+try:    
+    from tkinter import Tk 
+except: 
+    from Tkinter import Tk
+try:    
+    from tkinter.ttk import Button 
+except: 
+    from ttk import Button
 
 def onClick(): 
     stdout.write( "Hello!\n" )
