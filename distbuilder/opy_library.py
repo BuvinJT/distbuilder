@@ -10,18 +10,24 @@ LIBRARY_SETUP_FILE_NAME         = "setup.py"
 PACKAGE_ENTRY_POINT_MODULE_NAME = "__init__"
 PACKAGE_ENTRY_POINT_FILE_NAME   = PACKAGE_ENTRY_POINT_MODULE_NAME + PY_EXT
 
+__SEP = "/"
+
 # -----------------------------------------------------------------------------    
 class OpyConfigExt( OpyConfig ):
     """
     See Opy docs for details.
     """        
     def __init__( self, name, entryPointPy=None, isLibrary=False,
-                  bundleLibs=None, sourceDir=None, patches=None ):
-        # common attributes
+                  isAutoConfig=True, bundleLibs=None, 
+                  sourceDir=None, patches=None ):
+        # basic attributes
         self.name = name
         self.entryPointPy = entryPointPy
-        self.bundleLibs = bundleLibs
         self.sourceDir = THIS_DIR if sourceDir is None else absPath(sourceDir)        
+
+        # advanced attributes
+        self.isAutoConfig = isAutoConfig
+        self.bundleLibs = bundleLibs        
         self.patches = patches
         
         # library attributes 
@@ -33,7 +39,8 @@ class OpyConfigExt( OpyConfig ):
 
 # -----------------------------------------------------------------------------   
 class LibToBundle:
-    def __init__( self, name, localDirPath=None, pipConfig=None, isObfuscated=False ):
+    def __init__( self, name, localDirPath=None, 
+                  pipConfig=None, isObfuscated=False ):
         self.name         = name
         self.localDirPath = localDirPath
         self.pipConfig    = pipConfig
@@ -43,7 +50,7 @@ class LibToBundle:
 class OpyPatch:
     def __init__( self, relPath, patches, parentDir=OBFUS_DIR_PATH ):
         self.relPath = normpath(relPath).replace("\\","/")
-        self.path    = normpath(joinPath( parentDir, relPath )).replace("\\","/")
+        self.path    = normpath(joinPath(parentDir, relPath)).replace("\\","/")
         self.patches = patches
 
     def obfuscatePath( self, opyResults ):
@@ -100,56 +107,80 @@ def __obfuscateLib( opyConfig, isAnalysis=False, filesSubset=[] ):
     return __runOpy( opyConfig, isAnalysis, filesSubset ) 
 
 def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
-    ''' returns: (obDir, obPath) OR an OpyResults object when isAnalysis=True '''
-         
-    # Discard prior obfuscated source   
-    if exists( OBFUS_DIR_PATH ) : removeDir( OBFUS_DIR_PATH )
     
-    # Using a staging directory if a bundleLibs list was provided 
-    if opyConfig.bundleLibs: sourceDir = createStageDir( 
-        opyConfig.bundleLibs, opyConfig.sourceDir )
-    elif opyConfig.sourceDir : sourceDir = opyConfig.sourceDir 
-    
-    # Leave the build script calling this library 
-    # out of the obfuscation results / directory
-    try : opyConfig.skip_path_fragments.append( splitPath(argv[0])[1] )
-    except : pass
-    
-    # Don't obfuscate the name of the entry point module
-    try : 
-        opyConfig.plain_names.append( 
-            rootFileName( opyConfig.entryPointPy ) )
-    except : pass         
-    
-    # Suffix all obfuscated names with the project name
-    # (to avoid theoretical collisions with plain names)
-    opyConfig.obfuscated_name_tail = "_%s_" % (opyConfig.name,)
-    
-    # Run Opy process
-    if isAnalysis:        
-        opyResults = opy.analyze( sourceRootDirectory = sourceDir,
-                                  fileList            = filesSubset,  
-                                  configSettings      = opyConfig )        
-    else :        
-        opyResults = opy.obfuscate( sourceRootDirectory = sourceDir,
-                                    targetRootDirectory = OBFUS_DIR_PATH,
-                                    configSettings      = opyConfig )
-    print
-    
-    # Discard staging directory   
-    if exists( STAGE_DIR_PATH ) : removeDir( STAGE_DIR_PATH )
-    
-    # Return results, when run in analysis mode 
-    if isAnalysis: return opyResults 
+    def __run( opyConfig, isAnalysis, filesSubset ):             
+        # Discard prior obfuscated source   
+        if exists( OBFUS_DIR_PATH ) : removeDir( OBFUS_DIR_PATH )
         
-    # Optionally, apply patches
-    if opyConfig.patches :
-        for p in opyConfig.patches:
-            if p.obfuscatePath( opyResults ): 
-                p.apply( opyResults )
+        # Using a staging directory if a bundleLibs list was provided 
+        if opyConfig.bundleLibs: sourceDir = createStageDir( 
+            opyConfig.bundleLibs, opyConfig.sourceDir )
+        elif opyConfig.sourceDir : sourceDir = opyConfig.sourceDir 
+        
+        # Leave the build script calling this library 
+        # out of the obfuscation results / directory
+        try : opyConfig.skip_path_fragments.append( splitPath(argv[0])[1] )
+        except : pass
+        
+        # Don't obfuscate the name of the entry point module
+        try : 
+            opyConfig.plain_names.append( 
+                rootFileName( opyConfig.entryPointPy ) )
+        except : pass         
+        
+        # Suffix all obfuscated names with the project name
+        # (to avoid theoretical collisions with plain names)
+        opyConfig.obfuscated_name_tail = "_%s_" % (opyConfig.name,)
+        
+        # Run Opy process
+        if isAnalysis:        
+            opyResults = opy.analyze( sourceRootDirectory = sourceDir,
+                                      fileList            = filesSubset,  
+                                      configSettings      = opyConfig )        
+        else :        
+            opyResults = opy.obfuscate( sourceRootDirectory = sourceDir,
+                                        targetRootDirectory = OBFUS_DIR_PATH,
+                                        configSettings      = opyConfig )
+        print
+        
+        # Discard staging directory   
+        if exists( STAGE_DIR_PATH ) : removeDir( STAGE_DIR_PATH )
+        
+        # Return results, when run in analysis mode 
+        if isAnalysis: return opyResults 
+            
+        # Optionally, apply patches
+        if opyConfig.patches :
+            for p in opyConfig.patches:
+                if p.obfuscatePath( opyResults ): 
+                    p.apply( opyResults )
+        
+        # Return the paths generated 
+        return _toObfuscatedPaths( opyConfig )
+
+    def __autoConfig( opyConfig, isAnalysis, filesSubset, runFunc ):
+        opyResults = runFunc( opyConfig, True, filesSubset )
+        try:    bundled = [ l.name for l in opyConfig.bundleLibs ]
+        except: bundled = []        
+        try: 
+            obFiles = opyResults.obfuscatedFiles.keys()
+            primary = [ rootFileName(f) for f in obFiles
+                        if f.split(__SEP)[0] not in bundled ]
+        except: primary = []
+        exMods = [ m for m in opyResults.obfuscatedMods 
+                   if (m not in primary) and (m not in bundled) ]                        
+        if len( exMods ) > 0:
+            print( ">>> SECOND OPY PASS REQUIRED..." )
+            print( "Auto exposing imports: %s" % (exMods,) )
+            opyConfig.external_modules.extend( exMods )
+        elif isAnalysis: return opyResults     
+        return runFunc( opyConfig, isAnalysis, filesSubset )    
     
-    # Return the paths generated 
-    return _toObfuscatedPaths( opyConfig )
+    # -----------------------------
+    if opyConfig.isAutoConfig :
+        return __autoConfig( opyConfig, isAnalysis, filesSubset, __run )
+    else :
+        return __run( opyConfig, isAnalysis, filesSubset )
     
 def createStageDir( bundleLibs=[], sourceDir=THIS_DIR ):
     ''' returns: stageDir '''
