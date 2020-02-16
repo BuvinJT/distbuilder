@@ -2,6 +2,7 @@ import opy  # Custom Library
 from opy import OpyConfig, analyze, patch, \
     obfuscatedId  # @UnusedImport
 from distbuilder.util import *  # @UnusedWildImport
+import six
 
 OBFUS_DIR_PATH = absPath( "obfuscated" )
 STAGE_DIR_PATH = absPath( "stage" )
@@ -12,13 +13,18 @@ PACKAGE_ENTRY_POINT_FILE_NAME   = PACKAGE_ENTRY_POINT_MODULE_NAME + PY_EXT
 
 __SEP = "/"
 
-# -----------------------------------------------------------------------------    
+# -----------------------------------------------------------------------------
+class ExternalLibDefault: 
+    NONE, CLEAR_TEXT, BUNDLE_SHALLOW, BUNDLE_DEEP = range(4)
+    
 class OpyConfigExt( OpyConfig ):
-    """
+    
+    """    
     See Opy docs for details.
     """        
     def __init__( self, name, entryPointPy=None, isLibrary=False,
-                  isAutoConfig=True, bundleLibs=None, 
+                  externalLibDefault=ExternalLibDefault.CLEAR_TEXT, 
+                  bundleLibs=None, 
                   sourceDir=None, patches=None ):
         # basic attributes
         self.name = name
@@ -26,7 +32,7 @@ class OpyConfigExt( OpyConfig ):
         self.sourceDir = THIS_DIR if sourceDir is None else absPath(sourceDir)        
 
         # advanced attributes
-        self.isAutoConfig = isAutoConfig
+        self.externalLibDefault = externalLibDefault
         self.bundleLibs = bundleLibs        
         self.patches = patches
         
@@ -96,6 +102,7 @@ def __obfuscateLib( opyConfig, isAnalysis=False, filesSubset=[] ):
     if opyConfig.isExposingPackageImports :
         opyResults = analyze( fileList=[PACKAGE_ENTRY_POINT_FILE_NAME], 
                               configSettings=opyConfig )
+        if opyConfig.external_modules is None: opyConfig.external_modules=[]
         opyConfig.external_modules.extend( opyResults.obfuscatedModImports )
     
     # Optionally, don't obfuscate anything with public access
@@ -112,9 +119,13 @@ def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
         # Discard prior obfuscated source   
         if exists( OBFUS_DIR_PATH ) : removeDir( OBFUS_DIR_PATH )
         
-        # Using a staging directory if a bundleLibs list was provided 
-        if opyConfig.bundleLibs: sourceDir = createStageDir( 
-            opyConfig.bundleLibs, opyConfig.sourceDir )
+        # Use a staging directory if a bundleLibs list was provided 
+        if opyConfig.bundleLibs: 
+            for i, lib in enumerate(opyConfig.bundleLibs): 
+                if isinstance( lib, six.string_types ):
+                    opyConfig.bundleLibs[i]=LibToBundle( lib )             
+            sourceDir = createStageDir( opyConfig.bundleLibs, 
+                                        opyConfig.sourceDir )
         elif opyConfig.sourceDir : sourceDir = opyConfig.sourceDir 
         
         # Leave the build script calling this library 
@@ -170,17 +181,31 @@ def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
         exMods = [ m for m in opyResults.obfuscatedMods 
                    if (m not in primary) and (m not in bundled) ]                        
         if len( exMods ) > 0:
-            print( ">>> SECOND OPY PASS REQUIRED..." )
-            print( "Auto exposing imports: %s" % (exMods,) )
-            opyConfig.external_modules.extend( exMods )
+            print( ">>> SECOND OPY PASS REQUIRED..." )            
+            print( opyConfig.externalLibDefault )
+            isBundling =( 
+                opyConfig.externalLibDefault==ExternalLibDefault.BUNDLE_SHALLOW
+                or opyConfig.externalLibDefault==ExternalLibDefault.BUNDLE_DEEP )
+            if isBundling:
+                # get root module name, i.e. library name
+                exMods = [m.split(".")[0] for m in exMods]                
+                print( "Auto bundling imports: %s" % (exMods,) )
+                if opyConfig.bundleLibs is None : opyConfig.bundleLibs=[]
+                opyConfig.bundleLibs.extend( exMods )
+            else:
+                print( "Auto exposing imports: %s" % (exMods,) )
+                if opyConfig.external_modules is None : 
+                    opyConfig.external_modules=[]
+                opyConfig.external_modules.extend( exMods )                    
         elif isAnalysis: return opyResults     
         return runFunc( opyConfig, isAnalysis, filesSubset )    
     
     # -----------------------------
-    if opyConfig.isAutoConfig :
-        return __autoConfig( opyConfig, isAnalysis, filesSubset, __run )
-    else :
+    if( opyConfig.externalLibDefault is None or 
+        opyConfig.externalLibDefault==ExternalLibDefault.NONE ):
         return __run( opyConfig, isAnalysis, filesSubset )
+    else:
+        return __autoConfig( opyConfig, isAnalysis, filesSubset, __run )        
     
 def createStageDir( bundleLibs=[], sourceDir=THIS_DIR ):
     ''' returns: stageDir '''
