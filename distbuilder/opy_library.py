@@ -169,8 +169,10 @@ def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
         # Return the paths generated 
         return _toObfuscatedPaths( opyConfig )
 
-    def __autoConfig( opyConfig, isAnalysis, filesSubset, runFunc ):
+    def __bundle( opyConfig, isAnalysis, filesSubset, runFunc ):
+        # analyze
         opyResults = runFunc( opyConfig, True, filesSubset )
+        # find the library names  bundle 
         try:    bundled = [ l.name for l in opyConfig.bundleLibs ]
         except: bundled = []        
         try: 
@@ -181,31 +183,24 @@ def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
         exMods = [ m for m in opyResults.obfuscatedMods 
                    if (m not in primary) and (m not in bundled) ]                        
         if len( exMods ) > 0:
-            print( ">>> SECOND OPY PASS REQUIRED..." )            
-            print( opyConfig.externalLibDefault )
-            isBundling =( 
-                opyConfig.externalLibDefault==ExternalLibDefault.BUNDLE_SHALLOW
-                or opyConfig.externalLibDefault==ExternalLibDefault.BUNDLE_DEEP )
-            if isBundling:
-                # get root module name, i.e. library name
-                exMods = [m.split(".")[0] for m in exMods]                
-                print( "Auto bundling imports: %s" % (exMods,) )
-                if opyConfig.bundleLibs is None : opyConfig.bundleLibs=[]
-                opyConfig.bundleLibs.extend( exMods )
-            else:
-                print( "Auto exposing imports: %s" % (exMods,) )
-                if opyConfig.external_modules is None : 
-                    opyConfig.external_modules=[]
-                opyConfig.external_modules.extend( exMods )                    
-        elif isAnalysis: return opyResults     
+            # get root module name, i.e. library name
+            exMods = [m.split(".")[0] for m in exMods]                
+            print( "Bundling import source for: %s" % (exMods,) )
+            try   : opyConfig.bundleLibs.extend( exMods )
+            except: opyConfig.bundleLibs=exMods
+        # if analyzing, and nothing was bundled, there is nothing further to do    
+        elif isAnalysis: return opyResults             
+        # create obfuscation
         return runFunc( opyConfig, isAnalysis, filesSubset )    
     
     # -----------------------------
-    if( opyConfig.externalLibDefault is None or 
-        opyConfig.externalLibDefault==ExternalLibDefault.NONE ):
-        return __run( opyConfig, isAnalysis, filesSubset )
-    else:
-        return __autoConfig( opyConfig, isAnalysis, filesSubset, __run )        
+    if opyConfig.externalLibDefault==ExternalLibDefault.CLEAR_TEXT:
+        opyConfig.apply_standard_exclusions = True
+    # when bundling, apply_standard_exclusions is independent                                         
+    if opyConfig.externalLibDefault in [ ExternalLibDefault.BUNDLE_SHALLOW
+                                       , ExternalLibDefault.BUNDLE_DEEP ] :
+        return __bundle( opyConfig, isAnalysis, filesSubset, __run )
+    else: return __run( opyConfig, isAnalysis, filesSubset )
     
 def createStageDir( bundleLibs=[], sourceDir=THIS_DIR ):
     ''' returns: stageDir '''
