@@ -395,7 +395,7 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
             self.onOpyConfig( opyConfig )
             if self.isTestingObfuscation:
                 _, obPath = obfuscatePy( opyConfig )
-                runPy( obPath )
+                runPy( obPath, self.exeTestArgs, self.isElevatedTest )
                 sys.exit()
         else: opyConfig = None
         

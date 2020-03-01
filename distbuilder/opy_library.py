@@ -115,7 +115,7 @@ def __obfuscateLib( opyConfig, isAnalysis=False, filesSubset=[] ):
 
 def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
     
-    def __run( opyConfig, isAnalysis, filesSubset ):             
+    def __run( opyConfig, isAnalysis, filesSubset, isVerbose=True ):             
         # Discard prior obfuscated source   
         if exists( OBFUS_DIR_PATH ) : removeDir( OBFUS_DIR_PATH )
         
@@ -147,7 +147,8 @@ def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
         if isAnalysis:        
             opyResults = opy.analyze( sourceRootDirectory = sourceDir,
                                       fileList            = filesSubset,  
-                                      configSettings      = opyConfig )        
+                                      configSettings      = opyConfig,
+                                      isVerbose           = isVerbose )        
         else :        
             opyResults = opy.obfuscate( sourceRootDirectory = sourceDir,
                                         targetRootDirectory = OBFUS_DIR_PATH,
@@ -171,17 +172,11 @@ def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
 
     def __bundle( opyConfig, isAnalysis, filesSubset, runFunc ):
         # analyze
-        opyResults = runFunc( opyConfig, True, filesSubset )
+        opyResults = runFunc( opyConfig, True, filesSubset, False )
         # find the library names  bundle 
         try:    bundled = [ l.name for l in opyConfig.bundleLibs ]
         except: bundled = []        
-        try: 
-            obFiles = opyResults.obfuscatedFiles.keys()
-            primary = [ rootFileName(f) for f in obFiles
-                        if f.split(__SEP)[0] not in bundled ]
-        except: primary = []
-        exMods = [ m for m in opyResults.obfuscatedMods 
-                   if (m not in primary) and (m not in bundled) ]                        
+        exMods = [ m for m in opyResults.obfuscatedMods if m not in bundled ]                        
         if len( exMods ) > 0:
             # get root module name, i.e. library name
             exMods = [m.split(".")[0] for m in exMods]                
@@ -195,10 +190,13 @@ def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
     
     # -----------------------------
     if opyConfig.externalLibDefault==ExternalLibDefault.CLEAR_TEXT:
-        opyConfig.apply_standard_exclusions = True
+        opyConfig.apply_standard_exclusions = True        
+        opyConfig.preserve_unresolved_imports = True
     # when bundling, apply_standard_exclusions is independent                                         
     if opyConfig.externalLibDefault in [ ExternalLibDefault.BUNDLE_SHALLOW
                                        , ExternalLibDefault.BUNDLE_DEEP ] :
+        opyConfig.preserve_unresolved_imports = False
+        opyConfig.error_on_unresolved_imports = False
         return __bundle( opyConfig, isAnalysis, filesSubset, __run )
     else: return __run( opyConfig, isAnalysis, filesSubset )
     
