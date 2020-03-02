@@ -32,8 +32,8 @@ class BuildProcess( PyToBinPackageProcess ):
         ]                
         
 p = BuildProcess( configFactory )
-#p.isTestingObfuscation = True
-p.isTestingExe = True
+p.isTestingObfuscation = True
+#p.isTestingExe = True
 p.exeTestArgs = [ absPath("clear-text-sample.txt"), 
                   absPath("encrypted-result.bin"), "-o" ]
 p.run()       
