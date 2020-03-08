@@ -47,13 +47,14 @@ from distbuilder.pip_installer import \
 
 from distbuilder.opy_library import \
       OpyConfigExt as OpyConfig \
-    , ExternalLibDefault \
     , OpyPatch \
     , LibToBundle \
     , obfuscatePy \
     , opyAnalyze \
     , createStageDir \
-    , obfuscatedId \
+    , obfuscatedId 
+
+ExtLibHandling = OpyConfig.ExtLibHandling 
     
 from distbuilder.util import \
       ExecutableScript \

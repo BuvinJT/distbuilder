@@ -1,5 +1,5 @@
 from distbuilder import ConfigFactory, PyToBinPackageProcess, absPath, \
-    ExternalLibDefault, OpyPatch, obfuscatedId
+    ExtLibHandling, OpyPatch, obfuscatedId
     
 f = configFactory  = ConfigFactory()
 f.productName      = "Krypto"
@@ -15,10 +15,9 @@ f.distResources    = ["krypto.ini"]
 class BuildProcess( PyToBinPackageProcess ):
     def onOpyConfig( self, cfg ):    
         
-        cfg.externalLibDefault = ExternalLibDefault.BUNDLE_SHALLOW    
-        #opyConfig.bundleLibs = [ "simplecrypt" ] # auto bundled!
-        
-        cfg.external_modules.extend( [ "Crypto", "Crypto.Cipher.AES" ] )                                   
+        cfg.extLibHandling = ExtLibHandling.BUNDLE    
+        cfg.bundleRounds   = 1
+
         cfg.skip_path_fragments.extend( ["setup.py"] )
         
         # patching function call with keyword argument

@@ -14,26 +14,28 @@ PACKAGE_ENTRY_POINT_FILE_NAME   = PACKAGE_ENTRY_POINT_MODULE_NAME + PY_EXT
 __SEP = "/"
 
 # -----------------------------------------------------------------------------
-class ExternalLibDefault: 
-    NONE, CLEAR_TEXT, BUNDLE_SHALLOW, BUNDLE_DEEP = range(4)
     
 class OpyConfigExt( OpyConfig ):
+    
+    class ExtLibHandling: NONE, CLEAR, BUNDLE = range(3)
     
     """    
     See Opy docs for details.
     """        
-    def __init__( self, name, entryPointPy=None, isLibrary=False,
-                  externalLibDefault=ExternalLibDefault.CLEAR_TEXT, 
-                  bundleLibs=None, 
-                  sourceDir=None, patches=None ):
+    def __init__( self, name, entryPointPy=None, sourceDir=None, 
+                  isLibrary=False,
+                  extLibHandling=ExtLibHandling.CLEAR,
+                  bundleRounds=1, bundleLibs=None, 
+                  patches=None ):
         # basic attributes
         self.name = name
         self.entryPointPy = entryPointPy
         self.sourceDir = THIS_DIR if sourceDir is None else absPath(sourceDir)        
 
         # advanced attributes
-        self.externalLibDefault = externalLibDefault
-        self.bundleLibs = bundleLibs        
+        self.extLibHandling = extLibHandling
+        self.bundleLibs = bundleLibs
+        self.bundleRounds = bundleRounds        
         self.patches = patches
         
         # library attributes 
@@ -115,7 +117,69 @@ def __obfuscateLib( opyConfig, isAnalysis=False, filesSubset=[] ):
 
 def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
     
-    def __run( opyConfig, isAnalysis, filesSubset, isVerbose=True ):             
+    def _main():
+        if opyConfig.extLibHandling == OpyConfigExt.ExtLibHandling.BUNDLE:
+            opyConfig.preserve_unresolved_imports = False
+            opyConfig.error_on_unresolved_imports = False
+            # note: apply_standard_exclusions is independent
+            rounds = opyConfig.bundleRounds            
+            return _bundle( opyConfig, isAnalysis, filesSubset, rounds )
+        else:
+            if opyConfig.extLibHandling==OpyConfigExt.ExtLibHandling.CLEAR:
+                opyConfig.apply_standard_exclusions = True        
+                opyConfig.preserve_unresolved_imports = True      
+            return _run( opyConfig, isAnalysis, filesSubset )
+
+    # note if initial rounds are 0 (or less), this loops
+    # until no unresolved imports are encountered
+    def _bundle( opyConfig, isAnalysis, filesSubset, rounds ):                        
+        while True:                     
+            rounds -= 1   
+            
+            # analyze
+            opyResults = _run( opyConfig, isAnalysis=True, 
+                               filesSubset=filesSubset, isVerbose=False )
+            
+            # get the names of the bundled libraries  
+            try:    bundled = [ l.name for l in opyConfig.bundleLibs ]
+            except: bundled = []        
+    
+            # get a subset of the external module list returned 
+            # by eliminating module names in the project, along 
+            # with the listed bundled libraries
+            try: 
+                obFiles = opyResults.obfuscatedFiles.keys()
+                # Note: split is correct w/ or w/o a directory prefix
+                primary = [ rootFileName(f) for f in obFiles
+                            if f.split(__SEP)[0] not in bundled ] 
+            except: primary = []
+            exMods = [ m for m in opyResults.obfuscatedMods 
+                       if (m not in primary) and (m not in bundled) ]  
+                                    
+            # when there are external modules to bundle, build the list                                 
+            if len( exMods ) > 0:
+                # get root module name, i.e. library name
+                exMods = [m.split(".")[0] for m in exMods]                
+                print( "Bundling import source for: %s" % (exMods,) )
+                try   : opyConfig.bundleLibs.extend( exMods )
+                except: opyConfig.bundleLibs=exMods         
+                                               
+                # if round "0" is landed upon *exactly*, stop the rounds! 
+                # Note this will never occur if the initial rounds
+                # were set to 0, to denote "infinite" 
+                if rounds==0 : break
+                    
+            # when nothing left to bundle                                        
+            #     if analyzing, there is nothing further to do
+            #     otherwise, simply stop the rounds       
+            elif isAnalysis: return opyResults        
+            else: break
+                             
+        # create the final obfuscation
+        opyConfig.preserve_unresolved_imports = True                
+        return _run( opyConfig, isAnalysis, filesSubset )
+    
+    def _run( opyConfig, isAnalysis, filesSubset, isVerbose=True ):             
         # Discard prior obfuscated source   
         if exists( OBFUS_DIR_PATH ) : removeDir( OBFUS_DIR_PATH )
         
@@ -169,36 +233,8 @@ def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
         
         # Return the paths generated 
         return _toObfuscatedPaths( opyConfig )
-
-    def __bundle( opyConfig, isAnalysis, filesSubset, runFunc ):
-        # analyze
-        opyResults = runFunc( opyConfig, True, filesSubset, False )
-        # find the library names  bundle 
-        try:    bundled = [ l.name for l in opyConfig.bundleLibs ]
-        except: bundled = []        
-        exMods = [ m for m in opyResults.obfuscatedMods if m not in bundled ]                        
-        if len( exMods ) > 0:
-            # get root module name, i.e. library name
-            exMods = [m.split(".")[0] for m in exMods]                
-            print( "Bundling import source for: %s" % (exMods,) )
-            try   : opyConfig.bundleLibs.extend( exMods )
-            except: opyConfig.bundleLibs=exMods
-        # if analyzing, and nothing was bundled, there is nothing further to do    
-        elif isAnalysis: return opyResults             
-        # create obfuscation
-        return runFunc( opyConfig, isAnalysis, filesSubset )    
-    
-    # -----------------------------
-    if opyConfig.externalLibDefault==ExternalLibDefault.CLEAR_TEXT:
-        opyConfig.apply_standard_exclusions = True        
-        opyConfig.preserve_unresolved_imports = True
-    # when bundling, apply_standard_exclusions is independent                                         
-    if opyConfig.externalLibDefault in [ ExternalLibDefault.BUNDLE_SHALLOW
-                                       , ExternalLibDefault.BUNDLE_DEEP ] :
-        opyConfig.preserve_unresolved_imports = False
-        opyConfig.error_on_unresolved_imports = False
-        return __bundle( opyConfig, isAnalysis, filesSubset, __run )
-    else: return __run( opyConfig, isAnalysis, filesSubset )
+          
+    return _main() 
     
 def createStageDir( bundleLibs=[], sourceDir=THIS_DIR ):
     ''' returns: stageDir '''
