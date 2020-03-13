@@ -44,19 +44,21 @@ program, invoke the buildExecutable function:
 **distResources**: An (optional) list of external 
     resources to bundle into the distribution package 
     containing the binary. You may use a simple 
-    list of strings containing simply file/directory 
-    names/paths relative to the original project 
+    list of strings containing file/directory 
+    names or paths *relative* to the build script
     directory. Else, you may provide a list of two 
     element tuples, with a specific source and 
     destination.  The source may be a relative or 
     absolute path from another location on your file 
     system. The destination maybe whatever name/path 
     you want specified relative to the package being 
-    created. Note that when using a **relative** source
-    **outside** of the build directory, you MUST specify 
-    the corresponding the destination explicitly if you 
-    wish for that to be **nested**, rather than placed
-    on the package root.    
+    created. Note that the default destination path is
+    the root directory of the package, using the same 
+    file name. To package a resource within a sub directory, 
+    or with an alternate name, you must *either* explictly provide  
+    a full (relative) destination path *or* **use the 
+    "shortcut value" `True` to indicate both the source 
+    and destination are relative and exactly the same**.      
     
 **distDirs**: An (optional) list of directories to 
     create within the package.  Note distResources
