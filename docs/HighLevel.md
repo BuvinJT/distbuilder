@@ -206,15 +206,23 @@ Such will be automatically determined per the platform at runtime.
 #### distResources        
 
 The `distResources` attribute is an optional list of external resources to bundle 
-into the distribution package. 
+into the distribution package.  You may use a simple list of strings containing 
+file/directory names or paths *relative* to the build script directory. Else, you 
+may provide a list of two element tuples, with a specific source and destination. 
+See **distResources** within [buildExecutable](LowLevel.md#buildExecutable) for
+more details on this.
+    
+Notably, this attribute is used when generating a 
+[PyInstallerConfig](ConfigClasses.md#pyinstconfig)
+object when invoking the `pyInstallerConfig()` function for this class, 
+and then utlimately invoking the low level 
+[buildExecutable](LowLevel.md#buildExecutable) operation with that.
+Note this may be done for you via various high level process classes.
 
-Notably, this is used when generating a [PyInstallerConfig](ConfigClasses.md#pyinstconfig)
-object when invoking the `pyInstallerConfig()` function for this class, and 
-with the low level [buildExecutable](LowLevel.md#buildExecutable) operation.
-
-This attribute may also be used for producing a
+This attribute is also used for producing a
 [QtIfwPackage](ConfigClasses.md#qtifwpackage) object when invoking the
 `qtIfwPackage()` function for this class.
+This too may be done for you via various high level process classes.
 
 #### setupName
 

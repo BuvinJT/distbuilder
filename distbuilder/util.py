@@ -647,7 +647,12 @@ def _toSrcDestPair( pathPair, destDir=None, basePath=None ):
     
     if src is None: return None
     src = normpath( src )
-    if dest: dest = normpath( dest )
+    if dest==True : # True=="same"
+        if not isabs(src): dest = src 
+        else: 
+            raise Exception( "A resource destination cannot be the same "
+                             "as an ABSOLUTE source path" )
+    elif dest is not None: dest = normpath( dest )
     
     relSrcDir = basePath if basePath else THIS_DIR  
     srcHead, srcTail = splitPath( src )
