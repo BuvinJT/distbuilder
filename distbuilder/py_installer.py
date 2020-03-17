@@ -7,11 +7,15 @@ from distbuilder.opy_library import obfuscatePy, \
 PYINST_BIN_NAME          = util.normBinaryName( "pyinstaller" )
 PYINST_MAKESPEC_BIN_NAME = util.normBinaryName( "pyi-makespec" )
 
+PYINST_ROOT_PKG_NAME = "PyInstaller"
+
 SPEC_EXT = ".spec"
 
 BUILD_DIR_PATH = absPath( "build" )
 DIST_DIR_PATH  = absPath( "dist" )
 CACHE_DIR_PATH = absPath( "__pycache__" )
+
+HOOKS_DIR_NAME = "hooks"
 
 __TEMP_NEST_DIR_NAME = "__nested__"
 
@@ -239,7 +243,7 @@ class PyInstSpec:
             print("Duplicate data patch injected into .spec file...")
             
     def _toLines( self ):        
-        return self.content.split('\n' ) if self.content else []
+        return self.content.split( '\n' ) if self.content else []
     
     def _fromLines( self, lines ): self.content = '\n'.join( lines )
 
@@ -337,6 +341,41 @@ VSVersionInfo(
     
     def debug( self ): print( str(self) )
                             
+class PyInstHook( ExecutableScript ) :
+    
+    def __init__( self, name, script=None ):
+        ExecutableScript.__init__( self,
+            name, extension=PY_EXT, shebang=None, script=script ) 
+        self.hooksDirPath = None 
+
+    def __str__( self ): return self.script
+
+    def read( self ):
+        self.__resolveHooksPath()
+        hookPath = joinPath( self.hooksDirPath, self.fileName() )
+        if not isFile( hookPath ):
+            raise Exception( 
+                "PyInstaller hook does not exist: %s" % (hookPath,) )                      
+        with open( hookPath, 'rb' ) as f: self.script = f.read()
+                                
+    def write( self ):
+        self.__resolveHooksPath()
+        ExecutableScript.write( self, self.hooksDirPath )
+    
+    def debug( self ): print( str(self) )
+
+    def __resolveHooksPath( self ):
+        if self.hooksDirPath is None:
+            try:
+                pgkDir = modulePackagePath( PYINST_ROOT_PKG_NAME )
+                if pgkDir is None: raise Exception()
+                hooksDir = joinPath( pgkDir, HOOKS_DIR_NAME )
+                if isDir( hooksDir ): self.hooksDirPath = hooksDir
+                else: raise Exception()
+            except:    
+                raise Exception( 
+                    "PyInstaller hooks directory could not be resolved." )         
+                                    
 # -----------------------------------------------------------------------------   
 def buildExecutable( name=None, entryPointPy=None, 
                      pyInstConfig=PyInstallerConfig(), 

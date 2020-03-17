@@ -796,7 +796,7 @@ class ExecutableScript:
         if self.script: print( str(self) )
         
     def fileName( self ):
-        return joinExt( self.rootName,self.extension )
+        return joinExt( self.rootName, self.extension )
                         
     def write( self, dirPath ):
         if self.script is None : return

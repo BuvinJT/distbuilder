@@ -9,6 +9,7 @@ from distbuilder.master import \
 from distbuilder.py_installer import \
       PyInstallerConfig \
     , PyInstSpec \
+    , PyInstHook \
     , WindowsExeVersionInfo \
     , buildExecutable \
     , makePyInstSpec 

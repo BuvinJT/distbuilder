@@ -95,6 +95,45 @@ Object Methods:
 	_injectLine( injection, lineNo )
 	_parseAssigments() 
 
+## PyInstHook
+
+Objects of this type are used for PyInstaller "hook" script
+creation, and programmatic manipulation. 
+Such hooks are executed during a PyInstaller build process 
+when an import is encountered with a matching hook name. The purpose
+of a hook is to help PyInstaller find and collect resources
+it would otherwise not know to include in the bundle.
+  
+Hooks are commonly installed by third party libraries for use across your 
+python environment whenever you employ PyInstaller.  It is 
+also possible to use custom hooks locally during a given a 
+build process (though it is **not** seemingly possible to explictly 
+*override* one which is registered for the system on the whole.)   
+
+The most typical use case of this class is to replace **bad hooks**
+installed on your system, or to simply revise them for some
+additional custom need.   
+
+For more on hooks, see:
+[Understanding PyInstaller Hooks](https://pyinstaller.readthedocs.io/en/stable/hooks.html) 
+
+Constructor: 
+
+    PyInstHook( name, script=None ) 
+
+Attributes & default values:
+        
+    name         = <required, omit .py extension>     
+    script       = None
+    hooksDirPath = None <auto resolve> 
+
+Object Methods:
+	
+	read()
+	write()
+    debug()
+    fileName()
+
 ## WindowsExeVersionInfo
 
 Objects of this type define meta data branded into Windows 

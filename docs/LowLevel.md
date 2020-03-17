@@ -55,10 +55,10 @@ program, invoke the buildExecutable function:
     created. Note that the default destination path is
     the root directory of the package, using the same 
     file name. To package a resource within a sub directory, 
-    or with an alternate name, you must *either* explictly provide  
+    or with an alternate name, you must *either* explictly provide
     a full (relative) destination path *or* **use the 
-    "shortcut value" `True` to indicate both the source 
-    and destination are relative and exactly the same**.      
+    "shortcut value" `True` to indicate the source 
+    and destination are the same relative paths**.      
     
 **distDirs**: An (optional) list of directories to 
     create within the package.  Note distResources
