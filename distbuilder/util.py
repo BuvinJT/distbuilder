@@ -759,7 +759,39 @@ def _isLocalPath( path ):
     return isLocal, path 
 
 # -----------------------------------------------------------------------------            
-class ExecutableScript:
+class PlasticFile:
+
+    def __init__( self, filePath=None, content=None ) :
+        self.filePath = filePath
+        if content: self.content = content
+        elif filePath and isFile(filePath): self.read()
+    
+    def __str__( self ): return self.content if self.content else ""  
+
+    def debug( self ): print( str(self) )
+    
+    def path( self ) : return self.filePath
+    
+    def read( self ):
+        self.content = None        
+        with open( self.path(), 'r' ) as f : self.content = f.read() 
+            
+    def write( self ):
+        with open( self.path(), 'w' ) as f : f.write( str(self) )
+                
+    def toLines( self ):        
+        return self.content.split( '\n' ) if self.content else []
+    
+    def fromLines( self, lines ): self.content = '\n'.join( lines )
+
+    def injectLine( self, injection, lineNo ):               
+        lines = self.toLines()            
+        if lineNo : lines.insert( lineNo-1, injection )
+        else : lines.append( injection )
+        self.fromLines( lines )
+
+# -----------------------------------------------------------------------------            
+class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all of it   
     
     __WIN_DEFAULT_EXT = "bat" 
     __NIX_DEFAULT_EXT = "sh"
@@ -782,7 +814,7 @@ class ExecutableScript:
                             ExecutableScript.__NIX_DEFAULT_SHEBANG ) 
         else: self.shebang = shebang            
         if scriptPath:
-            with open( scriptPath, 'rb' ) as f: self.script = f.read()
+            with open( scriptPath, 'r' ) as f: self.script = f.read()
         else: self.script = script  
                                                     
     def __str__( self ) :
@@ -805,7 +837,23 @@ class ExecutableScript:
         print("Writing script: %s\n\n%s\n" % (filePath,str(self)) )                               
         with open( filePath, 'w' ) as f: f.write( str(self) ) 
         if not IS_WINDOWS : chmod( filePath, 0o755 )
+        
+    def read( self, dirPath  ):
+        self.script = None        
+        filePath = joinPath( dirPath, self.fileName() )
+        with open( filePath, 'r' ) as f : self.script = f.read() 
+                
+    def toLines( self ):        
+        return self.script.split( __NEWLINE  ) if self.script else []
     
+    def fromLines( self, lines ): self.script = __NEWLINE.join( lines )
+
+    def injectLine( self, injection, lineNo ):               
+        lines = self.toLines()            
+        if lineNo : lines.insert( lineNo-1, injection )
+        else : lines.append( injection )
+        self.fromLines( lines )
+
 # -----------------------------------------------------------------------------           
 if IS_WINDOWS :
     class _WindowsSharedFile:

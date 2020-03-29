@@ -22,7 +22,7 @@ a traditional (perhaps legacy) spec file definition, or you may wish to
 generate one with distbuilder via the makePyInstSpec() function.  
 In either case, you may also opt to dynamically manipulate the spec via 
 the implementation of that class. 
-
+ 
 Constructor: 
 
     PyInstallerConfig()
@@ -59,6 +59,66 @@ Attributes & default values:
     distDirs        = [] 
 	isSpecFileRemoved = False
 
+## PyInstHook
+
+Objects of this type are used for PyInstaller "hook" script
+creation, and programmatic manipulation. 
+Such hooks are executed during a PyInstaller analyis process 
+when an import is encountered with a matching hook name. The purpose
+of a hook is to help PyInstaller find and collect resources
+it would otherwise not know to include in the bundle.  
+  
+Hooks are commonly installed by third party libraries for use across your 
+Python environment whenever you employ PyInstaller.  It is 
+also possible to use custom hooks during a given a build process via 
+the PyInstaller option `--additional-hooks-dir` (though that parameter does **not** 
+*override* a hook which is registered for the system on the whole...)   
+
+If you are working in a context in which you can manipulate the build environment
+freely, the use of hooks is arguably a better means by which to gather resources 
+for a distribition rather than by adding them through  
+[PyInstallerConfig](#pyinstallerconfig) attributes
+`hiddenImports`, `dataFilePaths`, `binaryFilePaths`, etc.    
+
+Use cases for this class include: **adding hooks** to patch a build process,
+replacing **bad hooks** installed on your system, or to simply revisw them 
+for some additional custom need.  
+
+For more on hooks, see:
+[Understanding PyInstaller Hooks](https://pyinstaller.readthedocs.io/en/stable/hooks.html) 
+
+Constructor: 
+
+    PyInstHook( name, script=None ) 
+
+Attributes & default values:
+        
+    name         = *required     
+    script       = None
+    hooksDirPath = None 
+
+Object Methods:
+	
+    fileName()
+
+	read()
+	write()
+
+    debug()
+
+    toLines()
+    fromLines( lines )
+	injectLine( injection, lineNo )
+    
+Details:
+
+The `name` attribute should simply specfy the name of import which invokes the `script`. 
+The `name` should **not** contain the *literal* "hook-" *file name* prefix, or a 
+.py *file extension*.     
+
+hooksDirPath = This may be override, as needed.  If left as the default `None`, 
+the path will be automatically resolved. 
+
 ## PyInstSpec
 
 Objects of this type are used for PyInstaller spec file
@@ -84,55 +144,19 @@ Static Method:
 Object Methods:
 
 	path()
+
 	read()
 	write()
+
     debug()
+
+    toLines()
+    fromLines( lines )
+	injectLine( injection, lineNo )
     
     injectDuplicateDataPatch()
     
-    _toLines()
-    _fromLines( lines )
-	_injectLine( injection, lineNo )
 	_parseAssigments() 
-
-## PyInstHook
-
-Objects of this type are used for PyInstaller "hook" script
-creation, and programmatic manipulation. 
-Such hooks are executed during a PyInstaller build process 
-when an import is encountered with a matching hook name. The purpose
-of a hook is to help PyInstaller find and collect resources
-it would otherwise not know to include in the bundle.
-  
-Hooks are commonly installed by third party libraries for use across your 
-python environment whenever you employ PyInstaller.  It is 
-also possible to use custom hooks locally during a given a 
-build process (though it is **not** seemingly possible to explictly 
-*override* one which is registered for the system on the whole.)   
-
-The most typical use case of this class is to replace **bad hooks**
-installed on your system, or to simply revise them for some
-additional custom need.   
-
-For more on hooks, see:
-[Understanding PyInstaller Hooks](https://pyinstaller.readthedocs.io/en/stable/hooks.html) 
-
-Constructor: 
-
-    PyInstHook( name, script=None ) 
-
-Attributes & default values:
-        
-    name         = <required, omit .py extension>     
-    script       = None
-    hooksDirPath = None <auto resolve> 
-
-Object Methods:
-	
-	read()
-	write()
-    debug()
-    fileName()
 
 ## WindowsExeVersionInfo
 
@@ -155,6 +179,16 @@ Attributes & default values:
     description = ""
     exeName     = ""
 
+Static Methods:
+    
+    defaultPath()
+    
+Object Methods:
+	
+    fileName()
+	write()
+    debug()
+    
 ## QtIfwConfig 
 
 Objects of this type provide the highest level definition of 

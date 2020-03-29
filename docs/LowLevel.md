@@ -986,12 +986,18 @@ Executable scripts have wide ranging potential for use with this library.
 They may be employed as part of the build process, or deployed
 with a distribution. 
 
-The ExecutableScript class is used to generate / bundle such scripts. Normally,
-this is a batch file on Windows, or a shell script on Linux or Mac.  Notably, 
-this is most often used as a "wrapper" over a deployed executable, bundled
-with a distribution.  In some contexts, that wrapper mechanism is implicitly
-employed by deployment preparing tools the library leans on, and/or is added
-directly by distbuilder code. Use of this class allows such to be overridden. 
+The ExecutableScript class is used to generate / bundle such scripts. By 
+default, this is a batch file on Windows, or a shell script on Linux or Mac.
+
+The class [QtIfwExeWrapper](ConfigClasses.md#qtifwexewrapper)) often contains 
+a class of his type, used as a "wrapper" over a deployed executable.  In some 
+contexts, that wrapper mechanism is implicitly employed by deployment preparing 
+tools the library leans on, and/or is added directly by distbuilder.
+
+Class [PyInstHook](ConfigClasses.md#pyinsthook)) is a derived class from 
+ExecutableScript. Note that it is a Python script rather than the default type
+for a given platform.  This derivation is a good example of where you would 
+want to the `read` function and the line parsing/building functions.
 
 Constructor:       
 
@@ -1009,10 +1015,17 @@ Attributes & default values:
     
 Functions:   
 
-    debug()        
     fileName()
-    write( dirPath )
     
+    read( dirPath  )
+    write( dirPath )
+
+    toLines()        
+    fromLines( lines )
+    injectLine( injection, lineNo )               
+
+    debug()        
+        
 Details:
 
 **rootName**: The name of script without the extension.  If this is used
