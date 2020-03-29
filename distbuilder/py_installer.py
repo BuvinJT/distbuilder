@@ -346,7 +346,7 @@ class PyInstHook( ExecutableScript ) :
 
     def fileName( self ):
         return "%s%s" % (PyInstHook.FILE_NAME_PREFIX, 
-                         ExecutableScript.fileName() )
+                         ExecutableScript.fileName( self ) )
     
     def __resolveHooksPath( self ):
         if self.hooksDirPath is None:
