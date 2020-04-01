@@ -284,7 +284,7 @@ Functions:
        
 ## QtIfwControlScript
 
-QtIFW installers may have a "Control Script" and/or a collection of "Package Scripts".
+QtIfw installers may have a "Control Script" and/or a collection of "Package Scripts".
 The "Control Script" is intended to dictate how the installer *interface*  behaves, and
 other high level logic pertaining to the installer itself. In contrast, "Package Scripts"
 are intended for applying custom logic to manipulate a target environment when installing 
@@ -301,17 +301,17 @@ the low level helpers provided by the library for this purpose.
 For maximum flexibility, rather than using the dynamic methods, you may directly define 
 the entire script via a raw string, by setting the `script` attribute.  Or, you may 
 specify an external file as the source instead via `script_path`. In addition, you may 
-always delegate scripts to a traditional QtIFW definition by using a higher level 
+always delegate scripts to a traditional QtIfw  definition by using a higher level 
 configuration [QtIfwConfig](#qtifwconfig) to specify such.
 
 The way this class works, in summary, is that you may provide an optional script 
 as a raw string, or a path to script you wish to load directly.  If specified, 
 those resources act as a *base*, from which you may continue to add on to.
 
-Along with being able to add your own custom functions to use as "helpers"
-a QtIFW Control script is driven by the framework which calls functions of
-specific names, if they exist, in order to apply custom coding during a given
-event.  A QtIfwControlScript object has a pair of attributes related to each such 
+A QtIfw control script is "driven" by the builtin framework. When a given "event"
+occurs a "handler" function is invoked (if it has been defined).
+
+A QtIfwControlScript object has a pair of attributes related to each such 
 event in the framework.  One is a boolean, dictating whether to auto generate this 
 event handler using a set of fixed, built-in logic provided by distbuilder to add a 
 fair amount of additional features to your installers "for free".  The other attribute 
@@ -332,12 +332,17 @@ A large number of abstract, static "helper" functions have been provided which y
 use to build your logic.  Otherwise, you may certainly just add QScript snippets
 directly in the raw.       
 
+Along with being able to add your own custom functions to use as "helpers"
+
 Constructor:                
 
 	QtIfwControlScript( fileName="installscript.qs",                  
-                  		script=None, scriptPath=None ) :
+                  		script=None, scriptPath=None,
+                  		virtualArgs={} ) :
 
 Attributes & default values:                                               
+    
+    virtualArgs = virtualArgs
     
 	controllerGlobals = None
     isAutoGlobals = True

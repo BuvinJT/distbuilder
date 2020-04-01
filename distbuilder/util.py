@@ -757,8 +757,8 @@ def _isLocalPath( path ):
     scheme,_,path,_,_ = urllib.parse.urlsplit( path )
     isLocal = scheme=="file" or scheme=="" 
     return isLocal, path 
-
 # -----------------------------------------------------------------------------            
+
 class PlasticFile:
 
     def __init__( self, filePath=None, content=None ) :
@@ -770,7 +770,7 @@ class PlasticFile:
 
     def debug( self ): print( str(self) )
     
-    def path( self ) : return self.filePath
+    def path( self ): return self.filePath
     
     def read( self ):
         self.content = None        

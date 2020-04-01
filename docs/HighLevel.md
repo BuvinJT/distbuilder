@@ -58,6 +58,8 @@ Attributes & default values:
     ifwDefDirPath    = None
     ifwPackages      = None
     
+    replaceTarget = False
+    
     ifwCntrlScript     = None # None=Default False=Exclude                
     ifwCntrlScriptText = None
     ifwCntrlScriptPath = None
@@ -280,6 +282,14 @@ For more information refer to:
 
 - [RobustInstallerProcess](#robustinstallerprocess)
 - [QtIfwPackage list manipulation](LowLevel.md#qtifwpackage-list-manipulation) 
+
+#### replaceTarget
+
+When producing a QtIFW installer, switch this attribute to `True` if you wish for the
+installer to automatically replace a prior installation.  On Windows, this will referrence
+the applications registered in the OS, and run the uninstallation for the prior install
+via that mechanism.  On other platforms, this uses the QtIFW Maintenance Tool directly to 
+"silently" uninstall a prior install found at the target location.
 
 #### ifwCntrlScript, ifwCntrlScriptText, ifwCntrlScriptPath, ifwCntrlScriptName
 

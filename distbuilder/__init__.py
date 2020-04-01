@@ -23,6 +23,7 @@ from distbuilder.qt_installer import \
     , QtIfwPackageScript \
     , QtIfwShortcut \
     , QtIfwExeWrapper \
+    , QtIfwUiPage \
     , installQtIfw \
     , unInstallQtIfw \
     , buildInstaller \
@@ -37,7 +38,16 @@ from distbuilder.qt_installer import \
     , QT_IFW_DESKTOP_DIR  \
     , QT_IFW_APPS_DIR  \
     , QT_IFW_STARTMENU_DIR  \
-    , QT_IFW_PRODUCT_NAME 
+    , QT_IFW_PRODUCT_NAME \
+    , QT_IFW_INTRO_PAGE \
+    , QT_IFW_TARGET_DIR_PAGE \
+    , QT_IFW_COMPONENTS_PAGE \
+    , QT_IFW_LICENSE_PAGE \
+    , QT_IFW_START_MENU_PAGE \
+    , QT_IFW_READY_PAGE \
+    , QT_IFW_INSTALL_PAGE \
+    , QT_IFW_FINISHED_PAGE \
+    , QT_IFW_REPLACEMENT_PAGE_PEFIX    
 
 from distbuilder.pip_installer import \
       PipConfig \

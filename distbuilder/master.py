@@ -31,13 +31,14 @@ from distbuilder.qt_installer import \
     , QtIfwPackageScript \
     , QtIfwShortcut \
     , QtIfwExeWrapper \
+    , _QtIfwScript \
     , DEFAULT_SETUP_NAME \
     , DEFAULT_QT_IFW_SCRIPT_NAME \
     , QT_IFW_VERBOSE_SWITCH \
     , QT_IFW_TARGET_DIR \
     , _SILENT_FORCED_ARGS \
-    , _LOUD_FORCED_ARGS
-
+    , _LOUD_FORCED_ARGS \
+    
 # -----------------------------------------------------------------------------       
 class ConfigFactory:
     
@@ -71,7 +72,9 @@ class ConfigFactory:
         self.setupName     = DEFAULT_SETUP_NAME
         self.ifwDefDirPath = None        
         self.ifwPackages   = None
-                
+
+        self.replaceTarget = False        
+                            
         self.ifwCntrlScript     = None # None=Default False=Exclude                
         self.ifwCntrlScriptText = None
         self.ifwCntrlScriptPath = None
@@ -151,11 +154,15 @@ class ConfigFactory:
             self.ifwCntrlScriptText is None and 
             self.ifwCntrlScriptPath is None ):
             return None     
-        return QtIfwControlScript(
+        script = QtIfwControlScript(
                 fileName=self.ifwCntrlScriptName,
                 script=self.ifwCntrlScriptText, 
                 scriptPath=self.ifwCntrlScriptPath )
-        
+        if self.replaceTarget:
+            script.virtualArgs={ _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG:
+                                 _QtIfwScript.TARGET_EXISTS_OPT_REMOVE } 
+        return script
+    
     def qtIfwPackage( self, pyInstConfig=None, isTempSrc=False ):
         self.__pkgPyInstConfig = pyInstConfig
         pkgType=self.__ifwPkgType()
