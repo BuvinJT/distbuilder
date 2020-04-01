@@ -310,12 +310,14 @@ those resources act as a *base*, from which you may continue to add on to.
 
 A QtIfw control script is "driven" by the builtin framework. When a given "event"
 occurs a "handler" function is invoked (if it has been defined).
-
-A QtIfwControlScript object has a pair of attributes related to each such 
-event in the framework.  One is a boolean, dictating whether to auto generate this 
+QtIfwControlScript object has a set of attributes related to each page and such 
+event/handler pair in the framework. One is a boolean, controlling the "visibility"
+of the page.  Setting that to `False` skips over that wizard page entirely. 
+Another boolean is provided, dictating whether to auto generate the 
 event handler using a set of fixed, built-in logic provided by distbuilder to add a 
-fair amount of additional features to your installers "for free".  The other attribute 
-in each pair is the body of the function (which is normally auto generated).   
+notable amount of additional features to your installers "for free".  The final attribute 
+in this pattern is the body of the event handler (normally auto generated), which allows
+for an atomic replacement of that code.   
   
 When the `write()` function is invoked, the actual script file to be embedded 
 in the installer is generated from the attributes.  Prior to calling that, you
@@ -329,10 +331,12 @@ select auto generates, and then directly add on to, or manipulate the event hand
 function bodies.  
 
 A large number of abstract, static "helper" functions have been provided which you may
-use to build your logic.  Otherwise, you may certainly just add QScript snippets
-directly in the raw.       
+use to build your logic.  Otherwise, you may certainly just add Qt Script snippets
+directly in the raw.  See [Installer Scripting](LowLeveel.md#installer-scripting).       
 
-Along with being able to add your own custom functions to use as "helpers"
+The `virtualArgs` attribute is a dictionary, containing key/values which
+allows for hard coding [Standard Installer Arguments](LowLeveel.md#standard-installer-arguments)
+into the installer, which are typically passed at runtime via the command line.
 
 Constructor:                
 
@@ -349,28 +353,36 @@ Attributes & default values:
         
     controllerConstructorBody = None
     isAutoControllerConstructor = True
-                                                            
+                                    
+	isIntroductionPageVisible = True                                                                                                                                
     introductionPageCallbackBody = None
     isAutoIntroductionPageCallback = True
 
+	isTargetDirectoryPageVisible = True
     targetDirectoryPageCallbackBody = None
     isAutoTargetDirectoryPageCallback = True
 
+    isComponentSelectionPageVisible = True
     componentSelectionPageCallbackBody = None
     isAutoComponentSelectionPageCallback = True
 
+	isLicenseAgreementPageVisible = True
     licenseAgreementPageCallbackBody = None
     isAutoLicenseAgreementPageCallback = True
 
+	isStartMenuDirectoryPageVisible = True
     startMenuDirectoryPageCallbackBody = None
     isAutoStartMenuDirectoryPageCallback = True
 
+	isReadyForInstallationPageVisible = True
     readyForInstallationPageCallbackBody = None
     isAutoReadyForInstallationPageCallback = True
 
+	isPerformInstallationPageVisible = True
     performInstallationPageCallbackBody = None
     isAutoPerformInstallationPageCallback = True
         
+	isFinishedPageCallbackBody = True        
     finishedPageCallbackBody = None
     isAutoFinishedPageCallback = True        
 
@@ -415,6 +427,7 @@ Attributes:
 	name            = None
 	pkgXml          = None
 	pkgScript       = None
+	uiPages         = []
 	        
 	<source content>        
 	srcDirPath    = None <package ENTIRE source directory>
@@ -435,6 +448,7 @@ Attributes:
 Functions:      
 
 	dirPath()
+	metaDirPath() 
 	contentTopDirPath()
     contentDirPath() 
 
@@ -462,12 +476,13 @@ Attributes & default values:
 
 	pkgName = <required>
                
-	DisplayName   = <required>
-	Description   = <required>
-	Version       = <required>            
-	Script        = None 
-	Default       = True
-	ReleaseDate   = date.today()
+	DisplayName    = <required>
+	Description    = <required>
+	Version        = <required>            
+	Script         = None 
+	Default        = True
+	ReleaseDate    = date.today()
+	UserInterfaces = []
 
 Functions:      
 
@@ -511,6 +526,7 @@ Constructor:
 
 	QtIfwPackageScript( pkgName, 
 					    shortcuts=[], 
+						uiPages=[], 
 						fileName="installscript.qs", 
                         script=None, scriptPath=None )
                   
@@ -523,12 +539,17 @@ Attributes & default values:
     
     shortcuts = []
     
+    uiPages=[]
+    
     packageGlobals = None
     isAutoGlobals = True
             
     componentConstructorBody = None
     isAutoComponentConstructor = True
     
+    componentLoadedCallbackBody = None
+    isAutoComponentLoadedCallback = True
+        
     componentCreateOperationsBody = None
     isAutoComponentCreateOperations = True        
     
@@ -537,10 +558,8 @@ Attributes & default values:
                                                    
 ## QtIfwShortcut
 
-These shortcut objects are use by
-[QtIfwPackageScript](#qtifwpackagescript) objects,
-to create shortcuts on the installation target 
-environments.
+These shortcut objects are use by [QtIfwPackageScript](#qtifwpackagescript) objects,
+to create shortcuts on the installation target environments.
 
 Constructor:       
 
@@ -660,6 +679,54 @@ Attributes & default values:
 Functions:
       
 		refresh()
+             
+## QtIfwUiPage
+
+This class is used to completely overwrite, or add, custom pages to an installer.
+The content of the pages must be a Qt "form", i.e. `.ui` file (in xml) which 
+adheres to the [Qt UI file format](https://doc.qt.io/qt-5/designer-ui-file-format.html).
+Such files are typically machine generated using [Qt Designer](https://doc.qt.io/qt-5/qtdesigner-manual.html).
+
+If you wish to replace a page, set the `name` to `QT_IFW_REPLACE_PAGE_PREFIX` 
+directly concatenated with one of the following page name constants: 
+
+	QT_IFW_INTRO_PAGE      
+	QT_IFW_TARGET_DIR_PAGE 
+	QT_IFW_COMPONENTS_PAGE 
+	QT_IFW_LICENSE_PAGE    
+	QT_IFW_START_MENU_PAGE 
+	QT_IFW_READY_PAGE      
+	QT_IFW_INSTALL_PAGE    
+	QT_IFW_FINISHED_PAGE   
+
+Conversely, to add a new page, give it some other name and specify the `pageOrder`
+using one the constants above. 
+
+Constructor:
+
+	QtIfwUiPage( name, pageOrder=None, content=None, callbackBody=None ) 
+        
+Attributes:   
+
+	name           = <required>
+	pageOrder      = None  
+	content        = None         
+	callbackBody   = None
+	otherCallbacks = {} 
+        
+Functions:
+
+	fileName()
+    write( dirPath )
+    
+Details:
+
+**pageOrder**: If not a replacement, thd page will be added added BEFORE the 
+pageOrder specifiy.
+
+**callbackBody**: Qt Script Invoked when loading the page.
+
+**otherCallbacks**: Qt Script "support functions" dictionary in the format: name:body
              
 ## PipConfig
 

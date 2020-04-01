@@ -73,7 +73,7 @@ QT_IFW_READY_PAGE      = "ReadyForInstallation"
 QT_IFW_INSTALL_PAGE    = "PerformInstallation"
 QT_IFW_FINISHED_PAGE   = "Finished"
 
-QT_IFW_REPLACEMENT_PAGE_PEFIX="Replace"
+QT_IFW_REPLACE_PAGE_PREFIX="Replace"
 
 _DEFAULT_PAGES = [
       QT_IFW_INTRO_PAGE      
@@ -86,7 +86,7 @@ _DEFAULT_PAGES = [
     , QT_IFW_FINISHED_PAGE   
 ]
 
-_CUSTOM_TARGET_PAGE_NAME = QT_IFW_REPLACEMENT_PAGE_PEFIX+QT_IFW_TARGET_DIR_PAGE
+_CUSTOM_TARGET_PAGE_NAME = QT_IFW_REPLACE_PAGE_PREFIX+QT_IFW_TARGET_DIR_PAGE
 
 # don't use back slash on Windows!
 def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
@@ -427,20 +427,16 @@ class QtIfwPackageXml( _QtIfwXml ):
                       % (INSTALLER_DIR_PATH, self.pkgName) ) )     
 
 # -----------------------------------------------------------------------------
+# TODO: Add loading from file
 class QtIfwUiPage():
 
     __FILE_EXTENSION = "ui"
         
     def __init__( self, name, pageOrder=None, content=None, callbackBody=None ) :
-        #Note: to replace a page, set the name in the format:
-        #    QT_IFW_REPLACEMENT_PAGE_PEFIX + [DEFAULT PAGE CONSTANT] 
         self.name           = name
-        #Note: If not a replacement, this page is added added BEFORE pageOrder.
         self.pageOrder      = pageOrder if pageOrder in _DEFAULT_PAGES else None 
         self.content        = content         
-        #Note: callbackBody is used to load the page
         self.callbackBody   = callbackBody
-        # support functions in the format: name:body
         self.otherCallbacks = {} 
 
     def fileName( self ): 
@@ -1823,8 +1819,8 @@ Component.prototype.%s = function(){
         replacePage = None
         for p in self.uiPages:
             # Replace default pages            
-            if p.name.startswith( QT_IFW_REPLACEMENT_PAGE_PEFIX ):
-                replacePage = p.name[ len(QT_IFW_REPLACEMENT_PAGE_PEFIX): ]
+            if p.name.startswith( QT_IFW_REPLACE_PAGE_PREFIX ):
+                replacePage = p.name[ len(QT_IFW_REPLACE_PAGE_PREFIX): ]
                 if replacePage in _DEFAULT_PAGES : 
                     self.componentLoadedCallbackBody += ( NEW + 
                         TAB + (ADD_CUSTOM_PAGE_TMPLT % ( p.name, replacePage )) + END +

@@ -388,6 +388,7 @@ Static Functions:
                                                    
     log( msg, isAutoQuote=True )            
 	debugPopup( msg, isAutoQuote=True )
+	errorPopup( msg, isAutoQuote=True )
                       
     setValue( key, value, isAutoQuote=True )               
     lookupValue( key, default="", isAutoQuote=True )            
@@ -417,6 +418,8 @@ Static Functions:
                             onYes="", onNo="", onCancel="" )
     ifYesNoPopup( msg, title="Question", resultVar="result", 
                  isMultiLine=False )
+    
+    Dir.toNativeSparator( path ) 
     
     _autoQuote( value, isAutoQuote )
 
@@ -461,13 +464,15 @@ following add-on **QT SCRIPT** functions:
 	clearErrorLog()
 	writeErrorLog( msg )
 	
+	quit( msg )
+	abort( msg )
 	silentAbort( msg )
-
-	targetExists()
+	
+	targetExists( isAutoPilotMode )
 	defaultTargetExists()
 	cmdLineTargetExists()
 
-	removeTarget()
+	removeTarget( isAutoPilotMode )
 	
 	maintenanceToolExists( dir )
 	toMaintenanceToolPath( dir )

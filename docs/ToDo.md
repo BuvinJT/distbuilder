@@ -20,6 +20,9 @@ manual intervention.
 	* are not enabled for install by default
 	* do not install shortcuts
 
+* Revisit silent installers, using new page hiding features to further minimize 
+"quick flashes" of the ui.
+
 * Test, and confirm / fix UNinstallation mechanism for silent installers,
 notably in non GUI environments. (Can this already be done via the Maintenance Tool
 and / or the original installer?)
@@ -28,7 +31,9 @@ and / or the original installer?)
 
 * Add Qt IFW Package Licenses (EULAs)
 
-* Test and develop "update installer" features as needed.
+* Add "version control" for installers. Auto launch maintainencetool when trying to 
+install the same version.  Have prompts questioning if the using wants to update 
+or revert to a prior version.
   
 ## v.0.9.2
 
@@ -39,7 +44,8 @@ and / or the original installer?)
 	* Windows Registry functions, analogous settings on other platforms
 	(e.g. plist on Mac)     
 
-* Provide *dynamically* assigned values for "QtIfwExeWrapper" via Installer. 
+* Provide *dynamically* assigned values for "QtIfwExeWrapper" via Installer 
+(for target) at runtime / during installation. 
 
 * Revisit "QtIfwExeWrapper" details.  Non gui on Windows?
 

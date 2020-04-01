@@ -47,7 +47,7 @@ from distbuilder.qt_installer import \
     , QT_IFW_READY_PAGE \
     , QT_IFW_INSTALL_PAGE \
     , QT_IFW_FINISHED_PAGE \
-    , QT_IFW_REPLACEMENT_PAGE_PEFIX    
+    , QT_IFW_REPLACE_PAGE_PREFIX    
 
 from distbuilder.pip_installer import \
       PipConfig \
