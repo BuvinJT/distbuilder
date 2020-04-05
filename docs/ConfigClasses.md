@@ -519,7 +519,7 @@ This class works in an analogous manner to [QtIfwControlScript](#qtifwcontrolscr
 Please refer to the that documentation for an explanation of how use these script
 objects in general. 
 
-Note that [QtIfwShortcut](#qtifwpackageshortcut) objects
+Note that [QtIfwShortcut](#qtifwshortcut) objects
 are used for the `shortcuts` attribute of this class.
 
 Constructor:       
@@ -685,7 +685,9 @@ Functions:
 This class is used to completely overwrite, or add, custom pages to an installer.
 The content of the pages must be a Qt "form", i.e. `.ui` file (in xml) which 
 adheres to the [Qt UI file format](https://doc.qt.io/qt-5/designer-ui-file-format.html).
-Such files are typically machine generated using [Qt Designer](https://doc.qt.io/qt-5/qtdesigner-manual.html).
+While it is possible to *manually* create such forms, typically such files    
+are machine generated using a WYSIWYG tool in [Qt Creator](https://doc.qt.io/qtcreator/)
+or [Qt Designer](https://doc.qt.io/qt-5/qtdesigner-manual.html).
 
 If you wish to replace a page, set the `name` to `QT_IFW_REPLACE_PAGE_PREFIX` 
 directly concatenated with one of the following page name constants: 
@@ -704,30 +706,49 @@ using one the constants above.
 
 Constructor:
 
-	QtIfwUiPage( name, pageOrder=None, content=None, callbackBody=None ) 
+    QtIfwUiPage( name, pageOrder=None, 
+                 sourcePath=None, content=None,
+                 onLoad=None ) 
         
 Attributes:   
 
-	name           = <required>
-	pageOrder      = None  
-	content        = None         
-	callbackBody   = None
-	otherCallbacks = {} 
+    name         = <required>
+    pageOrder    = None  
+    content      = None         
+    onLoad       = None
+    supportFuncs = {} 
+    replacements = {}        	
         
 Functions:
 
-	fileName()
+    fileName()
+    resolve( qtIfwConfig )
     write( dirPath )
     
 Details:
 
-**pageOrder**: If not a replacement, thd page will be added added BEFORE the 
-pageOrder specifiy.
+**pageOrder**: If not a replacement, the page will be added added BEFORE the 
+pageOrder specify.
 
-**callbackBody**: Qt Script Invoked when loading the page.
+**onLoad**: Qt Script snippet invoked when loading the page.
 
-**otherCallbacks**: Qt Script "support functions" dictionary in the format: name:body
+**supportFuncs**: Qt Script "support functions" dictionary containing entries in the form: name:body.
+The typical use case of this attribute involves the onLoad script connecting events
+to handlers. The `supportFuncs` then provide the handler definitions. 
              
+**replacements**: A dictionary containing entries in the form: placeholder:value.  Upon 
+writing the `.ui` file for the installer definition the library the generates, all "replacements"
+in the `content` will be resolved.
+
+TODO: elaborate on ui replacements, the "resolve" function, provide a base example .ui...
+      
+### QtIfwTargetDirPage
+
+This class is derived from `QtIfwUiPage`. As one would assume, this provides a base
+from which to start modifying the "Target Directory" installer page.  If another page 
+has not been supplied for this, distbuilder will use this class to apply it's own 
+default customization to the natural QtIfw interface.  
+      
 ## PipConfig
 
 Objects of this type define the details for downloading

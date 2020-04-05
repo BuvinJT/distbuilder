@@ -306,18 +306,33 @@ resolved at *runtime* by QtIFW.  Note these are applicable for **BOTH** direct
 [Installer Script](#installer-scripting) generation, and as parameters
 and attributes for many higher level functions and objects in this library.   
 
-	QT_IFW_TARGET_DIR 
-	
-	QT_IFW_HOME_DIR 
-	QT_IFW_DESKTOP_DIR  
-	QT_IFW_APPS_DIR  
-	QT_IFW_STARTMENU_DIR  
-	
-	QT_IFW_PRODUCT_NAME 
+    QT_IFW_OS 
 
-There are a many more of these to come in future versions...
+    QT_IFW_TARGET_DIR 
 
-Note : use [joinPathQtIfw](#joinpathqtifw) to build paths with these constants. 
+    QT_IFW_ROOT_DIR 
+
+    QT_IFW_HOME_DIR 
+    QT_IFW_DESKTOP_DIR
+
+    QT_IFW_APPS_DIR 
+    QT_IFW_APPS_X86_DIR
+    QT_IFW_APPS_X64_DIR
+
+    QT_IFW_STARTMENU_DIR
+    QT_IFW_USER_STARTMENU_DIR
+    QT_IFW_ALLUSERS_STARTMENU_DIR
+    
+    QT_IFW_INSTALLER_DIR 
+    QT_IFW_INTALLER_PATH
+     
+    QT_IFW_PRODUCT_NAME 
+    QT_IFW_PRODUCT_VERSION 
+    QT_IFW_TITLE 
+    QT_IFW_PUBLISHER 
+    QT_IFW_URL
+
+Note: use [joinPathQtIfw](#joinpathqtifw) to build paths with such constants. 
 
 ### Installer Scripting
 
@@ -439,15 +454,20 @@ Static Constants :
 
 Static Functions:      
                    
+    pageWidget( name )     
+    customPageWidget( name ): 
     currentPageWidget()                
-    assignPageWidgetVar( varName="page" )                
-   
+    assignPageWidgetVar( pageName, varName="page" ):                           
+    assignCustomPageWidgetVar( pageName, varName="page" ):                
+    assignCurPageWidgetVar( varName="page" ):                                 
+    
+    getText( controlName )
     setText( controlName, text, isAutoQuote=True )
     
     clickButton( buttonName, delayMillis=None )                
 
-    	(Note: check box controls also work on radio buttons)
-	enableCheckBox( checkboxName )                
+    	(Note: check box controls also work on radio buttons)    
+    enableCheckBox( checkboxName )                
     disableCheckBox( checkboxName )               
     setCheckBox( checkboxName, boolean )              
 
