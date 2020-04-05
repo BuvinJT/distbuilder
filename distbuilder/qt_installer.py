@@ -2069,10 +2069,16 @@ class QtIfwTargetDirPage( QtIfwUiPage ):
         ON_LOAD = (    
 """
     var targetDirectoryPage = gui.pageWidgetByObjectName("Dynamic%s");
-    if( systemInfo.kernelType === "darwin" ){
+    switch( systemInfo.kernelType ){
+    case "darwin": // macOS
         targetDirectoryPage.minimumSize.width=300;
         targetDirectoryPage.warning.minimumSize.width=300;
-    }
+        break;
+    case "linux": 
+        targetDirectoryPage.minimumSize.width=480;
+        targetDirectoryPage.warning.minimumSize.width=480;
+        break;
+    }    
     targetDirectoryPage.targetDirectory.setText(
         Dir.toNativeSparator(installer.value("TargetDir")));
     targetDirectoryPage.targetDirectory.textChanged.connect(this, this.%s);    
