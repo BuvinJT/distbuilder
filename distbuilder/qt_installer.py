@@ -54,15 +54,29 @@ QT_IFW_ASKPASS_KEY = "askpass"
 QT_IFW_ASKPASS_PLACEHOLDER = "[%s]" % (QT_IFW_ASKPASS_KEY,)
 QT_IFW_ASKPASS_TEMP_FILE_PATH = "/tmp/{0}.path".format( QT_IFW_ASKPASS_KEY )
 
-# TODO: add more (both built-in and custom)
+QT_IFW_OS            = "@os@"
+QT_IFW_ROOT_DIR      = "@RootDir@"
 QT_IFW_TARGET_DIR    = "@TargetDir@"
 QT_IFW_HOME_DIR      = "@HomeDir@" 
 QT_IFW_DESKTOP_DIR   = ("@DesktopDir@" if IS_WINDOWS else
                         "%s/%s" % (QT_IFW_HOME_DIR,"Desktop") ) # Valid on osMac and Ubuntu at least (other Linux desktops?)
 QT_IFW_APPS_DIR      = "@ApplicationsDir@"
-QT_IFW_STARTMENU_DIR = "@StartMenuDir@"
 
-QT_IFW_PRODUCT_NAME  = "@ProductName@"
+QT_IFW_STARTMENU_DIR          = "@StartMenuDir@"
+QT_IFW_USER_STARTMENU_DIR     = "@UserStartMenuProgramsPath@"  
+QT_IFW_ALLUSERS_STARTMENU_DIR = "@AllUsersStartMenuProgramsPath@"
+
+QT_IFW_PRODUCT_NAME    = "@ProductName@"
+QT_IFW_PRODUCT_VERSION = "@ProductVersion@"
+QT_IFW_TITLE     = "@Title@"
+QT_IFW_PUBLISHER = "@Publisher@"
+QT_IFW_URL = "@Url@"
+
+QT_IFW_APPS_X86_DIR  = "@ApplicationsDirX86@"
+QT_IFW_APPS_X64_DIR  = "@ApplicationsDirX64@"
+
+QT_IFW_INSTALLER_DIR = "@InstallerDirPath@"
+QT_IFW_INTALLER_PATH = "@InstallerFilePath@"   
 
 QT_IFW_INTRO_PAGE      = "Introduction"
 QT_IFW_TARGET_DIR_PAGE = "TargetDirectory"
@@ -86,7 +100,7 @@ _DEFAULT_PAGES = [
     , QT_IFW_FINISHED_PAGE   
 ]
 
-_CUSTOM_TARGET_PAGE_NAME = QT_IFW_REPLACE_PAGE_PREFIX+QT_IFW_TARGET_DIR_PAGE
+_PAGE_NAME_PLACHOLDER = "[PAGE_NAME]"
 
 # don't use back slash on Windows!
 def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
@@ -426,30 +440,7 @@ class QtIfwPackageXml( _QtIfwXml ):
             normpath( QtIfwPackageXml.__DIR_TMPLT 
                       % (INSTALLER_DIR_PATH, self.pkgName) ) )     
 
-# -----------------------------------------------------------------------------
-# TODO: Add loading from file
-class QtIfwUiPage():
 
-    __FILE_EXTENSION = "ui"
-        
-    def __init__( self, name, pageOrder=None, content=None, callbackBody=None ) :
-        self.name           = name
-        self.pageOrder      = pageOrder if pageOrder in _DEFAULT_PAGES else None 
-        self.content        = content         
-        self.callbackBody   = callbackBody
-        self.otherCallbacks = {} 
-
-    def fileName( self ): 
-        return joinExt( self.name, QtIfwUiPage.__FILE_EXTENSION ).lower()  
-
-    def write( self, dirPath ):
-        if self.content is None : return
-        if not isDir( dirPath ): makeDir( dirPath )
-        filePath = joinPath( dirPath, self.fileName() )
-        print( "Adding installer page definition: %s\n\n%s\n" % ( 
-                filePath, self.content ) )                               
-        with open( filePath, 'w' ) as f: f.write( self.content ) 
-        
 # -----------------------------------------------------------------------------
 @six.add_metaclass(ABCMeta)
 class _QtIfwScript:
@@ -961,10 +952,18 @@ Controller.prototype.%s = function(){
         "%s.connect(this, Controller.prototype.%s);\n" ) 
     __WIDGET_CONNECT_TMPLT = ( 
         "gui.currentPageWidget().%s.%s.connect(this, this.%s);\n" )
+
+    __PAGE_WIDGET = 'gui.pageWidgetByObjectName("%s")'
+    __PAGE_WIDGET_VAR_TMPLT = ( 
+        '    var %s = gui.pageWidgetByObjectName("%s");\n' )
+
+    __CUSTOM_PAGE_WIDGET = 'gui.pageWidgetByObjectName("Dynamic%s")'
+    __CUSTOM_PAGE_WIDGET_VAR_TMPLT = ( 
+        '    var %s = gui.pageWidgetByObjectName("Dynamic%s");\n' )
             
     __CURRENT_PAGE_WIDGET = "gui.currentPageWidget()"
-    __PAGE_WIDGET_VAR_TMPLT = "    var %s = gui.currentPageWidget();\n"
-                
+    __CUR_PG_WIDGET_VAR_TMPLT = "    var %s = gui.currentPageWidget();\n"
+                        
     __CLICK_BUTTON_TMPL       = "gui.clickButton(%s);\n"
     __CLICK_BUTTON_DELAY_TMPL = "gui.clickButton(%s, %d);\n"
     
@@ -973,7 +972,11 @@ Controller.prototype.%s = function(){
 
     __SET_TEXT_TMPL = (
         "gui.currentPageWidget().%s.setText(%s);\n" )
-        
+       
+    __GET_TEXT_TMPL = ( "gui.currentPageWidget().%s.text" )
+
+    __ASSIGN_TEXT_TMPL = ( "    var %s = gui.currentPageWidget().%s.text;\n" ) 
+                  
     NEXT_BUTTON   = "buttons.NextButton"
     BACK_BUTTON   = "buttons.BackButton"
     CANCEL_BUTTON = "buttons.CancelButton"
@@ -989,9 +992,26 @@ Controller.prototype.%s = function(){
         return QtIfwControlScript.__CURRENT_PAGE_WIDGET            
 
     @staticmethod        
-    def assignPageWidgetVar( varName="page" ):                
-        return QtIfwControlScript.__PAGE_WIDGET_VAR_TMPLT % (varName,)            
+    def pageWidget( name ): 
+        return QtIfwControlScript._PAGE_WIDGET % (name,)     
 
+    @staticmethod        
+    def customPageWidget( name ): 
+        return QtIfwControlScript.__CUSTOM_PAGE_WIDGET % (name,)     
+
+    @staticmethod        
+    def assignCurPageWidgetVar( varName="page" ):                
+        return QtIfwControlScript.__CUR_PG_WIDGET_VAR_TMPLT % (varName,)            
+
+    @staticmethod        
+    def assignPageWidgetVar( pageName, varName="page" ):                
+        return QtIfwControlScript.__PAGE_WIDGET_VAR_TMPLT % (varName,pageName)            
+
+    @staticmethod        
+    def assignCustomPageWidgetVar( pageName, varName="page" ):                
+        return QtIfwControlScript.__CUSTOM__PAGE_WIDGET_VAR_TMPLT % (
+                varName, pageName )                        
+            
     @staticmethod        
     def connectWidgetEventHandler( controlName, eventName, slotName ):
         return QtIfwControlScript.__WIDGET_CONNECT_TMPLT % ( 
@@ -1031,7 +1051,16 @@ Controller.prototype.%s = function(){
     def setText( controlName, text, isAutoQuote=True ):                
         return QtIfwControlScript.__SET_TEXT_TMPL % ( 
                 controlName, _QtIfwScript._autoQuote( text, isAutoQuote ) )
+
+    @staticmethod        
+    def getText( controlName ):                
+        return QtIfwControlScript.__GET_TEXT_TMPL % (controlName,)   
     
+    @staticmethod        
+    def reflectText( controlName ):                
+        return QtIfwControlScript.setText( controlName,
+            QtIfwControlScript.getText( controlName ) )
+
     def __init__( self, 
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
@@ -1424,7 +1453,7 @@ Controller.prototype.%s = function(){
 
     def __genComponentSelectionPageCallbackBody( self ):
         self.componentSelectionPageCallbackBody = (
-            QtIfwControlScript.assignPageWidgetVar( "page" ) +            
+            QtIfwControlScript.assignCurPageWidgetVar( "page" ) +            
             '    ' + _QtIfwScript.ifCmdLineArg( 
                 _QtIfwScript.INSTALL_LIST_CMD_ARG ) + 
             '    {\n' +
@@ -1830,14 +1859,14 @@ Component.prototype.%s = function(){
                 # Insert custom pages
                 self.componentLoadedCallbackBody += ( NEW + TAB + 
                     (ADD_CUSTOM_PAGE_TMPLT % ( p.name, p.pageOrder )) + END )         
-            if p.callbackBody:
-                self.componentLoadedCallbackBody += p.callbackBody
+            if p.onLoad:
+                self.componentLoadedCallbackBody += p.onLoad
 
     def __appendUiPageCallbacks( self ):    
         if self.uiPages: 
             for p in self.uiPages:
                 # support functions                 
-                for funcName, funcBody in six.iteritems( p.otherCallbacks ):
+                for funcName, funcBody in six.iteritems( p.supportFuncs ):
                     self.script += (  
                         QtIfwPackageScript.__COMPONENT_CALLBACK_FUNC_TMPLT 
                         % (funcName, funcBody) )
@@ -1971,6 +2000,115 @@ class QtIfwShortcut:
         self.isAppShortcut     = True
         self.isDesktopShortcut = False
 
+# -----------------------------------------------------------------------------
+class QtIfwUiPage():
+
+    __FILE_EXTENSION  = "ui"
+    __UI_RES_DIR_NAME = "qtifw_ui"
+    
+    @staticmethod
+    def __toFileName( name ): 
+        return joinExt( name, QtIfwUiPage.__FILE_EXTENSION ).lower()  
+    
+    @staticmethod
+    def _pageResPath( name ):    
+        return util._toLibResPath( joinPath( 
+                QtIfwUiPage.__UI_RES_DIR_NAME, 
+                QtIfwUiPage.__toFileName( name ) ) )
+        
+    def __init__( self, name, pageOrder=None, 
+                  sourcePath=None, content=None,
+                  onLoad=None ) :
+        self.name         = name
+        self.pageOrder    = pageOrder if pageOrder in _DEFAULT_PAGES else None        
+        self.onLoad       = onLoad
+        self.supportFuncs = {} 
+        self.replacements = {}
+        if sourcePath:
+            with open( sourcePath, 'r' ) as f: self.content = f.read()
+        else: self.content = content  
+               
+    def fileName( self ): return QtIfwUiPage.__toFileName( self.name )  
+
+    # resolve static substituions
+    def resolve( self, qtIfwConfig ):
+        self.replacements.update({ 
+             QT_IFW_TITLE           : qtIfwConfig.configXml.Title 
+        ,    QT_IFW_PRODUCT_NAME    : qtIfwConfig.configXml.Name 
+        ,    QT_IFW_PRODUCT_VERSION : qtIfwConfig.configXml.Version 
+        ,    QT_IFW_PUBLISHER       : qtIfwConfig.configXml.Publisher 
+        })
+        
+    def write( self, dirPath ):
+        if self.content is None : return
+        if not isDir( dirPath ): makeDir( dirPath )
+        filePath = joinPath( dirPath, self.fileName() )
+        content = self.__resolveContent()
+        print( "Adding installer page definition: %s\n\n%s\n" % ( 
+                filePath, content ) )                               
+        with open( filePath, 'w' ) as f: f.write( content ) 
+
+    def __resolveContent( self ):
+        self.replacements[ _PAGE_NAME_PLACHOLDER ] = self.name
+        ret = self.content
+        for placeholder, value in six.iteritems( self.replacements ):
+            ret = ret.replace( placeholder, value )
+        return ret    
+
+# -----------------------------------------------------------------------------    
+class QtIfwTargetDirPage( QtIfwUiPage ):
+    
+    NAME = QT_IFW_REPLACE_PAGE_PREFIX + QT_IFW_TARGET_DIR_PAGE
+    __SRC  = QtIfwUiPage._pageResPath( QT_IFW_TARGET_DIR_PAGE )
+
+    def __init__( self ):
+            
+        ON_TARGET_CHANGED_NAME        = "targetDirectoryChanged"
+        ON_TARGET_BROWSE_CLICKED_NAME = "targetChooserClicked"
+    
+        ON_LOAD = (    
+"""
+    var targetDirectoryPage = gui.pageWidgetByObjectName("Dynamic%s");
+    if( systemInfo.kernelType === "darwin" ){
+        targetDirectoryPage.minimumSize.width=300;
+        targetDirectoryPage.warning.minimumSize.width=300;
+    }
+    targetDirectoryPage.targetDirectory.setText(
+        Dir.toNativeSparator(installer.value("TargetDir")));
+    targetDirectoryPage.targetDirectory.textChanged.connect(this, this.%s);    
+    targetDirectoryPage.targetChooser.released.connect(this, this.%s);
+""") % ( QtIfwTargetDirPage.NAME, ON_TARGET_CHANGED_NAME, ON_TARGET_BROWSE_CLICKED_NAME )
+    
+        ON_TARGET_CHANGED = (
+"""
+    var targetDirectoryPage = gui.pageWidgetByObjectName("Dynamic%s");
+    var dir = targetDirectoryPage.targetDirectory.text;
+    dir = Dir.toNativeSparator(dir);
+    targetDirectoryPage.warning.setText( !installer.fileExists(dir) ? "" :
+        "<p style=\\"color: red\\">" +
+            "WARNING: The path specified already exists. " +
+            "All prior content will be erased!" + 
+        "</p>" );        
+    installer.setValue("TargetDir", dir);
+""") % ( QtIfwTargetDirPage.NAME, )
+
+        ON_TARGET_BROWSE_CLICKED = (
+"""
+    var targetDirectoryPage = gui.pageWidgetByObjectName("Dynamic%s");
+    targetDirectoryPage.targetDirectory.setText( Dir.toNativeSparator(
+        QFileDialog.getExistingDirectory("", targetDirectoryPage.targetDirectory.text) ) );
+""") % ( QtIfwTargetDirPage.NAME, )
+
+        
+        QtIfwUiPage.__init__( self, QtIfwTargetDirPage.NAME,
+            sourcePath=QtIfwTargetDirPage.__SRC, onLoad=ON_LOAD )
+        
+        self.supportFuncs.update({ 
+              ON_TARGET_CHANGED_NAME: ON_TARGET_CHANGED
+            , ON_TARGET_BROWSE_CLICKED_NAME: ON_TARGET_BROWSE_CLICKED
+        })
+            
+            
 # -----------------------------------------------------------------------------    
 class QtIfwExeWrapper:
     
@@ -2622,7 +2760,7 @@ def __addInstallerResources( qtIfwConfig ) :
             pkgScript.debug()
             pkgScript.write()
 
-        if p.uiPages: __addUiPages( p ) 
+        if p.uiPages: __addUiPages( qtIfwConfig, p ) 
 
         if p.pkgType == QtIfwPackage.Type.QT_CPP : 
             p.qtCppConfig.addDependencies( p )        
@@ -2633,183 +2771,24 @@ def __addInstallerResources( qtIfwConfig ) :
             __addExeWrapper( p )
 
 def __autoInjectUiPages( qtIfwConfig ) :
-    PRODUCT_NAME_PLACHOLDER = "[PRODUCT_NAME]"
-    
-    TARGET_PAGE_NAME_PLACHOLDER = "[TARGET_PAGE_NAME]"
-    # Based on Qt Example Source for this specific purpose
-    # https://doc.qt.io/qtinstallerframework/qt-installer-framework-dynamicpage-packages-org-qtproject-ifw-example-dynamicpage-meta-targetwidget-ui.html    
-    TARGET_PAGE_CONTENT_TMPLT = (
-"""<?xml version="1.0" encoding="UTF-8"?>
-<ui version="4.0">
- <class>{0}</class>
- <widget class="QWidget" name="{0}">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>491</width>
-    <height>190</height>
-   </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>491</width>
-    <height>190</height>
-   </size>
-  </property>
-  <property name="windowTitle">
-   <string>Installation Folder</string>
-  </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QLabel" name="description">
-     <property name="text">
-      <string>Please specify the directory where {1} will be installed.</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLineEdit" name="targetDirectory">
-       <property name="readOnly">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="targetChooser">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>...</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="QLabel" name="warning">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="text">
-        <string></string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>122</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-  </layout>
- </widget>
- <resources/>
- <connections/>
-</ui> 
-""").format( TARGET_PAGE_NAME_PLACHOLDER, PRODUCT_NAME_PLACHOLDER )
-
-    TARGET_CHANGED_CALLBACK_NAME     = "targetDirectoryChanged"
-    TARGET_CHOOSER_CLICKED_CALLBACK_NAME = "targetChooserClicked"
-
-    ON_TARGET_PAGE_LOADED = (
-"""
-    var targetDirectoryPage = gui.pageWidgetByObjectName("Dynamic{0}");
-    targetDirectoryPage.targetDirectory.setText(
-        Dir.toNativeSparator(installer.value("TargetDir")));
-    targetDirectoryPage.targetDirectory.textChanged.connect(this, this.{1});    
-    targetDirectoryPage.targetChooser.released.connect(this, this.{2});
-""").format( _CUSTOM_TARGET_PAGE_NAME, TARGET_CHANGED_CALLBACK_NAME, 
-             TARGET_CHOOSER_CLICKED_CALLBACK_NAME )
-
-    ON_TARGET_CHANGED = (
-"""
-    var targetDirectoryPage = gui.pageWidgetByObjectName("Dynamic{0}");
-    var dir = targetDirectoryPage.targetDirectory.text;
-    dir = Dir.toNativeSparator(dir);
-    targetDirectoryPage.warning.setText( !installer.fileExists(dir) ? "" :
-        "<p style=\\"color: red\\">" +
-            "WARNING: The path specified already exists. " +
-            "All prior content will be erased!" + 
-        "</p>" );        
-    installer.setValue("TargetDir", dir);
-""").format( _CUSTOM_TARGET_PAGE_NAME )
-
-    ON_TARGET_CHOOSER_CLICKED = (
-"""
-    var targetDirectoryPage = gui.pageWidgetByObjectName("Dynamic{0}");
-    targetDirectoryPage.targetDirectory.setText( Dir.toNativeSparator(
-        QFileDialog.getExistingDirectory("", targetDirectoryPage.targetDirectory.text) ) );
-""").format( _CUSTOM_TARGET_PAGE_NAME )
     
     for p in qtIfwConfig.packages :
         try: 
-            if _CUSTOM_TARGET_PAGE_NAME in p.pkgXml.UserInterfaces : return
+            if QtIfwTargetDirPage.NAME in p.pkgXml.UserInterfaces : return
         except: pass
     for p in qtIfwConfig.packages :
         if isinstance( p, QtIfwPackage ) :
-            content = TARGET_PAGE_CONTENT_TMPLT.replace( 
-                TARGET_PAGE_NAME_PLACHOLDER, _CUSTOM_TARGET_PAGE_NAME ).replace( 
-                PRODUCT_NAME_PLACHOLDER, qtIfwConfig.configXml.Name )
-            uiPage = QtIfwUiPage( _CUSTOM_TARGET_PAGE_NAME, None, 
-                                  content, ON_TARGET_PAGE_LOADED )
-            uiPage.otherCallbacks.update({ 
-                  TARGET_CHANGED_CALLBACK_NAME: ON_TARGET_CHANGED
-                , TARGET_CHOOSER_CLICKED_CALLBACK_NAME: ON_TARGET_CHOOSER_CLICKED
-            })
+            uiPage = QtIfwTargetDirPage()
             p.uiPages.append( uiPage )
             p.pkgXml.UserInterfaces.append( uiPage.fileName() )
             p.pkgScript.uiPages.append( uiPage )
             break
                         
-def __addUiPages( package ) :
+def __addUiPages( qtIfwConfig, package ) :
     for ui in package.uiPages:
-        if isinstance( ui, QtIfwUiPage ): ui.write( package.metaDirPath() )
+        if isinstance( ui, QtIfwUiPage ): 
+            ui.resolve( qtIfwConfig ) 
+            ui.write( package.metaDirPath() )
                 
 def __addResources( package ) :    
     print( "Adding additional resources..." )

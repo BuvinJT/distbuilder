@@ -40,7 +40,10 @@ PY_EXT             = ".py"
 PY_DIR             = dirPath( PYTHON_PATH )
 SITE_PACKAGES_PATH = get_python_lib()
 
-THIS_DIR           = dirPath( realpath( argv[0] ) )
+# (client script's dir)
+THIS_DIR           = dirPath( realpath( argv[0] ) ) 
+
+__THIS_LIB_DIR     = dirPath( realpath( __file__ ) ) 
 
 PATH_PAIR_DELIMITER=";"
 SYS_CMD_DELIM = "&" if IS_WINDOWS else ";"
@@ -58,8 +61,8 @@ OPT_LOCAL_BIN_DIR  = "/opt/local/bin"
 # (though can vary by os language and configuration...)
 DESKTOP_DIR_NAME   = "Desktop"
 
-DEBUG_ENV_VAR_NAME="DEBUG_MODE"
-DEBUG_ENV_VAR_VALUE="1"
+DEBUG_ENV_VAR_NAME  = "DEBUG_MODE"
+DEBUG_ENV_VAR_VALUE = "1"
 
 # strictly Apple
 _MACOS_APP_EXT                     = ".app"
@@ -451,6 +454,10 @@ __FROM_IMPORT_TMPLT          = "from %s import %s"
 
 __GET_MOD_PATH_TMPLT = "inspect.getfile( %s )"
 
+def _toLibResPath( relPath ): 
+    path = joinPath( __THIS_LIB_DIR, relPath )
+    return path if exists( path ) else None
+   
 def isImportableModule( moduleName ):
     try: __importByStr( moduleName )
     except : return False
@@ -838,7 +845,7 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         with open( filePath, 'w' ) as f: f.write( str(self) ) 
         if not IS_WINDOWS : chmod( filePath, 0o755 )
         
-    def read( self, dirPath  ):
+    def read( self, dirPath ):
         self.script = None        
         filePath = joinPath( dirPath, self.fileName() )
         with open( filePath, 'r' ) as f : self.script = f.read() 
