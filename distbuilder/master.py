@@ -22,6 +22,7 @@ from distbuilder.opy_library import \
 from distbuilder.qt_installer import \
       _stageInstallerPackages \
     , _buildInstaller \
+    , _addQtIfwUiPages \
     , joinPathQtIfw \
     , QtIfwConfig \
     , QtIfwConfigXml \
@@ -74,7 +75,9 @@ class ConfigFactory:
         self.ifwPackages   = None
 
         self.replaceTarget = False        
-                            
+        
+        self.ifwUiPages = None
+                    
         self.ifwCntrlScript     = None # None=Default False=Exclude                
         self.ifwCntrlScriptText = None
         self.ifwCntrlScriptPath = None
@@ -83,7 +86,7 @@ class ConfigFactory:
         self.ifwPkgId         = None
         self.ifwPkgName       = None
         self.ifwPkgNamePrefix = "com"        
-           
+                   
         self.ifwPkgScript     = None           
         self.ifwPkgScriptText = None
         self.ifwPkgScriptPath = None        
@@ -94,7 +97,7 @@ class ConfigFactory:
         self.pkgSrcDirPath = None
         self.pkgSrcExePath = None
         self.pkgExeWrapper = None 
-       
+               
         self.qtCppConfig = None
        
         self.__pkgPyInstConfig = None
@@ -129,12 +132,14 @@ class ConfigFactory:
                           patches=self.opyPatches )                 
     
     def qtIfwConfig( self, packages=None ):
-        if packages is not None: self.ifwPackages = packages
-        return QtIfwConfig( installerDefDirPath=self.ifwDefDirPath,
+        if packages is not None: self.ifwPackages = packages        
+        cfg = QtIfwConfig( installerDefDirPath=self.ifwDefDirPath,
                             packages=self.ifwPackages,
                             configXml=self.qtIfwConfigXml(), 
                             controlScript=self.qtIfwControlScript(),
                             setupExeName=self.setupName ) 
+        _addQtIfwUiPages( cfg, self.ifwUiPages )
+        return cfg 
 
     def qtIfwConfigXml( self ) :
         xml = QtIfwConfigXml( self.productName,  

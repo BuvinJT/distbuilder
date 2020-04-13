@@ -25,6 +25,7 @@ from distbuilder.qt_installer import \
     , QtIfwExeWrapper \
     , QtIfwUiPage \
     , QtIfwTargetDirPage \
+    , QtIfwSimpleTextPage \
     , installQtIfw \
     , unInstallQtIfw \
     , buildInstaller \

@@ -343,7 +343,8 @@ class QtIfwPackage:
                   subDirName=None,  
                   srcDirPath=None, srcExePath=None, 
                   resBasePath=None, isTempSrc=False, 
-                  pkgXml=None, pkgScript=None ) :
+                  pkgXml=None, pkgScript=None,
+                  uiPages=[] ) :
         # internal id / type
         self.pkgId     = pkgId
         self.pkgType   = pkgType       
@@ -351,7 +352,7 @@ class QtIfwPackage:
         self.name      = name
         self.pkgXml    = pkgXml
         self.pkgScript = pkgScript        
-        self.uiPages   = []
+        self.uiPages   = uiPages
         # content        
         self.srcDirPath    = srcDirPath
         self.srcExePath    = srcExePath
@@ -1859,6 +1860,10 @@ Component.prototype.%s = function(){
                 # Insert custom pages
                 self.componentLoadedCallbackBody += ( NEW + TAB + 
                     (ADD_CUSTOM_PAGE_TMPLT % ( p.name, p.pageOrder )) + END )         
+            
+            if p._incOnLoadBase:
+                self.componentLoadedCallbackBody += (
+                    QtIfwUiPage.BASE_ON_LOAD_TMPT % (p.name,) )
             if p.onLoad:
                 self.componentLoadedCallbackBody += p.onLoad
 
@@ -2006,6 +2011,23 @@ class QtIfwUiPage():
     __FILE_EXTENSION  = "ui"
     __UI_RES_DIR_NAME = "qtifw_ui"
     
+
+    BASE_ON_LOAD_TMPT = (    
+"""
+    var page = gui.pageWidgetByObjectName("Dynamic%s");
+    switch( systemInfo.kernelType ){
+    case "darwin": // macOS
+        page.minimumSize.width=300;
+        break;
+    case "linux": 
+        page.minimumSize.width=480;
+        break;
+    default: // "windows"
+        // This is the hard coded width of "standard" QtIfw .ui's
+        page.minimumSize.width=491;   
+    }    
+""")
+    
     @staticmethod
     def __toFileName( name ): 
         return joinExt( name, QtIfwUiPage.__FILE_EXTENSION ).lower()  
@@ -2019,18 +2041,19 @@ class QtIfwUiPage():
     def __init__( self, name, pageOrder=None, 
                   sourcePath=None, content=None,
                   onLoad=None ) :
-        self.name         = name
-        self.pageOrder    = pageOrder if pageOrder in _DEFAULT_PAGES else None        
-        self.onLoad       = onLoad
-        self.supportFuncs = {} 
-        self.replacements = {}
+        self.name           = name
+        self.pageOrder      = pageOrder if pageOrder in _DEFAULT_PAGES else None        
+        self._incOnLoadBase = True
+        self.onLoad         = onLoad
+        self.supportFuncs   = {} 
+        self.replacements   = {}
         if sourcePath:
             with open( sourcePath, 'r' ) as f: self.content = f.read()
         else: self.content = content  
                
     def fileName( self ): return QtIfwUiPage.__toFileName( self.name )  
 
-    # resolve static substituions
+    # resolve static substitutions
     def resolve( self, qtIfwConfig ):
         self.replacements.update({ 
              QT_IFW_TITLE           : qtIfwConfig.configXml.Title 
@@ -2056,6 +2079,21 @@ class QtIfwUiPage():
         return ret    
 
 # -----------------------------------------------------------------------------    
+class QtIfwSimpleTextPage( QtIfwUiPage ):
+    
+    __SRC  = QtIfwUiPage._pageResPath( "simpletext" )
+    __TITLE_PLACEHOLDER = "[TITLE]"
+    __TEXT_PLACEHOLDER = "[TEXT]"
+
+    def __init__( self, name, pageOrder=None, title="", text="", onLoad=None ) :
+        QtIfwUiPage.__init__( self, name, pageOrder=pageOrder, onLoad=onLoad, 
+            sourcePath=QtIfwSimpleTextPage.__SRC  )
+        self.replacements.update({ 
+            QtIfwSimpleTextPage.__TITLE_PLACEHOLDER : title,
+            QtIfwSimpleTextPage.__TEXT_PLACEHOLDER : text 
+        })
+                    
+# -----------------------------------------------------------------------------    
 class QtIfwTargetDirPage( QtIfwUiPage ):
     
     NAME = QT_IFW_REPLACE_PAGE_PREFIX + QT_IFW_TARGET_DIR_PAGE
@@ -2068,29 +2106,27 @@ class QtIfwTargetDirPage( QtIfwUiPage ):
     
         ON_LOAD = (    
 """
-    var targetDirectoryPage = gui.pageWidgetByObjectName("Dynamic%s");
+    // patch seems to be needed due to use of RichText?
     switch( systemInfo.kernelType ){
     case "darwin": // macOS
-        targetDirectoryPage.minimumSize.width=300;
-        targetDirectoryPage.warning.minimumSize.width=300;
+        page.warning.minimumSize.width=300;
         break;
     case "linux": 
-        targetDirectoryPage.minimumSize.width=480;
-        targetDirectoryPage.warning.minimumSize.width=480;
+        page.warning.minimumSize.width=480;
         break;
     }    
-    targetDirectoryPage.targetDirectory.setText(
+    page.targetDirectory.setText(
         Dir.toNativeSparator(installer.value("TargetDir")));
-    targetDirectoryPage.targetDirectory.textChanged.connect(this, this.%s);    
-    targetDirectoryPage.targetChooser.released.connect(this, this.%s);
-""") % ( QtIfwTargetDirPage.NAME, ON_TARGET_CHANGED_NAME, ON_TARGET_BROWSE_CLICKED_NAME )
+    page.targetDirectory.textChanged.connect(this, this.%s);    
+    page.targetChooser.released.connect(this, this.%s);
+""") % ( ON_TARGET_CHANGED_NAME, ON_TARGET_BROWSE_CLICKED_NAME )
     
         ON_TARGET_CHANGED = (
 """
-    var targetDirectoryPage = gui.pageWidgetByObjectName("Dynamic%s");
-    var dir = targetDirectoryPage.targetDirectory.text;
+    var page = gui.pageWidgetByObjectName("Dynamic%s");
+    var dir = page.targetDirectory.text;
     dir = Dir.toNativeSparator(dir);
-    targetDirectoryPage.warning.setText( !installer.fileExists(dir) ? "" :
+    page.warning.setText( !installer.fileExists(dir) ? "" :
         "<p style=\\"color: red\\">" +
             "WARNING: The path specified already exists. " +
             "All prior content will be erased!" + 
@@ -2100,9 +2136,9 @@ class QtIfwTargetDirPage( QtIfwUiPage ):
 
         ON_TARGET_BROWSE_CLICKED = (
 """
-    var targetDirectoryPage = gui.pageWidgetByObjectName("Dynamic%s");
-    targetDirectoryPage.targetDirectory.setText( Dir.toNativeSparator(
-        QFileDialog.getExistingDirectory("", targetDirectoryPage.targetDirectory.text) ) );
+    var page = gui.pageWidgetByObjectName("Dynamic%s");
+    page.targetDirectory.setText( Dir.toNativeSparator(
+        QFileDialog.getExistingDirectory("", page.targetDirectory.text) ) );
 """) % ( QtIfwTargetDirPage.NAME, )
 
         
@@ -2113,7 +2149,6 @@ class QtIfwTargetDirPage( QtIfwUiPage ):
               ON_TARGET_CHANGED_NAME: ON_TARGET_CHANGED
             , ON_TARGET_BROWSE_CLICKED_NAME: ON_TARGET_BROWSE_CLICKED
         })
-            
             
 # -----------------------------------------------------------------------------    
 class QtIfwExeWrapper:
@@ -2570,7 +2605,58 @@ def __qtIfwCreatorPath( qtIfwDir ):
         joinPath( __BIN_SUB_DIR, __QT_IFW_CREATOR_EXE_NAME ) )
     return creatorPath if isFile( creatorPath ) else None
     
-# -----------------------------------------------------------------------------                   
+# -----------------------------------------------------------------------------  
+# if the page is already present and overwrite is False, NOTHING will be modified                  
+def _addQtIfwUiPages( qtIfwConfig, uiPages, isOverWrite=True ):
+
+    def findPageOwner( packages, page ):    
+        for pkg in packages :
+            for pg in pkg.uiPages :
+                if pg.name==page.name: return pkg
+        return None            
+    
+    def add( pkg, page ):        
+        # if this is a replacement page for a built-in,
+        # it must be the first page in the list with that page order
+        # else the other pages with that order will end up appearing 
+        # *after* this one rather than *before* it
+        isInserted=False
+        if page.name.startswith( QT_IFW_REPLACE_PAGE_PREFIX ):
+            baseName = page.name[ len(QT_IFW_REPLACE_PAGE_PREFIX): ] 
+            if baseName in _DEFAULT_PAGES:
+                for i, pg in enumerate( pkg.uiPages ):
+                    isInserted=pg.pageOrder==baseName
+                    if isInserted: 
+                        pkg.uiPages.insert( i,  page )
+                        pkg.pkgScript.uiPages.insert( i, page )
+                        break
+        # if the page wasn't inserted into the middle of the list, append it                     
+        if not isInserted:    
+            pkg.uiPages.append( page )           
+            pkg.pkgScript.uiPages.append( page )        
+        # order doesn't matter for this list, but the items should be unique
+        pkg.pkgXml.UserInterfaces.append( page.fileName() )
+        pkg.pkgXml.UserInterfaces = list(set(pkg.pkgXml.UserInterfaces))
+
+    def overwrite( pkg, page ):        
+        # order must be preserved here 
+        pkg.uiPages = [ page if p.name==page.name else p 
+                        for p in pkg.uiPages ]        
+        pkg.pkgScript.uiPages = [ page if p.name==page.name else p 
+                                  for p in pkg.pkgScript.uiPages ]
+        # order doesn't matter for this list, but the items should be unique
+        pkg.pkgXml.UserInterfaces.append( page.fileName() )
+        pkg.pkgXml.UserInterfaces = list(set(pkg.pkgXml.UserInterfaces))
+    
+    if uiPages is None: return
+    if isinstance( uiPages, QtIfwUiPage ): uiPages = [uiPages]  
+    for page in uiPages:
+        pkg = findPageOwner( qtIfwConfig.packages, page )
+        if pkg:
+            if isOverWrite: overwrite( pkg, page )
+            continue            
+        add( qtIfwConfig.packages[0], page )       
+        
 def findQtIfwPackage( pkgs, pkgId ):        
     for p in pkgs: 
         if p.pkgId==pkgId: return p
@@ -2725,7 +2811,9 @@ def __initBuild( qtIfwConfig ) :
     print( "Build directory created: %s" % (BUILD_SETUP_DIR_PATH,) )
 
 def __addInstallerResources( qtIfwConfig ) :
-    __autoInjectUiPages( qtIfwConfig )
+    
+    _addQtIfwUiPages( qtIfwConfig, QtIfwTargetDirPage(), isOverWrite=False )
+    
     configXml = qtIfwConfig.configXml
     ctrlScript = qtIfwConfig.controlScript
     
@@ -2775,20 +2863,6 @@ def __addInstallerResources( qtIfwConfig ) :
 
         if isinstance( p.exeWrapper, QtIfwExeWrapper ): 
             __addExeWrapper( p )
-
-def __autoInjectUiPages( qtIfwConfig ) :
-    
-    for p in qtIfwConfig.packages :
-        try: 
-            if QtIfwTargetDirPage.NAME in p.pkgXml.UserInterfaces : return
-        except: pass
-    for p in qtIfwConfig.packages :
-        if isinstance( p, QtIfwPackage ) :
-            uiPage = QtIfwTargetDirPage()
-            p.uiPages.append( uiPage )
-            p.pkgXml.UserInterfaces.append( uiPage.fileName() )
-            p.pkgScript.uiPages.append( uiPage )
-            break
                         
 def __addUiPages( qtIfwConfig, package ) :
     for ui in package.uiPages:

@@ -402,15 +402,15 @@ Static Constants :
 Static Functions:      
                                                    
     log( msg, isAutoQuote=True )            
-	debugPopup( msg, isAutoQuote=True )
-	errorPopup( msg, isAutoQuote=True )
+    debugPopup( msg, isAutoQuote=True )
+    errorPopup( msg, isAutoQuote=True )
                       
     setValue( key, value, isAutoQuote=True )               
     lookupValue( key, default="", isAutoQuote=True )            
     lookupValueList( key, defaultList=[], isAutoQuote=True, 
                      delimiter=None )
                           
-	getEnv( varName, isAutoQuote=True )
+    getEnv( varName, isAutoQuote=True )
                           
     targetDir()
     productName() 

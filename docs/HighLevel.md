@@ -49,17 +49,19 @@ Attributes & default values:
     
     sourceDir     = None
     entryPointPy  = None
-	specFilePath  = None
+    specFilePath  = None
     iconFilePath  = None
     distResources = []       
 
-	isSilentSetup    = False    		
+    isSilentSetup    = False    		
     setupName        = "setup"
     ifwDefDirPath    = None
     ifwPackages      = None
     
     replaceTarget = False
-    
+
+    ifwUiPages	= None
+       
     ifwCntrlScript     = None # None=Default False=Exclude                
     ifwCntrlScriptText = None
     ifwCntrlScriptPath = None
@@ -75,12 +77,12 @@ Attributes & default values:
     ifwPkgScriptName = "installscript.qs"
 
     pkgType       = None    
-	pkgSubDirName = None
+    pkgSubDirName = None
     pkgSrcDirPath = None
     pkgSrcExePath = None
     pkgExeWrapper = None
 
-	qtCppConfig      = None
+    qtCppConfig      = None
  
 Object creation functions:
      
@@ -291,6 +293,17 @@ the applications registered in the OS, and run the uninstallation for the prior 
 via that mechanism.  On other platforms, this uses the QtIFW Maintenance Tool directly to 
 "silently" uninstall a prior install found at the target location.
 
+#### ifwUiPages
+
+Use this to specify a list of [QtIfwUiPage](ConfigClasses.md#qtifwuipage) 
+objects.  With that, you may fully customize the installer's UI using the
+[Qt Designer WYSIWYG](https://doc.qt.io/qt-5/designer-quick-start.html) tool!
+
+[Installer Scripting](LowLevel.md#installer-scripting), or the higher level
+script abstraction classes [QtIfwControlScript](ConfigClasses.md#qtifwcontrolscript) and
+[QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript) can be used to provide
+dynamic features for the page. 
+
 #### ifwCntrlScript, ifwCntrlScriptText, ifwCntrlScriptPath, ifwCntrlScriptName
 
 QtIFW installers may have a "Control Script" and/or a collection of "Package Scripts".
@@ -316,7 +329,7 @@ defined script.
 
 `ifwCntrlScriptName` provides a means to define the name of the file generated, in case 
 there is need or desire to override the default. 
-   
+      
 #### ifwPkgScript, ifwPkgScriptText, ifwPkgScriptPath, ifwPkgScriptName
 
 QtIFW installers may have a "Control Script" and/or a collection of "Package Scripts".

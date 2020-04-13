@@ -112,7 +112,7 @@ Object Methods:
     
 Details:
 
-The `name` attribute should simply specfy the name of import which invokes the `script`. 
+The `name` attribute should simply specify the name of import which invokes the `script`. 
 The `name` should **not** contain the *literal* "hook-" *file name* prefix, or a 
 .py *file extension*.     
 
@@ -412,10 +412,11 @@ for extended configuration details.
 Constructor:  
 
     QtIfwPackage( pkgId=None, pkgType=None, name=None, 
-    			  subDirName=None,
+                  subDirName=None,
                   srcDirPath=None, srcExePath=None,    
                   resBasePath=None, isTempSrc=False,
-                  pkgXml=None, pkgScript=None ) 
+                  pkgXml=None, pkgScript=None,
+                  uiPages=[] ) 
 
 Attributes:    
 
@@ -524,15 +525,14 @@ are used for the `shortcuts` attribute of this class.
 
 Constructor:       
 
-	QtIfwPackageScript( pkgName, 
-					    shortcuts=[], 
-						uiPages=[], 
-						fileName="installscript.qs", 
+    QtIfwPackageScript( pkgName, 
+                        shortcuts=[],  uiPages=[], 
+                        fileName="installscript.qs", 
                         script=None, scriptPath=None )
                   
 Attributes & default values:      
 
-	pkgName  = <required>
+    pkgName  = <required>
     fileName = "installscript.qs"
     
     script = None <or loaded via scriptPath>
@@ -682,15 +682,48 @@ Functions:
              
 ## QtIfwUiPage
 
-This class is used to completely overwrite, or add, custom pages to an installer.
-The content of the pages must be a Qt "form", i.e. `.ui` file (in xml) which 
-adheres to the [Qt UI file format](https://doc.qt.io/qt-5/designer-ui-file-format.html).
-While it is possible to *manually* create such forms, typically such files    
-are machine generated using a WYSIWYG tool in [Qt Creator](https://doc.qt.io/qtcreator/)
-or [Qt Designer](https://doc.qt.io/qt-5/qtdesigner-manual.html).
+A great deal can be done to customize the way an installer's interface works by
+simply adding custom scripts.  There are limitations, however, to that approach.
 
-If you wish to replace a page, set the `name` to `QT_IFW_REPLACE_PAGE_PREFIX` 
-directly concatenated with one of the following page name constants: 
+This class is used to completely overwrite, or add, custom pages to an installer.
+The content of the pages are defined as Qt "forms", i.e. `.ui` (xml) files which 
+adhere to the
+[Qt UI file format](https://doc.qt.io/qt-5/designer-ui-file-format.html).
+While it is possible to *manually* create such forms, typically such files    
+are machine generated using a WYSIWYG tool from within
+[Qt Creator](https://doc.qt.io/qtcreator/) or
+[Qt Designer](https://doc.qt.io/qt-5/qtdesigner-manual.html).
+
+Constructor:
+
+    QtIfwUiPage( name, pageOrder=None, 
+                 sourcePath=None, content=None,
+                 onLoad=None ) 
+        
+Attributes:   
+
+    name           = <required>
+    pageOrder      = None  
+ 
+    content        = None
+    replacements   = {}        	
+ 
+    onLoad         = None
+    _incOnLoadBase = True       
+    supportFuncs   = {}  
+        
+Functions:
+
+    fileName()
+    resolve( qtIfwConfig )
+    write( dirPath )
+    
+Details:
+
+**name**: This identifier will be used to name a .ui file containing the form, and to reference the page widget within any scripting.
+
+If you wish to *replace* a default page, set the `name` for an object of this 
+type to `QT_IFW_REPLACE_PAGE_PREFIX` *concatenated* with one of the following page name constants: 
 
 	QT_IFW_INTRO_PAGE      
 	QT_IFW_TARGET_DIR_PAGE 
@@ -701,39 +734,20 @@ directly concatenated with one of the following page name constants:
 	QT_IFW_INSTALL_PAGE    
 	QT_IFW_FINISHED_PAGE   
 
-Conversely, to add a new page, give it some other name and specify the `pageOrder`
-using one the constants above. 
+Conversely, to add a *new* page, give it some other name and specify the 
+`pageOrder`using one the constants above. 
 
-Constructor:
-
-    QtIfwUiPage( name, pageOrder=None, 
-                 sourcePath=None, content=None,
-                 onLoad=None ) 
-        
-Attributes:   
-
-    name         = <required>
-    pageOrder    = None  
-    content      = None         
-    onLoad       = None
-    supportFuncs = {} 
-    replacements = {}        	
-        
-Functions:
-
-    fileName()
-    resolve( qtIfwConfig )
-    write( dirPath )
-    
-Details:
-
-**pageOrder**: If not a replacement, the page will be added added BEFORE the 
-pageOrder specify.
+**pageOrder**: If **not** a replacement, the page will be added added BEFORE 
+this specified page.
 
 **onLoad**: Qt Script snippet invoked when loading the page.
 
+**_incOnLoadBase**: *Protected* Note, this is enabled by default. When this is set to `True`, some auto generated script will be added to the installer, which will execute prior to `onLoad`.  This "base" script will dynamically resize the page, so it fits properly on each alternate platform's version of the installer.
+It is recommended you leave this in place, unless you are overwriting it. The 
+effect of having this in place will additionally be to create a `var page`, which refers to this page. The OnLoadScript may then make use of that variant to access the page widget or the child widgets on it.
+
 **supportFuncs**: Qt Script "support functions" dictionary containing entries in the form: name:body.
-The typical use case of this attribute involves the onLoad script connecting events
+The typical use case for this attribute involves the onLoad script connecting events
 to handlers. The `supportFuncs` then provide the handler definitions. 
              
 **replacements**: A dictionary containing entries in the form: placeholder:value.  Upon 
@@ -748,7 +762,28 @@ This class is derived from `QtIfwUiPage`. As one would assume, this provides a b
 from which to start modifying the "Target Directory" installer page.  If another page 
 has not been supplied for this, distbuilder will use this class to apply it's own 
 default customization to the natural QtIfw interface.  
+
+Constructor:
+
+    QtIfwTargetDirPage()  # 0 arguments!                
+                 
+## QtIfwSimpleTextPage
       
+This class is derived from `QtIfwUiPage`.  It does not require ANY form / .ui 
+content passed to it. It provides a page layout with a single element, `text`, 
+which can be set easily via an argument to the constructor of this class.  That 
+text may contain all valid QtIFW dynamic substitutions e.g. these [Installer Variables](LowLevel.md#installer-variables), or directly using the `@variable@` syntax. See https://doc.qt.io/qtinstallerframework/scripting.html#predefined-variables.  
+
+By providing an `onLoad` script, you may of course define more comprehensive 
+manipulations of the text value. Alternatively, you wish to specify **no text** 
+or content at all for the page, other than perhaps something such as "working..." and then use that as a place holder to perform a given process.  There are many 
+imaginative ways for using this class as a convenient platform from which to start a custom, dynamic page.
+
+Constructor:
+
+    QtIfwSimpleTextPage( name, pageOrder=None, 
+                         title="", text="", onLoad=None ) 
+                       
 ## PipConfig
 
 Objects of this type define the details for downloading
