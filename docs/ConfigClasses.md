@@ -348,7 +348,9 @@ Attributes & default values:
     
     virtualArgs = virtualArgs
     
-	controllerGlobals = None
+    uiPages = []
+    
+    controllerGlobals = None
     isAutoGlobals = True
         
     controllerConstructorBody = None
@@ -698,7 +700,7 @@ Constructor:
 
     QtIfwUiPage( name, pageOrder=None, 
                  sourcePath=None, content=None,
-                 onLoad=None ) 
+                 onLoad=None, onEnter=None ) 
         
 Attributes:   
 
@@ -709,7 +711,8 @@ Attributes:
     replacements   = {}        	
  
     onLoad         = None
-    _incOnLoadBase = True       
+    _incOnLoadBase = True
+    onEnter        = None       
     supportFuncs   = {}  
         
 Functions:
@@ -740,7 +743,9 @@ Conversely, to add a *new* page, give it some other name and specify the
 **pageOrder**: If **not** a replacement, the page will be added added BEFORE 
 this specified page.
 
-**onLoad**: Qt Script snippet invoked when loading the page.
+**onLoad**: Qt Script snippet invoked when loading the page into memory, before showing it. 
+
+**onEnter**: Qt Script snippet invoked upon showing the page.
 
 **_incOnLoadBase**: *Protected* Note, this is enabled by default. When this is set to `True`, some auto generated script will be added to the installer, which will execute prior to `onLoad`.  This "base" script will dynamically resize the page, so it fits properly on each alternate platform's version of the installer.
 It is recommended you leave this in place, unless you are overwriting it. The 
@@ -767,7 +772,7 @@ Constructor:
 
     QtIfwTargetDirPage()  # 0 arguments!                
                  
-## QtIfwSimpleTextPage
+### QtIfwSimpleTextPage
       
 This class is derived from `QtIfwUiPage`.  It does not require ANY form / .ui 
 content passed to it. It provides a page layout with a single element, `text`, 
@@ -782,7 +787,8 @@ imaginative ways for using this class as a convenient platform from which to sta
 Constructor:
 
     QtIfwSimpleTextPage( name, pageOrder=None, 
-                         title="", text="", onLoad=None ) 
+                         title="", text="", 
+                         onLoad=None, onEnter=None ) 
                        
 ## PipConfig
 

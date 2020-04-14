@@ -16,9 +16,10 @@ f.setupName        = "HelloIfwUiSetup"
 f.ifwUiPages = QtIfwSimpleTextPage( "Example", QT_IFW_TARGET_DIR_PAGE, 
     title="Custom Page",
     text="This is a custom page for the @ProductName@ wizard!", 
-    onLoad=( 
-        script.ifYesNoPopup( "Would you like to perform a custom action?" ) + 
-            script.debugPopup( "Your wish is my command..." )
+    onEnter=( script.assignCustomPageWidgetVar( "Example" ) +
+        script.ifYesNoPopup( "Would you like to perform a dynamic action?" ) +            
+            'page.description.setText( ' +
+                '"<p style=\\"color: red\\">" + page.description.text + "</p>");'
     ) 
 )
 

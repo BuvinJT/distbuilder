@@ -27,7 +27,10 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="text">
+    <widget class="QLabel" name="description">
+     <property name="enabled">
+        <bool>true</bool>
+     </property>
      <property name="text">
       <string>[TEXT]</string>
      </property>

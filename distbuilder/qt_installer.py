@@ -977,6 +977,13 @@ Controller.prototype.%s = function(){
     __GET_TEXT_TMPL = ( "gui.currentPageWidget().%s.text" )
 
     __ASSIGN_TEXT_TMPL = ( "    var %s = gui.currentPageWidget().%s.text;\n" ) 
+
+    __UI_PAGE_CALLBACK_FUNC_TMPLT = (
+"""
+    Controller.prototype.Dynamic%sCallback = function() {
+        %s
+    }
+"""    )
                   
     NEXT_BUTTON   = "buttons.NextButton"
     BACK_BUTTON   = "buttons.BackButton"
@@ -1010,7 +1017,7 @@ Controller.prototype.%s = function(){
 
     @staticmethod        
     def assignCustomPageWidgetVar( pageName, varName="page" ):                
-        return QtIfwControlScript.__CUSTOM__PAGE_WIDGET_VAR_TMPLT % (
+        return QtIfwControlScript.__CUSTOM_PAGE_WIDGET_VAR_TMPLT % (
                 varName, pageName )                        
             
     @staticmethod        
@@ -1057,17 +1064,14 @@ Controller.prototype.%s = function(){
     def getText( controlName ):                
         return QtIfwControlScript.__GET_TEXT_TMPL % (controlName,)   
     
-    @staticmethod        
-    def reflectText( controlName ):                
-        return QtIfwControlScript.setText( controlName,
-            QtIfwControlScript.getText( controlName ) )
-
     def __init__( self, 
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
         _QtIfwScript.__init__( self, fileName, script, scriptPath )
 
         self.virtualArgs = None
+
+        self.uiPages = []
 
         self.controllerGlobals = None
         self.isAutoGlobals = True
@@ -1192,7 +1196,19 @@ Controller.prototype.%s = function(){
         for _, (funcName, funcBody) in six.iteritems( self.__autoPilotEventSlots ):    
             self.script += ( 
                 QtIfwControlScript.__CONTROLER_CALLBACK_FUNC_TMPLT %
+
                 (funcName, funcBody) )
+        
+        self.__appendUiPageCallbacks()
+
+    def __appendUiPageCallbacks( self ):    
+        if self.uiPages: 
+            for p in self.uiPages:
+                # enter page event handler
+                if p.onEnter:
+                    self.script += (                         
+                        QtIfwControlScript.__UI_PAGE_CALLBACK_FUNC_TMPLT % 
+                        ( p.name, p.onEnter ) )                
 
     def __genGlobals( self ):
         NEW = _QtIfwScript.NEW_LINE
@@ -1581,11 +1597,9 @@ Component.prototype.%s = function(){
     %s
 }\n
 """ )
-
-    __COMPONENT_LOADED_FUNC_NAME = "componentLoaded"
-
-    __UI_PAGE_CALLBACK_FUNC_TMPLT = "Dynamic%sCallback"
-
+    
+    __COMPONENT_LOADED_HNDLR_NAME = "componentLoaded"
+            
     __WIN_ADD_SHORTCUT_TMPLT = ( 
 """
         component.addOperation( "CreateShortcut",
@@ -1743,6 +1757,9 @@ Component.prototype.%s = function(){
 
         self.componentLoadedCallbackBody = None
         self.isAutoComponentLoadedCallback = True
+
+        self.componentEnteredCallbackBody = None
+        self.isAutoComponentEnteredCallback = True
                                                               
         self.componentCreateOperationsBody = None
         self.isAutoComponentCreateOperations = True
@@ -1764,7 +1781,7 @@ Component.prototype.%s = function(){
         if self.isAutoComponentLoadedCallback:
             self.__genComponentLoadedCallbackBody()
         self.script += ( QtIfwPackageScript.__COMPONENT_CALLBACK_FUNC_TMPLT % 
-                         (QtIfwPackageScript.__COMPONENT_LOADED_FUNC_NAME,
+                         (QtIfwPackageScript.__COMPONENT_LOADED_HNDLR_NAME,
                           self.componentLoadedCallbackBody,) )                            
 
         if self.uiPages: self.__appendUiPageCallbacks()
@@ -1834,7 +1851,7 @@ Component.prototype.%s = function(){
         END = _QtIfwScript.END_LINE
         self.componentConstructorBody = (            
             ('component.loaded.connect(this, this.%s)' % 
-              (QtIfwPackageScript.__COMPONENT_LOADED_FUNC_NAME,) ) + END
+              (QtIfwPackageScript.__COMPONENT_LOADED_HNDLR_NAME,) ) + END             
         )
         
     def __genComponentLoadedCallbackBody( self ):
@@ -1860,10 +1877,11 @@ Component.prototype.%s = function(){
                 # Insert custom pages
                 self.componentLoadedCallbackBody += ( NEW + TAB + 
                     (ADD_CUSTOM_PAGE_TMPLT % ( p.name, p.pageOrder )) + END )         
-            
+
             if p._incOnLoadBase:
                 self.componentLoadedCallbackBody += (
                     QtIfwUiPage.BASE_ON_LOAD_TMPT % (p.name,) )
+                              
             if p.onLoad:
                 self.componentLoadedCallbackBody += p.onLoad
 
@@ -2040,11 +2058,12 @@ class QtIfwUiPage():
         
     def __init__( self, name, pageOrder=None, 
                   sourcePath=None, content=None,
-                  onLoad=None ) :
+                  onLoad=None, onEnter=None ) :
         self.name           = name
         self.pageOrder      = pageOrder if pageOrder in _DEFAULT_PAGES else None        
         self._incOnLoadBase = True
         self.onLoad         = onLoad
+        self.onEnter        = onEnter
         self.supportFuncs   = {} 
         self.replacements   = {}
         if sourcePath:
@@ -2085,9 +2104,11 @@ class QtIfwSimpleTextPage( QtIfwUiPage ):
     __TITLE_PLACEHOLDER = "[TITLE]"
     __TEXT_PLACEHOLDER = "[TEXT]"
 
-    def __init__( self, name, pageOrder=None, title="", text="", onLoad=None ) :
-        QtIfwUiPage.__init__( self, name, pageOrder=pageOrder, onLoad=onLoad, 
-            sourcePath=QtIfwSimpleTextPage.__SRC  )
+    def __init__( self, name, pageOrder=None, title="", text="", 
+                  onLoad=None, onEnter=None ) :
+        QtIfwUiPage.__init__( self, name, pageOrder=pageOrder, 
+                              onLoad=onLoad, onEnter=onEnter, 
+                              sourcePath=QtIfwSimpleTextPage.__SRC  )
         self.replacements.update({ 
             QtIfwSimpleTextPage.__TITLE_PLACEHOLDER : title,
             QtIfwSimpleTextPage.__TEXT_PLACEHOLDER : text 
@@ -2615,7 +2636,7 @@ def _addQtIfwUiPages( qtIfwConfig, uiPages, isOverWrite=True ):
                 if pg.name==page.name: return pkg
         return None            
     
-    def add( pkg, page ):        
+    def add( ctrlScript, pkg, page ):        
         # if this is a replacement page for a built-in,
         # it must be the first page in the list with that page order
         # else the other pages with that order will end up appearing 
@@ -2629,33 +2650,37 @@ def _addQtIfwUiPages( qtIfwConfig, uiPages, isOverWrite=True ):
                     if isInserted: 
                         pkg.uiPages.insert( i,  page )
                         pkg.pkgScript.uiPages.insert( i, page )
+                        ctrlScript.uiPages.insert( i, page )
                         break
         # if the page wasn't inserted into the middle of the list, append it                     
         if not isInserted:    
             pkg.uiPages.append( page )           
             pkg.pkgScript.uiPages.append( page )        
+            ctrlScript.uiPages.append( page ) 
         # order doesn't matter for this list, but the items should be unique
         pkg.pkgXml.UserInterfaces.append( page.fileName() )
         pkg.pkgXml.UserInterfaces = list(set(pkg.pkgXml.UserInterfaces))
 
-    def overwrite( pkg, page ):        
+    def overwrite( ctrlScript, pkg, page ):        
         # order must be preserved here 
         pkg.uiPages = [ page if p.name==page.name else p 
                         for p in pkg.uiPages ]        
         pkg.pkgScript.uiPages = [ page if p.name==page.name else p 
                                   for p in pkg.pkgScript.uiPages ]
+        ctrlScript.uiPages = [ page if p.name==page.name else p 
+                               for p in  ctrlScript.uiPages ]
         # order doesn't matter for this list, but the items should be unique
         pkg.pkgXml.UserInterfaces.append( page.fileName() )
         pkg.pkgXml.UserInterfaces = list(set(pkg.pkgXml.UserInterfaces))
-    
+        
     if uiPages is None: return
     if isinstance( uiPages, QtIfwUiPage ): uiPages = [uiPages]  
     for page in uiPages:
         pkg = findPageOwner( qtIfwConfig.packages, page )
         if pkg:
-            if isOverWrite: overwrite( pkg, page )
+            if isOverWrite: overwrite( qtIfwConfig.controlScript, pkg, page )
             continue            
-        add( qtIfwConfig.packages[0], page )       
+        add( qtIfwConfig.controlScript, qtIfwConfig.packages[0], page )       
         
 def findQtIfwPackage( pkgs, pkgId ):        
     for p in pkgs: 
