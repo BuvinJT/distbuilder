@@ -20,6 +20,28 @@ manual intervention.
 	* are not enabled for install by default
 	* do not install shortcuts
 
+* Add Qt IFW Package Licenses (EULAs)
+
+* Add "version control" for installers. Auto launch maintainencetool when trying to 
+install the same version.  Have prompts questioning if the using wants to update 
+or revert to a prior version.
+
+## v.0.9.1
+
+* Add these Qt IFW script generation features:
+	* Directory creation on target (e.g. user data directories)		
+	* Resource installation outside of the target directory
+	* Windows Registry functions, analogous settings on other platforms
+	(e.g. plist on Mac)     
+	* Dependency installation via package managers (partially developed already)
+
+* Provide *dynamically* assigned values for "QtIfwExeWrapper" via Installer 
+(for target) at runtime / during installation. 
+
+* Breifly revisit "QtIfwExeWrapper" details.  Non gui on Windows?
+  
+## v.0.9.2
+
 * Revisit silent installers, using new page hiding features to further minimize 
 "quick flashes" of the ui.
 
@@ -27,29 +49,14 @@ manual intervention.
 notably in non GUI environments. (Can this already be done via the Maintenance Tool
 and / or the original installer?)
 
-## v.0.9.1
-
-* Add Qt IFW Package Licenses (EULAs)
-
-* Add "version control" for installers. Auto launch maintainencetool when trying to 
-install the same version.  Have prompts questioning if the using wants to update 
-or revert to a prior version.
-  
-## v.0.9.2
-
-* Add these Qt IFW script generation features:
-	* Dependency installation via package managers (partially developed already)
-	* Directory creation on target (e.g. user data directories)		
-	* Resource installation outside of the target directory
-	* Windows Registry functions, analogous settings on other platforms
-	(e.g. plist on Mac)     
-
-* Provide *dynamically* assigned values for "QtIfwExeWrapper" via Installer 
-(for target) at runtime / during installation. 
-
-* Revisit "QtIfwExeWrapper" details.  Non gui on Windows?
-
 ## v.0.9.3
+
+* Further develop QtIfwUiPage derived classes and resources.
+
+* Further refine QtIfw script abstractions. Handle design complications with the 
+fact custom pages can be accessed via the currentPageWidget() method. 
+
+## v.0.9.4
 
 * Add option for appending platform suffix onto installer file names. 
 
