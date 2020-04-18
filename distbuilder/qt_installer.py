@@ -54,15 +54,53 @@ QT_IFW_ASKPASS_KEY = "askpass"
 QT_IFW_ASKPASS_PLACEHOLDER = "[%s]" % (QT_IFW_ASKPASS_KEY,)
 QT_IFW_ASKPASS_TEMP_FILE_PATH = "/tmp/{0}.path".format( QT_IFW_ASKPASS_KEY )
 
-# TODO: add more (both built-in and custom)
+QT_IFW_OS            = "@os@"
+QT_IFW_ROOT_DIR      = "@RootDir@"
 QT_IFW_TARGET_DIR    = "@TargetDir@"
 QT_IFW_HOME_DIR      = "@HomeDir@" 
 QT_IFW_DESKTOP_DIR   = ("@DesktopDir@" if IS_WINDOWS else
                         "%s/%s" % (QT_IFW_HOME_DIR,"Desktop") ) # Valid on osMac and Ubuntu at least (other Linux desktops?)
 QT_IFW_APPS_DIR      = "@ApplicationsDir@"
-QT_IFW_STARTMENU_DIR = "@StartMenuDir@"
 
-QT_IFW_PRODUCT_NAME  = "@ProductName@"
+QT_IFW_STARTMENU_DIR          = "@StartMenuDir@"
+QT_IFW_USER_STARTMENU_DIR     = "@UserStartMenuProgramsPath@"  
+QT_IFW_ALLUSERS_STARTMENU_DIR = "@AllUsersStartMenuProgramsPath@"
+
+QT_IFW_PRODUCT_NAME    = "@ProductName@"
+QT_IFW_PRODUCT_VERSION = "@ProductVersion@"
+QT_IFW_TITLE     = "@Title@"
+QT_IFW_PUBLISHER = "@Publisher@"
+QT_IFW_URL = "@Url@"
+
+QT_IFW_APPS_X86_DIR  = "@ApplicationsDirX86@"
+QT_IFW_APPS_X64_DIR  = "@ApplicationsDirX64@"
+
+QT_IFW_INSTALLER_DIR = "@InstallerDirPath@"
+QT_IFW_INTALLER_PATH = "@InstallerFilePath@"   
+
+QT_IFW_INTRO_PAGE      = "Introduction"
+QT_IFW_TARGET_DIR_PAGE = "TargetDirectory"
+QT_IFW_COMPONENTS_PAGE = "ComponentSelection"
+QT_IFW_LICENSE_PAGE    = "LicenseAgreement"
+QT_IFW_START_MENU_PAGE = "StartMenuDirectory"
+QT_IFW_READY_PAGE      = "ReadyForInstallation"
+QT_IFW_INSTALL_PAGE    = "PerformInstallation"
+QT_IFW_FINISHED_PAGE   = "Finished"
+
+QT_IFW_REPLACE_PAGE_PREFIX="Replace"
+
+_DEFAULT_PAGES = [
+      QT_IFW_INTRO_PAGE      
+    , QT_IFW_TARGET_DIR_PAGE 
+    , QT_IFW_COMPONENTS_PAGE 
+    , QT_IFW_LICENSE_PAGE    
+    , QT_IFW_START_MENU_PAGE 
+    , QT_IFW_READY_PAGE      
+    , QT_IFW_INSTALL_PAGE    
+    , QT_IFW_FINISHED_PAGE   
+]
+
+_PAGE_NAME_PLACHOLDER = "[PAGE_NAME]"
 
 # don't use back slash on Windows!
 def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
@@ -291,9 +329,10 @@ class QtIfwPackage:
     
     __PACKAGES_PATH_TMPLT       = "%s/packages"
     __DIR_PATH_TMPLT            = "%s/packages/%s"
+    __META_PATH_TMPLT           = "%s/packages/%s/meta" 
     __CONTENT_PATH_TMPLT        = "%s/packages/%s/data" 
     __CONTENT_SUBDIR_PATH_TMPLT = "%s/packages/%s/data/%s"
-
+    
     @staticmethod
     def topDirPath() :  
         return joinPath( BUILD_SETUP_DIR_PATH,
@@ -304,7 +343,8 @@ class QtIfwPackage:
                   subDirName=None,  
                   srcDirPath=None, srcExePath=None, 
                   resBasePath=None, isTempSrc=False, 
-                  pkgXml=None, pkgScript=None ) :
+                  pkgXml=None, pkgScript=None,
+                  uiPages=[] ) :
         # internal id / type
         self.pkgId     = pkgId
         self.pkgType   = pkgType       
@@ -312,6 +352,7 @@ class QtIfwPackage:
         self.name      = name
         self.pkgXml    = pkgXml
         self.pkgScript = pkgScript        
+        self.uiPages   = uiPages
         # content        
         self.srcDirPath    = srcDirPath
         self.srcExePath    = srcExePath
@@ -329,6 +370,11 @@ class QtIfwPackage:
         return joinPath( BUILD_SETUP_DIR_PATH,
             normpath( QtIfwPackage.__DIR_PATH_TMPLT 
                       % (INSTALLER_DIR_PATH, self.name,) ) )
+
+    def metaDirPath( self ) :
+        return joinPath( BUILD_SETUP_DIR_PATH, 
+             normpath( QtIfwPackage.__META_PATH_TMPLT 
+                       % (INSTALLER_DIR_PATH, self.name,) ) )
 
     def contentTopDirPath( self ) :
         return joinPath( BUILD_SETUP_DIR_PATH, 
@@ -360,6 +406,8 @@ class QtIfwPackageXml( _QtIfwXml ):
                    , "Default"
                    , "Script"                                 
                    ]
+    __UIS_TAG    = "UserInterfaces"
+    __UI_TAG     = "UserInterface"
         
     def __init__( self, pkgName, displayName, description, 
                   version, scriptName=None, isDefault=True ) :
@@ -368,12 +416,20 @@ class QtIfwPackageXml( _QtIfwXml ):
         self.pkgName       = pkgName
         
         # TODO: expand on the built-in attributes here...
-        self.DisplayName   = displayName
-        self.Description   = description
-        self.Version       = version            
-        self.Script        = scriptName 
-        self.Default       = isDefault
-        self.ReleaseDate   = date.today()
+        self.DisplayName    = displayName
+        self.Description    = description
+        self.Version        = version            
+        self.Script         = scriptName 
+        self.Default        = isDefault
+        self.ReleaseDate    = date.today()
+        self.UserInterfaces = []
+                         
+    def addCustomTags( self, root ) :
+        if self.UserInterfaces is not None :            
+            uis = _QtIfwXmlElement( QtIfwPackageXml.__UIS_TAG, 
+                                    None, root )
+            for ui in self.UserInterfaces:
+                _QtIfwXmlElement( QtIfwPackageXml.__UI_TAG, ui, uis )                
                             
     def path( self ) :   
         return joinPath( BUILD_SETUP_DIR_PATH, 
@@ -384,6 +440,7 @@ class QtIfwPackageXml( _QtIfwXml ):
         return joinPath( BUILD_SETUP_DIR_PATH, 
             normpath( QtIfwPackageXml.__DIR_TMPLT 
                       % (INSTALLER_DIR_PATH, self.pkgName) ) )     
+
 
 # -----------------------------------------------------------------------------
 @six.add_metaclass(ABCMeta)
@@ -430,6 +487,8 @@ class _QtIfwScript:
     MAINTAIN_MODE_OPT_ADD_REMOVE = "addremove"
     MAINTAIN_MODE_OPT_UPDATE     = "update"    
     MAINTAIN_MODE_OPT_REMOVE_ALL = "removeall"
+
+    _INSTALLER_OBJ = "installer"
         
     __IS_INSTALLER   = "installer.isInstaller()"
     __IS_UNINSTALLER = "installer.isUninstaller()"
@@ -449,6 +508,10 @@ class _QtIfwScript:
     __LOG_TMPL = "console.log(%s);\n"
     __DEBUG_POPUP_TMPL = ( 
         'QMessageBox.information("debugbox", "Debug", ' +
+            '%s, QMessageBox.Ok );\n' )
+    
+    __ERROR_POPUP_TMPL = ( 
+        'QMessageBox. critical("errorbox", "Error", ' +
             '%s, QMessageBox.Ok );\n' )
 
     __YES_NO_POPUP_TMPL = ( 
@@ -479,6 +542,11 @@ class _QtIfwScript:
     @staticmethod        
     def debugPopup( msg, isAutoQuote=True ):                  
         return _QtIfwScript.__DEBUG_POPUP_TMPL % (
+             _QtIfwScript._autoQuote( msg, isAutoQuote ),) 
+        
+    @staticmethod        
+    def errorPopup( msg, isAutoQuote=True ):                  
+        return _QtIfwScript.__ERROR_POPUP_TMPL % (
              _QtIfwScript._autoQuote( msg, isAutoQuote ),) 
         
     @staticmethod        
@@ -569,7 +637,7 @@ class _QtIfwScript:
 
     @staticmethod        
     def yesNoPopup( msg, title="Question", resultVar="result" ):                  
-        return _QtIfwScript.__YES_NO_POPUP_TMPL % ( title, msg, resultVar ) 
+        return _QtIfwScript.__YES_NO_POPUP_TMPL % ( resultVar, title, msg ) 
 
     # returns a full line, including the result var declaration
     @staticmethod        
@@ -619,12 +687,14 @@ class _QtIfwScript:
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
         
     def __init__( self, fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
-                  script=None, scriptPath=None, isAutoLib=True ) :
+                  script=None, scriptPath=None, 
+                  virtualArgs={}, isAutoLib=True ) :
         self.fileName = fileName
         if scriptPath :
             with open( scriptPath, 'rb' ) as f: self.script = f.read()
         else : self.script = script  
-        self.isAutoLib   = True
+        self.virtualArgs = virtualArgs
+        self.isAutoLib   = isAutoLib
         self.qtScriptLib = None
 
     def _genLib( self ):
@@ -633,7 +703,14 @@ class _QtIfwScript:
         TAB = _QtIfwScript.TAB
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK
-        self.qtScriptLib = (
+        self.qtScriptLib = (            
+            'var Dir = new function () ' + SBLK +
+            TAB +  'this.toNativeSparator = function (path) ' + SBLK +
+            (2*TAB) + 'if (systemInfo.productType === "windows") ' + NEW +
+                (3*TAB) + 'return path.replace(/\\//g, \'\\\\\')' + END +
+            (2*TAB) + 'return path' + END + 
+            EBLK +
+            '};' + NEW +            
             'function execute( binPath, args ) ' + SBLK +
             TAB + 'var cmd = "\\"" + binPath + "\\""' + END +
             TAB + 'for( i=0; i < args.length; i++ )' + NEW +
@@ -750,7 +827,25 @@ class _QtIfwScript:
             'function silentAbort( msg ) ' + SBLK +
                 TAB + 'writeErrorLog( msg )' + END +
                 TAB + 'throw new Error( msg )' + END +                    
-            EBLK + NEW                 
+            EBLK + NEW +
+            'function abort( msg ) ' + SBLK +
+                TAB + 'msg = (msg==null || msg=="" ? "Installation aborted! Closing installer..." : msg)' + END +
+                TAB + 'writeErrorLog( msg )' + END +
+                TAB + 'QMessageBox.critical("errorbox", "Error", msg, QMessageBox.Ok)' + END +
+                TAB + 'installer.autoAcceptMessageBoxes()' + END +
+                TAB + 'gui.clickButton(buttons.CancelButton)' + END +
+                TAB + 'gui.clickButton(buttons.FinishButton)' + END +                
+                TAB + '' + END +                    
+            EBLK + NEW +
+            'function quit( msg ) ' + SBLK +
+                TAB + 'msg = (msg==null || msg=="" ? "Click \\"OK\\" to quit..." : msg)' + END +
+                TAB + 'writeErrorLog( msg )' + END +
+                TAB + 'QMessageBox.warning("warnbox", "Installation canceled", msg, QMessageBox.Ok)' + END +
+                TAB + 'installer.autoAcceptMessageBoxes()' + END +
+                TAB + 'gui.clickButton(buttons.CancelButton)' + END +
+                TAB + 'gui.clickButton(buttons.FinishButton)' + END +                
+                TAB + '' + END +                    
+            EBLK + NEW                                              
         )        
         if IS_WINDOWS : 
             # EMBEDDED VB SCRIPT
@@ -856,10 +951,20 @@ Controller.prototype.%s = function(){
 
     __CONTROLER_CONNECT_TMPLT = ( 
         "%s.connect(this, Controller.prototype.%s);\n" ) 
+    __WIDGET_CONNECT_TMPLT = ( 
+        "gui.currentPageWidget().%s.%s.connect(this, this.%s);\n" )
 
-    __CURRENT_PAGE_WIDGET = "gui.currentPageWidget()"
-    __PAGE_WIDGET_VAR_TMPLT = "    var %s = gui.currentPageWidget();\n"
+    __PAGE_WIDGET = 'gui.pageWidgetByObjectName("%s")'
+    __PAGE_WIDGET_VAR_TMPLT = ( 
+        '    var %s = gui.pageWidgetByObjectName("%s");\n' )
+
+    __CUSTOM_PAGE_WIDGET = 'gui.pageWidgetByObjectName("Dynamic%s")'
+    __CUSTOM_PAGE_WIDGET_VAR_TMPLT = ( 
+        '    var %s = gui.pageWidgetByObjectName("Dynamic%s");\n' )
             
+    __CURRENT_PAGE_WIDGET = "gui.currentPageWidget()"
+    __CUR_PG_WIDGET_VAR_TMPLT = "    var %s = gui.currentPageWidget();\n"
+                        
     __CLICK_BUTTON_TMPL       = "gui.clickButton(%s);\n"
     __CLICK_BUTTON_DELAY_TMPL = "gui.clickButton(%s, %d);\n"
     
@@ -868,7 +973,18 @@ Controller.prototype.%s = function(){
 
     __SET_TEXT_TMPL = (
         "gui.currentPageWidget().%s.setText(%s);\n" )
-    
+       
+    __GET_TEXT_TMPL = ( "gui.currentPageWidget().%s.text" )
+
+    __ASSIGN_TEXT_TMPL = ( "    var %s = gui.currentPageWidget().%s.text;\n" ) 
+
+    __UI_PAGE_CALLBACK_FUNC_TMPLT = (
+"""
+    Controller.prototype.Dynamic%sCallback = function() {
+        %s
+    }
+"""    )
+                  
     NEXT_BUTTON   = "buttons.NextButton"
     BACK_BUTTON   = "buttons.BackButton"
     CANCEL_BUTTON = "buttons.CancelButton"
@@ -884,8 +1000,35 @@ Controller.prototype.%s = function(){
         return QtIfwControlScript.__CURRENT_PAGE_WIDGET            
 
     @staticmethod        
-    def assignPageWidgetVar( varName="page" ):                
-        return QtIfwControlScript.__PAGE_WIDGET_VAR_TMPLT % (varName,)            
+    def pageWidget( name ): 
+        return QtIfwControlScript._PAGE_WIDGET % (name,)     
+
+    @staticmethod        
+    def customPageWidget( name ): 
+        return QtIfwControlScript.__CUSTOM_PAGE_WIDGET % (name,)     
+
+    @staticmethod        
+    def assignCurPageWidgetVar( varName="page" ):                
+        return QtIfwControlScript.__CUR_PG_WIDGET_VAR_TMPLT % (varName,)            
+
+    @staticmethod        
+    def assignPageWidgetVar( pageName, varName="page" ):                
+        return QtIfwControlScript.__PAGE_WIDGET_VAR_TMPLT % (varName,pageName)            
+
+    @staticmethod        
+    def assignCustomPageWidgetVar( pageName, varName="page" ):                
+        return QtIfwControlScript.__CUSTOM_PAGE_WIDGET_VAR_TMPLT % (
+                varName, pageName )                        
+            
+    @staticmethod        
+    def connectWidgetEventHandler( controlName, eventName, slotName ):
+        return QtIfwControlScript.__WIDGET_CONNECT_TMPLT % ( 
+            controlName, eventName, slotName );
+
+    @staticmethod        
+    def connectButtonClickHandler( buttonName, slotName ):
+        return QtIfwControlScript.connectWidgetEventHandler( 
+            buttonName, QtIfwControlScript.__BUTTON_CLICKED_SIGNAL_NAME, slotName );
 
     @staticmethod        
     def clickButton( buttonName, delayMillis=None ):                
@@ -916,53 +1059,78 @@ Controller.prototype.%s = function(){
     def setText( controlName, text, isAutoQuote=True ):                
         return QtIfwControlScript.__SET_TEXT_TMPL % ( 
                 controlName, _QtIfwScript._autoQuote( text, isAutoQuote ) )
+
+    @staticmethod        
+    def getText( controlName ):                
+        return QtIfwControlScript.__GET_TEXT_TMPL % (controlName,)   
     
-    def __init__( self,
+    def __init__( self, 
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
         _QtIfwScript.__init__( self, fileName, script, scriptPath )
+
+        self.virtualArgs = None
+
+        self.uiPages = []
 
         self.controllerGlobals = None
         self.isAutoGlobals = True
         
         self.controllerConstructorBody = None
         self.isAutoControllerConstructor = True
-                                                            
+                                                   
+        self.isIntroductionPageVisible = True                                                                    
         self.introductionPageCallbackBody = None
         self.isAutoIntroductionPageCallback = True
 
+        self.isTargetDirectoryPageVisible = True
         self.targetDirectoryPageCallbackBody = None
         self.isAutoTargetDirectoryPageCallback = True
 
+        self.isComponentSelectionPageVisible = True
         self.componentSelectionPageCallbackBody = None
         self.isAutoComponentSelectionPageCallback = True
 
+        self.isLicenseAgreementPageVisible = True
         self.licenseAgreementPageCallbackBody = None
         self.isAutoLicenseAgreementPageCallback = True
 
+        self.isStartMenuDirectoryPageVisible = True
         self.startMenuDirectoryPageCallbackBody = None
         self.isAutoStartMenuDirectoryPageCallback = True
 
+        self.isReadyForInstallationPageVisible = True
         self.readyForInstallationPageCallbackBody = None
         self.isAutoReadyForInstallationPageCallback = True
 
+        self.isPerformInstallationPageVisible = True
         self.performInstallationPageCallbackBody = None
         self.isAutoPerformInstallationPageCallback = True
         
+        self.isFinishedPageCallbackBody = True
         self.finishedPageCallbackBody = None
         self.isAutoFinishedPageCallback = True        
 
-        self.__autoPilotSlots = {}
-        self.registerAutoPilotSlot( 
-            'installer.installationFinished', 'onInstallFinished', 
+        self.__widgetEventSlots = {}
+        
+        self.__autoPilotEventSlots = {}
+        self.registerAutoPilotEventHandler( 
+            'installationFinished', 'onInstallFinished', 
             QtIfwControlScript.clickButton( QtIfwControlScript.NEXT_BUTTON ) );                                                                 
-        self.registerAutoPilotSlot( 
-            'installer.uninstallationFinished', 'onUninstallFinished',
+        self.registerAutoPilotEventHandler( 
+            'uninstallationFinished', 'onUninstallFinished',
             QtIfwControlScript.clickButton( QtIfwControlScript.NEXT_BUTTON ) );                                                                 
         
-    def registerAutoPilotSlot( self, signalName, slotName, slotBody ) :
-        self.__autoPilotSlots[signalName] = (slotName, slotBody)
-                                                                
+    def registerAutoPilotEventHandler( self, signalName, slotName, slotBody ) :
+        self.__autoPilotEventSlots[ 
+            "%s.%s" % (_QtIfwScript._INSTALLER_OBJ, signalName) ] = (
+            slotName, slotBody )
+    
+    def registerWidgetEventHandler( self, pageId, controlName, 
+                                    signalName, slotName, slotBody ) :
+        self.__widgetEventSlots[pageId][controlName][signalName] = (
+            slotName, slotBody )
+                                                             
     def _generate( self ) :        
         self.script = ""
                 
@@ -976,59 +1144,71 @@ Controller.prototype.%s = function(){
             self.__genControllerConstructorBody()
         self.script += ( "function Controller() {\n%s\n}\n" % 
                          (self.controllerConstructorBody,) )
-        
+                            
         if self.isAutoIntroductionPageCallback:
             self.__genIntroductionPageCallbackBody()
         if self.introductionPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                ("Introduction", self.introductionPageCallbackBody) )
+                (QT_IFW_INTRO_PAGE, self.introductionPageCallbackBody) )
                         
         if self.isAutoTargetDirectoryPageCallback:
             self.__genTargetDirectoryPageCallbackBody()
         if self.targetDirectoryPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                ("TargetDirectory", self.targetDirectoryPageCallbackBody) )
+                (QT_IFW_TARGET_DIR_PAGE, self.targetDirectoryPageCallbackBody) )
 
         if self.isAutoComponentSelectionPageCallback:
             self.__genComponentSelectionPageCallbackBody()
         if self.componentSelectionPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                ("ComponentSelection", self.componentSelectionPageCallbackBody) )
+                (QT_IFW_COMPONENTS_PAGE, self.componentSelectionPageCallbackBody) )
 
         if self.isAutoLicenseAgreementPageCallback:
             self.__genLicenseAgreementPageCallbackBody()
         if self.licenseAgreementPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                ("LicenseAgreement", self.licenseAgreementPageCallbackBody) )
+                (QT_IFW_LICENSE_PAGE, self.licenseAgreementPageCallbackBody) )
 
         if self.isAutoStartMenuDirectoryPageCallback:
             self.__genStartMenuDirectoryPageCallbackBody()
         if self.startMenuDirectoryPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                ("StartMenuDirectory", self.startMenuDirectoryPageCallbackBody) )
+                (QT_IFW_START_MENU_PAGE, self.startMenuDirectoryPageCallbackBody) )
 
         if self.isAutoReadyForInstallationPageCallback:
             self.__genReadyForInstallationPageCallbackBody()
         if self.readyForInstallationPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                ("ReadyForInstallation", self.readyForInstallationPageCallbackBody) )
+                (QT_IFW_READY_PAGE, self.readyForInstallationPageCallbackBody) )
 
         if self.isAutoPerformInstallationPageCallback:
             self.__genPerformInstallationPageCallbackBody()
         if self.performInstallationPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                ("PerformInstallation", self.performInstallationPageCallbackBody) )
+                (QT_IFW_INSTALL_PAGE, self.performInstallationPageCallbackBody) )
 
         if self.isAutoFinishedPageCallback:
             self.__genFinishedPageCallbackBody()
         if self.finishedPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                ("Finished", self.finishedPageCallbackBody) )
+                (QT_IFW_FINISHED_PAGE, self.finishedPageCallbackBody) )
 
-        for _, (funcName, funcBody) in six.iteritems( self.__autoPilotSlots ):    
+        for _, (funcName, funcBody) in six.iteritems( self.__autoPilotEventSlots ):    
             self.script += ( 
                 QtIfwControlScript.__CONTROLER_CALLBACK_FUNC_TMPLT %
+
                 (funcName, funcBody) )
+        
+        self.__appendUiPageCallbacks()
+
+    def __appendUiPageCallbacks( self ):    
+        if self.uiPages: 
+            for p in self.uiPages:
+                # enter page event handler
+                if p.onEnter:
+                    self.script += (                         
+                        QtIfwControlScript.__UI_PAGE_CALLBACK_FUNC_TMPLT % 
+                        ( p.name, p.onEnter ) )                
 
     def __genGlobals( self ):
         NEW = _QtIfwScript.NEW_LINE
@@ -1037,6 +1217,12 @@ Controller.prototype.%s = function(){
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK
         self.controllerGlobals=""
+        if self.virtualArgs :
+            self.controllerGlobals += (
+            'function initGlobals() ' + SBLK )
+            for k,v in six.iteritems( self.virtualArgs ):            
+                self.controllerGlobals += TAB + _QtIfwScript.setValue(k,v) +END 
+            self.controllerGlobals += EBLK + NEW             
         self.controllerGlobals += (
             'function toMaintenanceToolPath( dir ) ' + SBLK +
                 TAB + 'return dir + ' + _QtIfwScript.PATH_SEP + ' + ' +
@@ -1055,7 +1241,7 @@ Controller.prototype.%s = function(){
                     _QtIfwScript.cmdLineArg( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
                     ' )' + END +
             EBLK + NEW +
-            'function targetExists() ' + SBLK +
+            'function targetExists( isAuto ) ' + SBLK +
                 (TAB + 'if( isOsRegisteredProgram() ) ' + SBLK +
                  (2*TAB)  + _QtIfwScript.log('The program is OS registered.') +
                  (2*TAB) + 'return true' + END + 
@@ -1063,7 +1249,7 @@ Controller.prototype.%s = function(){
                 if IS_WINDOWS else '') +
                 TAB + _QtIfwScript.ifCmdLineArg( 
                     _QtIfwScript.TARGET_DIR_CMD_ARG, isMultiLine=True ) +
-                    'if( cmdLineTargetExists() )'  + SBLK +
+                    'if( isAuto && cmdLineTargetExists() )'  + SBLK +
                         (3*TAB) + _QtIfwScript.log('The command line specified target exists.') +
                         (3*TAB) + 'return true' + END +
                     (2*TAB) + EBLK +
@@ -1073,8 +1259,8 @@ Controller.prototype.%s = function(){
                 (2*TAB) + 'return true' + END +                
                 TAB + EBLK +                   
                 TAB + 'return false' + END +                 
-            EBLK + NEW +
-            'function removeTarget() ' + SBLK +
+            EBLK + NEW +            
+            'function removeTarget( isAuto ) ' + SBLK +
                 TAB + _QtIfwScript.log('Removing existing installation...') +  
                 TAB + 'var args=[ "-v", ' +                     
                     '"' + _QtIfwScript.AUTO_PILOT_CMD_ARG + '=' +
@@ -1103,22 +1289,22 @@ Controller.prototype.%s = function(){
                 TAB + _QtIfwScript.log('Verifying uninstall...') +    
                 TAB + 'var MAX_CHECKS=3' + END  +
                 TAB + 'for( var existCheck=0; existCheck < MAX_CHECKS; existCheck++ ) ' + SBLK +
-                (2*TAB) + 'if( !targetExists() ) break' + END +
+                (2*TAB) + 'if( !targetExists( isAuto ) ) break' + END +
                 (2*TAB) + _QtIfwScript.log('Waiting for uninstall to finish...') +                
                 (2*TAB) + 'sleep( 1 )' + END +                
                 TAB + EBLK +
-                TAB + 'if( targetExists() ) ' + NEW +
+                TAB + 'if( targetExists( isAuto ) ) ' + NEW +
                 (2*TAB) + 'silentAbort("Failed to removed the program.")' + END +
                 TAB + _QtIfwScript.log('Successfully removed the program.') +
             EBLK + NEW +
-            'function managePriorInstallation() ' + SBLK +
-                TAB + "if( targetExists() ) " + SBLK +
+            'function autoManagePriorInstallation() ' + SBLK +
+                TAB + "if( targetExists( true ) ) " + SBLK +
                 (2*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
                     _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
                 (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_FAIL + '":' + NEW +
                     (3*TAB) + 'silentAbort("This program is already installed.")' + END + 
                 (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_REMOVE + '":' + NEW + 
-                    (3*TAB) + 'removeTarget()' + END +
+                    (3*TAB) + 'removeTarget( true )' + END +
                     (3*TAB) + 'break' + END +
                 (2*TAB) + 'default:' + NEW +
                     (2*TAB) + _QtIfwScript.switchYesNoCancelPopup(  
@@ -1126,14 +1312,35 @@ Controller.prototype.%s = function(){
                   'Would you like to uninstall it first?', 
                   title='Uninstall first?', 
                   resultVar="uninstallChoice", 
-                  onYes='removeTarget();', 
+                  onYes='removeTarget( true );', 
                   onNo="// proceed without action...",
                   onCancel='silentAbort("This program is already installed.");'
                   ) +
                   (3*TAB) + 'break' + END +                  
                   EBLK +           
                 EBLK +                         
-            EBLK + NEW                                                              
+            EBLK + NEW +
+            'function managePriorInstallation() ' + SBLK +
+                TAB + "if( targetExists( false ) ) " + SBLK +
+                (2*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
+                    _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
+                (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_REMOVE + '":' + NEW + 
+                    (3*TAB) + 'removeTarget( false )' + END +
+                    (3*TAB) + 'break' + END +
+                (2*TAB) + 'default:' + NEW +
+                    (2*TAB) + _QtIfwScript.ifYesNoPopup(  
+                  'This program is already installed. ' +
+                  'Do you wish to replace the prior installation? ' +
+                  '(Select \\"No\\" to cancel and quit.)', 
+                  title='Replace prior?', 
+                  resultVar="uninstallChoice" ) + 
+                        (2*TAB) + 'removeTarget( false )' + END +                  
+                    TAB + 'else' + NEW +
+                        (2*TAB) + 'quit()' + END +         
+                    (3*TAB) + 'break' + END +                  
+                  EBLK +         
+                EBLK +                         
+            EBLK + NEW                                                                          
             )
 
         if IS_WINDOWS : 
@@ -1185,16 +1392,41 @@ Controller.prototype.%s = function(){
         TAB = _QtIfwScript.TAB
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK        
-        self.controllerConstructorBody = 'clearErrorLog()' + END  
+                              
+        self.controllerConstructorBody = TAB + 'clearErrorLog()' + END
+        if self.virtualArgs :  
+            self.controllerConstructorBody += TAB + 'initGlobals()' + END
+        
+        HIDE_PAGE_TMPLT = ( TAB + 
+            'installer.setDefaultPageVisible(QInstaller.%s, false)' ) + END
+        def hidePage( pageName ): 
+            self.controllerConstructorBody += HIDE_PAGE_TMPLT % (pageName,)
+        if not self.isIntroductionPageVisible:                                                                    
+            hidePage( QT_IFW_INTRO_PAGE )
+        if not self.isTargetDirectoryPageVisible:                                                                    
+            hidePage( QT_IFW_TARGET_DIR_PAGE )
+        if not self.isComponentSelectionPageVisible:
+            hidePage( QT_IFW_COMPONENTS_PAGE )
+        if not self.isLicenseAgreementPageVisible:                                                                    
+            hidePage( QT_IFW_LICENSE_PAGE )
+        if not self.isStartMenuDirectoryPageVisible:                                                                    
+            hidePage( QT_IFW_START_MENU_PAGE )
+        if not self.isReadyForInstallationPageVisible:                                                                    
+            hidePage( QT_IFW_READY_PAGE )
+        if not self.isPerformInstallationPageVisible:                                                                    
+            hidePage( QT_IFW_INSTALL_PAGE )
+        if not self.isFinishedPageCallbackBody:                                                                    
+            hidePage( QT_IFW_FINISHED_PAGE )
+            
         self.controllerConstructorBody += _QtIfwScript.ifCmdLineSwitch( 
                 _QtIfwScript.AUTO_PILOT_CMD_ARG, isMultiLine=True )             
-        for signalName, (slotName, _) in six.iteritems( self.__autoPilotSlots ):    
+        for signalName, (slotName, _) in six.iteritems( self.__autoPilotEventSlots ):    
             self.controllerConstructorBody += ( 
                 QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
                 (signalName, slotName) )
         self.controllerConstructorBody += (        
                 _QtIfwScript.ifInstalling() + 
-                    'managePriorInstallation()' + END +
+                    'autoManagePriorInstallation()' + END +
                 'else ' + SBLK +
                     TAB + 'var mode = ' + _QtIfwScript.cmdLineArg( 
                         _QtIfwScript.MAINTAIN_MODE_CMD_ARG ) + END + 
@@ -1220,7 +1452,7 @@ Controller.prototype.%s = function(){
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
-            ) 
+        ) 
 
     def __genTargetDirectoryPageCallbackBody( self ):
         self.targetDirectoryPageCallbackBody = (
@@ -1234,11 +1466,11 @@ Controller.prototype.%s = function(){
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
-            ) 
+        ) 
 
     def __genComponentSelectionPageCallbackBody( self ):
         self.componentSelectionPageCallbackBody = (
-            QtIfwControlScript.assignPageWidgetVar( "page" ) +            
+            QtIfwControlScript.assignCurPageWidgetVar( "page" ) +            
             '    ' + _QtIfwScript.ifCmdLineArg( 
                 _QtIfwScript.INSTALL_LIST_CMD_ARG ) + 
             '    {\n' +
@@ -1269,7 +1501,7 @@ Controller.prototype.%s = function(){
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
-            )
+        )
 
     def __genLicenseAgreementPageCallbackBody( self ):
         self.licenseAgreementPageCallbackBody = (
@@ -1288,7 +1520,7 @@ Controller.prototype.%s = function(){
                             _QtIfwScript.cmdLineSwitchArg(
                                 _QtIfwScript.ACCEPT_EULA_CMD_ARG ) ) +
             '    }'                      
-            )                         
+        )                         
 
     def __genStartMenuDirectoryPageCallbackBody( self ):
         self.startMenuDirectoryPageCallbackBody = (
@@ -1303,21 +1535,24 @@ Controller.prototype.%s = function(){
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +                 
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
-            )
+        )
 
     def __genReadyForInstallationPageCallbackBody( self ):
         self.readyForInstallationPageCallbackBody = (
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
-                    QtIfwControlScript.NEXT_BUTTON ) 
-            )                
+                    QtIfwControlScript.NEXT_BUTTON ) + 
+            '    else {\n' +                        
+            '        managePriorInstallation();\n' +
+            '    }\n'    
+        )                
 
     def __genPerformInstallationPageCallbackBody( self ):
         self.performInstallationPageCallbackBody = (
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
-            )
+        )
 
     def __genFinishedPageCallbackBody( self ):
         self.finishedPageCallbackBody = (                                
@@ -1330,7 +1565,7 @@ Controller.prototype.%s = function(){
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.FINISH_BUTTON ) 
-            )            
+        )            
             
     def path( self ) :   
         return joinPath( BUILD_SETUP_DIR_PATH, 
@@ -1349,6 +1584,22 @@ class QtIfwPackageScript( _QtIfwScript ):
     __DIR_TMPLT  = "%s/packages/%s/meta"
     __PATH_TMPLT = __DIR_TMPLT + "/%s"
 
+    __CONTROLER_CALLBACK_FUNC_TMPLT = (
+"""
+Controller.prototype.%s = function(){
+    %s
+}\n
+""" )
+
+    __COMPONENT_CALLBACK_FUNC_TMPLT = (
+"""
+Component.prototype.%s = function(){
+    %s
+}\n
+""" )
+    
+    __COMPONENT_LOADED_HNDLR_NAME = "componentLoaded"
+            
     __WIN_ADD_SHORTCUT_TMPLT = ( 
 """
         component.addOperation( "CreateShortcut",
@@ -1484,14 +1735,16 @@ class QtIfwPackageScript( _QtIfwScript ):
         s = s.replace( "[WORKING_DIR]", wrkDir )        
         return s 
     
-    def __init__( self, pkgName,
-                  shortcuts=[],                    
+    def __init__( self, pkgName, 
+                  shortcuts=[],
+                  uiPages=[],                    
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
         _QtIfwScript.__init__( self, fileName, script, scriptPath )
 
-        self.pkgName  = pkgName
+        self.pkgName   = pkgName
         self.shortcuts = shortcuts
+        self.uiPages   = uiPages
         
         # Linux Only
         self.isAskPassProgRequired = False
@@ -1501,7 +1754,13 @@ class QtIfwPackageScript( _QtIfwScript ):
 
         self.componentConstructorBody = None
         self.isAutoComponentConstructor = True
-        
+
+        self.componentLoadedCallbackBody = None
+        self.isAutoComponentLoadedCallback = True
+
+        self.componentEnteredCallbackBody = None
+        self.isAutoComponentEnteredCallback = True
+                                                              
         self.componentCreateOperationsBody = None
         self.isAutoComponentCreateOperations = True
                                                         
@@ -1518,6 +1777,14 @@ class QtIfwPackageScript( _QtIfwScript ):
             self.__genComponentConstructorBody()
         self.script += ( "function Component() {\n%s\n}\n" % 
                          (self.componentConstructorBody,) )
+
+        if self.isAutoComponentLoadedCallback:
+            self.__genComponentLoadedCallbackBody()
+        self.script += ( QtIfwPackageScript.__COMPONENT_CALLBACK_FUNC_TMPLT % 
+                         (QtIfwPackageScript.__COMPONENT_LOADED_HNDLR_NAME,
+                          self.componentLoadedCallbackBody,) )                            
+
+        if self.uiPages: self.__appendUiPageCallbacks()
         
         if self.isAutoComponentCreateOperations:
             self.__genComponentCreateOperationsBody()
@@ -1581,9 +1848,52 @@ class QtIfwPackageScript( _QtIfwScript ):
             )
             
     def __genComponentConstructorBody( self ):
-        """ No logic yet provided... """
-        self.componentConstructorBody = ""   
-            
+        END = _QtIfwScript.END_LINE
+        self.componentConstructorBody = (            
+            ('component.loaded.connect(this, this.%s)' % 
+              (QtIfwPackageScript.__COMPONENT_LOADED_HNDLR_NAME,) ) + END             
+        )
+        
+    def __genComponentLoadedCallbackBody( self ):
+        TAB = _QtIfwScript.TAB
+        END = _QtIfwScript.END_LINE
+        NEW = _QtIfwScript.NEW_LINE        
+        ADD_CUSTOM_PAGE_TMPLT = ( 
+            'installer.addWizardPage(component, "%s", QInstaller.%s)' )
+        HIDE_DEFAULT_PAGE_TMPLT = (
+            'installer.setDefaultPageVisible(QInstaller.%s, false)' )                
+        self.componentLoadedCallbackBody = ""
+        replacePage = None
+        for p in self.uiPages:
+            # Replace default pages            
+            if p.name.startswith( QT_IFW_REPLACE_PAGE_PREFIX ):
+                replacePage = p.name[ len(QT_IFW_REPLACE_PAGE_PREFIX): ]
+                if replacePage in _DEFAULT_PAGES : 
+                    self.componentLoadedCallbackBody += ( NEW + 
+                        TAB + (ADD_CUSTOM_PAGE_TMPLT % ( p.name, replacePage )) + END +
+                            TAB + (HIDE_DEFAULT_PAGE_TMPLT % (replacePage,)) + END 
+                    )         
+            else :
+                # Insert custom pages
+                self.componentLoadedCallbackBody += ( NEW + TAB + 
+                    (ADD_CUSTOM_PAGE_TMPLT % ( p.name, p.pageOrder )) + END )         
+
+            if p._incOnLoadBase:
+                self.componentLoadedCallbackBody += (
+                    QtIfwUiPage.BASE_ON_LOAD_TMPT % (p.name,) )
+                              
+            if p.onLoad:
+                self.componentLoadedCallbackBody += p.onLoad
+
+    def __appendUiPageCallbacks( self ):    
+        if self.uiPages: 
+            for p in self.uiPages:
+                # support functions                 
+                for funcName, funcBody in six.iteritems( p.supportFuncs ):
+                    self.script += (  
+                        QtIfwPackageScript.__COMPONENT_CALLBACK_FUNC_TMPLT 
+                        % (funcName, funcBody) )
+
     def __genComponentCreateOperationsBody( self ):
         self.componentCreateOperationsBody = ""
         if IS_LINUX and self.isAskPassProgRequired:
@@ -1713,6 +2023,154 @@ class QtIfwShortcut:
         self.isAppShortcut     = True
         self.isDesktopShortcut = False
 
+# -----------------------------------------------------------------------------
+class QtIfwUiPage():
+
+    __FILE_EXTENSION  = "ui"
+    __UI_RES_DIR_NAME = "qtifw_ui"
+    
+
+    BASE_ON_LOAD_TMPT = (    
+"""
+    var page = gui.pageWidgetByObjectName("Dynamic%s");
+    switch( systemInfo.kernelType ){
+    case "darwin": // macOS
+        page.minimumSize.width=300;
+        break;
+    case "linux": 
+        page.minimumSize.width=480;
+        break;
+    default: // "windows"
+        // This is the hard coded width of "standard" QtIfw .ui's
+        page.minimumSize.width=491;   
+    }    
+""")
+    
+    @staticmethod
+    def __toFileName( name ): 
+        return joinExt( name, QtIfwUiPage.__FILE_EXTENSION ).lower()  
+    
+    @staticmethod
+    def _pageResPath( name ):    
+        return util._toLibResPath( joinPath( 
+                QtIfwUiPage.__UI_RES_DIR_NAME, 
+                QtIfwUiPage.__toFileName( name ) ) )
+        
+    def __init__( self, name, pageOrder=None, 
+                  sourcePath=None, content=None,
+                  onLoad=None, onEnter=None ) :
+        self.name           = name
+        self.pageOrder      = pageOrder if pageOrder in _DEFAULT_PAGES else None        
+        self._incOnLoadBase = True
+        self.onLoad         = onLoad
+        self.onEnter        = onEnter
+        self.supportFuncs   = {} 
+        self.replacements   = {}
+        if sourcePath:
+            with open( sourcePath, 'r' ) as f: self.content = f.read()
+        else: self.content = content  
+               
+    def fileName( self ): return QtIfwUiPage.__toFileName( self.name )  
+
+    # resolve static substitutions
+    def resolve( self, qtIfwConfig ):
+        self.replacements.update({ 
+             QT_IFW_TITLE           : qtIfwConfig.configXml.Title 
+        ,    QT_IFW_PRODUCT_NAME    : qtIfwConfig.configXml.Name 
+        ,    QT_IFW_PRODUCT_VERSION : qtIfwConfig.configXml.Version 
+        ,    QT_IFW_PUBLISHER       : qtIfwConfig.configXml.Publisher 
+        })
+        
+    def write( self, dirPath ):
+        if self.content is None : return
+        if not isDir( dirPath ): makeDir( dirPath )
+        filePath = joinPath( dirPath, self.fileName() )
+        content = self.__resolveContent()
+        print( "Adding installer page definition: %s\n\n%s\n" % ( 
+                filePath, content ) )                               
+        with open( filePath, 'w' ) as f: f.write( content ) 
+
+    def __resolveContent( self ):
+        self.replacements[ _PAGE_NAME_PLACHOLDER ] = self.name
+        ret = self.content
+        for placeholder, value in six.iteritems( self.replacements ):
+            ret = ret.replace( placeholder, value )
+        return ret    
+
+# -----------------------------------------------------------------------------    
+class QtIfwSimpleTextPage( QtIfwUiPage ):
+    
+    __SRC  = QtIfwUiPage._pageResPath( "simpletext" )
+    __TITLE_PLACEHOLDER = "[TITLE]"
+    __TEXT_PLACEHOLDER = "[TEXT]"
+
+    def __init__( self, name, pageOrder=None, title="", text="", 
+                  onLoad=None, onEnter=None ) :
+        QtIfwUiPage.__init__( self, name, pageOrder=pageOrder, 
+                              onLoad=onLoad, onEnter=onEnter, 
+                              sourcePath=QtIfwSimpleTextPage.__SRC  )
+        self.replacements.update({ 
+            QtIfwSimpleTextPage.__TITLE_PLACEHOLDER : title,
+            QtIfwSimpleTextPage.__TEXT_PLACEHOLDER : text 
+        })
+                    
+# -----------------------------------------------------------------------------    
+class QtIfwTargetDirPage( QtIfwUiPage ):
+    
+    NAME = QT_IFW_REPLACE_PAGE_PREFIX + QT_IFW_TARGET_DIR_PAGE
+    __SRC  = QtIfwUiPage._pageResPath( QT_IFW_TARGET_DIR_PAGE )
+
+    def __init__( self ):
+            
+        ON_TARGET_CHANGED_NAME        = "targetDirectoryChanged"
+        ON_TARGET_BROWSE_CLICKED_NAME = "targetChooserClicked"
+    
+        ON_LOAD = (    
+"""
+    // patch seems to be needed due to use of RichText?
+    switch( systemInfo.kernelType ){
+    case "darwin": // macOS
+        page.warning.minimumSize.width=300;
+        break;
+    case "linux": 
+        page.warning.minimumSize.width=480;
+        break;
+    }    
+    page.targetDirectory.setText(
+        Dir.toNativeSparator(installer.value("TargetDir")));
+    page.targetDirectory.textChanged.connect(this, this.%s);    
+    page.targetChooser.released.connect(this, this.%s);
+""") % ( ON_TARGET_CHANGED_NAME, ON_TARGET_BROWSE_CLICKED_NAME )
+    
+        ON_TARGET_CHANGED = (
+"""
+    var page = gui.pageWidgetByObjectName("Dynamic%s");
+    var dir = page.targetDirectory.text;
+    dir = Dir.toNativeSparator(dir);
+    page.warning.setText( !installer.fileExists(dir) ? "" :
+        "<p style=\\"color: red\\">" +
+            "WARNING: The path specified already exists. " +
+            "All prior content will be erased!" + 
+        "</p>" );        
+    installer.setValue("TargetDir", dir);
+""") % ( QtIfwTargetDirPage.NAME, )
+
+        ON_TARGET_BROWSE_CLICKED = (
+"""
+    var page = gui.pageWidgetByObjectName("Dynamic%s");
+    page.targetDirectory.setText( Dir.toNativeSparator(
+        QFileDialog.getExistingDirectory("", page.targetDirectory.text) ) );
+""") % ( QtIfwTargetDirPage.NAME, )
+
+        
+        QtIfwUiPage.__init__( self, QtIfwTargetDirPage.NAME,
+            sourcePath=QtIfwTargetDirPage.__SRC, onLoad=ON_LOAD )
+        
+        self.supportFuncs.update({ 
+              ON_TARGET_CHANGED_NAME: ON_TARGET_CHANGED
+            , ON_TARGET_BROWSE_CLICKED_NAME: ON_TARGET_BROWSE_CLICKED
+        })
+            
 # -----------------------------------------------------------------------------    
 class QtIfwExeWrapper:
     
@@ -2168,7 +2626,62 @@ def __qtIfwCreatorPath( qtIfwDir ):
         joinPath( __BIN_SUB_DIR, __QT_IFW_CREATOR_EXE_NAME ) )
     return creatorPath if isFile( creatorPath ) else None
     
-# -----------------------------------------------------------------------------                   
+# -----------------------------------------------------------------------------  
+# if the page is already present and overwrite is False, NOTHING will be modified                  
+def _addQtIfwUiPages( qtIfwConfig, uiPages, isOverWrite=True ):
+
+    def findPageOwner( packages, page ):    
+        for pkg in packages :
+            for pg in pkg.uiPages :
+                if pg.name==page.name: return pkg
+        return None            
+    
+    def add( ctrlScript, pkg, page ):        
+        # if this is a replacement page for a built-in,
+        # it must be the first page in the list with that page order
+        # else the other pages with that order will end up appearing 
+        # *after* this one rather than *before* it
+        isInserted=False
+        if page.name.startswith( QT_IFW_REPLACE_PAGE_PREFIX ):
+            baseName = page.name[ len(QT_IFW_REPLACE_PAGE_PREFIX): ] 
+            if baseName in _DEFAULT_PAGES:
+                for i, pg in enumerate( pkg.uiPages ):
+                    isInserted=pg.pageOrder==baseName
+                    if isInserted: 
+                        pkg.uiPages.insert( i,  page )
+                        pkg.pkgScript.uiPages.insert( i, page )
+                        ctrlScript.uiPages.insert( i, page )
+                        break
+        # if the page wasn't inserted into the middle of the list, append it                     
+        if not isInserted:    
+            pkg.uiPages.append( page )           
+            pkg.pkgScript.uiPages.append( page )        
+            ctrlScript.uiPages.append( page ) 
+        # order doesn't matter for this list, but the items should be unique
+        pkg.pkgXml.UserInterfaces.append( page.fileName() )
+        pkg.pkgXml.UserInterfaces = list(set(pkg.pkgXml.UserInterfaces))
+
+    def overwrite( ctrlScript, pkg, page ):        
+        # order must be preserved here 
+        pkg.uiPages = [ page if p.name==page.name else p 
+                        for p in pkg.uiPages ]        
+        pkg.pkgScript.uiPages = [ page if p.name==page.name else p 
+                                  for p in pkg.pkgScript.uiPages ]
+        ctrlScript.uiPages = [ page if p.name==page.name else p 
+                               for p in  ctrlScript.uiPages ]
+        # order doesn't matter for this list, but the items should be unique
+        pkg.pkgXml.UserInterfaces.append( page.fileName() )
+        pkg.pkgXml.UserInterfaces = list(set(pkg.pkgXml.UserInterfaces))
+        
+    if uiPages is None: return
+    if isinstance( uiPages, QtIfwUiPage ): uiPages = [uiPages]  
+    for page in uiPages:
+        pkg = findPageOwner( qtIfwConfig.packages, page )
+        if pkg:
+            if isOverWrite: overwrite( qtIfwConfig.controlScript, pkg, page )
+            continue            
+        add( qtIfwConfig.controlScript, qtIfwConfig.packages[0], page )       
+        
 def findQtIfwPackage( pkgs, pkgId ):        
     for p in pkgs: 
         if p.pkgId==pkgId: return p
@@ -2323,6 +2836,9 @@ def __initBuild( qtIfwConfig ) :
     print( "Build directory created: %s" % (BUILD_SETUP_DIR_PATH,) )
 
 def __addInstallerResources( qtIfwConfig ) :
+    
+    _addQtIfwUiPages( qtIfwConfig, QtIfwTargetDirPage(), isOverWrite=False )
+    
     configXml = qtIfwConfig.configXml
     ctrlScript = qtIfwConfig.controlScript
     
@@ -2340,6 +2856,10 @@ def __addInstallerResources( qtIfwConfig ) :
                           joinPath( configXml.dirPath(), 
                                     fileBaseName( configXml.iconFilePath ) ) )
     if ctrlScript :
+        # Allow component selection to be explicitly disabled, but force that
+        # when there are not multiple packages to begin with
+        if len(qtIfwConfig.packages) < 2:
+            ctrlScript.isComponentSelectionPageVisible=False 
         print( "Adding installer control script..." )
         ctrlScript.debug()
         ctrlScript.write()        
@@ -2359,6 +2879,8 @@ def __addInstallerResources( qtIfwConfig ) :
             pkgScript.debug()
             pkgScript.write()
 
+        if p.uiPages: __addUiPages( qtIfwConfig, p ) 
+
         if p.pkgType == QtIfwPackage.Type.QT_CPP : 
             p.qtCppConfig.addDependencies( p )        
 
@@ -2366,7 +2888,13 @@ def __addInstallerResources( qtIfwConfig ) :
 
         if isinstance( p.exeWrapper, QtIfwExeWrapper ): 
             __addExeWrapper( p )
-            
+                        
+def __addUiPages( qtIfwConfig, package ) :
+    for ui in package.uiPages:
+        if isinstance( ui, QtIfwUiPage ): 
+            ui.resolve( qtIfwConfig ) 
+            ui.write( package.metaDirPath() )
+                
 def __addResources( package ) :    
     print( "Adding additional resources..." )
     destDir = package.contentDirPath()            

@@ -7,11 +7,15 @@ from distbuilder.opy_library import obfuscatePy, \
 PYINST_BIN_NAME          = util.normBinaryName( "pyinstaller" )
 PYINST_MAKESPEC_BIN_NAME = util.normBinaryName( "pyi-makespec" )
 
+PYINST_ROOT_PKG_NAME = "PyInstaller"
+
 SPEC_EXT = ".spec"
 
 BUILD_DIR_PATH = absPath( "build" )
 DIST_DIR_PATH  = absPath( "dist" )
 CACHE_DIR_PATH = absPath( "__pycache__" )
+
+HOOKS_DIR_NAME = "hooks"
 
 __TEMP_NEST_DIR_NAME = "__nested__"
 
@@ -184,7 +188,7 @@ class PyInstallerConfig:
         return util._toSrcDestPair( pathPair, destDir, 
                                     basePath=self.sourceDir )
 
-class PyInstSpec:
+class PyInstSpec( util.PlasticFile ):
 
     __DUPLICATE_DATA_FILE_PATCH = (
         "a.datas = list({tuple(map(str.upper, t)) for t in a.datas})" )
@@ -198,21 +202,10 @@ class PyInstSpec:
         if content: self.content = content
         elif filePath and isFile(filePath): self.read()
     
-    def __str__( self ): return self.content
-
     def path( self ):
         return ( PyInstSpec.cfgToPath( self.pyInstConfig )
                  if self.pyInstConfig else absPath(self.filePath) )
-    
-    def read( self ):
-        self.content = None        
-        with open( self.path(), 'r' ) as f : self.content = f.read() 
-            
-    def write( self ):
-        with open( self.path(), 'w' ) as f : f.write( str(self) )
-    
-    def debug( self ): print( str(self) )
-    
+        
     def injectDuplicateDataPatch( self ):
         """
         This patches a known bug in PyInstaller on Windows. 
@@ -234,21 +227,10 @@ class PyInstSpec:
                 injectLineNo = lineno
                 break
         if aAssignFound:
-            self._injectLine( 
+            self.injectLine( 
                 PyInstSpec.__DUPLICATE_DATA_FILE_PATCH, injectLineNo )
             print("Duplicate data patch injected into .spec file...")
-            
-    def _toLines( self ):        
-        return self.content.split('\n' ) if self.content else []
-    
-    def _fromLines( self, lines ): self.content = '\n'.join( lines )
-
-    def _injectLine( self, injection, lineNo ):               
-        lines = self._toLines()            
-        if lineNo : lines.insert( lineNo-1, injection )
-        else : lines.append( injection )
-        self._fromLines( lines )
-    
+                
     def _parseAssigments( self ):
         """
         Returns a list of tuples in the form of 
@@ -264,7 +246,7 @@ class PyInstSpec:
                             assigments.append( ( target.id, child.lineno ) )
         return assigments
         
-class WindowsExeVersionInfo:
+class WindowsExeVersionInfo( util.PlasticFile ):
 
     __TEMP_FILE_NAME = "win_exe_ver_info.tmp"
     
@@ -302,7 +284,7 @@ VSVersionInfo(
 )
     
     @staticmethod
-    def path(): return absPath( WindowsExeVersionInfo.__TEMP_FILE_NAME )
+    def defaultPath(): return absPath( WindowsExeVersionInfo.__TEMP_FILE_NAME )
 
     def __init__( self ) :
         self.major = 0
@@ -330,13 +312,54 @@ VSVersionInfo(
         s = s.replace( "PRODUCT_DESCR", self.description )
         s = s.replace( "EXE_NAME", util.normBinaryName( self.exeName ) )                
         return s 
+
+    def path( self ): return WindowsExeVersionInfo.defaultPath()  
     
-    def write( self ):
-        filePath = self.path() 
-        with open( filePath,'w') as f : f.write( str(self) )
-    
-    def debug( self ): print( str(self) )
+    # block these on this derivative of PlaticFile
+    def read( self ): pass
+    def toLines( self ): pass      
+    def fromLines( self, lines ): pass
+    def injectLine( self, injection, lineNo ): pass   
                             
+class PyInstHook( ExecutableScript ) :
+    
+    FILE_NAME_PREFIX = "hook-"
+    
+    def __init__( self, name, script=None ):
+        ExecutableScript.__init__( self,
+            name, extension=PY_EXT, shebang=None, script=script ) 
+        self.hooksDirPath = None 
+
+    def __str__( self ): return self.script if self.script else ""
+    
+    def read( self ):
+        self.__resolveHooksPath()
+        hookPath = joinPath( self.hooksDirPath, self.fileName() )
+        if not isFile( hookPath ):
+            raise Exception( 
+                "PyInstaller hook does not exist: %s" % (hookPath,) )                      
+        with open( hookPath, 'r' ) as f: self.script = f.read()
+                                
+    def write( self ):
+        self.__resolveHooksPath()
+        ExecutableScript.write( self, self.hooksDirPath )  
+
+    def fileName( self ):
+        return "%s%s" % (PyInstHook.FILE_NAME_PREFIX, 
+                         ExecutableScript.fileName( self ) )
+    
+    def __resolveHooksPath( self ):
+        if self.hooksDirPath is None:
+            try:
+                pgkDir = modulePackagePath( PYINST_ROOT_PKG_NAME )
+                if pgkDir is None: raise Exception()
+                hooksDir = joinPath( pgkDir, HOOKS_DIR_NAME )
+                if isDir( hooksDir ): self.hooksDirPath = hooksDir
+                else: raise Exception()
+            except:    
+                raise Exception( 
+                    "PyInstaller hooks directory could not be resolved." )         
+                                    
 # -----------------------------------------------------------------------------   
 def buildExecutable( name=None, entryPointPy=None, 
                      pyInstConfig=PyInstallerConfig(), 
@@ -368,7 +391,7 @@ def buildExecutable( name=None, entryPointPy=None,
     distDirPath = joinPath( THIS_DIR, pyInstConfig.name ) 
     pyInstConfig.distDirPath = distDirPath
     if IS_WINDOWS and pyInstConfig.versionInfo is not None: 
-        pyInstConfig.versionFilePath = WindowsExeVersionInfo.path()
+        pyInstConfig.versionFilePath = WindowsExeVersionInfo.defaultPath()
     else : pyInstConfig.versionInfo = None
         
     # Prepare to build (discard old build files)       
@@ -465,7 +488,7 @@ def makePyInstSpec( pyInstConfig, opyConfig=None ):
     # auto assign some pyInstConfig values        
     pyInstConfig.distDirPath = joinPath( THIS_DIR, pyInstConfig.name )
     if IS_WINDOWS and pyInstConfig.versionInfo is not None: 
-        pyInstConfig.versionFilePath = WindowsExeVersionInfo.path()
+        pyInstConfig.versionFilePath = WindowsExeVersionInfo.defaultPath()
     else : pyInstConfig.versionInfo = None
     
     # Optionally, get what will be the obfuscated paths

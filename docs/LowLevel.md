@@ -55,10 +55,10 @@ program, invoke the buildExecutable function:
     created. Note that the default destination path is
     the root directory of the package, using the same 
     file name. To package a resource within a sub directory, 
-    or with an alternate name, you must *either* explictly provide  
+    or with an alternate name, you must *either* explictly provide
     a full (relative) destination path *or* **use the 
-    "shortcut value" `True` to indicate both the source 
-    and destination are relative and exactly the same**.      
+    "shortcut value" `True` to indicate the source 
+    and destination are the same relative paths**.      
     
 **distDirs**: An (optional) list of directories to 
     create within the package.  Note distResources
@@ -306,18 +306,33 @@ resolved at *runtime* by QtIFW.  Note these are applicable for **BOTH** direct
 [Installer Script](#installer-scripting) generation, and as parameters
 and attributes for many higher level functions and objects in this library.   
 
-	QT_IFW_TARGET_DIR 
-	
-	QT_IFW_HOME_DIR 
-	QT_IFW_DESKTOP_DIR  
-	QT_IFW_APPS_DIR  
-	QT_IFW_STARTMENU_DIR  
-	
-	QT_IFW_PRODUCT_NAME 
+    QT_IFW_OS 
 
-There are a many more of these to come in future versions...
+    QT_IFW_TARGET_DIR 
 
-Note : use [joinPathQtIfw](#joinpathqtifw) to build paths with these constants. 
+    QT_IFW_ROOT_DIR 
+
+    QT_IFW_HOME_DIR 
+    QT_IFW_DESKTOP_DIR
+
+    QT_IFW_APPS_DIR 
+    QT_IFW_APPS_X86_DIR
+    QT_IFW_APPS_X64_DIR
+
+    QT_IFW_STARTMENU_DIR
+    QT_IFW_USER_STARTMENU_DIR
+    QT_IFW_ALLUSERS_STARTMENU_DIR
+    
+    QT_IFW_INSTALLER_DIR 
+    QT_IFW_INTALLER_PATH
+     
+    QT_IFW_PRODUCT_NAME 
+    QT_IFW_PRODUCT_VERSION 
+    QT_IFW_TITLE 
+    QT_IFW_PUBLISHER 
+    QT_IFW_URL
+
+Note: use [joinPathQtIfw](#joinpathqtifw) to build paths with such constants. 
 
 ### Installer Scripting
 
@@ -387,14 +402,15 @@ Static Constants :
 Static Functions:      
                                                    
     log( msg, isAutoQuote=True )            
-	debugPopup( msg, isAutoQuote=True )
+    debugPopup( msg, isAutoQuote=True )
+    errorPopup( msg, isAutoQuote=True )
                       
     setValue( key, value, isAutoQuote=True )               
     lookupValue( key, default="", isAutoQuote=True )            
     lookupValueList( key, defaultList=[], isAutoQuote=True, 
                      delimiter=None )
                           
-	getEnv( varName, isAutoQuote=True )
+    getEnv( varName, isAutoQuote=True )
                           
     targetDir()
     productName() 
@@ -418,6 +434,8 @@ Static Functions:
     ifYesNoPopup( msg, title="Question", resultVar="result", 
                  isMultiLine=False )
     
+    Dir.toNativeSparator( path ) 
+    
     _autoQuote( value, isAutoQuote )
 
 In addition, QtIfwControlScript provides: 
@@ -436,15 +454,20 @@ Static Constants :
 
 Static Functions:      
                    
+    pageWidget( name )     
+    customPageWidget( name ): 
     currentPageWidget()                
-    assignPageWidgetVar( varName="page" )                
-   
+    assignPageWidgetVar( pageName, varName="page" ):                           
+    assignCustomPageWidgetVar( pageName, varName="page" ):                
+    assignCurPageWidgetVar( varName="page" ):                                 
+    
+    getText( controlName )
     setText( controlName, text, isAutoQuote=True )
     
     clickButton( buttonName, delayMillis=None )                
 
-    	(Note: check box controls also work on radio buttons)
-	enableCheckBox( checkboxName )                
+    	(Note: check box controls also work on radio buttons)    
+    enableCheckBox( checkboxName )                
     disableCheckBox( checkboxName )               
     setCheckBox( checkboxName, boolean )              
 
@@ -461,13 +484,15 @@ following add-on **QT SCRIPT** functions:
 	clearErrorLog()
 	writeErrorLog( msg )
 	
+	quit( msg )
+	abort( msg )
 	silentAbort( msg )
-
-	targetExists()
+	
+	targetExists( isAutoPilotMode )
 	defaultTargetExists()
 	cmdLineTargetExists()
 
-	removeTarget()
+	removeTarget( isAutoPilotMode )
 	
 	maintenanceToolExists( dir )
 	toMaintenanceToolPath( dir )
@@ -986,12 +1011,18 @@ Executable scripts have wide ranging potential for use with this library.
 They may be employed as part of the build process, or deployed
 with a distribution. 
 
-The ExecutableScript class is used to generate / bundle such scripts. Normally,
-this is a batch file on Windows, or a shell script on Linux or Mac.  Notably, 
-this is most often used as a "wrapper" over a deployed executable, bundled
-with a distribution.  In some contexts, that wrapper mechanism is implicitly
-employed by deployment preparing tools the library leans on, and/or is added
-directly by distbuilder code. Use of this class allows such to be overridden. 
+The ExecutableScript class is used to generate / bundle such scripts. By 
+default, this is a batch file on Windows, or a shell script on Linux or Mac.
+
+The class [QtIfwExeWrapper](ConfigClasses.md#qtifwexewrapper)) often contains 
+a class of his type, used as a "wrapper" over a deployed executable.  In some 
+contexts, that wrapper mechanism is implicitly employed by deployment preparing 
+tools the library leans on, and/or is added directly by distbuilder.
+
+Class [PyInstHook](ConfigClasses.md#pyinsthook)) is a derived class from 
+ExecutableScript. Note that it is a Python script rather than the default type
+for a given platform.  This derivation is a good example of where you would 
+want to the `read` function and the line parsing/building functions.
 
 Constructor:       
 
@@ -1009,10 +1040,17 @@ Attributes & default values:
     
 Functions:   
 
-    debug()        
     fileName()
-    write( dirPath )
     
+    read( dirPath  )
+    write( dirPath )
+
+    toLines()        
+    fromLines( lines )
+    injectLine( injection, lineNo )               
+
+    debug()        
+        
 Details:
 
 **rootName**: The name of script without the extension.  If this is used

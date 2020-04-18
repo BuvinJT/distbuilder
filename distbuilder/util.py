@@ -40,7 +40,10 @@ PY_EXT             = ".py"
 PY_DIR             = dirPath( PYTHON_PATH )
 SITE_PACKAGES_PATH = get_python_lib()
 
-THIS_DIR           = dirPath( realpath( argv[0] ) )
+# (client script's dir)
+THIS_DIR           = dirPath( realpath( argv[0] ) ) 
+
+__THIS_LIB_DIR     = dirPath( realpath( __file__ ) ) 
 
 PATH_PAIR_DELIMITER=";"
 SYS_CMD_DELIM = "&" if IS_WINDOWS else ";"
@@ -58,8 +61,8 @@ OPT_LOCAL_BIN_DIR  = "/opt/local/bin"
 # (though can vary by os language and configuration...)
 DESKTOP_DIR_NAME   = "Desktop"
 
-DEBUG_ENV_VAR_NAME="DEBUG_MODE"
-DEBUG_ENV_VAR_VALUE="1"
+DEBUG_ENV_VAR_NAME  = "DEBUG_MODE"
+DEBUG_ENV_VAR_VALUE = "1"
 
 # strictly Apple
 _MACOS_APP_EXT                     = ".app"
@@ -451,6 +454,10 @@ __FROM_IMPORT_TMPLT          = "from %s import %s"
 
 __GET_MOD_PATH_TMPLT = "inspect.getfile( %s )"
 
+def _toLibResPath( relPath ): 
+    path = joinPath( __THIS_LIB_DIR, relPath )
+    return path if exists( path ) else None
+   
 def isImportableModule( moduleName ):
     try: __importByStr( moduleName )
     except : return False
@@ -757,9 +764,41 @@ def _isLocalPath( path ):
     scheme,_,path,_,_ = urllib.parse.urlsplit( path )
     isLocal = scheme=="file" or scheme=="" 
     return isLocal, path 
+# -----------------------------------------------------------------------------            
+
+class PlasticFile:
+
+    def __init__( self, filePath=None, content=None ) :
+        self.filePath = filePath
+        if content: self.content = content
+        elif filePath and isFile(filePath): self.read()
+    
+    def __str__( self ): return self.content if self.content else ""  
+
+    def debug( self ): print( str(self) )
+    
+    def path( self ): return self.filePath
+    
+    def read( self ):
+        self.content = None        
+        with open( self.path(), 'r' ) as f : self.content = f.read() 
+            
+    def write( self ):
+        with open( self.path(), 'w' ) as f : f.write( str(self) )
+                
+    def toLines( self ):        
+        return self.content.split( '\n' ) if self.content else []
+    
+    def fromLines( self, lines ): self.content = '\n'.join( lines )
+
+    def injectLine( self, injection, lineNo ):               
+        lines = self.toLines()            
+        if lineNo : lines.insert( lineNo-1, injection )
+        else : lines.append( injection )
+        self.fromLines( lines )
 
 # -----------------------------------------------------------------------------            
-class ExecutableScript:
+class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all of it   
     
     __WIN_DEFAULT_EXT = "bat" 
     __NIX_DEFAULT_EXT = "sh"
@@ -782,7 +821,7 @@ class ExecutableScript:
                             ExecutableScript.__NIX_DEFAULT_SHEBANG ) 
         else: self.shebang = shebang            
         if scriptPath:
-            with open( scriptPath, 'rb' ) as f: self.script = f.read()
+            with open( scriptPath, 'r' ) as f: self.script = f.read()
         else: self.script = script  
                                                     
     def __str__( self ) :
@@ -796,7 +835,7 @@ class ExecutableScript:
         if self.script: print( str(self) )
         
     def fileName( self ):
-        return joinExt( self.rootName,self.extension )
+        return joinExt( self.rootName, self.extension )
                         
     def write( self, dirPath ):
         if self.script is None : return
@@ -805,7 +844,23 @@ class ExecutableScript:
         print("Writing script: %s\n\n%s\n" % (filePath,str(self)) )                               
         with open( filePath, 'w' ) as f: f.write( str(self) ) 
         if not IS_WINDOWS : chmod( filePath, 0o755 )
+        
+    def read( self, dirPath ):
+        self.script = None        
+        filePath = joinPath( dirPath, self.fileName() )
+        with open( filePath, 'r' ) as f : self.script = f.read() 
+                
+    def toLines( self ):        
+        return self.script.split( __NEWLINE  ) if self.script else []
     
+    def fromLines( self, lines ): self.script = __NEWLINE.join( lines )
+
+    def injectLine( self, injection, lineNo ):               
+        lines = self.toLines()            
+        if lineNo : lines.insert( lineNo-1, injection )
+        else : lines.append( injection )
+        self.fromLines( lines )
+
 # -----------------------------------------------------------------------------           
 if IS_WINDOWS :
     class _WindowsSharedFile:

@@ -22,7 +22,7 @@ a traditional (perhaps legacy) spec file definition, or you may wish to
 generate one with distbuilder via the makePyInstSpec() function.  
 In either case, you may also opt to dynamically manipulate the spec via 
 the implementation of that class. 
-
+ 
 Constructor: 
 
     PyInstallerConfig()
@@ -59,6 +59,66 @@ Attributes & default values:
     distDirs        = [] 
 	isSpecFileRemoved = False
 
+## PyInstHook
+
+Objects of this type are used for PyInstaller "hook" script
+creation, and programmatic manipulation. 
+Such hooks are executed during a PyInstaller analyis process 
+when an import is encountered with a matching hook name. The purpose
+of a hook is to help PyInstaller find and collect resources
+it would otherwise not know to include in the bundle.  
+  
+Hooks are commonly installed by third party libraries for use across your 
+Python environment whenever you employ PyInstaller.  It is 
+also possible to use custom hooks during a given a build process via 
+the PyInstaller option `--additional-hooks-dir` (though that parameter does **not** 
+*override* a hook which is registered for the system on the whole...)   
+
+If you are working in a context in which you can manipulate the build environment
+freely, the use of hooks is arguably a better means by which to gather resources 
+for a distribition rather than by adding them through  
+[PyInstallerConfig](#pyinstallerconfig) attributes
+`hiddenImports`, `dataFilePaths`, `binaryFilePaths`, etc.    
+
+Use cases for this class include: **adding hooks** to patch a build process,
+replacing **bad hooks** installed on your system, or to simply revisw them 
+for some additional custom need.  
+
+For more on hooks, see:
+[Understanding PyInstaller Hooks](https://pyinstaller.readthedocs.io/en/stable/hooks.html) 
+
+Constructor: 
+
+    PyInstHook( name, script=None ) 
+
+Attributes & default values:
+        
+    name         = *required     
+    script       = None
+    hooksDirPath = None 
+
+Object Methods:
+	
+    fileName()
+
+	read()
+	write()
+
+    debug()
+
+    toLines()
+    fromLines( lines )
+	injectLine( injection, lineNo )
+    
+Details:
+
+The `name` attribute should simply specify the name of import which invokes the `script`. 
+The `name` should **not** contain the *literal* "hook-" *file name* prefix, or a 
+.py *file extension*.     
+
+hooksDirPath = This may be override, as needed.  If left as the default `None`, 
+the path will be automatically resolved. 
+
 ## PyInstSpec
 
 Objects of this type are used for PyInstaller spec file
@@ -84,15 +144,18 @@ Static Method:
 Object Methods:
 
 	path()
+
 	read()
 	write()
+
     debug()
+
+    toLines()
+    fromLines( lines )
+	injectLine( injection, lineNo )
     
     injectDuplicateDataPatch()
     
-    _toLines()
-    _fromLines( lines )
-	_injectLine( injection, lineNo )
 	_parseAssigments() 
 
 ## WindowsExeVersionInfo
@@ -116,6 +179,16 @@ Attributes & default values:
     description = ""
     exeName     = ""
 
+Static Methods:
+    
+    defaultPath()
+    
+Object Methods:
+	
+    fileName()
+	write()
+    debug()
+    
 ## QtIfwConfig 
 
 Objects of this type provide the highest level definition of 
@@ -211,7 +284,7 @@ Functions:
        
 ## QtIfwControlScript
 
-QtIFW installers may have a "Control Script" and/or a collection of "Package Scripts".
+QtIfw installers may have a "Control Script" and/or a collection of "Package Scripts".
 The "Control Script" is intended to dictate how the installer *interface*  behaves, and
 other high level logic pertaining to the installer itself. In contrast, "Package Scripts"
 are intended for applying custom logic to manipulate a target environment when installing 
@@ -228,21 +301,23 @@ the low level helpers provided by the library for this purpose.
 For maximum flexibility, rather than using the dynamic methods, you may directly define 
 the entire script via a raw string, by setting the `script` attribute.  Or, you may 
 specify an external file as the source instead via `script_path`. In addition, you may 
-always delegate scripts to a traditional QtIFW definition by using a higher level 
+always delegate scripts to a traditional QtIfw  definition by using a higher level 
 configuration [QtIfwConfig](#qtifwconfig) to specify such.
 
 The way this class works, in summary, is that you may provide an optional script 
 as a raw string, or a path to script you wish to load directly.  If specified, 
 those resources act as a *base*, from which you may continue to add on to.
 
-Along with being able to add your own custom functions to use as "helpers"
-a QtIFW Control script is driven by the framework which calls functions of
-specific names, if they exist, in order to apply custom coding during a given
-event.  A QtIfwControlScript object has a pair of attributes related to each such 
-event in the framework.  One is a boolean, dictating whether to auto generate this 
+A QtIfw control script is "driven" by the builtin framework. When a given "event"
+occurs a "handler" function is invoked (if it has been defined).
+QtIfwControlScript object has a set of attributes related to each page and such 
+event/handler pair in the framework. One is a boolean, controlling the "visibility"
+of the page.  Setting that to `False` skips over that wizard page entirely. 
+Another boolean is provided, dictating whether to auto generate the 
 event handler using a set of fixed, built-in logic provided by distbuilder to add a 
-fair amount of additional features to your installers "for free".  The other attribute 
-in each pair is the body of the function (which is normally auto generated).   
+notable amount of additional features to your installers "for free".  The final attribute 
+in this pattern is the body of the event handler (normally auto generated), which allows
+for an atomic replacement of that code.   
   
 When the `write()` function is invoked, the actual script file to be embedded 
 in the installer is generated from the attributes.  Prior to calling that, you
@@ -256,43 +331,60 @@ select auto generates, and then directly add on to, or manipulate the event hand
 function bodies.  
 
 A large number of abstract, static "helper" functions have been provided which you may
-use to build your logic.  Otherwise, you may certainly just add QScript snippets
-directly in the raw.       
+use to build your logic.  Otherwise, you may certainly just add Qt Script snippets
+directly in the raw.  See [Installer Scripting](LowLeveel.md#installer-scripting).       
+
+The `virtualArgs` attribute is a dictionary, containing key/values which
+allows for hard coding [Standard Installer Arguments](LowLeveel.md#standard-installer-arguments)
+into the installer, which are typically passed at runtime via the command line.
 
 Constructor:                
 
 	QtIfwControlScript( fileName="installscript.qs",                  
-                  		script=None, scriptPath=None ) :
+                  		script=None, scriptPath=None,
+                  		virtualArgs={} ) :
 
 Attributes & default values:                                               
     
-	controllerGlobals = None
+    virtualArgs = virtualArgs
+    
+    uiPages = []
+    
+    controllerGlobals = None
     isAutoGlobals = True
         
     controllerConstructorBody = None
     isAutoControllerConstructor = True
-                                                            
+                                    
+	isIntroductionPageVisible = True                                                                                                                                
     introductionPageCallbackBody = None
     isAutoIntroductionPageCallback = True
 
+	isTargetDirectoryPageVisible = True
     targetDirectoryPageCallbackBody = None
     isAutoTargetDirectoryPageCallback = True
 
+    isComponentSelectionPageVisible = True
     componentSelectionPageCallbackBody = None
     isAutoComponentSelectionPageCallback = True
 
+	isLicenseAgreementPageVisible = True
     licenseAgreementPageCallbackBody = None
     isAutoLicenseAgreementPageCallback = True
 
+	isStartMenuDirectoryPageVisible = True
     startMenuDirectoryPageCallbackBody = None
     isAutoStartMenuDirectoryPageCallback = True
 
+	isReadyForInstallationPageVisible = True
     readyForInstallationPageCallbackBody = None
     isAutoReadyForInstallationPageCallback = True
 
+	isPerformInstallationPageVisible = True
     performInstallationPageCallbackBody = None
     isAutoPerformInstallationPageCallback = True
         
+	isFinishedPageCallbackBody = True        
     finishedPageCallbackBody = None
     isAutoFinishedPageCallback = True        
 
@@ -322,10 +414,11 @@ for extended configuration details.
 Constructor:  
 
     QtIfwPackage( pkgId=None, pkgType=None, name=None, 
-    			  subDirName=None,
+                  subDirName=None,
                   srcDirPath=None, srcExePath=None,    
                   resBasePath=None, isTempSrc=False,
-                  pkgXml=None, pkgScript=None ) 
+                  pkgXml=None, pkgScript=None,
+                  uiPages=[] ) 
 
 Attributes:    
 
@@ -337,6 +430,7 @@ Attributes:
 	name            = None
 	pkgXml          = None
 	pkgScript       = None
+	uiPages         = []
 	        
 	<source content>        
 	srcDirPath    = None <package ENTIRE source directory>
@@ -357,6 +451,7 @@ Attributes:
 Functions:      
 
 	dirPath()
+	metaDirPath() 
 	contentTopDirPath()
     contentDirPath() 
 
@@ -384,12 +479,13 @@ Attributes & default values:
 
 	pkgName = <required>
                
-	DisplayName   = <required>
-	Description   = <required>
-	Version       = <required>            
-	Script        = None 
-	Default       = True
-	ReleaseDate   = date.today()
+	DisplayName    = <required>
+	Description    = <required>
+	Version        = <required>            
+	Script         = None 
+	Default        = True
+	ReleaseDate    = date.today()
+	UserInterfaces = []
 
 Functions:      
 
@@ -426,24 +522,26 @@ This class works in an analogous manner to [QtIfwControlScript](#qtifwcontrolscr
 Please refer to the that documentation for an explanation of how use these script
 objects in general. 
 
-Note that [QtIfwShortcut](#qtifwpackageshortcut) objects
+Note that [QtIfwShortcut](#qtifwshortcut) objects
 are used for the `shortcuts` attribute of this class.
 
 Constructor:       
 
-	QtIfwPackageScript( pkgName, 
-					    shortcuts=[], 
-						fileName="installscript.qs", 
+    QtIfwPackageScript( pkgName, 
+                        shortcuts=[],  uiPages=[], 
+                        fileName="installscript.qs", 
                         script=None, scriptPath=None )
                   
 Attributes & default values:      
 
-	pkgName  = <required>
+    pkgName  = <required>
     fileName = "installscript.qs"
     
     script = None <or loaded via scriptPath>
     
     shortcuts = []
+    
+    uiPages=[]
     
     packageGlobals = None
     isAutoGlobals = True
@@ -451,6 +549,9 @@ Attributes & default values:
     componentConstructorBody = None
     isAutoComponentConstructor = True
     
+    componentLoadedCallbackBody = None
+    isAutoComponentLoadedCallback = True
+        
     componentCreateOperationsBody = None
     isAutoComponentCreateOperations = True        
     
@@ -459,10 +560,8 @@ Attributes & default values:
                                                    
 ## QtIfwShortcut
 
-These shortcut objects are use by
-[QtIfwPackageScript](#qtifwpackagescript) objects,
-to create shortcuts on the installation target 
-environments.
+These shortcut objects are use by [QtIfwPackageScript](#qtifwpackagescript) objects,
+to create shortcuts on the installation target environments.
 
 Constructor:       
 
@@ -583,6 +682,113 @@ Functions:
       
 		refresh()
              
+## QtIfwUiPage
+
+A great deal can be done to customize the way an installer's interface works by
+simply adding custom scripts.  There are limitations, however, to that approach.
+
+This class is used to completely overwrite, or add, custom pages to an installer.
+The content of the pages are defined as Qt "forms", i.e. `.ui` (xml) files which 
+adhere to the
+[Qt UI file format](https://doc.qt.io/qt-5/designer-ui-file-format.html).
+While it is possible to *manually* create such forms, typically such files    
+are machine generated using a WYSIWYG tool from within
+[Qt Creator](https://doc.qt.io/qtcreator/) or
+[Qt Designer](https://doc.qt.io/qt-5/qtdesigner-manual.html).
+
+Constructor:
+
+    QtIfwUiPage( name, pageOrder=None, 
+                 sourcePath=None, content=None,
+                 onLoad=None, onEnter=None ) 
+        
+Attributes:   
+
+    name           = <required>
+    pageOrder      = None  
+ 
+    content        = None
+    replacements   = {}        	
+ 
+    onLoad         = None
+    _incOnLoadBase = True
+    onEnter        = None       
+    supportFuncs   = {}  
+        
+Functions:
+
+    fileName()
+    resolve( qtIfwConfig )
+    write( dirPath )
+    
+Details:
+
+**name**: This identifier will be used to name a .ui file containing the form, and to reference the page widget within any scripting.
+
+If you wish to *replace* a default page, set the `name` for an object of this 
+type to `QT_IFW_REPLACE_PAGE_PREFIX` *concatenated* with one of the following page name constants: 
+
+	QT_IFW_INTRO_PAGE      
+	QT_IFW_TARGET_DIR_PAGE 
+	QT_IFW_COMPONENTS_PAGE 
+	QT_IFW_LICENSE_PAGE    
+	QT_IFW_START_MENU_PAGE 
+	QT_IFW_READY_PAGE      
+	QT_IFW_INSTALL_PAGE    
+	QT_IFW_FINISHED_PAGE   
+
+Conversely, to add a *new* page, give it some other name and specify the 
+`pageOrder`using one the constants above. 
+
+**pageOrder**: If **not** a replacement, the page will be added added BEFORE 
+this specified page.
+
+**onLoad**: Qt Script snippet invoked when loading the page into memory, before showing it. 
+
+**onEnter**: Qt Script snippet invoked upon showing the page.
+
+**_incOnLoadBase**: *Protected* Note, this is enabled by default. When this is set to `True`, some auto generated script will be added to the installer, which will execute prior to `onLoad`.  This "base" script will dynamically resize the page, so it fits properly on each alternate platform's version of the installer.
+It is recommended you leave this in place, unless you are overwriting it. The 
+effect of having this in place will additionally be to create a `var page`, which refers to this page. The OnLoadScript may then make use of that variant to access the page widget or the child widgets on it.
+
+**supportFuncs**: Qt Script "support functions" dictionary containing entries in the form: name:body.
+The typical use case for this attribute involves the onLoad script connecting events
+to handlers. The `supportFuncs` then provide the handler definitions. 
+             
+**replacements**: A dictionary containing entries in the form: placeholder:value.  Upon 
+writing the `.ui` file for the installer definition the library the generates, all "replacements"
+in the `content` will be resolved.
+
+TODO: elaborate on ui replacements, the "resolve" function, provide a base example .ui...
+      
+### QtIfwTargetDirPage
+
+This class is derived from `QtIfwUiPage`. As one would assume, this provides a base
+from which to start modifying the "Target Directory" installer page.  If another page 
+has not been supplied for this, distbuilder will use this class to apply it's own 
+default customization to the natural QtIfw interface.  
+
+Constructor:
+
+    QtIfwTargetDirPage()  # 0 arguments!                
+                 
+### QtIfwSimpleTextPage
+      
+This class is derived from `QtIfwUiPage`.  It does not require ANY form / .ui 
+content passed to it. It provides a page layout with the only elements being
+`title` and `description`, which can both be set easily via arguments to the constructor of this class.  That text may contain all valid QtIFW dynamic substitutions e.g. these [Installer Variables](LowLevel.md#installer-variables), or directly using the `@variable@` syntax. See https://doc.qt.io/qtinstallerframework/scripting.html#predefined-variables.  
+
+By providing an `onLoad` or `onEnter` script, you may define more comprehensive 
+manipulations of the pages elements. Alternatively, you wish to specify **no text** 
+or content at all for the page, other than perhaps including a message such as "working..." and then use the page as a place holder to perform a given process.  
+There are many imaginative ways for using this class as a convenient platform from which to start a custom, dynamic page.
+
+Constructor:
+
+    QtIfwSimpleTextPage( name, pageOrder=None, 
+                         title="", text="", 
+                         onLoad=None, onEnter=None ) 
+                       
 ## PipConfig
 
 Objects of this type define the details for downloading
