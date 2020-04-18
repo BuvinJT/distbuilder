@@ -775,14 +775,13 @@ Constructor:
 ### QtIfwSimpleTextPage
       
 This class is derived from `QtIfwUiPage`.  It does not require ANY form / .ui 
-content passed to it. It provides a page layout with a single element, `text`, 
-which can be set easily via an argument to the constructor of this class.  That 
-text may contain all valid QtIFW dynamic substitutions e.g. these [Installer Variables](LowLevel.md#installer-variables), or directly using the `@variable@` syntax. See https://doc.qt.io/qtinstallerframework/scripting.html#predefined-variables.  
+content passed to it. It provides a page layout with the only elements being
+`title` and `description`, which can both be set easily via arguments to the constructor of this class.  That text may contain all valid QtIFW dynamic substitutions e.g. these [Installer Variables](LowLevel.md#installer-variables), or directly using the `@variable@` syntax. See https://doc.qt.io/qtinstallerframework/scripting.html#predefined-variables.  
 
-By providing an `onLoad` script, you may of course define more comprehensive 
-manipulations of the text value. Alternatively, you wish to specify **no text** 
-or content at all for the page, other than perhaps something such as "working..." and then use that as a place holder to perform a given process.  There are many 
-imaginative ways for using this class as a convenient platform from which to start a custom, dynamic page.
+By providing an `onLoad` or `onEnter` script, you may define more comprehensive 
+manipulations of the pages elements. Alternatively, you wish to specify **no text** 
+or content at all for the page, other than perhaps including a message such as "working..." and then use the page as a place holder to perform a given process.  
+There are many imaginative ways for using this class as a convenient platform from which to start a custom, dynamic page.
 
 Constructor:
 
