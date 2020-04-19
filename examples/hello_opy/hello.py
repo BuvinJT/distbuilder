@@ -1,13 +1,9 @@
 from sys import stdout
 # cross environment Tkinter import    
-try:    
-    from tkinter import Tk 
-except: 
-    from Tkinter import Tk
-try:    
-    from tkinter.ttk import Button 
-except: 
-    from ttk import Button
+try:    from tkinter import Tk 
+except: from Tkinter import Tk
+try:    from tkinter.ttk import Button 
+except: from ttk import Button
 
 def onClick(): 
     stdout.write( "Hello!\n" )

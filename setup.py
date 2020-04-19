@@ -34,7 +34,7 @@ setup (
           "six"           
 		, "PyInstaller"   
 		, "argparse"
-		, "opy_distbuilder>=0.9.2"  
+		, "opy_distbuilder>=0.9.2.1"  
 	],
 	include_package_data=True, # extra files defined in MANIFEST.in
 )
