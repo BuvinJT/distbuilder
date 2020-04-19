@@ -16,7 +16,7 @@ class BuildProcess( PyToBinPackageProcess ):
     def onOpyConfig( self, cfg ):    
         
         cfg.extLibHandling = ExtLibHandling.BUNDLE    
-        cfg.bundleRounds   = 1
+        cfg.bundleRounds   = 2
 
         cfg.skip_path_fragments.extend( ["setup.py"] )
         

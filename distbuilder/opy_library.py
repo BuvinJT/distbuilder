@@ -132,7 +132,8 @@ def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
 
     # note if initial rounds are 0 (or less), this loops
     # until no unresolved imports are encountered
-    def _bundle( opyConfig, isAnalysis, filesSubset, rounds ):                        
+    def _bundle( opyConfig, isAnalysis, filesSubset, rounds ):         
+        
         while True:                     
             rounds -= 1   
             
@@ -159,7 +160,8 @@ def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
             # when there are external modules to bundle, build the list                                 
             if len( exMods ) > 0:
                 # get root module name, i.e. library name
-                exMods = [m.split(".")[0] for m in exMods]                
+                exMods = [m.split(".")[0] for m in exMods]
+                exMods = list(set(exMods))                
                 print( "Bundling import source for: %s" % (exMods,) )
                 try   : opyConfig.bundleLibs.extend( exMods )
                 except: opyConfig.bundleLibs=exMods         
