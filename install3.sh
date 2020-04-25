@@ -1,3 +1,5 @@
+#!/bin/bash
+
 case "$(uname -s)" in
     Linux*)     context=Linux;;
     Darwin*)    context=Mac;;
