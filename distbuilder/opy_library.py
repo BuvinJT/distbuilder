@@ -105,7 +105,7 @@ def __obfuscateLib( opyConfig, isAnalysis=False, filesSubset=[] ):
         opyResults = analyze( fileList=[PACKAGE_ENTRY_POINT_FILE_NAME], 
                               configSettings=opyConfig )
         if opyConfig.external_modules is None: opyConfig.external_modules=[]
-        opyConfig.external_modules.extend( opyResults.obfuscatedModImports )
+        opyConfig.external_modules.extend( opyResults.obfuscatedImports )
     
     # Optionally, don't obfuscate anything with public access
     # (e.g. public module constants or class functions/attributes)
@@ -158,13 +158,23 @@ def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
                        if (m not in primary) and (m not in bundled) ]  
                                     
             # when there are external modules to bundle, build the list                                 
-            if len( exMods ) > 0:
+            if len( exMods ) > 0:                
                 # get root module name, i.e. library name
                 exMods = [m.split(".")[0] for m in exMods]
-                exMods = list(set(exMods))                
-                print( "Bundling import source for: %s" % (exMods,) )
-                try   : opyConfig.bundleLibs.extend( exMods )
-                except: opyConfig.bundleLibs=exMods         
+                exMods = list(set(exMods))
+                
+                # validate library source is available
+                badMods = [m for m in exMods if not isImportableModule( m )]
+                exMods  = [m for m in exMods if isImportableModule( m )]
+                
+                if len(badMods) > 0 :
+                    print( "No source available for: %s" % (badMods,) )
+                    try   : opyConfig.external_modules.extend( badMods )
+                    except: opyConfig.external_modules=badMods         
+                if len(exMods) > 0 :
+                    print( "Bundling import source for: %s" % (exMods,) )
+                    try   : opyConfig.bundleLibs.extend( exMods )
+                    except: opyConfig.bundleLibs=exMods         
                                                
                 # if round "0" is landed upon *exactly*, stop the rounds! 
                 # Note this will never occur if the initial rounds
