@@ -105,7 +105,7 @@ def __obfuscateLib( opyConfig, isAnalysis=False, filesSubset=[] ):
         opyResults = analyze( fileList=[PACKAGE_ENTRY_POINT_FILE_NAME], 
                               configSettings=opyConfig )
         if opyConfig.external_modules is None: opyConfig.external_modules=[]
-        opyConfig.external_modules.extend( opyResults.obfuscatedImports )
+        opyConfig.external_modules.extend( opyResults.obfuscatedMods )
     
     # Optionally, don't obfuscate anything with public access
     # (e.g. public module constants or class functions/attributes)
@@ -258,8 +258,8 @@ def createStageDir( bundleLibs=[], sourceDir=THIS_DIR ):
         destPath = joinPath( STAGE_DIR_PATH, lib.name )
         if lib.pipConfig is None :
             if lib.localDirPath is None:
-                lib.localDirPath = modulePackagePath( lib.name )            
-            copyDir( lib.localDirPath, destPath )         
+                lib.localDirPath = modulePackagePath( lib.name )
+            if lib.localDirPath: copyDir( lib.localDirPath, destPath )         
         else:    
             lib.pipConfig.destPath = destPath
             installLibrary( lib.name, pipConfig=lib.pipConfig ) 
