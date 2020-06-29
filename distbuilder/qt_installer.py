@@ -2693,7 +2693,7 @@ def removeQtIfwPackage( pkgs, pkgId ):
         if pkg.pkgId==pkgId: 
             pkgIndex=i
             break
-    if not pkgIndex: return    
+    if pkgIndex is None: return     
     if isDir( pkg.dirPath() ): removeDir( pkg.dirPath() )
     if pkg.isTempSrc:
         if pkg.srcDirPath and isDir( pkg.srcDirPath ): 
