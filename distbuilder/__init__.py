@@ -22,6 +22,7 @@ from distbuilder.qt_installer import \
     , QtIfwPackageXml \
     , QtIfwPackageScript \
     , QtIfwShortcut \
+    , QtIfwExternalOp \
     , QtIfwExeWrapper \
     , QtIfwUiPage \
     , QtIfwTargetDirPage \
@@ -142,4 +143,10 @@ from distbuilder.util import \
     , halt \
     , download \
     , versionTuple \
-    , versionStr
+    , versionStr \
+    , versionNo \
+    , assertMinVer
+    
+def assertBuilderVer( ver ): 
+    assertMinVer( __version__, ver, descr="Distribution Builder Library" )
+

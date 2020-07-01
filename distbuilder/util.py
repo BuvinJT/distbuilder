@@ -684,13 +684,29 @@ def _toSrcDestPair( pathPair, destDir=None, basePath=None ):
     #print( "result: src=%s, dest=%s" % (src, dest) )
     return (src, dest) 
 
-# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------    
 def versionTuple( ver, parts=4 ): return tuple( __versionList( ver, parts ) )
                 
 def versionStr( ver, parts=4 ): 
     verList = __versionList( ver, parts )
     verList = [str(p) for p in verList]
     return ".".join( verList )
+
+def versionNo( ver, parts=4, partLen=3 ):
+    verList = __versionList( ver, parts )    
+    ret = 0
+    i = (parts-1) * partLen
+    for part in verList:
+        ret += (10**i) * part
+        if i==0: break
+        i-=partLen
+    return ret
+
+def assertMinVer( ver, minVer, parts=4, partLen=3, descr=None ):
+    if versionNo( ver, parts, partLen ) < versionNo( minVer, parts, partLen ):
+        raise RuntimeError( "%sversion %s is required, but %s is present" % 
+            (descr + " " if descr else "", 
+             versionStr( minVer, parts ), versionStr( ver, parts ) ) )   
 
 def __versionList( ver, parts=4 ):        
     try:

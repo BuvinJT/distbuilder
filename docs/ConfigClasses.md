@@ -522,13 +522,15 @@ This class works in an analogous manner to [QtIfwControlScript](#qtifwcontrolscr
 Please refer to the that documentation for an explanation of how use these script
 objects in general. 
 
-Note that [QtIfwShortcut](#qtifwshortcut) objects
-are used for the `shortcuts` attribute of this class.
+Note that [QtIfwShortcut](#qtifwshortcut) objects are used for the `shortcuts` 
+attribute of this class, [QtIfwExternalOp](#qtifwexternalop) objects
+are used for the `externalOps` attribute of this class.
+
 
 Constructor:       
 
     QtIfwPackageScript( pkgName, 
-                        shortcuts=[],  uiPages=[], 
+                        shortcuts=[], externalOps=[], uiPages=[],
                         fileName="installscript.qs", 
                         script=None, scriptPath=None )
                   
@@ -539,10 +541,12 @@ Attributes & default values:
     
     script = None <or loaded via scriptPath>
     
-    shortcuts = []
+    shortcuts   = []
+    externalOps = []
+    uiPages     = []
     
-    uiPages=[]
-    
+    customOperations = None
+        
     packageGlobals = None
     isAutoGlobals = True
             
@@ -589,6 +593,68 @@ Attributes & default values:
     isAppShortcut     = True
     isDesktopShortcut = False
 
+## QtIfwExternalOp
+
+This class is used to represent shell command / external utility invocations.    
+It is employed by [QtIfwPackageScript](#qtifwpackagescript) to 
+add operations to the installation, and/or uninstallation,
+process of the *package* to which those operations are associated.     
+
+This simple example (for *nix based systems), may serve well to clarify how 
+this class is intended to be used:  
+
+	filePath = joinPathQtIfw( QT_IFW_HOME_DIR, "test.txt" )     
+    createFileOp = QtIfwExternalOp( exePath="touch",          args=[filePath],
+    							    uninstExePath="rm", uninstArgs=[filePath] )         
+	pkg.pkgScript.externalOps = [ createFileOp ]
+
+This purpose of this class should not be confused with the 
+[Installer Scripting](LowLevel.md#installer-scripting) function `execute( binPath, args )`.  
+While that is also a means to invoke sub processes and shell commands from QtIWF, that
+is more generally used in a "Controller scripting" context for on demand, 
+often conditional and/or dynamic needs.  More to the point, `QtIfwExternalOp`
+objects are bound directly to packages and to install/uninstall events, where the
+QScript `execute` function can be dropped into installation scripts anywhere, 
+in an unrestricted manner.   
+
+Constructor:
+       
+	QtIfwExternalOp( exePath=None, args=[], successRetCodes=[0],  
+                     uninstExePath=None, uninstArgs=[], uninstRetCodes=[0],
+                     isElevated=False, workingDir=QT_IFW_TARGET_DIR,
+                     onErrorMessage=None )
+
+Attributes & default values:
+                  
+        exePath         = None
+        args            = []
+        successRetCodes = [0]
+
+        uninstExePath   = None
+        uninstArgs      = []
+        uninstRetCodes  = [0]
+        
+        isElevated      = False 
+        workingDir      = QT_IFW_TARGET_DIR
+                
+        onErrorMessage  = None
+
+Notes:
+
+QtIfw will execute these operations synchronously.  
+By default, if the return code from the sub process is not 0, this is treated
+as an installation error.  To expand the options for what is viewed as a "success",
+or can at least be ignored, the attributes `successRetCodes`, and `uninstRetCodes`,
+allow specifying lists of codes for either the installation or uninstallation processes,
+respectively.
+
+The [QtIfwPackageScript](#qtifwpackagescript) attribute `externalOps` is a list
+to be executed in order.  Note that during uninstallation, that list is processed
+in **reverse order**.  It is possible (and common), to define operations as only 
+for installation or only for uninstallation.  Having direct counterparts is not 
+required.  When defining an `externalOps` list with "pure uninstallation" actions, 
+you should especially keep the reverse order of such operations in mind.    
+        
 ## QtIfwExeWrapper
 
 This class provides a means to "wrap" your exe inside of additional external layers.

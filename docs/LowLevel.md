@@ -1233,6 +1233,30 @@ each "part" of the version.  Alpha characters are not permitted.
 The optional `parts` argument will truncate or pad the return value, so it
 has that many elements present in the representation.  4 "parts" is the standard, 
 i.e. "Major.Minor.Micro.Build". 
+
+### versionNo, assertMinVer, assertBuilderVer
+
+	versionNo( ver, parts=4, partLen=3 )
+	assertMinVer( ver, minVer, parts=4, partLen=3, descr=None )
+    assertBuilderVer( ver )
+    
+Like `versionTuple` and `versionStr`, `versionNo` takes "any" representation 
+of a version on under the sun and returns an integer. In addition to specifying 
+the number of `parts` in the version, it will be very important to use a valid 
+and persistent `partLen` spec.  That is the maximum number of digits to allow 
+for use in each part.  This factor exponentially changes the numeric result 
+from this function.  
+
+The function `assertMinVer` is provided to raise an exception in the
+event of a version (of whatever form and context), not meeting the requirements
+for the build process to continue.
+
+For convenience, `assertBuilderVer` is provided to confirm the minimum version 
+of **this library**.  It may be useful to start some build scripts in a manner 
+resembling the following: 
+
+	from distbuilder assertBuilderVer
+	assertBuilderVer( "0.7.8.0" )
     
 ### Module import utilities 
 
