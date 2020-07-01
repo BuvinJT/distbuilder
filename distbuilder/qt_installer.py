@@ -1577,7 +1577,7 @@ Controller.prototype.%s = function(){
         return joinPath( BUILD_SETUP_DIR_PATH, 
             normpath( QtIfwControlScript.__DIR_TMPLT 
                       % (INSTALLER_DIR_PATH,) ) )     
-    
+
 # -----------------------------------------------------------------------------
 class QtIfwPackageScript( _QtIfwScript ):
     
@@ -1734,17 +1734,18 @@ Component.prototype.%s = function(){
         s = s.replace( "[IS_TERMINAL]", "false" if isGui else "true" )
         s = s.replace( "[WORKING_DIR]", wrkDir )        
         return s 
-    
+                              
     def __init__( self, pkgName, 
-                  shortcuts=[],
-                  uiPages=[],                    
+                  shortcuts=[], externalOps=[], uiPages=[],                    
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
         _QtIfwScript.__init__( self, fileName, script, scriptPath )
 
-        self.pkgName   = pkgName
-        self.shortcuts = shortcuts
-        self.uiPages   = uiPages
+        self.pkgName          = pkgName
+        self.shortcuts        = shortcuts
+        self.externalOps      = externalOps
+        self.customOperations = None
+        self.uiPages          = uiPages
         
         # Linux Only
         self.isAskPassProgRequired = False
@@ -1899,10 +1900,15 @@ Component.prototype.%s = function(){
         if IS_LINUX and self.isAskPassProgRequired:
             self.__addAskPassProgResolution()
         self.__addShortcuts()
+        self.__addExecuteOperations() 
+        if self.customOperations:
+            self.componentCreateOperationsBody += (
+                "\n%s\n" % (self.customOperations,) )            
         if self.componentCreateOperationsBody == "" :
             self.componentCreateOperationsBody = None
         
     def __addShortcuts( self ):
+        if not self.shortcuts: return         
         for shortcut in self.shortcuts :   
             if IS_WINDOWS:
                 winOps=""
@@ -1976,7 +1982,58 @@ Component.prototype.%s = function(){
                     self.componentCreateOperationsBody += (             
                         '    if( systemInfo.kernelType === "linux" ){\n' +
                         '%s\n    }' % (x11Ops,) )
-                                                    
+    
+    def __addExecuteOperations( self ):
+        if not self.externalOps: return                            
+        TAB = _QtIfwScript.TAB 
+        END = _QtIfwScript.END_LINE
+        shellPath   = "cmd.exe" if IS_WINDOWS else "sh"
+        shellSwitch = "/c"      if IS_WINDOWS else "-c"                    
+        self.componentCreateOperationsBody += (
+"""
+    var shellPath     = "%s";
+    var shellSwitch   = "%s";
+    var execPath      = "";
+    var retCodes      = "";
+    var undoPath      = "";
+    var undoRetCodes  = "";                   
+    var execArgs      = [];     
+       
+""") % ( shellPath, shellSwitch )             
+        for task in self.externalOps :   
+            setArgs = ""                    
+            if task.exePath :
+                setArgs += '%sexecPath = "%s"%s' % (TAB,task.exePath,END)
+            if task.successRetCodes:
+                setArgs +=( '%sretCodes = "{%s}"%s' % 
+                    (TAB,",".join([str(c) for c in task.successRetCodes]),END) )
+            if task.uninstExePath :
+                setArgs += '%sundoPath = "%s"%s' % (TAB,task.uninstExePath,END)                    
+            if task.uninstRetCodes:
+                setArgs +=( '%sundoRetCodes = "{%s}"%s' % 
+                    (TAB,",".join([str(c) for c in task.uninstRetCodes]),END) )
+            if len(setArgs) > 0: self.componentCreateOperationsBody += setArgs
+             
+            args=[]                        
+            if task.exePath :                 
+                if task.successRetCodes: args+=["retCodes"]                
+                args+=["shellPath", "shellSwitch", "execPath"]
+                if task.args : args+=['"%s"' % (a,) for a in task.args]                
+            if task.uninstExePath :
+                if not task.exePath : args+=["shellPath", "shellSwitch"] # dummy install action
+                args+=['"UNDOEXECUTE"']                
+                if task.uninstRetCodes: args+=["undoRetCodes"]
+                args+=["shellPath", "shellSwitch", "undoPath"]
+                if task.uninstArgs : 
+                    args+=['"%s"' % (a,) for a in task.uninstArgs]
+            self.componentCreateOperationsBody +=( "%sexecArgs = [%s]%s" % 
+                (TAB,",".join(args),END) )
+            
+            # TODO: add workingdirectory= and errormessage=
+            self.componentCreateOperationsBody +=(
+                '%scomponent.add%sOperation( "Execute", execArgs )%s'                       
+                ) % (TAB,"Elevated" if task.isElevated else "",END)
+                                                                
     def __addAskPassProgResolution( self ):
         TAB = _QtIfwScript.TAB 
         END = _QtIfwScript.END_LINE
@@ -2023,6 +2080,25 @@ class QtIfwShortcut:
         self.isAppShortcut     = True
         self.isDesktopShortcut = False
 
+# -----------------------------------------------------------------------------
+class QtIfwExternalOp: 
+    def __init__( self, exePath=None, args=[], successRetCodes=[0],  
+                  uninstExePath=None, uninstArgs=[], uninstRetCodes=[0],
+                  isElevated=False, workingDir=QT_IFW_TARGET_DIR,
+                  onErrorMessage=None ):
+        self.exePath         = exePath
+        self.args            = args
+        self.successRetCodes = successRetCodes
+
+        self.uninstExePath   = uninstExePath
+        self.uninstArgs      = uninstArgs
+        self.uninstRetCodes  = uninstRetCodes
+        
+        self.isElevated      = isElevated 
+        self.workingDir      = workingDir
+                
+        self.onErrorMessage  = onErrorMessage
+            
 # -----------------------------------------------------------------------------
 class QtIfwUiPage():
 
@@ -2740,10 +2816,18 @@ def __mergePackageObjects( srcPkg, destPkg, subDirName=None ):
             for i, _ in enumerate( srcShortcuts ): 
                 srcShortcuts[i].exeDir = joinPathQtIfw( 
                     QT_IFW_TARGET_DIR, subDirName )                
-    except: srcShortcuts = []        
+    except: srcShortcuts = []            
     destScript = destPkg.pkgScript
     if destScript:    
-        destScript.shortcuts.extend( srcShortcuts )
+        if srcShortcuts:
+            try: destScript.shortcuts.extend( srcShortcuts )
+            except: destScript.shortcuts = srcShortcuts
+        if srcPkg.pkgScript.externalOps: 
+            try: destScript.externalOps.extend( srcPkg.pkgScript.externalOps )
+            except: destScript.externalOps = srcPkg.pkgScript.externalOps
+        if srcPkg.pkgScript.customOperations:
+            try: destScript.customOperations.extend( srcPkg.pkgScript.customOperations )
+            except: destScript.customOperations = srcPkg.pkgScript.customOperations
         print( "\nRegenerating installer package script: %s...\n" 
                 % (destScript.path()) )
         destScript._generate()
