@@ -411,7 +411,9 @@ Static Functions:
                      delimiter=None )
                           
     getEnv( varName, isAutoQuote=True )
-                          
+    
+	killAll( exeName, isAutoQuote=True )    
+	
     targetDir()
     productName() 
     
@@ -479,13 +481,15 @@ following add-on **QT SCRIPT** functions:
 	execute( binPath, args )
 	
 	sleep( seconds )
+
+    killAll( progName )
 	
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
 	
 	clearErrorLog()
 	writeErrorLog( msg )
-	
+
 	quit( msg )
 	abort( msg )
 	silentAbort( msg )
@@ -541,17 +545,20 @@ Merges the [QtIfwPackage](ConfigClasses.md#qtifwpackage)
 objects within the *pkgs* argument with the ids supplied by 
 *srcId* and *destId*.  
 
-"Merging" entails a recursive *content* merge of the source into the target 
-via [mergeDirs](#mergedirs) as well as combining the lists of
+"Merging" first of all entails a recursive *content* merge of the source 
+into the target via [mergeDirs](#mergedirs).  In addition, a number of
+other configuration details will be "merged" as well.  Examples of such
+include combining the lists of
 [QtIfwShortcut](ConfigClasses.md#qtifwshortcut) objects, 
 [QtIfwExternalOp](ConfigClasses.md#qtifwexternalop) objects, and the 
 `customOperations` script snipets nested inside the 
 [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript)
-objects, followed by script regeneration to reflect such. Note that all other
-attributes of the source package are lost!  Any complex customizations which need 
-to be made must be applied post merge.
+objects, followed by script regeneration to reflect such. 
+Note that all attributes of the source package, which aren't explictly 
+handled by the library in this operation, are lost!  Some further 
+customizations to the result may need to be made post merge for a given use case.
 
-If the source package has a  `subDirName` attribute, that detail will be preserved
+If the source package has a `subDirName` attribute, that detail will be preserved
 by this nesting.  I.e. the merge will retain the sub directory encapsulation.   
 
 This function ultimately consolidates the package items in the list and returns

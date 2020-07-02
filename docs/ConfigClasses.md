@@ -548,10 +548,14 @@ Attributes & default values:
     script = None <or loaded via scriptPath>
     
     shortcuts   = []
-    externalOps = []
     uiPages     = []
-    
+
+    externalOps = []
     customOperations = None
+
+    killFirstExes  = None
+    killLastExes   = None
+    isKillElevated = True        
         
     packageGlobals = None
     isAutoGlobals = True

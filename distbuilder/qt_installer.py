@@ -534,6 +534,14 @@ class _QtIfwScript:
     __GET_ENV_VAR_TMPL = "installer.environmentVariable( %s )"
 
     __FILE_EXITS_TMPL = "installer.fileExists( %s )"
+    
+    # Note, there is in fact an installer.killProcess(string absoluteFilePath)
+    # this custom kill takes a process name, with no specific path
+    # It also runs in parrellel with "install operation" kills
+    __KILLALL_PROG_TMPL = "killAll( %s );\n"
+    _KILLALL_PATH = "taskkill"   if IS_WINDOWS else "killall"
+    _KILLALL_ARGS = ["/F","/IM"] if IS_WINDOWS else ["-9"] #TODO: CROSS SH? some might want -s9 ?
+    _KILLALL_CMD_PREFIX = "%s %s" % (_KILLALL_PATH, " ".join( _KILLALL_ARGS ))
 
     @staticmethod        
     def _autoQuote( value, isAutoQuote ):                  
@@ -585,6 +593,12 @@ class _QtIfwScript:
     def getEnv( varName, isAutoQuote=True ):                  
         return _QtIfwScript.__GET_ENV_VAR_TMPL % (
             _QtIfwScript._autoQuote( varName, isAutoQuote ) )
+
+
+    @staticmethod        
+    def killAll( exeName, isAutoQuote=True ):                  
+        return _QtIfwScript.__KILLALL_PROG_TMPL % (
+            _QtIfwScript._autoQuote( exeName, isAutoQuote ) )
 
     @staticmethod        
     def targetDir(): 
@@ -723,6 +737,13 @@ class _QtIfwScript:
             TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
             TAB + 'return installer.execute( binPath, args )' + END +
             EBLK + NEW +
+            'function killAll( progName ) ' + SBLK +
+            TAB + 'var killCmd = "' + _QtIfwScript._KILLALL_CMD_PREFIX + 
+                '\\"" + progName + "\\""' + END + 
+            TAB + 'installer.execute( ' +
+                ('"cmd.exe", ["/k"], killCmd' if IS_WINDOWS else
+                 '"sh", ["-c", killCmd]' ) + ' )' + END +             
+            EBLK + NEW +                  
             'function sleep( seconds ) ' + SBLK +
             TAB + 'var sleepCmd = "' +  # note Batch timeout doesn't work in a "non-interactive" shell, but this ping kludge does!                 
                 ('ping 192.0.2.1 -n 1 -w " + seconds + "000\\n"' if IS_WINDOWS else
@@ -1558,8 +1579,9 @@ Controller.prototype.%s = function(){
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) + 
-            '    else {\n' +                        
-            '        managePriorInstallation();\n' +
+            '    else {\n' +                
+            '        ' + _QtIfwScript.ifInstalling() +
+                        ' managePriorInstallation();\n' +
             '    }\n'    
         )                
 
@@ -1765,9 +1787,14 @@ Component.prototype.%s = function(){
 
         self.pkgName          = pkgName
         self.shortcuts        = shortcuts
+        self.uiPages          = uiPages
+        
         self.externalOps      = externalOps
         self.customOperations = None
-        self.uiPages          = uiPages
+
+        self.killFirstExes    = None
+        self.killLastExes     = None
+        self.isKillElevated   = True
         
         # Linux Only
         self.isAskPassProgRequired = False
@@ -1922,6 +1949,7 @@ Component.prototype.%s = function(){
         if IS_LINUX and self.isAskPassProgRequired:
             self.__addAskPassProgResolution()
         self.__addShortcuts()
+        self.__addKillOperations()
         self.__addExecuteOperations() 
         if self.customOperations:
             self.componentCreateOperationsBody += (
@@ -2023,7 +2051,31 @@ Component.prototype.%s = function(){
                     self.componentCreateOperationsBody += (             
                         '    if( systemInfo.kernelType === "linux" ){\n' +
                         '%s\n    }' % (x11Ops,) )
-    
+
+    def __addKillOperations( self ):
+        if not self.killFirstExes and not self.killLastExes: return
+        killPath = _QtIfwScript._KILLALL_PATH
+        killArgs = _QtIfwScript._KILLALL_ARGS 
+        retCodes = [0,128] # This is WINDOWS, cross platform?       
+        def toExOp( killExe ):
+            if   isinstance( killExe, six.string_types ):
+                installExe = uninstallExe = killExe
+            elif isinstance( killExe , tuple ):
+                installExe, uninstallExe = killExe
+            return QtIfwExternalOp( isElevated=self.isKillElevated, 
+                exePath=killPath                   if installExe else None,       
+                args=killArgs+[installExe]         if installExe else None,
+                successRetCodes=retCodes           if installExe else None,                    
+                uninstExePath=killPath             if uninstallExe else None, 
+                uninstArgs=killArgs+[uninstallExe] if uninstallExe else None,                                         
+                uninstRetCodes=retCodes            if uninstallExe else None )             
+        firstOps=( [ toExOp( killExe ) for killExe in self.killFirstExes ] 
+                   if self.killFirstExes else [] )
+        lastOps=( [ toExOp( killExe ) for killExe in self.killLastExes ]
+                  if self.killLastExes else [] )
+        if self.externalOps is None: self.externalOps=[]                         
+        self.externalOps = firstOps + self.externalOps + lastOps
+            
     def __addExecuteOperations( self ):
         if not self.externalOps: return                            
         TAB = _QtIfwScript.TAB 
@@ -2872,6 +2924,12 @@ def __mergePackageObjects( srcPkg, destPkg, subDirName=None ):
         if srcPkg.pkgScript.customOperations:
             try: destScript.customOperations.extend( srcPkg.pkgScript.customOperations )
             except: destScript.customOperations = srcPkg.pkgScript.customOperations
+        if srcPkg.pkgScript.killFirstExes:
+            try: destScript.killFirstExes.extend( srcPkg.pkgScript.killFirstExes )
+            except: destScript.killFirstExes = srcPkg.pkgScript.killFirstExes
+        if srcPkg.pkgScript.killLastExes:
+            try: destScript.killLastExes.extend( srcPkg.pkgScript.killLastExes )
+            except: destScript.killLastExes = srcPkg.pkgScript.killLastExes
         print( "\nRegenerating installer package script: %s...\n" 
                 % (destScript.path()) )
         destScript._generate()
