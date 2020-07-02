@@ -461,15 +461,17 @@ Static Functions:
     assignCustomPageWidgetVar( pageName, varName="page" ):                
     assignCurPageWidgetVar( varName="page" ):                                 
     
+    enable( controlName, isEnable=True )
+
+    setVisible( controlName, isVisible=True )
+    
     getText( controlName )
     setText( controlName, text, isAutoQuote=True )
     
     clickButton( buttonName, delayMillis=None )                
 
     	(Note: check box controls also work on radio buttons)    
-    enableCheckBox( checkboxName )                
-    disableCheckBox( checkboxName )               
-    setCheckBox( checkboxName, boolean )              
+    setCheckBox( checkboxName, isCheck=True ):    
 
 If writing scripts directly for distbulder integration, you may also employ the 
 following add-on **QT SCRIPT** functions:
@@ -540,10 +542,12 @@ objects within the *pkgs* argument with the ids supplied by
 *srcId* and *destId*.  
 
 "Merging" entails a recursive *content* merge of the source into the target 
-via [mergeDirs](#mergedirs) as well as combining the 
-[QtIfwShortcut](ConfigClasses.md#qtifwshortcut)
-list nested inside the [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript)
-objects, followed by script regeneration to reflect that. Note that all other
+via [mergeDirs](#mergedirs) as well as combining the lists of
+[QtIfwShortcut](ConfigClasses.md#qtifwshortcut) objects, 
+[QtIfwExternalOp](ConfigClasses.md#qtifwexternalop) objects, and the 
+`customOperations` script snipets nested inside the 
+[QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript)
+objects, followed by script regeneration to reflect such. Note that all other
 attributes of the source package are lost!  Any complex customizations which need 
 to be made must be applied post merge.
 
@@ -574,6 +578,10 @@ this will *NOT* nest the content two levels deep.
 
 This function ultimately consolidates the package items in the list and returns
 the destination object.	
+
+After all package manipulation has been completed, it is recommended that you call
+`genQtIfwCntrlRes`.  This will often help to apply assorted modifications per the new
+configuration, avoiding the need to do so via additional "manual" coding.
 
 ## Code Obfuscation
 
