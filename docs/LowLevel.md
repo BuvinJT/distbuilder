@@ -411,7 +411,9 @@ Static Functions:
                      delimiter=None )
                           
     getEnv( varName, isAutoQuote=True )
-                          
+    
+	killAll( exeName, isAutoQuote=True )    
+	
     targetDir()
     productName() 
     
@@ -479,13 +481,15 @@ following add-on **QT SCRIPT** functions:
 	execute( binPath, args )
 	
 	sleep( seconds )
+
+    killAll( progName )
 	
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
 	
 	clearErrorLog()
 	writeErrorLog( msg )
-	
+
 	quit( msg )
 	abort( msg )
 	silentAbort( msg )
