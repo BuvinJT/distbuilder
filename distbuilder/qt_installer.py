@@ -187,6 +187,8 @@ class _QtIfwXml():
             f.write( self.toPrettyXml() ) 
 
     def debug( self ): print( self.toPrettyXml() )
+    
+    def exists( self ): return isFile( self.path() )
             
 # -----------------------------------------------------------------------------    
 class QtIfwConfigXml( _QtIfwXml ):
@@ -208,6 +210,8 @@ class QtIfwConfigXml( _QtIfwXml ):
     __RUN_ARGS_TAG = "RunProgramArguments"
     __ARG_TAG      = "Argument"
         
+    __RUN_PROG_DESCR_TMPLT = "Run %s now."    
+    
     def __init__( self, name, version, publisher,
                   iconFilePath=None, 
                   controlScriptName=None,
@@ -254,7 +258,8 @@ class QtIfwConfigXml( _QtIfwXml ):
 
     def setPrimaryContentExe( self, ifwPackage ) :
         if ifwPackage:
-            self.RunProgramDescription = ifwPackage.pkgXml.DisplayName
+            self.RunProgramDescription =( QtIfwConfigXml.__RUN_PROG_DESCR_TMPLT
+                                          % (ifwPackage.pkgXml.DisplayName,) )
             self.primaryContentExe = util.normBinaryName( ifwPackage.exeName, 
                                                           isGui=ifwPackage.isGui )
             self.primaryExeWrapper = ifwPackage.exeWrapper            
@@ -919,6 +924,8 @@ class _QtIfwScript:
     
     def debug( self ): print( str(self) )
 
+    def exists( self ): return isFile( self.path() )
+    
     @abstractmethod        
     def _generate( self ) : """PURE VIRTUAL"""        
         
@@ -967,6 +974,12 @@ Controller.prototype.%s = function(){
                         
     __CLICK_BUTTON_TMPL       = "gui.clickButton(%s);\n"
     __CLICK_BUTTON_DELAY_TMPL = "gui.clickButton(%s, %d);\n"
+    
+    __SET_ENBALE_STATE_TMPL = (
+        "gui.currentPageWidget().%s.setEnabled(%s);\n" )
+    
+    __SET_VISIBLE_STATE_TMPL = (
+        "gui.currentPageWidget().%s.setVisible(%s);\n" )
     
     __SET_CHECKBOX_STATE_TMPL = (
         "gui.currentPageWidget().%s.setChecked(%s);\n" )
@@ -1039,21 +1052,21 @@ Controller.prototype.%s = function(){
             QtIfwControlScript.__CLICK_BUTTON_TMPL 
                 % (buttonName,) )
 
-    # Note: checkbox controls also work on radio buttons
     @staticmethod        
-    def enableCheckBox( checkboxName ):                
-        return QtIfwControlScript.__SET_CHECKBOX_STATE_TMPL % ( 
-                checkboxName, _QtIfwScript.TRUE )
+    def enable( controlName, isEnable=True ):                
+        return QtIfwControlScript.__SET_ENBALE_STATE_TMPL % ( 
+            controlName, _QtIfwScript.TRUE if isEnable else _QtIfwScript.FALSE)
 
     @staticmethod        
-    def disableCheckBox( checkboxName ):                
-        return QtIfwControlScript.__SET_CHECKBOX_STATE_TMPL % ( 
-                checkboxName, _QtIfwScript.FALSE )
+    def setVisible( controlName, isVisible=True ):                
+        return QtIfwControlScript.__SET_VISIBLE_STATE_TMPL % ( 
+            controlName, _QtIfwScript.TRUE if isVisible else _QtIfwScript.FALSE)
 
+    # Note: checkbox controls also work on radio buttons!
     @staticmethod        
-    def setCheckBox( checkboxName, boolean ):                
+    def setCheckBox( checkboxName, isCheck=True ):                
         return QtIfwControlScript.__SET_CHECKBOX_STATE_TMPL % ( 
-                checkboxName, boolean )
+            checkboxName, _QtIfwScript.TRUE if isCheck else _QtIfwScript.FALSE )
 
     @staticmethod        
     def setText( controlName, text, isAutoQuote=True ):                
@@ -1110,6 +1123,9 @@ Controller.prototype.%s = function(){
         self.isFinishedPageCallbackBody = True
         self.finishedPageCallbackBody = None
         self.isAutoFinishedPageCallback = True        
+
+        self.isRunProgInteractive = True
+        self.isRunProgVisible = True
 
         self.__widgetEventSlots = {}
         
@@ -1507,7 +1523,7 @@ Controller.prototype.%s = function(){
         self.licenseAgreementPageCallbackBody = (
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
             '{\n' +                        
-                QtIfwControlScript.enableCheckBox( 
+                QtIfwControlScript.setCheckBox( 
                     QtIfwControlScript.ACCEPT_EULA_RADIO_BUTTON ) +                 
                 _QtIfwScript.TAB + QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) + 
@@ -1555,7 +1571,13 @@ Controller.prototype.%s = function(){
         )
 
     def __genFinishedPageCallbackBody( self ):
-        self.finishedPageCallbackBody = (                                
+        self.finishedPageCallbackBody = (                                      
+            QtIfwControlScript.enable( 
+                QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
+                self.isRunProgInteractive ) +                  
+            QtIfwControlScript.setVisible( 
+                QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
+                self.isRunProgVisible ) +                  
             _QtIfwScript.ifCmdLineArg( 
                 _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +               
                 _QtIfwScript.TAB + QtIfwControlScript.setCheckBox( 
@@ -1907,6 +1929,7 @@ Component.prototype.%s = function(){
         if self.componentCreateOperationsBody == "" :
             self.componentCreateOperationsBody = None
         
+    # TODO: Clean up this lazy mess!    
     def __addShortcuts( self ):
         if not self.shortcuts: return         
         for shortcut in self.shortcuts :   
@@ -1930,6 +1953,24 @@ Component.prototype.%s = function(){
                             wrkDir=shortcut.exeDir, # forced via command                            
                             windowStyle=shortcut.windowStyle,
                             label=shortcut.productName ) 
+                if shortcut.exeName and shortcut.isUserStartUpShortcut:
+                    winOps += QtIfwPackageScript.__winAddShortcut(
+                            THIS_USER_STARTUP_WIN_SHORTCUT, shortcut.exeName,
+                            command=shortcut.command,
+                            args=shortcut.args,
+                            exeDir=shortcut.exeDir,
+                            wrkDir=shortcut.exeDir, # forced via command                            
+                            windowStyle=shortcut.windowStyle,
+                            label=shortcut.productName ) 
+                if shortcut.exeName and shortcut.isAllUsersStartUpShortcut :
+                    winOps += QtIfwPackageScript.__winAddShortcut(
+                            ALL_USERS_STARTUP_WIN_SHORTCUT, shortcut.exeName,
+                            command=shortcut.command,
+                            args=shortcut.args,
+                            exeDir=shortcut.exeDir,
+                            wrkDir=shortcut.exeDir, # forced via command                            
+                            windowStyle=shortcut.windowStyle,
+                            label=shortcut.productName )                     
                 if winOps!="" :    
                     self.componentCreateOperationsBody += (             
                         '    if( systemInfo.kernelType === "winnt" ){\n' +
@@ -2072,14 +2113,17 @@ class QtIfwShortcut:
         
         # Windows only
         self.windowStyle    = None        
+        self.isUserStartUpShortcut = False      # TODO: make cross platform
+        self.isAllUsersStartUpShortcut = False  # TODO: make cross platform ?
 
         # Linux only
         self.exeVersion     = exeVersion
         self.pngIconResPath = pngIconResPath        
  
+        # Cross platform
         self.isAppShortcut     = True
         self.isDesktopShortcut = False
-
+      
 # -----------------------------------------------------------------------------
 class QtIfwExternalOp: 
     def __init__( self, exePath=None, args=[], successRetCodes=[0],  
@@ -2923,30 +2967,7 @@ def __addInstallerResources( qtIfwConfig ) :
     
     _addQtIfwUiPages( qtIfwConfig, QtIfwTargetDirPage(), isOverWrite=False )
     
-    configXml = qtIfwConfig.configXml
-    ctrlScript = qtIfwConfig.controlScript
-    
-    if ctrlScript and configXml: 
-        configXml.ControlScript = ctrlScript.fileName         
-            
-    if configXml : 
-        print( "Adding installer configuration resources..." )
-        configXml.debug()
-        configXml.write()
-        if configXml.iconFilePath :
-            iconFilePath = absPath( configXml.iconFilePath )
-            if isFile( iconFilePath ):
-                copyFile( iconFilePath,                       
-                          joinPath( configXml.dirPath(), 
-                                    fileBaseName( configXml.iconFilePath ) ) )
-    if ctrlScript :
-        # Allow component selection to be explicitly disabled, but force that
-        # when there are not multiple packages to begin with
-        if len(qtIfwConfig.packages) < 2:
-            ctrlScript.isComponentSelectionPageVisible=False 
-        print( "Adding installer control script..." )
-        ctrlScript.debug()
-        ctrlScript.write()        
+    genQtIfwCntrlRes( qtIfwConfig ) 
                                       
     for p in qtIfwConfig.packages :
         if not isinstance( p, QtIfwPackage ) : continue        
@@ -2972,6 +2993,36 @@ def __addInstallerResources( qtIfwConfig ) :
 
         if isinstance( p.exeWrapper, QtIfwExeWrapper ): 
             __addExeWrapper( p )
+                        
+def genQtIfwCntrlRes( qtIfwConfig ) :
+    
+    configXml = qtIfwConfig.configXml
+    ctrlScript = qtIfwConfig.controlScript
+    
+    if ctrlScript and configXml: 
+        configXml.ControlScript = ctrlScript.fileName         
+            
+    if configXml :         
+        print( "%s installer configuration resources..." 
+               % ( "Regenerating" if configXml.exists() else "Adding" ) )
+        configXml.debug()
+        configXml.write()
+        if configXml.iconFilePath :
+            iconFilePath = absPath( configXml.iconFilePath )
+            if isFile( iconFilePath ):
+                copyFile( iconFilePath,                       
+                          joinPath( configXml.dirPath(), 
+                                    fileBaseName( configXml.iconFilePath ) ) )
+    if ctrlScript :
+        # Allow component selection to be explicitly disabled, but force that
+        # when there are not multiple packages to begin with
+        if len(qtIfwConfig.packages) < 2:
+            ctrlScript.isComponentSelectionPageVisible=False 
+        print( "%s installer control script..." 
+               % ( "Regenerating" if ctrlScript.exists() else "Adding" ) )       
+        if ctrlScript.script: ctrlScript._generate() 
+        ctrlScript.debug()
+        ctrlScript.write()        
                         
 def __addUiPages( qtIfwConfig, package ) :
     for ui in package.uiPages:

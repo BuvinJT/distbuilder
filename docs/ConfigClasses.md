@@ -278,7 +278,8 @@ Functions:
     
     debug()
     toPrettyXml()
-            
+          
+    exists()            
     path()   
     dirPath() 
        
@@ -388,11 +389,15 @@ Attributes & default values:
     finishedPageCallbackBody = None
     isAutoFinishedPageCallback = True        
 
+	isRunProgVisible = True
+	isRunProgInteractive = True
+	
 Object Methods:
     
     write()
     debug()
-    	 
+
+    exists()       	 
 	path()
 	dirPath()   
 
@@ -495,7 +500,8 @@ Functions:
     
     debug()
     toPrettyXml()
-            
+          
+    exists()            
     path()   
     dirPath() 
     

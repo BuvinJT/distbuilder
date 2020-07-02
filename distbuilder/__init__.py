@@ -34,6 +34,7 @@ from distbuilder.qt_installer import \
     , removeQtIfwPackage \
     , mergeQtIfwPackages \
     , nestQtIfwPackage \
+    , genQtIfwCntrlRes \
     , joinPathQtIfw \
     , QT_IFW_VERBOSE_SWITCH \
     , QT_IFW_TARGET_DIR \

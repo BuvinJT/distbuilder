@@ -3,6 +3,10 @@
  
  The following is a loose, ever evolving "road map" for planned releases of the library, 
  grouped / ordered by release number:
+
+## v.0.7.8.x **(WIP)**
+
+* Finish developing/testing QtIfwExternalOp.
  
 ## v.0.8.x
 			
