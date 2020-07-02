@@ -535,6 +535,9 @@ class _QtIfwScript:
 
     __FILE_EXITS_TMPL = "installer.fileExists( %s )"
     
+    # Note, there is in fact an installer.killProcess(string absoluteFilePath)
+    # this custom kill takes a process name, with no specific path
+    # It also runs in parrellel with "install operation" kills
     __KILLALL_PROG_TMPL = "killAll( %s );\n"
     _KILLALL_PATH = "taskkill"   if IS_WINDOWS else "killall"
     _KILLALL_ARGS = ["/F","/IM"] if IS_WINDOWS else ["-9"] #TODO: CROSS SH? some might want -s9 ?
@@ -1576,8 +1579,9 @@ Controller.prototype.%s = function(){
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) + 
-            '    else {\n' +                        
-            '        managePriorInstallation();\n' +
+            '    else {\n' +                
+            '        ' + _QtIfwScript.ifInstalling() +
+                        ' managePriorInstallation();\n' +
             '    }\n'    
         )                
 
@@ -2052,7 +2056,7 @@ Component.prototype.%s = function(){
         if not self.killFirstExes and not self.killLastExes: return
         killPath = _QtIfwScript._KILLALL_PATH
         killArgs = _QtIfwScript._KILLALL_ARGS 
-        retCodes = [0,-128]        
+        retCodes = [0,128] # This is WINDOWS, cross platform?       
         def toExOp( killExe ):
             if   isinstance( killExe, six.string_types ):
                 installExe = uninstallExe = killExe
@@ -2920,6 +2924,12 @@ def __mergePackageObjects( srcPkg, destPkg, subDirName=None ):
         if srcPkg.pkgScript.customOperations:
             try: destScript.customOperations.extend( srcPkg.pkgScript.customOperations )
             except: destScript.customOperations = srcPkg.pkgScript.customOperations
+        if srcPkg.pkgScript.killFirstExes:
+            try: destScript.killFirstExes.extend( srcPkg.pkgScript.killFirstExes )
+            except: destScript.killFirstExes = srcPkg.pkgScript.killFirstExes
+        if srcPkg.pkgScript.killLastExes:
+            try: destScript.killLastExes.extend( srcPkg.pkgScript.killLastExes )
+            except: destScript.killLastExes = srcPkg.pkgScript.killLastExes
         print( "\nRegenerating installer package script: %s...\n" 
                 % (destScript.path()) )
         destScript._generate()
