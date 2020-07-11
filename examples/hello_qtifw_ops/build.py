@@ -1,5 +1,5 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
-        QtIfwExternalOp, joinPathQtIfw, QT_IFW_HOME_DIR
+        QtIfwExternalOp, joinPathQtIfw, QT_IFW_HOME_DIR, IS_WINDOWS
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Custom Installer Ops Example"
@@ -19,10 +19,16 @@ class BuildProcess( PyToBinInstallerProcess ):
         def ops():
             fileName = "distbuilder-ops-test.txt"
             filePath = joinPathQtIfw( QT_IFW_HOME_DIR, fileName )
-            # Windows?!
-            createFileOp = QtIfwExternalOp( 
+            filePath = '\\"%s\\"' % (filePath,)
+            createFileOp =(
+                 QtIfwExternalOp( 
+                      exePath='echo .> %s' % filePath, # demo raw shell command in a single string
+                uninstExePath="del",    uninstArgs=["/q", filePath] )
+                    if IS_WINDOWS else
+                QtIfwExternalOp( 
                       exePath="touch",       args=[filePath],
-                uninstExePath="rm",    uninstArgs=[filePath] )         
+                uninstExePath="rm",    uninstArgs=[filePath] ) 
+            )                         
             return [ createFileOp ]        
     
         cfg.packages[0].pkgScript.externalOps = ops() 
