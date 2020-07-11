@@ -2096,12 +2096,16 @@ Component.prototype.%s = function(){
         for task in self.externalOps :   
             setArgs = ""                    
             if task.exePath :
-                setArgs += '%sexecPath = "%s"%s' % (TAB,task.exePath,END)
+                p =( task.exePath if IS_WINDOWS else 
+                     task.exePath.replace(" ", "\\\\ ") )
+                setArgs += '%sexecPath = "%s"%s' % (TAB,p,END)
             if task.successRetCodes:
                 setArgs +=( '%sretCodes = "{%s}"%s' % 
                     (TAB,",".join([str(c) for c in task.successRetCodes]),END) )
             if task.uninstExePath :
-                setArgs += '%sundoPath = "%s"%s' % (TAB,task.uninstExePath,END)                    
+                p =( task.uninstExePath if IS_WINDOWS else 
+                     task.uninstExePath.replace(" ", "\\\\ ") )
+                setArgs += '%sundoPath = "%s"%s' % (TAB,p,END)
             if task.uninstRetCodes:
                 setArgs +=( '%sundoRetCodes = "{%s}"%s' % 
                     (TAB,",".join([str(c) for c in task.uninstRetCodes]),END) )
@@ -2109,16 +2113,39 @@ Component.prototype.%s = function(){
              
             args=[]                        
             if task.exePath :                 
-                if task.successRetCodes: args+=["retCodes"]                
-                args+=["shellPath", "shellSwitch", "execPath"]
-                if task.args : args+=['"%s"' % (a,) for a in task.args]                
+                if task.successRetCodes: args+=["retCodes"]       
+                args+=["shellPath", "shellSwitch"]
+                if IS_WINDOWS:
+                    args+=["execPath"]
+                    if task.args: args+=['"%s"' % (a,) for a in task.args]                    
+                else: 
+                    if task.args: 
+                        subArgs=[ a.replace(" ", "\\\\ ") for a in task.args]
+                        #args+=['"\\\"" + execPath + " ' + 
+                        #       ' '.join(subArgs) + '" + "\\\""' ]
+                        args+=['execPath + " ' + ' '.join(subArgs) + '"' ]                        
+                    else:
+                        args+=['"\\\"" + execPath + "\\\""']
+                    
             if task.uninstExePath :
                 if not task.exePath : args+=["shellPath", "shellSwitch"] # dummy install action
                 args+=['"UNDOEXECUTE"']                
                 if task.uninstRetCodes: args+=["undoRetCodes"]
-                args+=["shellPath", "shellSwitch", "undoPath"]
-                if task.uninstArgs : 
-                    args+=['"%s"' % (a,) for a in task.uninstArgs]
+                args+=["shellPath", "shellSwitch"]
+                if IS_WINDOWS:
+                    args+=["undoPath"]
+                    if task.uninstArgs: 
+                        args+=['"%s"' % (a,) for a in task.uninstArgs]                    
+                else: 
+                    if task.uninstArgs: 
+                        subArgs=[ a.replace(" ", "\\\\ ")  
+                                  for a in task.uninstArgs ]
+                        #args+=['"\\\"" + undoPath + " ' + 
+                        #       ' '.join(subArgs) + '" + "\\\""' ]
+                        args+=['undoPath + " ' + ' '.join(subArgs) + '"' ]      
+                    else:
+                        args+=['"\\\"" + undoPath + "\\\""']
+                                    
             self.componentCreateOperationsBody +=( "%sexecArgs = [%s]%s" % 
                 (TAB,",".join(args),END) )
             
