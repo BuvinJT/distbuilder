@@ -739,6 +739,35 @@ class _QtIfwScript:
             TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
             TAB + 'return installer.execute( binPath, args )' + END +
             EBLK + NEW +
+            
+            'function writeFileFromBase64( path, b64 ) ' + SBLK +   
+                (TAB + 'b64 = "-----BEGIN CERTIFICATE-----\\n" + '
+                       'b64 + "\\n-----END CERTIFICATE-----\\n"' + END 
+                if IS_WINDOWS else "" ) +
+                TAB + 'var tempPath = "%s\\\\__distb-install-qt-ifw.b64"' % ( _ENV_TEMP_DIR, ) + END +
+                TAB + 'writeFile( tempPath, b64 )' + END +                                 
+                TAB + 'var decodeCmd = "' +
+                    ('echo off\\n'                     
+                     'certutil /decode \\"" + tempPath + "\\" '
+                        '\\"" + path + "\\" >nul 2>nul\\n'
+                        'echo \\"" + path + "\\"\\n' 
+                     if IS_WINDOWS else
+                     'echo $(cat \\"" + tempPath + "\\" | base64) > \\"" + path + "\\";'
+                     'echo \\"" + path + "\\"' ) + '"' + END +      
+                TAB + 'var result = installer.execute( ' +
+                    ('"cmd.exe", ["/k"], decodeCmd' if IS_WINDOWS else
+                     '"sh", ["-c", decodeCmd]' ) + ' )' + END +                
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("Write error log failed.")' + END +
+                TAB + 'try' + SBLK +
+                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
+                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+                TAB + 'catch(e){ path = "";' + EBLK +
+                TAB + 'if( path=="" || !' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                (2*TAB) + 'throw new Error("writeFileFromBase64 failed. (file does not exists)")' + END +
+                TAB + _QtIfwScript.log( '"Wrote file from base64: " + path', isAutoQuote=False ) +                                                                                                
+            EBLK + NEW +                                                 
+            
             'function killAll( progName ) ' + SBLK +
             TAB + 'var killCmd = "' + _QtIfwScript._KILLALL_CMD_PREFIX + 
                 '\\"" + progName + "\\""' + END + 
@@ -1825,7 +1854,7 @@ Component.prototype.%s = function(){
         if self.isAutoLib: _QtIfwScript._genLib( self )        
         if self.qtScriptLib: self.script += self.qtScriptLib        
         if self.isAutoGlobals:
-            self.__genResources() 
+            self.__embedResources() 
             self.__genGlobals()
         if self.embeddedResources: self.script += self.embeddedResources 
         if self.packageGlobals: self.script += self.packageGlobals
@@ -1852,13 +1881,13 @@ Component.prototype.%s = function(){
                 "%s\n}\n" % (self.componentCreateOperationsBody,) )
 
 
-    def __genResources( self ):
+    def __embedResources( self ):
         self.embeddedResources=""        
         def embed( script ):
             if isinstance( script, ExecutableScript ):
+                varName = script.fileName().replace(".","_dot_")
                 self.embeddedResources += ( self.__EMBED_RES_TMPLT % 
-                    (script.fileName().replace(".","_dot_"), 
-                     script.toBase64( toString=True ),) )                 
+                    (varName, script.toBase64( toString=True )) )                 
         for task in self.externalOps :   
             embed( task.script )
             embed( task.uninstScript )
@@ -1968,6 +1997,7 @@ Component.prototype.%s = function(){
         self.componentCreateOperationsBody = ""
         if IS_LINUX and self.isAskPassProgRequired:
             self.__addAskPassProgResolution()
+        self.__genResources()
         self.__addShortcuts()
         self.__addKillOperations()
         self.__addExecuteOperations() 
@@ -1976,6 +2006,28 @@ Component.prototype.%s = function(){
                 "\n%s\n" % (self.customOperations,) )            
         if self.componentCreateOperationsBody == "" :
             self.componentCreateOperationsBody = None
+
+    def __genResources( self ):
+        if not self.embeddedResources: return
+        TAB = _QtIfwScript.TAB
+        END = _QtIfwScript.END_LINE
+        NEW = _QtIfwScript.NEW_LINE
+        SBLK =_QtIfwScript.START_BLOCK
+        EBLK =_QtIfwScript.END_BLOCK                
+        def gen( script ):
+            if isinstance( script, ExecutableScript ):
+                scriptPath = joinPath( _ENV_TEMP_DIR, 
+                    task.script.fileName() ).replace("\\","\\\\")
+                varName = script.fileName().replace(".","_dot_")                
+                return ( 'writeFileFromBase64( "%s", %s )' % 
+                         (scriptPath, varName) + END )
+            return ""        
+        genRes = _QtIfwScript.ifInstalling( isMultiLine=True )                                  
+        for task in self.externalOps: genRes += gen( task.script )
+        genRes += EBLK + 'else ' + SBLK 
+        for task in self.externalOps: genRes += gen( task.uninstScript )
+        genRes += EBLK
+        self.componentCreateOperationsBody += genRes              
         
     # TODO: Clean up this lazy mess!    
     def __addShortcuts( self ):
@@ -2020,6 +2072,10 @@ Component.prototype.%s = function(){
                             windowStyle=shortcut.windowStyle,
                             label=shortcut.productName )                     
                 if winOps!="" :    
+                    #TODO: get rid of these platform checks in the installer!
+                    # The installer will only work on the target platform 
+                    # for which it is built, and we're generating that on the 
+                    # fly, so there is no need to ever "pivot" again at runtime.
                     self.componentCreateOperationsBody += (             
                         '    if( systemInfo.kernelType === "winnt" ){\n' +
                         '%s\n    }' % (winOps,) )
