@@ -102,6 +102,8 @@ _DEFAULT_PAGES = [
 
 _PAGE_NAME_PLACHOLDER = "[PAGE_NAME]"
 
+_ENV_TEMP_DIR = "%TEMP%" if IS_WINDOWS else "/tmp"
+
 # don't use back slash on Windows!
 def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
 
@@ -1628,6 +1630,8 @@ class QtIfwPackageScript( _QtIfwScript ):
     __DIR_TMPLT  = "%s/packages/%s/meta"
     __PATH_TMPLT = __DIR_TMPLT + "/%s"
 
+    __EMBED_RES_TMPLT = 'var %s = "%s";\n\n'
+
     __CONTROLER_CALLBACK_FUNC_TMPLT = (
 """
 Controller.prototype.%s = function(){
@@ -1799,6 +1803,7 @@ Component.prototype.%s = function(){
         # Linux Only
         self.isAskPassProgRequired = False
 
+        self.embeddedResources = None
         self.packageGlobals = None
         self.isAutoGlobals = True
 
@@ -1818,9 +1823,11 @@ Component.prototype.%s = function(){
         self.script = ""
         
         if self.isAutoLib: _QtIfwScript._genLib( self )        
-        if self.qtScriptLib: self.script += self.qtScriptLib
-
-        if self.isAutoGlobals: self.__genGlobals()
+        if self.qtScriptLib: self.script += self.qtScriptLib        
+        if self.isAutoGlobals:
+            self.__genResources() 
+            self.__genGlobals()
+        if self.embeddedResources: self.script += self.embeddedResources 
         if self.packageGlobals: self.script += self.packageGlobals
 
         if self.isAutoComponentConstructor:
@@ -1844,13 +1851,26 @@ Component.prototype.%s = function(){
                 "    component.createOperations(); // call to super class\n" +
                 "%s\n}\n" % (self.componentCreateOperationsBody,) )
 
+
+    def __genResources( self ):
+        self.embeddedResources=""        
+        def embed( script ):
+            if isinstance( script, ExecutableScript ):
+                self.embeddedResources += ( self.__EMBED_RES_TMPLT % 
+                    (script.fileName().replace(".","_dot_"), 
+                     script.toBase64( toString=True ),) )                 
+        for task in self.externalOps :   
+            embed( task.script )
+            embed( task.uninstScript )
+        if len(self.embeddedResources)==0: self.embeddedResources=None
+
     def __genGlobals( self ):
         NEW = _QtIfwScript.NEW_LINE
         END = _QtIfwScript.END_LINE
         TAB = _QtIfwScript.TAB
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK
-        self.packageGlobals=""
+        self.packageGlobals=""                    
         if IS_WINDOWS :
             self.packageGlobals += (
                 'function setShortcutWindowStyleVbs( shortcutPath, styleCode ) ' + SBLK +
@@ -2092,27 +2112,35 @@ Component.prototype.%s = function(){
     var undoRetCodes  = "";                   
     var execArgs      = [];     
        
-""") % ( shellPath, shellSwitch )             
+""") % ( shellPath, shellSwitch )                    
         for task in self.externalOps :   
-            setArgs = ""                    
-            if task.exePath :
-                p =( task.exePath if IS_WINDOWS else 
-                     task.exePath.replace(" ", "\\\\ ") )
-                setArgs += '%sexecPath = "%s"%s' % (TAB,p,END)
+            setArgs = ""
+            exePath = ( joinPathQtIfw( _ENV_TEMP_DIR, task.script.fileName() )
+                if task.script 
+                else task.exePath if task.exePath 
+                else None )      
+            if exePath:
+                if not IS_WINDOWS: exePath = exePath.replace(" ", "\\\\ ")
+                setArgs += '%sexecPath = "%s"%s' % (TAB,exePath,END)
             if task.successRetCodes:
                 setArgs +=( '%sretCodes = "{%s}"%s' % 
                     (TAB,",".join([str(c) for c in task.successRetCodes]),END) )
-            if task.uninstExePath :
-                p =( task.uninstExePath if IS_WINDOWS else 
-                     task.uninstExePath.replace(" ", "\\\\ ") )
-                setArgs += '%sundoPath = "%s"%s' % (TAB,p,END)
+            
+            uninstExePath = ( joinPathQtIfw( _ENV_TEMP_DIR, 
+                                             task.uninstScript.fileName() )
+                if task.uninstScript 
+                else task.uninstExePath if task.uninstExePath 
+                else None )      
+            if uninstExePath:
+                if not IS_WINDOWS: uninstExePath = uninstExePath.replace(" ", "\\\\ ")
+                setArgs += '%sundoPath = "%s"%s' % (TAB,uninstExePath,END)
             if task.uninstRetCodes:
                 setArgs +=( '%sundoRetCodes = "{%s}"%s' % 
                     (TAB,",".join([str(c) for c in task.uninstRetCodes]),END) )
             if len(setArgs) > 0: self.componentCreateOperationsBody += setArgs
              
             args=[]                        
-            if task.exePath :                 
+            if exePath :                 
                 if task.successRetCodes: args+=["retCodes"]       
                 args+=["shellPath", "shellSwitch"]
                 if IS_WINDOWS:
@@ -2127,8 +2155,8 @@ Component.prototype.%s = function(){
                     else:
                         args+=['"\\\"" + execPath + "\\\""']
                     
-            if task.uninstExePath :
-                if not task.exePath : args+=["shellPath", "shellSwitch"] # dummy install action
+            if uninstExePath :
+                if not exePath : args+=["shellPath", "shellSwitch"] # dummy install action
                 args+=['"UNDOEXECUTE"']                
                 if task.uninstRetCodes: args+=["undoRetCodes"]
                 args+=["shellPath", "shellSwitch"]
@@ -2205,14 +2233,17 @@ class QtIfwShortcut:
       
 # -----------------------------------------------------------------------------
 class QtIfwExternalOp: 
-    def __init__( self, exePath=None, args=[], successRetCodes=[0],  
-                  uninstExePath=None, uninstArgs=[], uninstRetCodes=[0],
-                  isElevated=False, workingDir=QT_IFW_TARGET_DIR,
-                  onErrorMessage=None ):
+    def __init__( self, 
+              script=None,       exePath=None,       args=[], successRetCodes=[0],  
+        uninstScript=None, uninstExePath=None, uninstArgs=[],  uninstRetCodes=[0],
+        isElevated=False, workingDir=QT_IFW_TARGET_DIR, onErrorMessage=None ):
+        
+        self.script          = script #ExecutableScript        
         self.exePath         = exePath
         self.args            = args
         self.successRetCodes = successRetCodes
 
+        self.uninstScript    = uninstScript #ExecutableScript
         self.uninstExePath   = uninstExePath
         self.uninstArgs      = uninstArgs
         self.uninstRetCodes  = uninstRetCodes

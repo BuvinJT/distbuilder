@@ -556,7 +556,8 @@ Attributes & default values:
     killFirstExes  = None
     killLastExes   = None
     isKillElevated = True        
-        
+    
+    embeddedResources = None    
     packageGlobals = None
     isAutoGlobals = True
             
@@ -629,17 +630,19 @@ in an unrestricted manner.
 
 Constructor:
        
-	QtIfwExternalOp( exePath=None, args=[], successRetCodes=[0],  
-                     uninstExePath=None, uninstArgs=[], uninstRetCodes=[0],
-                     isElevated=False, workingDir=QT_IFW_TARGET_DIR,
-                     onErrorMessage=None )
+	QtIfwExternalOp( 
+              script=None,       exePath=None,       args=[], successRetCodes=[0],  
+        uninstScript=None, uninstExePath=None, uninstArgs=[],  uninstRetCodes=[0],
+        isElevated=False, workingDir=QT_IFW_TARGET_DIR, onErrorMessage=None ):
 
 Attributes & default values:
                   
+        script          = None
         exePath         = None
         args            = []
         successRetCodes = [0]
 
+        uninstScript    = None
         uninstExePath   = None
         uninstArgs      = []
         uninstRetCodes  = [0]

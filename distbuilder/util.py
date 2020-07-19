@@ -25,6 +25,7 @@ from distutils.sysconfig import get_python_lib
 import inspect  # @UnusedImport
 from time import sleep
 from struct import calcsize
+import base64
 
 # -----------------------------------------------------------------------------   
 __plat = platform.system()
@@ -876,7 +877,16 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         if lineNo : lines.insert( lineNo-1, injection )
         else : lines.append( injection )
         self.fromLines( lines )
+        
+    def toBase64( self, toString=False ):
+        ret = base64.b64encode( str(self).encode('utf-8') )
+        return ret.decode('utf-8') if toString else ret
 
+    def fromBase64( self, data ):
+        self.script = base64.b64decode( data ).decode('utf-8')
+        self.shebang = None 
+        # TODO: resolve shebang programmatically, and remove it from self.script        
+        
 # -----------------------------------------------------------------------------           
 if IS_WINDOWS :
     class _WindowsSharedFile:
