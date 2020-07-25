@@ -68,9 +68,9 @@ QT_IFW_ALLUSERS_STARTMENU_DIR = "@AllUsersStartMenuProgramsPath@"
 
 QT_IFW_PRODUCT_NAME    = "@ProductName@"
 QT_IFW_PRODUCT_VERSION = "@ProductVersion@"
-QT_IFW_TITLE     = "@Title@"
-QT_IFW_PUBLISHER = "@Publisher@"
-QT_IFW_URL = "@Url@"
+QT_IFW_TITLE           = "@Title@"
+QT_IFW_PUBLISHER       = "@Publisher@"
+QT_IFW_URL             = "@Url@"
 
 QT_IFW_APPS_X86_DIR  = "@ApplicationsDirX86@"
 QT_IFW_APPS_X64_DIR  = "@ApplicationsDirX64@"
@@ -102,7 +102,7 @@ _DEFAULT_PAGES = [
 
 _PAGE_NAME_PLACHOLDER = "[PAGE_NAME]"
 
-_ENV_TEMP_DIR = "%TEMP%" if IS_WINDOWS else "/tmp"
+_ENV_TEMP_DIR = "%temp%" if IS_WINDOWS else "/tmp"
 
 # don't use back slash on Windows!
 def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
@@ -731,6 +731,11 @@ class _QtIfwScript:
                 (3*TAB) + 'return path.replace(/\\//g, \'\\\\\')' + END +
             (2*TAB) + 'return path' + END + 
             EBLK +
+            TAB +  'this.fromNativeSparator = function (path) ' + SBLK +
+            (2*TAB) + 'if (systemInfo.productType === "windows") ' + NEW +
+                (3*TAB) + 'return path.replace(/\\\\/g, \'/\')' + END +
+            (2*TAB) + 'return path' + END + 
+            EBLK +            
             '};' + NEW +            
             'function execute( binPath, args ) ' + SBLK +
             TAB + 'var cmd = "\\"" + binPath + "\\""' + END +
@@ -738,9 +743,12 @@ class _QtIfwScript:
             (2*TAB) + 'cmd += (" " + args[i])' + END +
             TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
             TAB + 'return installer.execute( binPath, args )' + END +
-            EBLK + NEW +
-            
-            'function writeFileFromBase64( path, b64 ) ' + SBLK +   
+            EBLK + NEW +            
+            'function writeScriptFromBase64( path, b64 ) ' + SBLK +                  
+            TAB + 'path = writeFileFromBase64( path, b64 )' + END +
+            TAB + 'replaceQtIfwVarsInFile( path )' +  END +            
+            EBLK + NEW +                                                                         
+            'function writeFileFromBase64( path, b64 ) ' + SBLK +                  
                 (TAB + 'b64 = "-----BEGIN CERTIFICATE-----\\n" + '
                        'b64 + "\\n-----END CERTIFICATE-----\\n"' + END 
                 if IS_WINDOWS else "" ) +
@@ -750,7 +758,7 @@ class _QtIfwScript:
                     ('echo off\\n'                     
                      'certutil /decode \\"" + tempPath + "\\" '
                         '\\"" + path + "\\" >nul 2>nul\\n'
-                        'echo \\"" + path + "\\"\\n' 
+                        'echo " + path + "\\n' 
                      if IS_WINDOWS else
                      'echo $(cat \\"" + tempPath + "\\" | base64) > \\"" + path + "\\";'
                      'echo \\"" + path + "\\"' ) + '"' + END +      
@@ -761,13 +769,36 @@ class _QtIfwScript:
                 (2*TAB) + 'throw new Error("Write error log failed.")' + END +
                 TAB + 'try' + SBLK +
                 TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
-                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
+                EBLK +
                 TAB + 'catch(e){ path = "";' + EBLK +
                 TAB + 'if( path=="" || !' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
                 (2*TAB) + 'throw new Error("writeFileFromBase64 failed. (file does not exists)")' + END +
-                TAB + _QtIfwScript.log( '"Wrote file from base64: " + path', isAutoQuote=False ) +                                                                                                
+                TAB + _QtIfwScript.log( '"Wrote file from base64: " + path', isAutoQuote=False ) + 
+                TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                                                 
-            
+            'function replaceQtIfwVarsInFile( path ) ' + SBLK +          
+            (
+            TAB + 'var vbs = ' + NEW +
+            (2*TAB) + '"Const ForReading = 1\\n" + ' + NEW +
+            (2*TAB) + '"Const ForWriting = 2\\n" + ' + NEW +
+            (2*TAB) + '"\\n" + ' + NEW +
+            (2*TAB) + '"strFileName = \\"" + path + "\\"\\n" + ' + NEW +
+            (2*TAB) + '"\\n" + ' + NEW +
+            (2*TAB) + '"Set objFSO = CreateObject(\\"Scripting.FileSystemObject\\")\\n" + ' + NEW +
+            (2*TAB) + '"Set objFile = objFSO.OpenTextFile(strFileName, ForReading)\\n" + ' + NEW +
+            (2*TAB) + '"strText = objFile.ReadAll\\n" + ' + NEW +
+            (2*TAB) + '"objFile.Close\\n" + ' + NEW +
+            (2*TAB) + '"\\n" + ' + NEW +
+            (2*TAB) + '"amp = \\"@\\" \\n" + ' + NEW +
+            (2*TAB) + '"strNewText = Replace(strText, amp + \\"HomeDir\\" + amp, \\"[HOMEDIR]\\")\\n" + ' + NEW +
+            (2*TAB) + '"Set objFile = objFSO.OpenTextFile(strFileName, ForWriting)\\n" + ' + NEW +
+            (2*TAB) + '"objFile.Write strNewText\\n" + ' + NEW + #vbs WriteLine adds extra CR/LF
+            (2*TAB) + '"objFile.Close\\n"' + END +            
+            TAB + 'executeVbScript( vbs )' + END 
+            if IS_WINDOWS else 
+            TAB + '' + END) + # TODO: FILLIN
+            EBLK + NEW +                                                             
             'function killAll( progName ) ' + SBLK +
             TAB + 'var killCmd = "' + _QtIfwScript._KILLALL_CMD_PREFIX + 
                 '\\"" + progName + "\\""' + END + 
@@ -2019,7 +2050,7 @@ Component.prototype.%s = function(){
                 scriptPath = joinPath( _ENV_TEMP_DIR, 
                     task.script.fileName() ).replace("\\","\\\\")
                 varName = script.fileName().replace(".","_dot_")                
-                return ( 'writeFileFromBase64( "%s", %s )' % 
+                return ( 'writeScriptFromBase64( "%s", %s )' % 
                          (scriptPath, varName) + END )
             return ""        
         genRes = _QtIfwScript.ifInstalling( isMultiLine=True )                                  
