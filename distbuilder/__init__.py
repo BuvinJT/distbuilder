@@ -93,6 +93,7 @@ from distbuilder.util import \
     , THIS_DIR \
     , DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE \
     , absPath \
+    , toNativePath \
     , exists \
     , isFile \
     , isDir \

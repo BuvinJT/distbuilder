@@ -577,6 +577,9 @@ def absPath( relativePath, basePath=None ):
     if basePath is None: basePath=THIS_DIR        
     return realpath( normpath( joinPath( basePath, relativePath ) ) )
 
+def toNativePath( path ): 
+    return path.replace("/","\\") if IS_WINDOWS else path.replace("\\","/")
+    
 def tempDirPath(): return gettempdir()
 
 # mktemp returns a temp file path, but doesn't create it.

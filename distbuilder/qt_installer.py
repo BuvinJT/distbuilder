@@ -104,6 +104,20 @@ _PAGE_NAME_PLACHOLDER = "[PAGE_NAME]"
 
 _ENV_TEMP_DIR = "%temp%" if IS_WINDOWS else "/tmp"
 
+QT_IFW_DYNAMIC_PATH_VARS = [ 
+      "RootDir" 
+    , "HomeDir"  
+    , "DesktopDir" 
+    , "ApplicationsDir" 
+    , "StartMenuDir" 
+    , "UserStartMenuProgramsPath" 
+    , "AllUsersStartMenuProgramsPath" 
+    , "ApplicationsDirX86" 
+    , "ApplicationsDirX64" 
+    , "InstallerDirPath" 
+    , "InstallerFilePath" 
+]
+
 # don't use back slash on Windows!
 def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
 
@@ -724,6 +738,10 @@ class _QtIfwScript:
         TAB = _QtIfwScript.TAB
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK
+        
+        pathVarsList = ",".join([ '"%s"' % (v,) 
+                                  for v in QT_IFW_DYNAMIC_PATH_VARS ])
+        
         self.qtScriptLib = (            
             'var Dir = new function () ' + SBLK +
             TAB +  'this.toNativeSparator = function (path) ' + SBLK +
@@ -776,25 +794,32 @@ class _QtIfwScript:
                 (2*TAB) + 'throw new Error("writeFileFromBase64 failed. (file does not exists)")' + END +
                 TAB + _QtIfwScript.log( '"Wrote file from base64: " + path', isAutoQuote=False ) + 
                 TAB + 'return path' + END +                                                                                                               
-            EBLK + NEW +                                                 
+            EBLK + NEW +                
+            NEW +
+            'var dynamicPathVars = [ ' + pathVarsList + ' ]' + END +
+            NEW +                                             
             'function replaceQtIfwVarsInFile( path ) ' + SBLK +          
             (
             TAB + 'var vbs = ' + NEW +
             (2*TAB) + '"Const ForReading = 1\\n" + ' + NEW +
             (2*TAB) + '"Const ForWriting = 2\\n" + ' + NEW +
+            (2*TAB) + '"Const Amp = \\"@\\" \\n" + ' + NEW +
+            (2*TAB) + '"Dim sFileName, sText\\n" + ' + NEW +
             (2*TAB) + '"\\n" + ' + NEW +
-            (2*TAB) + '"strFileName = \\"" + path + "\\"\\n" + ' + NEW +
-            (2*TAB) + '"\\n" + ' + NEW +
-            (2*TAB) + '"Set objFSO = CreateObject(\\"Scripting.FileSystemObject\\")\\n" + ' + NEW +
-            (2*TAB) + '"Set objFile = objFSO.OpenTextFile(strFileName, ForReading)\\n" + ' + NEW +
-            (2*TAB) + '"strText = objFile.ReadAll\\n" + ' + NEW +
-            (2*TAB) + '"objFile.Close\\n" + ' + NEW +
-            (2*TAB) + '"\\n" + ' + NEW +
-            (2*TAB) + '"amp = \\"@\\" \\n" + ' + NEW +
-            (2*TAB) + '"strNewText = Replace(strText, amp + \\"HomeDir\\" + amp, \\"[HOMEDIR]\\")\\n" + ' + NEW +
-            (2*TAB) + '"Set objFile = objFSO.OpenTextFile(strFileName, ForWriting)\\n" + ' + NEW +
-            (2*TAB) + '"objFile.Write strNewText\\n" + ' + NEW + #vbs WriteLine adds extra CR/LF
-            (2*TAB) + '"objFile.Close\\n"' + END +            
+            (2*TAB) + '"sFileName = \\"" + path + "\\"\\n" + ' + NEW +
+            (2*TAB) + '"Set oFSO = CreateObject(\\"Scripting.FileSystemObject\\")\\n" + ' + NEW +
+            (2*TAB) + '"Set oFile = oFSO.OpenTextFile(sFileName, ForReading)\\n" + ' + NEW +
+            (2*TAB) + '"sText = oFile.ReadAll\\n" + ' + NEW +
+            (2*TAB) + '"oFile.Close\\n" ' + END +
+            TAB + 'for( var i=0; i != dynamicPathVars.length; ++i ) ' + SBLK +                                    
+            (2*TAB) + 'var varName = dynamicPathVars[i]' + END +
+            (2*TAB) + 'var varVal = Dir.toNativeSparator( installer.value( varName ) )' + END +
+            (2*TAB) + 'vbs += "sText = Replace(sText, Amp + \\"" + varName + "\\" + Amp, \\"" + varVal + "\\")\\n"' + NEW +
+            TAB + EBLK +
+            TAB + 'vbs += ' + NEW +                
+            (2*TAB) + '"Set oFile = oFSO.OpenTextFile(sFileName, ForWriting)\\n" + ' + NEW +
+            (2*TAB) + '"oFile.Write sText\\n" + ' + NEW + #vbs WriteLine adds extra CR/LF
+            (2*TAB) + '"oFile.Close\\n"' + END +            
             TAB + 'executeVbScript( vbs )' + END 
             if IS_WINDOWS else 
             TAB + '' + END) + # TODO: FILLIN
@@ -2048,7 +2073,7 @@ Component.prototype.%s = function(){
         def gen( script ):
             if isinstance( script, ExecutableScript ):
                 scriptPath = joinPath( _ENV_TEMP_DIR, 
-                    task.script.fileName() ).replace("\\","\\\\")
+                    script.fileName() ).replace("\\","\\\\")
                 varName = script.fileName().replace(".","_dot_")                
                 return ( 'writeScriptFromBase64( "%s", %s )' % 
                          (scriptPath, varName) + END )

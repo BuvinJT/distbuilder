@@ -8,9 +8,9 @@ f.companyTradeName = "Some Company"
 f.companyLegalName = "Some Company Inc."    
 f.binaryName       = "HelloWrapper"
 f.isGui            = True        
-f.entryPointPy     = "hello_gui.py"  
+f.entryPointPy     = "../run_conditions_app/hello_gui.py"  
 #f.isGui            = False 
-#f.entryPointPy     = "hello_terminal.py"  
+#f.entryPointPy     = "../run_conditions_app/hello_terminal.py"  
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
 f.version          = (1,0,0,0)
 
