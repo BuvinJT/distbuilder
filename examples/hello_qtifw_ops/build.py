@@ -1,6 +1,6 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
-        QtIfwExternalOp, ExecutableScript as Script, \
-        joinPath, toNativePath, QT_IFW_HOME_DIR, IS_WINDOWS
+        QtIfwExternalOp as IfwExOp, ExecutableScript as Script, \
+        joinPath, QT_IFW_HOME_DIR, IS_WINDOWS
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Custom Installer Ops Example"
@@ -16,23 +16,32 @@ f.setupName        = "HelloIfwOpsSetup"
 
 class BuildProcess( PyToBinInstallerProcess ):
     def onQtIfwConfig( self, cfg ):    
-        
-        def ops():
+
+        def addExternalOperations( cfg ):        
+
             fileName = "distbuilder-ops-test.txt"
-            filePath = toNativePath( joinPath( QT_IFW_HOME_DIR, fileName ) )
-            createCmd =( 'echo .> "%s"' % (filePath,) if IS_WINDOWS else
-                         'touch "%s"'  % (filePath,) )
-            removeCmd =( 'del /q "%s"' % (filePath,) if IS_WINDOWS else
-                         'rm "%s"'  % (filePath,) )            
-            createFileOp = QtIfwExternalOp( 
-                      script=Script( "create",  script=createCmd ), 
-                uninstScript=Script( "remove" , script=removeCmd )                     
-            )                         
-            return [ createFileOp ]        
-    
-        cfg.packages[0].pkgScript.externalOps = ops() 
-         
-        #script.customOperations = None
+            filePath = joinPath( QT_IFW_HOME_DIR, fileName ) 
+
+            createScript = Script( "create",  script=(
+                'echo .> "%s"' % (filePath,) if IS_WINDOWS else
+                'touch "%s"'  % (filePath,) ) )
+            removeScript =  Script( "remove" , script=( 
+                'del /q "%s"' % (filePath,) if IS_WINDOWS else
+                'rm "%s"'  % (filePath,) ) )
+            
+            scripts = [ createScript, removeScript ]
+            
+            exOps = [ 
+                IfwExOp( script=createScript, 
+                   uninstScript=removeScript )
+            ]
+        
+            cfg.controlScript.embeddedResources += scripts
+            cfg.packages[0].pkgScript.externalOps += exOps
+            #script.customOperations = None
+        
+        addExternalOperations( cfg )
+        
     
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True

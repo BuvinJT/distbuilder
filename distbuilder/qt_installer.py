@@ -1046,7 +1046,9 @@ class _QtIfwScript:
 # -----------------------------------------------------------------------------
 
 class QtIfwControlScript( _QtIfwScript ):
-    
+
+    __EMBED_RES_TMPLT = 'var %s = "%s";\n\n'
+        
     __DIR_TMPLT  = "%s/config"
     __PATH_TMPLT = __DIR_TMPLT + "/%s"
     
@@ -1193,6 +1195,8 @@ Controller.prototype.%s = function(){
         self.virtualArgs = None
 
         self.uiPages = []
+        self.embeddedResources = []
+        self._rawEmbeddedResources = None
 
         self.controllerGlobals = None
         self.isAutoGlobals = True
@@ -1260,6 +1264,9 @@ Controller.prototype.%s = function(){
                 
         if self.isAutoLib: _QtIfwScript._genLib( self )        
         if self.qtScriptLib: self.script += self.qtScriptLib
+
+        self.__embedResources()
+        if self._rawEmbeddedResources: self.script += self._rawEmbeddedResources 
 
         if self.isAutoGlobals: self.__genGlobals()
         if self.controllerGlobals: self.script += self.controllerGlobals
@@ -1510,6 +1517,17 @@ Controller.prototype.%s = function(){
             EBLK + NEW           
             )
 
+    def __embedResources( self ):
+        self._rawEmbeddedResources=""        
+        def embed( res ):
+            if isinstance( res, ExecutableScript ):
+                script = res
+                varName = script.fileName().replace(".","_dot_")
+                self._rawEmbeddedResources += ( self.__EMBED_RES_TMPLT % 
+                    (varName, script.toBase64( toString=True )) )                 
+        for res in self.embeddedResources: embed( res )
+        if len(self._rawEmbeddedResources)==0: self._rawEmbeddedResources=None
+
     def __genControllerConstructorBody( self ):
         NEW = _QtIfwScript.NEW_LINE
         END = _QtIfwScript.END_LINE
@@ -1520,6 +1538,8 @@ Controller.prototype.%s = function(){
         self.controllerConstructorBody = TAB + 'clearErrorLog()' + END
         if self.virtualArgs :  
             self.controllerConstructorBody += TAB + 'initGlobals()' + END
+        
+        self.__genResources()
         
         HIDE_PAGE_TMPLT = ( TAB + 
             'installer.setDefaultPageVisible(QInstaller.%s, false)' ) + END
@@ -1569,8 +1589,31 @@ Controller.prototype.%s = function(){
                         (3*TAB) + 'break' + END +
                     (2*TAB) + EBLK +
                 TAB + EBLK +    
-            EBLK ) 
-                 
+            EBLK )        
+        
+    def __genResources( self ):
+        if not self._rawEmbeddedResources: return
+        END = _QtIfwScript.END_LINE
+        SBLK =_QtIfwScript.START_BLOCK
+        EBLK =_QtIfwScript.END_BLOCK                
+        def gen( script ):
+            if isinstance( script, ExecutableScript ):
+                scriptPath = joinPath( _ENV_TEMP_DIR, 
+                    script.fileName() ).replace("\\","\\\\")
+                varName = script.fileName().replace(".","_dot_")                
+                return ( 'writeScriptFromBase64( "%s", %s )' % 
+                         (scriptPath, varName) + END )
+            return ""        
+        # TODO: apply filter so we don't simply generate all!
+        #genRes = _QtIfwScript.ifInstalling( isMultiLine=True )                                  
+        #for res in self.externalResources: genRes += gen( res )
+        #genRes += EBLK + 'else ' + SBLK 
+        #for res in self.externalResources: genRes += gen( res )
+        #genRes += EBLK
+        genRes = ""
+        for res in self.embeddedResources: genRes += gen( res )
+        self.controllerConstructorBody += genRes              
+                         
     def __genIntroductionPageCallbackBody( self ):
         self.introductionPageCallbackBody = (
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
@@ -1714,8 +1757,6 @@ class QtIfwPackageScript( _QtIfwScript ):
     
     __DIR_TMPLT  = "%s/packages/%s/meta"
     __PATH_TMPLT = __DIR_TMPLT + "/%s"
-
-    __EMBED_RES_TMPLT = 'var %s = "%s";\n\n'
 
     __CONTROLER_CALLBACK_FUNC_TMPLT = (
 """
@@ -1888,7 +1929,6 @@ Component.prototype.%s = function(){
         # Linux Only
         self.isAskPassProgRequired = False
 
-        self.embeddedResources = None
         self.packageGlobals = None
         self.isAutoGlobals = True
 
@@ -1909,10 +1949,7 @@ Component.prototype.%s = function(){
         
         if self.isAutoLib: _QtIfwScript._genLib( self )        
         if self.qtScriptLib: self.script += self.qtScriptLib        
-        if self.isAutoGlobals:
-            self.__embedResources() 
-            self.__genGlobals()
-        if self.embeddedResources: self.script += self.embeddedResources 
+        if self.isAutoGlobals: self.__genGlobals()
         if self.packageGlobals: self.script += self.packageGlobals
 
         if self.isAutoComponentConstructor:
@@ -1935,19 +1972,6 @@ Component.prototype.%s = function(){
                 "\nComponent.prototype.createOperations = function() {\n" +
                 "    component.createOperations(); // call to super class\n" +
                 "%s\n}\n" % (self.componentCreateOperationsBody,) )
-
-
-    def __embedResources( self ):
-        self.embeddedResources=""        
-        def embed( script ):
-            if isinstance( script, ExecutableScript ):
-                varName = script.fileName().replace(".","_dot_")
-                self.embeddedResources += ( self.__EMBED_RES_TMPLT % 
-                    (varName, script.toBase64( toString=True )) )                 
-        for task in self.externalOps :   
-            embed( task.script )
-            embed( task.uninstScript )
-        if len(self.embeddedResources)==0: self.embeddedResources=None
 
     def __genGlobals( self ):
         NEW = _QtIfwScript.NEW_LINE
@@ -2008,7 +2032,7 @@ Component.prototype.%s = function(){
             ('component.loaded.connect(this, this.%s)' % 
               (QtIfwPackageScript.__COMPONENT_LOADED_HNDLR_NAME,) ) + END             
         )
-        
+
     def __genComponentLoadedCallbackBody( self ):
         TAB = _QtIfwScript.TAB
         END = _QtIfwScript.END_LINE
@@ -2052,8 +2076,7 @@ Component.prototype.%s = function(){
     def __genComponentCreateOperationsBody( self ):
         self.componentCreateOperationsBody = ""
         if IS_LINUX and self.isAskPassProgRequired:
-            self.__addAskPassProgResolution()
-        self.__genResources()
+            self.__addAskPassProgResolution()        
         self.__addShortcuts()
         self.__addKillOperations()
         self.__addExecuteOperations() 
@@ -2062,28 +2085,6 @@ Component.prototype.%s = function(){
                 "\n%s\n" % (self.customOperations,) )            
         if self.componentCreateOperationsBody == "" :
             self.componentCreateOperationsBody = None
-
-    def __genResources( self ):
-        if not self.embeddedResources: return
-        TAB = _QtIfwScript.TAB
-        END = _QtIfwScript.END_LINE
-        NEW = _QtIfwScript.NEW_LINE
-        SBLK =_QtIfwScript.START_BLOCK
-        EBLK =_QtIfwScript.END_BLOCK                
-        def gen( script ):
-            if isinstance( script, ExecutableScript ):
-                scriptPath = joinPath( _ENV_TEMP_DIR, 
-                    script.fileName() ).replace("\\","\\\\")
-                varName = script.fileName().replace(".","_dot_")                
-                return ( 'writeScriptFromBase64( "%s", %s )' % 
-                         (scriptPath, varName) + END )
-            return ""        
-        genRes = _QtIfwScript.ifInstalling( isMultiLine=True )                                  
-        for task in self.externalOps: genRes += gen( task.script )
-        genRes += EBLK + 'else ' + SBLK 
-        for task in self.externalOps: genRes += gen( task.uninstScript )
-        genRes += EBLK
-        self.componentCreateOperationsBody += genRes              
         
     # TODO: Clean up this lazy mess!    
     def __addShortcuts( self ):
