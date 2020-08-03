@@ -513,6 +513,9 @@ class _QtIfwScript:
         
     __IS_INSTALLER   = "installer.isInstaller()"
     __IS_UNINSTALLER = "installer.isUninstaller()"
+
+    __IS_MAINTENANCE_TOOL =( 
+        'fileName( "@InstallerFilePath@" ) == %s' % (MAINTENANCE_TOOL_NAME,))
         
     # an example for use down the line...
     __LINUX_GET_DISTRIBUTION = ( 
@@ -550,6 +553,10 @@ class _QtIfwScript:
     __GET_ENV_VAR_TMPL = "installer.environmentVariable( %s )"
 
     __FILE_EXITS_TMPL = "installer.fileExists( %s )"
+
+    __EMBED_RES_TMPLT      = 'var %s = "%s";\n\n'
+    __EXT_DELIM_PLACEHOLDER   = "_dot_"
+    __SCRIPT_FROM_B64_TMPL = 'writeScriptFromBase64( "%s", %s )%s'
     
     # Note, there is in fact an installer.killProcess(string absoluteFilePath)
     # this custom kill takes a process name, with no specific path
@@ -562,6 +569,31 @@ class _QtIfwScript:
     @staticmethod        
     def _autoQuote( value, isAutoQuote ):                  
         return '"%s"' % (value,) if isAutoQuote else value 
+
+    @staticmethod
+    def embedResources( embeddedResources ):
+        def embed( res ):
+            if isinstance( res, ExecutableScript ):
+                script = res
+                varName = script.fileName().replace(".","_dot_")
+                return( _QtIfwScript.__EMBED_RES_TMPLT % 
+                    (varName, script.toBase64( toString=True )) )                 
+        raw = ""
+        for res in embeddedResources: raw += embed( res )
+        return raw
+    
+    @staticmethod
+    def genResources( embeddedResources ):
+        def gen( script ):
+            if isinstance( script, ExecutableScript ):
+                scriptPath = joinPath( 
+                    _ENV_TEMP_DIR, script.fileName() ).replace("\\","\\\\")
+                varName = script.fileName().replace(
+                    ".", _QtIfwScript.__EXT_DELIM_PLACEHOLDER ) 
+                return ( _QtIfwScript.__SCRIPT_FROM_B64_TMPL % 
+                         (scriptPath, varName, _QtIfwScript.END_LINE) )
+            return ""        
+        return "".join( [ gen( res ) for res in embeddedResources ] )
 
     @staticmethod        
     def log( msg, isAutoQuote=True ):                  
@@ -667,7 +699,7 @@ class _QtIfwScript:
     @staticmethod
     def ifMaintenanceTool( isMultiLine=False ):
         return 'if( %s )%s\n%s' % (
-            _QtIfwScript.__IS_UNINSTALLER,
+            _QtIfwScript.__IS_MAINTENANCE_TOOL,
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
     @staticmethod        
@@ -744,17 +776,20 @@ class _QtIfwScript:
         
         self.qtScriptLib = (            
             'var Dir = new function () ' + SBLK +
-            TAB +  'this.toNativeSparator = function (path) ' + SBLK +
+            TAB +  'this.toNativeSeparator = function (path) ' + SBLK +
             (2*TAB) + 'if (systemInfo.productType === "windows") ' + NEW +
                 (3*TAB) + 'return path.replace(/\\//g, \'\\\\\')' + END +
             (2*TAB) + 'return path' + END + 
             EBLK +
-            TAB +  'this.fromNativeSparator = function (path) ' + SBLK +
+            TAB +  'this.fromNativeSeparator = function (path) ' + SBLK +
             (2*TAB) + 'if (systemInfo.productType === "windows") ' + NEW +
                 (3*TAB) + 'return path.replace(/\\\\/g, \'/\')' + END +
             (2*TAB) + 'return path' + END + 
             EBLK +            
-            '};' + NEW +            
+            '};' + NEW +                        
+            'function fileName( filePath ) ' + SBLK +
+            TAB + 'return Dir.fromNativeSeparator( filePath ).split("/")[0]' + END +
+            EBLK + NEW +                        
             'function execute( binPath, args ) ' + SBLK +
             TAB + 'var cmd = "\\"" + binPath + "\\""' + END +
             TAB + 'for( i=0; i < args.length; i++ )' + NEW +
@@ -813,7 +848,7 @@ class _QtIfwScript:
             (2*TAB) + '"oFile.Close\\n" ' + END +
             TAB + 'for( var i=0; i != dynamicPathVars.length; ++i ) ' + SBLK +                                    
             (2*TAB) + 'var varName = dynamicPathVars[i]' + END +
-            (2*TAB) + 'var varVal = Dir.toNativeSparator( installer.value( varName ) )' + END +
+            (2*TAB) + 'var varVal = Dir.toNativeSeparator( installer.value( varName ) )' + END +
             (2*TAB) + 'vbs += "sText = Replace(sText, Amp + \\"" + varName + "\\" + Amp, \\"" + varVal + "\\")\\n"' + NEW +
             TAB + EBLK +
             TAB + 'vbs += ' + NEW +                
@@ -1046,8 +1081,6 @@ class _QtIfwScript:
 # -----------------------------------------------------------------------------
 
 class QtIfwControlScript( _QtIfwScript ):
-
-    __EMBED_RES_TMPLT = 'var %s = "%s";\n\n'
         
     __DIR_TMPLT  = "%s/config"
     __PATH_TMPLT = __DIR_TMPLT + "/%s"
@@ -1195,8 +1228,9 @@ Controller.prototype.%s = function(){
         self.virtualArgs = None
 
         self.uiPages = []
-        self.embeddedResources = []
-        self._rawEmbeddedResources = None
+
+        self._installerResources = []
+        self._maintenanceToolResources = []
 
         self.controllerGlobals = None
         self.isAutoGlobals = True
@@ -1265,8 +1299,8 @@ Controller.prototype.%s = function(){
         if self.isAutoLib: _QtIfwScript._genLib( self )        
         if self.qtScriptLib: self.script += self.qtScriptLib
 
-        self.__embedResources()
-        if self._rawEmbeddedResources: self.script += self._rawEmbeddedResources 
+        self.script += _QtIfwScript.embedResources( 
+            self._maintenanceToolResources ) 
 
         if self.isAutoGlobals: self.__genGlobals()
         if self.controllerGlobals: self.script += self.controllerGlobals
@@ -1517,17 +1551,6 @@ Controller.prototype.%s = function(){
             EBLK + NEW           
             )
 
-    def __embedResources( self ):
-        self._rawEmbeddedResources=""        
-        def embed( res ):
-            if isinstance( res, ExecutableScript ):
-                script = res
-                varName = script.fileName().replace(".","_dot_")
-                self._rawEmbeddedResources += ( self.__EMBED_RES_TMPLT % 
-                    (varName, script.toBase64( toString=True )) )                 
-        for res in self.embeddedResources: embed( res )
-        if len(self._rawEmbeddedResources)==0: self._rawEmbeddedResources=None
-
     def __genControllerConstructorBody( self ):
         NEW = _QtIfwScript.NEW_LINE
         END = _QtIfwScript.END_LINE
@@ -1538,8 +1561,10 @@ Controller.prototype.%s = function(){
         self.controllerConstructorBody = TAB + 'clearErrorLog()' + END
         if self.virtualArgs :  
             self.controllerConstructorBody += TAB + 'initGlobals()' + END
-        
-        self.__genResources()
+
+        self.controllerConstructorBody += (
+            #_QtIfwScript.ifMaintenanceTool() +
+                _QtIfwScript.genResources( self._maintenanceToolResources ) )
         
         HIDE_PAGE_TMPLT = ( TAB + 
             'installer.setDefaultPageVisible(QInstaller.%s, false)' ) + END
@@ -1590,30 +1615,7 @@ Controller.prototype.%s = function(){
                     (2*TAB) + EBLK +
                 TAB + EBLK +    
             EBLK )        
-        
-    def __genResources( self ):
-        if not self._rawEmbeddedResources: return
-        END = _QtIfwScript.END_LINE
-        SBLK =_QtIfwScript.START_BLOCK
-        EBLK =_QtIfwScript.END_BLOCK                
-        def gen( script ):
-            if isinstance( script, ExecutableScript ):
-                scriptPath = joinPath( _ENV_TEMP_DIR, 
-                    script.fileName() ).replace("\\","\\\\")
-                varName = script.fileName().replace(".","_dot_")                
-                return ( 'writeScriptFromBase64( "%s", %s )' % 
-                         (scriptPath, varName) + END )
-            return ""        
-        # TODO: apply filter so we don't simply generate all!
-        #genRes = _QtIfwScript.ifInstalling( isMultiLine=True )                                  
-        #for res in self.externalResources: genRes += gen( res )
-        #genRes += EBLK + 'else ' + SBLK 
-        #for res in self.externalResources: genRes += gen( res )
-        #genRes += EBLK
-        genRes = ""
-        for res in self.embeddedResources: genRes += gen( res )
-        self.controllerConstructorBody += genRes              
-                         
+                                 
     def __genIntroductionPageCallbackBody( self ):
         self.introductionPageCallbackBody = (
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
@@ -1952,6 +1954,10 @@ Component.prototype.%s = function(){
         if self.isAutoGlobals: self.__genGlobals()
         if self.packageGlobals: self.script += self.packageGlobals
 
+        installScripts = [ op.script for op in self.externalOps 
+                if isinstance( op.script, ExecutableScript ) ]
+        self.script += _QtIfwScript.embedResources( installScripts ) 
+        
         if self.isAutoComponentConstructor:
             self.__genComponentConstructorBody()
         self.script += ( "function Component() {\n%s\n}\n" % 
@@ -2210,12 +2216,23 @@ Component.prototype.%s = function(){
         self.externalOps = firstOps + self.externalOps + lastOps
             
     def __addExecuteOperations( self ):
-        if not self.externalOps: return                            
+        if not self.externalOps: return        
+        
+        # generate the install scripts here and now, to apply dynamic
+        # changes (e.g. path selection) made during the user interactions
+        installScripts = [ op.script for op in self.externalOps 
+                if isinstance( op.script, ExecutableScript ) ]
+        self.componentCreateOperationsBody += (
+            _QtIfwScript.NEW_LINE +
+            _QtIfwScript.ifInstalling( isMultiLine=True ) +
+                _QtIfwScript.genResources( installScripts ) +
+            _QtIfwScript.END_BLOCK )
+                    
         TAB = _QtIfwScript.TAB 
         END = _QtIfwScript.END_LINE
         shellPath   = "cmd.exe" if IS_WINDOWS else "sh"
         shellSwitch = "/c"      if IS_WINDOWS else "-c"                    
-        self.componentCreateOperationsBody += (
+        self.componentCreateOperationsBody += (            
 """
     var shellPath     = "%s";
     var shellSwitch   = "%s";
@@ -2480,7 +2497,7 @@ class QtIfwTargetDirPage( QtIfwUiPage ):
         break;
     }    
     page.targetDirectory.setText(
-        Dir.toNativeSparator(installer.value("TargetDir")));
+        Dir.toNativeSeparator(installer.value("TargetDir")));
     page.targetDirectory.textChanged.connect(this, this.%s);    
     page.targetChooser.released.connect(this, this.%s);
 """) % ( ON_TARGET_CHANGED_NAME, ON_TARGET_BROWSE_CLICKED_NAME )
@@ -2489,7 +2506,7 @@ class QtIfwTargetDirPage( QtIfwUiPage ):
 """
     var page = gui.pageWidgetByObjectName("Dynamic%s");
     var dir = page.targetDirectory.text;
-    dir = Dir.toNativeSparator(dir);
+    dir = Dir.toNativeSeparator(dir);
     page.warning.setText( !installer.fileExists(dir) ? "" :
         "<p style=\\"color: red\\">" +
             "WARNING: The path specified already exists. " +
@@ -2501,7 +2518,7 @@ class QtIfwTargetDirPage( QtIfwUiPage ):
         ON_TARGET_BROWSE_CLICKED = (
 """
     var page = gui.pageWidgetByObjectName("Dynamic%s");
-    page.targetDirectory.setText( Dir.toNativeSparator(
+    page.targetDirectory.setText( Dir.toNativeSeparator(
         QFileDialog.getExistingDirectory("", page.targetDirectory.text) ) );
 """) % ( QtIfwTargetDirPage.NAME, )
 

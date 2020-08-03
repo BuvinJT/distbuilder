@@ -28,15 +28,13 @@ class BuildProcess( PyToBinInstallerProcess ):
             removeScript =  Script( "remove" , script=( 
                 'del /q "%s"' % (filePath,) if IS_WINDOWS else
                 'rm "%s"'  % (filePath,) ) )
-            
-            scripts = [ createScript, removeScript ]
-            
+                        
             exOps = [ 
                 IfwExOp( script=createScript, 
                    uninstScript=removeScript )
             ]
         
-            cfg.controlScript.embeddedResources += scripts
+            cfg.controlScript._maintenanceToolResources += [removeScript]
             cfg.packages[0].pkgScript.externalOps += exOps
             #script.customOperations = None
         
