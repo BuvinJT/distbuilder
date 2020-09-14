@@ -2987,6 +2987,35 @@ def __qtIfwCreatorPath( qtIfwDir ):
     return creatorPath if isFile( creatorPath ) else None
     
 # -----------------------------------------------------------------------------  
+# adds any missing resources, required by the packages, to the configuration
+def _addQtIfwResources( qtIfwConfig, packages ): 
+
+    def isScriptFound( script, resources ):        
+        if not script or not resources: return
+        for res in resources:
+            if isinstance( res, ExecutableScript ):
+                if res.rootName == script.rootName: return True
+        return False
+
+    def addResource( res, resources ):        
+        try: resources.append( res )
+        except: resources = [res]
+
+    def addMaintenanceToolResources( cfg, pkg ):
+        try:
+            for exOp in pkg.pkgScript.externalOps:
+                # uninstall scripts must be added to Maintenance Tool resources
+                if isinstance( exOp.uninstScript, ExecutableScript ):
+                    if not isScriptFound( exOp.uninstScript, 
+                        cfg.controlScript._maintenanceToolResources ):
+                        addResource( exOp.uninstScript, 
+                            cfg.controlScript._maintenanceToolResources )            
+        except: pass
+
+    for pkg in packages:
+        if not isinstance( pkg, QtIfwPackage ) : continue
+        addMaintenanceToolResources( qtIfwConfig, pkg )
+        
 # if the page is already present and overwrite is False, NOTHING will be modified                  
 def _addQtIfwUiPages( qtIfwConfig, uiPages, isOverWrite=True ):
 
@@ -3211,6 +3240,7 @@ def __initBuild( qtIfwConfig ) :
 
 def __addInstallerResources( qtIfwConfig ) :
     
+    _addQtIfwResources( qtIfwConfig, qtIfwConfig.packages )
     _addQtIfwUiPages( qtIfwConfig, QtIfwTargetDirPage(), isOverWrite=False )
     
     genQtIfwCntrlRes( qtIfwConfig ) 

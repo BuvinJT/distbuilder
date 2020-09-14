@@ -1,5 +1,5 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
-        QtIfwExternalOp as IfwExOp, ExecutableScript as Script, \
+        QtIfwExternalOp as IfwExOp, ExecutableScript, \
         joinPath, QT_IFW_HOME_DIR, IS_WINDOWS
 
 f = configFactory  = ConfigFactory()
@@ -18,25 +18,19 @@ class BuildProcess( PyToBinInstallerProcess ):
     def onQtIfwConfig( self, cfg ):    
 
         def addExternalOperations( cfg ):        
-
-            fileName = "distbuilder-ops-test.txt"
-            filePath = joinPath( QT_IFW_HOME_DIR, fileName ) 
-
-            createTestFileScript = Script( "createTestFile",  script=(
+            filePath = joinPath( QT_IFW_HOME_DIR, "distbuilder-ops-test.txt" ) 
+            createFileScript = ExecutableScript( "createFile", script=(
                 'echo. > "%s"' % (filePath,) if IS_WINDOWS else
                 'touch "%s"'  % (filePath,) ) )
-            removeTestFileScript =  Script( "removeTestFile" , script=( 
+            removeFileScript = ExecutableScript( "removeFile" , script=( 
                 'del /q "%s"' % (filePath,) if IS_WINDOWS else
-                'rm "%s"'  % (filePath,) ) )
-                        
-            exOps = [ 
-                IfwExOp( script=createTestFileScript, 
-                   uninstScript=removeTestFileScript )
+                'rm "%s"'  % (filePath,) ) )                        
+            cfg.packages[0].pkgScript.externalOps += [ 
+                IfwExOp( script=createFileScript, 
+                   uninstScript=removeFileScript )
             ]
-        
-            cfg.controlScript._maintenanceToolResources += [removeTestFileScript]
-            cfg.packages[0].pkgScript.externalOps += exOps
-            #script.customOperations = None
+            
+            #cfg.packages[0].pkgScript.customOperations = None
         
         addExternalOperations( cfg )
         

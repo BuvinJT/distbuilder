@@ -22,6 +22,7 @@ from distbuilder.opy_library import \
 from distbuilder.qt_installer import \
       _stageInstallerPackages \
     , _buildInstaller \
+    , _addQtIfwResources \
     , _addQtIfwUiPages \
     , joinPathQtIfw \
     , QtIfwConfig \
@@ -138,6 +139,7 @@ class ConfigFactory:
                             configXml=self.qtIfwConfigXml(), 
                             controlScript=self.qtIfwControlScript(),
                             setupExeName=self.setupName ) 
+        _addQtIfwResources( cfg, self.ifwPackages )        
         _addQtIfwUiPages( cfg, self.ifwUiPages )
         return cfg 
 
