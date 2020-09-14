@@ -22,19 +22,19 @@ class BuildProcess( PyToBinInstallerProcess ):
             fileName = "distbuilder-ops-test.txt"
             filePath = joinPath( QT_IFW_HOME_DIR, fileName ) 
 
-            createScript = Script( "create",  script=(
-                'echo .> "%s"' % (filePath,) if IS_WINDOWS else
+            createTestFileScript = Script( "createTestFile",  script=(
+                'echo. > "%s"' % (filePath,) if IS_WINDOWS else
                 'touch "%s"'  % (filePath,) ) )
-            removeScript =  Script( "remove" , script=( 
+            removeTestFileScript =  Script( "removeTestFile" , script=( 
                 'del /q "%s"' % (filePath,) if IS_WINDOWS else
                 'rm "%s"'  % (filePath,) ) )
                         
             exOps = [ 
-                IfwExOp( script=createScript, 
-                   uninstScript=removeScript )
+                IfwExOp( script=createTestFileScript, 
+                   uninstScript=removeTestFileScript )
             ]
         
-            cfg.controlScript._maintenanceToolResources += [removeScript]
+            cfg.controlScript._maintenanceToolResources += [removeTestFileScript]
             cfg.packages[0].pkgScript.externalOps += exOps
             #script.customOperations = None
         
