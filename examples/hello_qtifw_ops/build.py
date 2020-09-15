@@ -17,6 +17,9 @@ f.setupName        = "HelloIfwOpsSetup"
 class BuildProcess( PyToBinInstallerProcess ):
     def onQtIfwConfig( self, cfg ):    
 
+        #def addCustomOperations( cfg ):
+        #    cfg.packages[0].pkgScript.customOperations = None
+            
         def addExternalOperations( cfg ):        
             filePath = joinPath( QT_IFW_HOME_DIR, "distbuilder-ops-test.txt" ) 
             createFileScript = ExecutableScript( "createFile", script=(
@@ -29,11 +32,9 @@ class BuildProcess( PyToBinInstallerProcess ):
                 IfwExOp( script=createFileScript, 
                    uninstScript=removeFileScript )
             ]
-            
-            #cfg.packages[0].pkgScript.customOperations = None
         
+        #addCustomOperations( cfg )
         addExternalOperations( cfg )
-        
     
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True

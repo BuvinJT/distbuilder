@@ -75,8 +75,9 @@ QT_IFW_URL             = "@Url@"
 QT_IFW_APPS_X86_DIR  = "@ApplicationsDirX86@"
 QT_IFW_APPS_X64_DIR  = "@ApplicationsDirX64@"
 
-QT_IFW_INSTALLER_DIR = "@InstallerDirPath@"
-QT_IFW_INTALLER_PATH = "@InstallerFilePath@"   
+QT_IFW_INSTALLER_TEMP_DIR = "@InstallerTempDir@"  # CUSTOM!
+QT_IFW_INSTALLER_DIR      = "@InstallerDirPath@"
+QT_IFW_INTALLER_PATH      = "@InstallerFilePath@"   
 
 QT_IFW_INTRO_PAGE      = "Introduction"
 QT_IFW_TARGET_DIR_PAGE = "TargetDirectory"
@@ -102,9 +103,11 @@ _DEFAULT_PAGES = [
 
 _PAGE_NAME_PLACHOLDER = "[PAGE_NAME]"
 
-_ENV_TEMP_DIR = "%temp%" if IS_WINDOWS else "/tmp"
+_ENV_TEMP_DIR     = "%temp%" if IS_WINDOWS else "/tmp"
+_QT_IFW_TEMP_NAME = "__distbuilder-qtifw"
+_QT_IFW_TEMP_DIR_PREFIX  = "%s/%s-" % (_ENV_TEMP_DIR, _QT_IFW_TEMP_NAME)
 
-QT_IFW_DYNAMIC_PATH_VARS = [ 
+QT_IFW_DYNAMIC_PATH_VARS = [
       "RootDir" 
     , "HomeDir"  
     , "DesktopDir" 
@@ -114,6 +117,7 @@ QT_IFW_DYNAMIC_PATH_VARS = [
     , "AllUsersStartMenuProgramsPath" 
     , "ApplicationsDirX86" 
     , "ApplicationsDirX64" 
+    , "InstallerTempDir"
     , "InstallerDirPath" 
     , "InstallerFilePath" 
 ]
@@ -586,12 +590,11 @@ class _QtIfwScript:
     def genResources( embeddedResources ):
         def gen( script ):
             if isinstance( script, ExecutableScript ):
-                scriptPath = joinPath( 
-                    _ENV_TEMP_DIR, script.fileName() ).replace("\\","\\\\")
-                varName = script.fileName().replace(
+                scriptName = script.fileName()
+                varName = scriptName.replace(
                     ".", _QtIfwScript.__EXT_DELIM_PLACEHOLDER ) 
                 return ( _QtIfwScript.__SCRIPT_FROM_B64_TMPL % 
-                         (scriptPath, varName, _QtIfwScript.END_LINE) )
+                         (scriptName, varName, _QtIfwScript.END_LINE) )
             return ""        
         return "".join( [ gen( res ) for res in embeddedResources ] )
 
@@ -774,19 +777,31 @@ class _QtIfwScript:
         pathVarsList = ",".join([ '"%s"' % (v,) 
                                   for v in QT_IFW_DYNAMIC_PATH_VARS ])
         
-        self.qtScriptLib = (            
+        self.qtScriptLib = (                     
             'var Dir = new function () ' + SBLK +
+            TAB +  'this.temp = function () ' + SBLK +
+            (2*TAB) + 'var dirPath = installer.value( "InstallerTempDir", "" )' + END +
+            (2*TAB) + 'if( dirPath === "" ) ' + SBLK +            
+                (3*TAB) + 'var i=0' + END +
+                (3*TAB) + 'while( dirPath === "" || ' + 
+                    _QtIfwScript.fileExists( 'dirPath', isAutoQuote=False ) + ' ) ' + NEW +
+                    (4*TAB) + ('dirPath = resolveOsPath( "%s" + i++ )' % (_QT_IFW_TEMP_DIR_PREFIX,)) + END +
+                (3*TAB) + 'installer.setValue( "InstallerTempDir", dirPath )' + END +
+                (3*TAB) + _QtIfwScript.log( '"InstallerTempDir: " + dirPath', isAutoQuote=False ) +                 
+            (2*TAB) + EBLK + 
+            (2*TAB) + 'return dirPath' + END + 
+            EBLK +
             TAB +  'this.toNativeSeparator = function (path) ' + SBLK +
             (2*TAB) + 'if (systemInfo.productType === "windows") ' + NEW +
                 (3*TAB) + 'return path.replace(/\\//g, \'\\\\\')' + END +
             (2*TAB) + 'return path' + END + 
-            EBLK +
+            EBLK +            
             TAB +  'this.fromNativeSeparator = function (path) ' + SBLK +
             (2*TAB) + 'if (systemInfo.productType === "windows") ' + NEW +
                 (3*TAB) + 'return path.replace(/\\\\/g, \'/\')' + END +
             (2*TAB) + 'return path' + END + 
             EBLK +            
-            '};' + NEW +                        
+            '};' + NEW +                                    
             'function fileName( filePath ) ' + SBLK +
             TAB + 'return Dir.fromNativeSeparator( filePath ).split("/")[0]' + END +
             EBLK + NEW +                        
@@ -796,16 +811,89 @@ class _QtIfwScript:
             (2*TAB) + 'cmd += (" " + args[i])' + END +
             TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
             TAB + 'return installer.execute( binPath, args )' + END +
-            EBLK + NEW +            
-            'function writeScriptFromBase64( path, b64 ) ' + SBLK +                  
-            TAB + 'path = writeFileFromBase64( path, b64 )' + END +
+            EBLK + NEW +                        
+            'function resolveOsPath( path ) ' + SBLK +      
+                TAB + 'path = Dir.toNativeSeparator( path )' + END +            
+                TAB + 'var echoCmd = "' +
+                    ('echo off\\n'                     
+                     'echo " + path + "\\n' 
+                     if IS_WINDOWS else
+                     'echo \\"" + path + "\\"' ) + '"' + END +      
+                TAB + 'var result = installer.execute( ' +
+                    ('"cmd.exe", ["/k"], echoCmd' if IS_WINDOWS else
+                     '"sh", ["-c", echoCmd]' ) + ' )' + END +                
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("resolveOsPath failed.")' + END +
+                TAB + 'try' + SBLK +
+                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
+                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
+                EBLK +
+                TAB + 'catch(e){ path = "";' + EBLK +
+                TAB + 'if( path=="" ) ' + NEW +
+                (2*TAB) + 'throw new Error("resolveOsPath failed. (file does not exists)")' + END +
+                TAB + _QtIfwScript.log( '"resolved os path: " + path', isAutoQuote=False ) + 
+                TAB + 'return path' + END +                                                                                                                          
+            EBLK + NEW +                        
+            'function makeDir( path ) ' + SBLK +      
+                TAB + 'path = Dir.toNativeSeparator( path )' + END +            
+                TAB + 'var mkDirCmd = "' +
+                    ('echo off\\n'                     
+                     'md \\"" + path + "\\"\\n'
+                     'echo " + path + "\\n' 
+                     if IS_WINDOWS else
+                     'mkdir -p \\"" + path + "\\"; '
+                     'echo \\"" + path + "\\"' ) + '"' + END +      
+                TAB + 'var result = installer.execute( ' +
+                    ('"cmd.exe", ["/k"], mkDirCmd' if IS_WINDOWS else
+                     '"sh", ["-c", mkDirCmd]' ) + ' )' + END +                
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("makeDir failed.")' + END +
+                TAB + 'try' + SBLK +
+                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
+                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
+                EBLK +
+                TAB + 'catch(e){ path = "";' + EBLK +
+                TAB + 'if( path=="" || !' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                (2*TAB) + 'throw new Error("makeDir failed. (file does not exists)")' + END +
+                TAB + _QtIfwScript.log( '"makeDir: " + path', isAutoQuote=False ) + 
+                TAB + 'return path' + END +                                                                                                               
+            EBLK + NEW +                
+            'function removeDir( path ) ' + SBLK +      
+                TAB + 'path = Dir.toNativeSeparator( path )' + END +           
+                TAB + 'var mkDirCmd = "' +
+                    ('echo off\\n'                     
+                     'rd /s /q \\"" + path + "\\"\\n'
+                     'echo " + path + "\\n' 
+                     if IS_WINDOWS else
+                     'rm -R \\"" + path + "\\"; '
+                     'echo \\"" + path + "\\"' ) + '"' + END +      
+                TAB + 'var result = installer.execute( ' +
+                    ('"cmd.exe", ["/k"], mkDirCmd' if IS_WINDOWS else
+                     '"sh", ["-c", mkDirCmd]' ) + ' )' + END +                
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("removeDir failed.")' + END +
+                TAB + 'try' + SBLK +
+                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
+                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
+                EBLK +
+                TAB + 'catch(e){ path = "";' + EBLK +
+                TAB + 'if( path=="" || ' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                (2*TAB) + 'throw new Error("removeDir failed. (file does not exists)")' + END +
+                TAB + _QtIfwScript.log( '"removeDir: " + path', isAutoQuote=False ) + 
+                TAB + 'return path' + END +                                                                                                               
+            EBLK + NEW +                            
+            'function writeScriptFromBase64( fileName, b64 ) ' + SBLK +                  
+            TAB + 'var path = writeFileFromBase64( fileName, b64 )' + END +
             TAB + 'replaceQtIfwVarsInFile( path )' +  END +            
             EBLK + NEW +                                                                         
-            'function writeFileFromBase64( path, b64 ) ' + SBLK +                  
+            'function writeFileFromBase64( fileName, b64 ) ' + SBLK +      
+                TAB + 'var path = Dir.toNativeSeparator( Dir.temp() + "/" + fileName )' + END +            
                 (TAB + 'b64 = "-----BEGIN CERTIFICATE-----\\n" + '
                        'b64 + "\\n-----END CERTIFICATE-----\\n"' + END 
                 if IS_WINDOWS else "" ) +
-                TAB + 'var tempPath = "%s\\\\__distb-install-qt-ifw.b64"' % ( _ENV_TEMP_DIR, ) + END +
+                TAB + 'var tempPath = Dir.temp() + ' + 
+                    (('"\\\\%s.b64"' if IS_WINDOWS else '"/%s.b64"') % 
+                     (_QT_IFW_TEMP_NAME,)) + END +
                 TAB + 'writeFile( tempPath, b64 )' + END +                                 
                 TAB + 'var decodeCmd = "' +
                     ('echo off\\n'                     
@@ -819,7 +907,7 @@ class _QtIfwScript:
                     ('"cmd.exe", ["/k"], decodeCmd' if IS_WINDOWS else
                      '"sh", ["-c", decodeCmd]' ) + ' )' + END +                
                 TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("Write error log failed.")' + END +
+                (2*TAB) + 'throw new Error("writeFileFromBase64 failed.")' + END +
                 TAB + 'try' + SBLK +
                 TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
                 TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
@@ -882,6 +970,7 @@ class _QtIfwScript:
                 TAB + 'return " " + escaped' + END +                                                                                          
             EBLK + NEW +      
             'function writeFile( path, content ) ' + SBLK +            
+                TAB + 'path = Dir.toNativeSeparator( path )' + END +           
                 TAB + 'var lines = content.split(\"\\n\")' + END +                                             
                 TAB + 'var redirect = " >"' + END +      
                 TAB + 'var writeCmd = ""' + END +
@@ -909,6 +998,7 @@ class _QtIfwScript:
                 TAB + 'return path' + END +
             EBLK + NEW +                   
             'function deleteFile( path ) ' + SBLK +
+                TAB + 'path = Dir.toNativeSeparator( path )' + END +           
                 TAB + 'var deleteCmd = "' +                    
                     ('echo off && del \\"" + path + "\\" /q\\necho " + path + "\\n"' 
                      if IS_WINDOWS else
@@ -1558,7 +1648,10 @@ Controller.prototype.%s = function(){
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK        
                               
-        self.controllerConstructorBody = TAB + 'clearErrorLog()' + END
+        self.controllerConstructorBody = (
+            TAB + 'installer.setValue( "InstallerTempDir", "" )' + END + 
+            TAB + 'makeDir( Dir.temp() )' + END + 
+            TAB + 'clearErrorLog()' + END )
         if self.virtualArgs :  
             self.controllerConstructorBody += TAB + 'initGlobals()' + END
 
@@ -2245,7 +2338,8 @@ Component.prototype.%s = function(){
 """) % ( shellPath, shellSwitch )                    
         for task in self.externalOps :   
             setArgs = ""
-            exePath = ( joinPathQtIfw( _ENV_TEMP_DIR, task.script.fileName() )
+            exePath = ( joinPathQtIfw( QT_IFW_INSTALLER_TEMP_DIR, 
+                                       task.script.fileName() )
                 if task.script 
                 else task.exePath if task.exePath 
                 else None )      
@@ -2256,7 +2350,7 @@ Component.prototype.%s = function(){
                 setArgs +=( '%sretCodes = "{%s}"%s' % 
                     (TAB,",".join([str(c) for c in task.successRetCodes]),END) )
             
-            uninstExePath = ( joinPathQtIfw( _ENV_TEMP_DIR, 
+            uninstExePath = ( joinPathQtIfw( QT_IFW_INSTALLER_TEMP_DIR, 
                                              task.uninstScript.fileName() )
                 if task.uninstScript 
                 else task.uninstExePath if task.uninstExePath 

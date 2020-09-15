@@ -323,6 +323,7 @@ and attributes for many higher level functions and objects in this library.
     QT_IFW_USER_STARTMENU_DIR
     QT_IFW_ALLUSERS_STARTMENU_DIR
     
+    QT_IFW_INSTALLER_TEMP_DIR
     QT_IFW_INSTALLER_DIR 
     QT_IFW_INTALLER_PATH
      
