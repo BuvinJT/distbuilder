@@ -556,7 +556,13 @@ class _QtIfwScript:
 
     __GET_ENV_VAR_TMPL = "installer.environmentVariable( %s )"
 
-    __FILE_EXITS_TMPL = "installer.fileExists( %s )"
+    __PATH_EXISTS_TMPL = "installer.fileExists( %s )"
+
+    __MAKE_DIR_TMPL   = "makeDir( resolveQtIfwPath( %s ) );"
+    __REMOVE_DIR_TMPL = "removeDir( resolveQtIfwPath( %s ) );"
+    
+    __WRITE_FILE_TMPL  = "writeFile( resolveQtIfwPath( %s ), %s );"
+    __DELETE_FILE_TMPL = "deleteFile( resolveQtIfwPath( %s ), %s );"
 
     __EMBED_RES_TMPLT      = 'var %s = "%s";\n\n'
     __EXT_DELIM_PLACEHOLDER   = "_dot_"
@@ -746,16 +752,37 @@ class _QtIfwScript:
             ( resultVar, onYes, onNo, onCancel ) )
 
     @staticmethod        
-    def fileExists( path, isAutoQuote=True ):                  
-        return _QtIfwScript.__FILE_EXITS_TMPL % (
+    def pathExists( path, isAutoQuote=True ):                  
+        return _QtIfwScript.__PATH_EXISTS_TMPL % (
             _QtIfwScript._autoQuote( path, isAutoQuote ),) 
 
     @staticmethod        
-    def ifFileExists( path, isAutoQuote=True, isMultiLine=False ):   
+    def ifPathExists( path, isAutoQuote=True, isMultiLine=False ):   
         return 'if( %s )%s\n%s' % (
-            _QtIfwScript.fileExists( path, isAutoQuote ),
+            _QtIfwScript.pathExists( path, isAutoQuote ),
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
-        
+
+    @staticmethod        
+    def makeDir( path, isAutoQuote=True ):                  
+        return _QtIfwScript.__MAKE_DIR_TMPL %  (
+            _QtIfwScript._autoQuote( path, isAutoQuote ),) 
+
+    @staticmethod        
+    def removeDir( path, isAutoQuote=True ):                  
+        return _QtIfwScript.__REMOVE_DIR_TMPL % (
+            _QtIfwScript._autoQuote( path, isAutoQuote ),) 
+
+    @staticmethod        
+    def writeFile( path, content, isAutoQuote=True ):                  
+        return _QtIfwScript.__WRITE_FILE_TMPL % (
+            _QtIfwScript._autoQuote( path, isAutoQuote ),
+            _QtIfwScript._autoQuote( content, isAutoQuote )) 
+
+    @staticmethod        
+    def deleteFile( path, isAutoQuote=True ):                  
+        return _QtIfwScript.__DELETE_FILE_TMPL % (
+            _QtIfwScript._autoQuote( path, isAutoQuote ),) 
+            
     def __init__( self, fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None, 
                   virtualArgs={}, isAutoLib=True ) :
@@ -776,16 +803,19 @@ class _QtIfwScript:
         
         pathVarsList = ",".join([ '"%s"' % (v,) 
                                   for v in QT_IFW_DYNAMIC_PATH_VARS ])
-        
+
         self.qtScriptLib = (                     
+            NEW +
+            'var dynamicPathVars = [ ' + pathVarsList + ' ]' + END +
+            NEW +                                                         
             'var Dir = new function () ' + SBLK +
             TAB +  'this.temp = function () ' + SBLK +
             (2*TAB) + 'var dirPath = installer.value( "InstallerTempDir", "" )' + END +
             (2*TAB) + 'if( dirPath === "" ) ' + SBLK +            
                 (3*TAB) + 'var i=0' + END +
                 (3*TAB) + 'while( dirPath === "" || ' + 
-                    _QtIfwScript.fileExists( 'dirPath', isAutoQuote=False ) + ' ) ' + NEW +
-                    (4*TAB) + ('dirPath = resolveOsPath( "%s" + i++ )' % (_QT_IFW_TEMP_DIR_PREFIX,)) + END +
+                    _QtIfwScript.pathExists( 'dirPath', isAutoQuote=False ) + ' ) ' + NEW +
+                    (4*TAB) + ('dirPath = resolveNativePath( "%s" + i++ )' % (_QT_IFW_TEMP_DIR_PREFIX,)) + END +
                 (3*TAB) + 'installer.setValue( "InstallerTempDir", dirPath )' + END +
                 (3*TAB) + _QtIfwScript.log( '"InstallerTempDir: " + dirPath', isAutoQuote=False ) +                 
             (2*TAB) + EBLK + 
@@ -811,8 +841,17 @@ class _QtIfwScript:
             (2*TAB) + 'cmd += (" " + args[i])' + END +
             TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
             TAB + 'return installer.execute( binPath, args )' + END +
+            EBLK + NEW +
+            'function resolveQtIfwPath( path ) ' + SBLK +
+            TAB + 'path = Dir.fromNativeSeparator( path )' + END +
+            TAB + 'for( var i=0; i != dynamicPathVars.length; ++i ) ' + SBLK +                                    
+            (2*TAB) + 'var varName = dynamicPathVars[i]' + END +
+            (2*TAB) + 'var varVal = installer.value( varName )' + END +
+            (2*TAB) + 'path = path.split( "@" + varName + "@" ).join( varVal )' + END +
+            (2*TAB) + EBLK +             
+            TAB + 'return path' + END +                                                                                                                          
             EBLK + NEW +                        
-            'function resolveOsPath( path ) ' + SBLK +      
+            'function resolveNativePath( path ) ' + SBLK +      
                 TAB + 'path = Dir.toNativeSeparator( path )' + END +            
                 TAB + 'var echoCmd = "' +
                     ('echo off\\n'                     
@@ -823,14 +862,14 @@ class _QtIfwScript:
                     ('"cmd.exe", ["/k"], echoCmd' if IS_WINDOWS else
                      '"sh", ["-c", echoCmd]' ) + ' )' + END +                
                 TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("resolveOsPath failed.")' + END +
+                (2*TAB) + 'throw new Error("resolveNativePath failed.")' + END +
                 TAB + 'try' + SBLK +
                 TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
                 TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
                 EBLK +
                 TAB + 'catch(e){ path = "";' + EBLK +
                 TAB + 'if( path=="" ) ' + NEW +
-                (2*TAB) + 'throw new Error("resolveOsPath failed. (file does not exists)")' + END +
+                (2*TAB) + 'throw new Error("resolveNativePath failed.")' + END +
                 TAB + _QtIfwScript.log( '"resolved os path: " + path', isAutoQuote=False ) + 
                 TAB + 'return path' + END +                                                                                                                          
             EBLK + NEW +                        
@@ -853,14 +892,14 @@ class _QtIfwScript:
                 TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
                 EBLK +
                 TAB + 'catch(e){ path = "";' + EBLK +
-                TAB + 'if( path=="" || !' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
                 (2*TAB) + 'throw new Error("makeDir failed. (file does not exists)")' + END +
                 TAB + _QtIfwScript.log( '"makeDir: " + path', isAutoQuote=False ) + 
                 TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                
             'function removeDir( path ) ' + SBLK +      
                 TAB + 'path = Dir.toNativeSeparator( path )' + END +           
-                TAB + 'var mkDirCmd = "' +
+                TAB + 'var rmDirCmd = "' +
                     ('echo off\\n'                     
                      'rd /s /q \\"" + path + "\\"\\n'
                      'echo " + path + "\\n' 
@@ -868,8 +907,8 @@ class _QtIfwScript:
                      'rm -R \\"" + path + "\\"; '
                      'echo \\"" + path + "\\"' ) + '"' + END +      
                 TAB + 'var result = installer.execute( ' +
-                    ('"cmd.exe", ["/k"], mkDirCmd' if IS_WINDOWS else
-                     '"sh", ["-c", mkDirCmd]' ) + ' )' + END +                
+                    ('"cmd.exe", ["/k"], rmDirCmd' if IS_WINDOWS else
+                     '"sh", ["-c", rmDirCmd]' ) + ' )' + END +                
                 TAB + 'if( result[1] != 0 ) ' + NEW +
                 (2*TAB) + 'throw new Error("removeDir failed.")' + END +
                 TAB + 'try' + SBLK +
@@ -877,7 +916,7 @@ class _QtIfwScript:
                 TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
                 EBLK +
                 TAB + 'catch(e){ path = "";' + EBLK +
-                TAB + 'if( path=="" || ' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                TAB + 'if( path=="" || ' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
                 (2*TAB) + 'throw new Error("removeDir failed. (file does not exists)")' + END +
                 TAB + _QtIfwScript.log( '"removeDir: " + path', isAutoQuote=False ) + 
                 TAB + 'return path' + END +                                                                                                               
@@ -913,14 +952,12 @@ class _QtIfwScript:
                 TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
                 EBLK +
                 TAB + 'catch(e){ path = "";' + EBLK +
-                TAB + 'if( path=="" || !' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
                 (2*TAB) + 'throw new Error("writeFileFromBase64 failed. (file does not exists)")' + END +
                 TAB + _QtIfwScript.log( '"Wrote file from base64: " + path', isAutoQuote=False ) + 
+                TAB + 'deleteFile( tempPath )' + END +
                 TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                
-            NEW +
-            'var dynamicPathVars = [ ' + pathVarsList + ' ]' + END +
-            NEW +                                             
             'function replaceQtIfwVarsInFile( path ) ' + SBLK +          
             (
             TAB + 'var vbs = ' + NEW +
@@ -992,7 +1029,7 @@ class _QtIfwScript:
                 TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
                 TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
                 TAB + 'catch(e){ path = "";' + EBLK +
-                TAB + 'if( path=="" || !' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
                 (2*TAB) + 'throw new Error("Write file failed. (file does not exists)")' + END +
                 TAB + _QtIfwScript.log( '"Wrote file to: " + path', isAutoQuote=False ) +
                 TAB + 'return path' + END +
@@ -1012,7 +1049,7 @@ class _QtIfwScript:
                 TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
                 TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
                 TAB + 'catch(e){ path = "";' + EBLK +                
-                TAB + 'if( path=="" || ' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                TAB + 'if( path=="" || ' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
                 (2*TAB) + 'throw new Error("Delete file failed. (file exists)")' + END +
                 TAB + _QtIfwScript.log( '"Deleted file: " + path', isAutoQuote=False ) + 
                 TAB + 'return path' + END +                                                                                                                                       
@@ -1034,7 +1071,7 @@ class _QtIfwScript:
                 TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
                 TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
                 TAB + 'catch(e){ path = "";' + EBLK +                
-                TAB + 'if( path=="" || ' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                TAB + 'if( path=="" || ' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
                 (2*TAB) + 'throw new Error("Clear error log failed. (file exists)")' + END +
                 TAB + _QtIfwScript.log( '"Cleared error log: " + path', isAutoQuote=False ) +                                                                                                                                        
             EBLK + NEW +                           
@@ -1058,7 +1095,7 @@ class _QtIfwScript:
                 TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
                 TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
                 TAB + 'catch(e){ path = "";' + EBLK +
-                TAB + 'if( path=="" || !' + _QtIfwScript.fileExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+                TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
                 (2*TAB) + 'throw new Error("Write error log failed. (file does not exists)")' + END +
                 TAB + _QtIfwScript.log( '"Wrote error log to: " + path', isAutoQuote=False ) +                                                                                                
             EBLK + NEW +                                                 
@@ -1242,6 +1279,10 @@ Controller.prototype.%s = function(){
     RUN_PROGRAM_CHECKBOX     = "RunItCheckBox"
                                     
     @staticmethod        
+    def _purgeTempFiles():                  
+        return _QtIfwScript.removeDir( QT_IFW_INSTALLER_TEMP_DIR ) 
+                                            
+    @staticmethod        
     def currentPageWidget():                
         return QtIfwControlScript.__CURRENT_PAGE_WIDGET            
 
@@ -1364,19 +1405,39 @@ Controller.prototype.%s = function(){
         self.isRunProgVisible = True
 
         self.__widgetEventSlots = {}
-        
+
+        self.__standardEventSlots = {}        
+        self.registerStandardEventHandler( 
+            'installationFinished', 'onInstallFinished',
+            QtIfwControlScript._purgeTempFiles() );                                                                 
+        self.registerStandardEventHandler( 
+            'uninstallationFinished', 'onUninstallFinished',
+            QtIfwControlScript._purgeTempFiles() );                                                                 
+        self.registerStandardEventHandler( 
+            'updateFinished', 'onUpdateFinished',
+            QtIfwControlScript._purgeTempFiles() );                                                                 
+        self.registerStandardEventHandler( 
+            'installationInterrupted', 'onInstallationInterrupted',
+            QtIfwControlScript._purgeTempFiles() );                                                                 
+                
         self.__autoPilotEventSlots = {}
         self.registerAutoPilotEventHandler( 
-            'installationFinished', 'onInstallFinished', 
+            'installationFinished', 'onAutoInstallFinished',
             QtIfwControlScript.clickButton( QtIfwControlScript.NEXT_BUTTON ) );                                                                 
         self.registerAutoPilotEventHandler( 
-            'uninstallationFinished', 'onUninstallFinished',
+            'uninstallationFinished', 'onAutoUninstallFinished',
+            QtIfwControlScript.clickButton( QtIfwControlScript.NEXT_BUTTON ) );                                                                 
+        self.registerAutoPilotEventHandler( 
+            'updateFinished', 'onAutoUpdateFinished',
             QtIfwControlScript.clickButton( QtIfwControlScript.NEXT_BUTTON ) );                                                                 
         
+    def registerStandardEventHandler( self, signalName, slotName, slotBody ) :
+        signalKey = "%s.%s" % (_QtIfwScript._INSTALLER_OBJ, signalName)
+        self.__standardEventSlots[ signalKey ] = ( slotName, slotBody )
+
     def registerAutoPilotEventHandler( self, signalName, slotName, slotBody ) :
-        self.__autoPilotEventSlots[ 
-            "%s.%s" % (_QtIfwScript._INSTALLER_OBJ, signalName) ] = (
-            slotName, slotBody )
+        signalKey = "%s.%s" % (_QtIfwScript._INSTALLER_OBJ, signalName)
+        self.__autoPilotEventSlots[ signalKey ] = ( slotName, slotBody )
     
     def registerWidgetEventHandler( self, pageId, controlName, 
                                     signalName, slotName, slotBody ) :
@@ -1448,10 +1509,14 @@ Controller.prototype.%s = function(){
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
                 (QT_IFW_FINISHED_PAGE, self.finishedPageCallbackBody) )
 
+        for _, (funcName, funcBody) in six.iteritems( self.__standardEventSlots ):    
+            self.script += ( 
+                QtIfwControlScript.__CONTROLER_CALLBACK_FUNC_TMPLT %
+                (funcName, funcBody) )
+
         for _, (funcName, funcBody) in six.iteritems( self.__autoPilotEventSlots ):    
             self.script += ( 
                 QtIfwControlScript.__CONTROLER_CALLBACK_FUNC_TMPLT %
-
                 (funcName, funcBody) )
         
         self.__appendUiPageCallbacks()
@@ -1484,7 +1549,7 @@ Controller.prototype.%s = function(){
                     _QtIfwScript.MAINTENANCE_TOOL_NAME + END + 
             EBLK + NEW +            
             'function maintenanceToolExists( dir ) ' + SBLK +
-                TAB + 'return ' + _QtIfwScript.fileExists( 
+                TAB + 'return ' + _QtIfwScript.pathExists( 
                     'toMaintenanceToolPath( dir )', isAutoQuote=False ) + END + 
             EBLK + NEW +
             'function defaultTargetExists() ' + SBLK +
@@ -1680,12 +1745,16 @@ Controller.prototype.%s = function(){
         if not self.isFinishedPageCallbackBody:                                                                    
             hidePage( QT_IFW_FINISHED_PAGE )
             
+        for signalName, (slotName, _) in six.iteritems( self.__standardEventSlots ):    
+            self.controllerConstructorBody += ( 
+                QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
+                (signalName, slotName) )            
         self.controllerConstructorBody += _QtIfwScript.ifCmdLineSwitch( 
                 _QtIfwScript.AUTO_PILOT_CMD_ARG, isMultiLine=True )             
         for signalName, (slotName, _) in six.iteritems( self.__autoPilotEventSlots ):    
             self.controllerConstructorBody += ( 
                 QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
-                (signalName, slotName) )
+                (signalName, slotName) )            
         self.controllerConstructorBody += (        
                 _QtIfwScript.ifInstalling() + 
                     'autoManagePriorInstallation()' + END +
@@ -1818,7 +1887,7 @@ Controller.prototype.%s = function(){
         )
 
     def __genFinishedPageCallbackBody( self ):
-        self.finishedPageCallbackBody = (                                      
+        self.finishedPageCallbackBody = (         
             QtIfwControlScript.enable( 
                 QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
                 self.isRunProgInteractive ) +                  

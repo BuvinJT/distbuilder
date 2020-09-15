@@ -18,7 +18,8 @@ class BuildProcess( PyToBinInstallerProcess ):
     def onQtIfwConfig( self, cfg ):    
 
         #def addCustomOperations( cfg ):
-        #    cfg.packages[0].pkgScript.customOperations = None
+        #    op = component.addOperation( "Delete", path );
+        #    cfg.packages[0].pkgScript.customOperations = [ op ]
             
         def addExternalOperations( cfg ):        
             filePath = joinPath( QT_IFW_HOME_DIR, "distbuilder-ops-test.txt" ) 

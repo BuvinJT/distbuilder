@@ -427,8 +427,14 @@ Static Functions:
     ifInstalling( isMultiLine=False )
     ifMaintenanceTool( isMultiLine=False )
 
-    fileExists( path, isAutoQuote=True )
-    ifFileExists( path, isAutoQuote=True, isMultiLine=False )   
+    pathExists( path, isAutoQuote=True )
+    ifPathExists( path, isAutoQuote=True, isMultiLine=False )   
+    
+    makeDir( path )            <path can include native env vars> 
+    removeDir( path ) 		   <path can include native env vars>
+    	
+    writeFile( path, content ) <path can include native env vars>
+    deleteFile( path ) 	       <path can include native env vars>	
     
     yesNoPopup( msg, title="Question", resultVar="result" )             
     yesNoCancelPopup( msg, title="Question", resultVar="result" )                  
@@ -436,9 +442,7 @@ Static Functions:
                             onYes="", onNo="", onCancel="" )
     ifYesNoPopup( msg, title="Question", resultVar="result", 
                  isMultiLine=False )
-    
-    Dir.toNativeSparator( path ) 
-    
+        
     _autoQuote( value, isAutoQuote )
 
 In addition, QtIfwControlScript provides: 
@@ -480,11 +484,22 @@ If writing scripts directly for distbulder integration, you may also employ the
 following add-on **QT SCRIPT** functions:
 
 	execute( binPath, args )
-	
+		
+    resolveQtIfwPath( path )		
+    resolveNativePath( path )
+    fileName( filePath )
+    
+    Dir.temp()
+    Dir.toNativeSparator( path ) 
+    Dir.fromNativeSparator( path )
+		
 	sleep( seconds )
 
     killAll( progName )
-	
+
+    makeDir( path )
+    removeDir( path )
+    	
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
 	
