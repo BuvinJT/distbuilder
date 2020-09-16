@@ -1,6 +1,6 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
         QtIfwExternalOp as IfwExOp, ExecutableScript, \
-        joinPath, QT_IFW_HOME_DIR, IS_WINDOWS
+        joinPath, normBinaryName, QT_IFW_HOME_DIR, IS_WINDOWS
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Custom Installer Ops Example"
@@ -14,28 +14,31 @@ f.iconFilePath     = "../hello_world_tk/demo.ico"
 f.version          = (1,0,0,0)
 f.setupName        = "HelloIfwOpsSetup"
 
+EXAMPLE_FILEPATH = joinPath( QT_IFW_HOME_DIR, "distbuilder-example.dat" )
+
 class BuildProcess( PyToBinInstallerProcess ):
     def onQtIfwConfig( self, cfg ):    
-
-        #def addCustomOperations( cfg ):
-        #    op = component.addOperation( "Delete", path );
-        #    cfg.packages[0].pkgScript.customOperations = [ op ]
             
-        def addExternalOperations( cfg ):        
-            filePath = joinPath( QT_IFW_HOME_DIR, "distbuilder-ops-test.txt" ) 
+        def addNativeScriptOps( pkg ):                    
             createFileScript = ExecutableScript( "createFile", script=(
-                'echo. > "%s"' % (filePath,) if IS_WINDOWS else
-                'touch "%s"'  % (filePath,) ) )
+                'echo. > "%s"' % (EXAMPLE_FILEPATH,) if IS_WINDOWS else
+                'touch "%s"'  % (EXAMPLE_FILEPATH,) ) )
             removeFileScript = ExecutableScript( "removeFile" , script=( 
-                'del /q "%s"' % (filePath,) if IS_WINDOWS else
-                'rm "%s"'  % (filePath,) ) )                        
-            cfg.packages[0].pkgScript.externalOps += [ 
+                'del /q "%s"' % (EXAMPLE_FILEPATH,) if IS_WINDOWS else
+                'rm "%s"'  % (EXAMPLE_FILEPATH,) ) )                        
+            pkg.pkgScript.externalOps += [ 
                 IfwExOp( script=createFileScript, 
                    uninstScript=removeFileScript )
             ]
         
-        #addCustomOperations( cfg )
-        addExternalOperations( cfg )
+        def addKillOps( pkg ):
+            pkg.pkgScript.killLastExes=[ # last is first on uninstall!
+                (None, normBinaryName( pkg.exeName )) ]
+        
+        pkg = cfg.packages[0]
+            
+        addNativeScriptOps( pkg )
+        #addKillOps( pkg )
     
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
