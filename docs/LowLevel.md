@@ -429,6 +429,7 @@ Static Functions:
 
     pathExists( path, isAutoQuote=True )
     ifPathExists( path, isAutoQuote=True, isMultiLine=False )   
+    ifNotPathExists( path, isAutoQuote=True, isMultiLine=False )
     
     makeDir( path )            <path can include native env vars> 
     removeDir( path ) 		   <path can include native env vars>
@@ -483,20 +484,21 @@ Static Functions:
 If writing scripts directly for distbulder integration, you may also employ the 
 following add-on **QT SCRIPT** functions:
 
-	execute( binPath, args )
+    execute( binPath, args )
+    executeDetached( binPath, args )
 		
     resolveQtIfwPath( path )		
     resolveNativePath( path )
+    
     fileName( filePath )
+    rootFileName( filePath )
     
     Dir.temp()
     Dir.toNativeSparator( path ) 
     Dir.fromNativeSparator( path )
+	
+	dirList( path )   		   <path can include native env vars, and wild cards>
 		
-	sleep( seconds )
-
-    killAll( progName )
-
     makeDir( path )
     removeDir( path )
     	
@@ -505,6 +507,10 @@ following add-on **QT SCRIPT** functions:
 	
 	clearErrorLog()
 	writeErrorLog( msg )
+
+	sleep( seconds )
+
+    killAll( progName )
 
 	quit( msg )
 	abort( msg )
@@ -523,7 +529,8 @@ following add-on **QT SCRIPT** functions:
 		maintenanceToolPaths()	<resolves via registry lookups>
 		isOsRegisteredProgram()	
 		executeVbScript( vbs )
-	
+		executeVbScriptDetached( scriptPath, vbs )
+			
 		<Package Context Only>
 			addVbsOperation( component, isElevated, vbs )
 			setShortcutWindowStyleVbs( shortcutPath, styleCode )
