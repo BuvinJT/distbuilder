@@ -306,12 +306,10 @@ resolved at *runtime* by QtIFW.  Note these are applicable for **BOTH** direct
 [Installer Script](#installer-scripting) generation, and as parameters
 and attributes for many higher level functions and objects in this library.   
 
-    QT_IFW_OS 
-
     QT_IFW_TARGET_DIR 
 
     QT_IFW_ROOT_DIR 
-
+    
     QT_IFW_HOME_DIR 
     QT_IFW_DESKTOP_DIR
 
@@ -324,6 +322,8 @@ and attributes for many higher level functions and objects in this library.
     QT_IFW_ALLUSERS_STARTMENU_DIR
     
     QT_IFW_INSTALLER_TEMP_DIR
+    QT_IFW_MAINTENANCE_TEMP_DIR
+    
     QT_IFW_INSTALLER_DIR 
     QT_IFW_INTALLER_PATH
      
@@ -332,6 +332,8 @@ and attributes for many higher level functions and objects in this library.
     QT_IFW_TITLE 
     QT_IFW_PUBLISHER 
     QT_IFW_URL
+
+    QT_IFW_OS 
 
 Note: use [joinPathQtIfw](#joinpathqtifw) to build paths with such constants. 
 
@@ -524,6 +526,10 @@ following add-on **QT SCRIPT** functions:
 	
 	maintenanceToolExists( dir )
 	toMaintenanceToolPath( dir )
+	
+    isWindows()
+    isMacOs()
+    isLinux()
 	
 	<Windows Only>   
 		maintenanceToolPaths()	<resolves via registry lookups>

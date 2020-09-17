@@ -47,6 +47,8 @@ from distbuilder.qt_installer import \
     , QT_IFW_USER_STARTMENU_DIR \
     , QT_IFW_ALLUSERS_STARTMENU_DIR \
     , QT_IFW_ROOT_DIR \
+    , QT_IFW_INSTALLER_TEMP_DIR \
+    , QT_IFW_MAINTENANCE_TEMP_DIR \
     , QT_IFW_INSTALLER_DIR \
     , QT_IFW_INTALLER_PATH \
     , QT_IFW_PRODUCT_NAME \

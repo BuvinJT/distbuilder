@@ -54,13 +54,21 @@ QT_IFW_ASKPASS_KEY = "askpass"
 QT_IFW_ASKPASS_PLACEHOLDER = "[%s]" % (QT_IFW_ASKPASS_KEY,)
 QT_IFW_ASKPASS_TEMP_FILE_PATH = "/tmp/{0}.path".format( QT_IFW_ASKPASS_KEY )
 
-QT_IFW_OS            = "@os@"
 QT_IFW_ROOT_DIR      = "@RootDir@"
 QT_IFW_TARGET_DIR    = "@TargetDir@"
 QT_IFW_HOME_DIR      = "@HomeDir@" 
 QT_IFW_DESKTOP_DIR   = ("@DesktopDir@" if IS_WINDOWS else
-                        "%s/%s" % (QT_IFW_HOME_DIR,"Desktop") ) # Valid on osMac and Ubuntu at least (other Linux desktops?)
+                        "%s/%s" % (QT_IFW_HOME_DIR,"Desktop") ) # Valid on macOS and Ubuntu at least (other Linux desktops?)
 QT_IFW_APPS_DIR      = "@ApplicationsDir@"
+
+QT_IFW_INSTALLER_DIR      = "@InstallerDirPath@"
+QT_IFW_INTALLER_PATH      = "@InstallerFilePath@"   
+
+_QT_IFW_INSTALLER_TEMP_DIR   = "InstallerTempDir"   # CUSTOM!
+_QT_IFW_MAINTENANCE_TEMP_DIR = "MaintenanceTempDir" # CUSTOM!
+
+QT_IFW_INSTALLER_TEMP_DIR   = "@%s@" % (_QT_IFW_INSTALLER_TEMP_DIR,)   # CUSTOM!
+QT_IFW_MAINTENANCE_TEMP_DIR = "@%s@" % (_QT_IFW_MAINTENANCE_TEMP_DIR,) # CUSTOM!
 
 QT_IFW_STARTMENU_DIR          = "@StartMenuDir@"
 QT_IFW_USER_STARTMENU_DIR     = "@UserStartMenuProgramsPath@"  
@@ -72,12 +80,10 @@ QT_IFW_TITLE           = "@Title@"
 QT_IFW_PUBLISHER       = "@Publisher@"
 QT_IFW_URL             = "@Url@"
 
+QT_IFW_OS            = "@os@"
+
 QT_IFW_APPS_X86_DIR  = "@ApplicationsDirX86@"
 QT_IFW_APPS_X64_DIR  = "@ApplicationsDirX64@"
-
-QT_IFW_INSTALLER_TEMP_DIR = "@InstallerTempDir@"  # CUSTOM!
-QT_IFW_INSTALLER_DIR      = "@InstallerDirPath@"
-QT_IFW_INTALLER_PATH      = "@InstallerFilePath@"   
 
 QT_IFW_INTRO_PAGE      = "Introduction"
 QT_IFW_TARGET_DIR_PAGE = "TargetDirectory"
@@ -105,9 +111,8 @@ _PAGE_NAME_PLACHOLDER = "[PAGE_NAME]"
 
 _ENV_TEMP_DIR     = "%temp%" if IS_WINDOWS else "/tmp"
 _QT_IFW_TEMP_NAME = "__distbuilder-qtifw"
-_QT_IFW_TEMP_DIR_PREFIX  = "%s/%s-" % (_ENV_TEMP_DIR, _QT_IFW_TEMP_NAME)
 
-_QT_IFW_WATCH_DOG_PREFIX = "__distbuilder-qtifw-watchdog-"
+_QT_IFW_WATCH_DOG_SUFFIX = "-watchdog"
 _QT_IFW_WATCH_DOG_EXT    = ".vbs" if IS_WINDOWS else ""
 
 QT_IFW_DYNAMIC_PATH_VARS = [
@@ -121,6 +126,7 @@ QT_IFW_DYNAMIC_PATH_VARS = [
     , "ApplicationsDirX86" 
     , "ApplicationsDirX64" 
     , "InstallerTempDir"
+    , "MaintenanceTempDir"
     , "InstallerDirPath" 
     , "InstallerFilePath" 
 ]
@@ -484,7 +490,7 @@ class _QtIfwScript:
     FALSE = "false"
     
     PATH_SEP = '"\\\\"' if IS_WINDOWS else '"/"'  
-    
+        
     MAINTENANCE_TOOL_NAME  = util.normBinaryName( 
         "maintenancetool", isGui=True )
     
@@ -518,11 +524,13 @@ class _QtIfwScript:
 
     _GUI_OBJ       = "gui"
     _INSTALLER_OBJ = "installer"
+    
+    _TEMP_DIR = "Dir.temp()"
         
     __IS_INSTALLER   = "installer.isInstaller()"
     __IS_UNINSTALLER = "installer.isUninstaller()"
 
-    __IS_MAINTENANCE_TOOL = 'isMaintenaceTool()'
+    __IS_MAINTENANCE_TOOL = 'isMaintenanceTool()'
         
     # an example for use down the line...
     __LINUX_GET_DISTRIBUTION = ( 
@@ -817,42 +825,130 @@ class _QtIfwScript:
             'var dynamicPathVars = [ ' + pathVarsList + ' ]' + END +
             NEW +                                                         
             'var Dir = new function () ' + SBLK +
-            TAB +  'this.temp = function () ' + SBLK +
-            (2*TAB) + 'var dirPath = installer.value( "InstallerTempDir", "" )' + END +
-            (2*TAB) + 'if( dirPath === "" ) ' + SBLK +            
-                (3*TAB) + 'var i=0' + END +
-                (3*TAB) + 'while( dirPath === "" || ' + 
-                    _QtIfwScript.pathExists( 'dirPath', isAutoQuote=False ) + ' ) ' + NEW +
-                    (4*TAB) + ('dirPath = resolveNativePath( "%s" + i++ )' % (_QT_IFW_TEMP_DIR_PREFIX,)) + END +
-                (3*TAB) + 'installer.setValue( "InstallerTempDir", dirPath )' + END +
-                (3*TAB) + _QtIfwScript.log( '"InstallerTempDir: " + dirPath', isAutoQuote=False ) +                 
-            (2*TAB) + EBLK + 
-            (2*TAB) + 'return dirPath' + END + 
-            EBLK +
-            TAB +  'this.toNativeSeparator = function (path) ' + SBLK +
-            (2*TAB) + 'if (systemInfo.productType === "windows") ' + NEW +
+            TAB + 'this.temp = function () ' + SBLK +
+            (2*TAB) + 'return isMaintenanceTool() ? __maintenanceTempPath() : ' + 
+                '__installerTempPath()' + END + 
+            TAB + EBLK +
+            TAB + 'this.toNativeSeparator = function (path) ' + SBLK +
+            (2*TAB) + 'if( isWindows() )' + NEW +
                 (3*TAB) + 'return path.replace(/\\//g, \'\\\\\')' + END +
             (2*TAB) + 'return path' + END + 
-            EBLK +            
-            TAB +  'this.fromNativeSeparator = function (path) ' + SBLK +
-            (2*TAB) + 'if (systemInfo.productType === "windows") ' + NEW +
+            TAB + EBLK +            
+            TAB + 'this.fromNativeSeparator = function (path) ' + SBLK +
+            (2*TAB) + 'if( isWindows() )' + NEW +
                 (3*TAB) + 'return path.replace(/\\\\/g, \'/\')' + END +
             (2*TAB) + 'return path' + END + 
-            EBLK +            
-            '};' + NEW +                                    
+            TAB + EBLK +            
+            '};' + NEW +
+            'function isMaintenanceTool() ' + SBLK +  # TODO: Test in NIX/MAC            
+            TAB + 'var isTool = rootFileName( __lockFilePath() ).startsWith( ' + 
+                  ('rootFileName( "%s" ) )' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END +
+            TAB + _QtIfwScript.log( '"isMaintenanceTool: " + isTool', isAutoQuote=False ) +                  
+            TAB + 'return isTool' + END +                  
+            EBLK + NEW +            
+            # TODO: This logic could possibly fail when installers / uninstallers 
+            # for *other* programs are running at the same time...          
+            'function __lockFilePath() ' + SBLK +  # TODO: Test in NIX/MAC            
+            TAB + 'var path = installer.value( "__lockFilePath", "" )' + END +
+            TAB + 'if( path === "" ) ' + SBLK +                        
+            (2*TAB) + 'var lockFileName = ""' + END +
+            (2*TAB) + 'var instPrefix = __installerPrefix()' + END +
+            (2*TAB) + 'var toolPrefix = __maintenanceToolPrefix()' + END +
+            (2*TAB) + 'var lockFileDir = getEnv("temp")' + END +
+            (2*TAB) + 'var lockFileGlob = Dir.toNativeSeparator( lockFileDir + "/*.lock" )' + END +
+            (2*TAB) + 'var sortByTime = true' + END +            
+            (2*TAB) + 'var lockFiles = dirList( lockFileGlob, sortByTime )' + END +
+            (2*TAB) + 'for( var i=0; i < lockFiles.length; i++ )' + SBLK +
+                (3*TAB) + 'if( lockFiles[i].startsWith(instPrefix) ||' + NEW + 
+                (3*TAB) + '    lockFiles[i].startsWith(toolPrefix) )' + END +
+                (3*TAB) + '    lockFileName = lockFiles[i]' + END +                                         
+            (2*TAB) + EBLK +                
+            (2*TAB) + 'if( lockFileName === "" )' + NEW +
+                (3*TAB) + 'silentAbort("Lock file path could not be resolved")' + END +                
+            (2*TAB) + 'path = Dir.toNativeSeparator( lockFileDir + "/" + lockFileName )' + END +            
+            (2*TAB) + _QtIfwScript.log( '"lockFilePath: " + path', isAutoQuote=False ) +
+            (2*TAB) + 'installer.setValue( "__lockFilePath", path )'  + END +
+            TAB + EBLK +                         
+            TAB + 'return path' + END +
+            EBLK + NEW +            
+            'function __launchWatchDog() ' + SBLK +  # TODO: Test in NIX/MAC            
+            TAB + 'var watchDogPath = installer.value( "__watchDogPath", "" )' + END +
+            TAB + 'if( watchDogPath === "" ) ' + SBLK +            
+            (2*TAB) + ('watchDogPath = __tempPath( "%s%s" )' % 
+                 (_QT_IFW_WATCH_DOG_SUFFIX,_QT_IFW_WATCH_DOG_EXT)) + END +
+            (2*TAB) + 'installer.setValue( "__watchDogPath", watchDogPath )' + END +
+            TAB + EBLK +   
+            TAB + _QtIfwScript.log( '"__watchDogPath: " + watchDogPath', isAutoQuote=False ) +            
+            (
+            TAB + 'var vbs = ' + NEW +
+            (2*TAB) + '"On Error Resume Next\\n" + ' + NEW + 
+            (2*TAB) + '"Set oFSO = CreateObject(\\"Scripting.FileSystemObject\\")\\n" + ' + NEW +                        
+            (2*TAB) + '"While oFSO.FileExists(\\"" + __lockFilePath() + "\\")\\n" + ' + NEW +            
+            (2*TAB) + '"    WScript.Sleep(3000)\\n" + ' + NEW +
+            (2*TAB) + '"Wend\\n" + ' + NEW +
+            (2*TAB) + '"oFSO.DeleteFolder \\"" + Dir.temp() + "\\"\\n" + ' + NEW +
+            (2*TAB) + '"oFSO.DeleteFile WScript.ScriptFullName\\n" ' + END +            
+            TAB + 'executeVbScriptDetached( watchDogPath, vbs )' + END 
+            if IS_WINDOWS else 
+            TAB + '' + END) + # TODO: FILLIN!!
+            EBLK + NEW +
+            'function __tempPath( suffix ) ' + SBLK +  # TODO: Test in NIX/MAC            
+            TAB + 'return (isMaintenanceTool() ? __maintenanceTempPath() : __installerTempPath()) + ' +
+                      '(suffix ? suffix : "")' + END +                  
+            EBLK + NEW +
+            'function __installerTempPath( suffix ) ' + SBLK +  # TODO: Test in NIX/MAC            
+            TAB + 'var dirPath = installer.value( ' + 
+                ('"%s"' % (_QT_IFW_INSTALLER_TEMP_DIR,)) + ', "" )' + END +
+            TAB + 'if( dirPath === "" ) ' + SBLK +            
+            (2*TAB) + 'dirPath = Dir.toNativeSeparator( ' +
+                'getEnv("temp") + "/__" + __installerPrefix() + "-install" )' + END +
+            (2*TAB) + 'installer.setValue( ' + 
+            ('"%s"' % (_QT_IFW_INSTALLER_TEMP_DIR,)) + ', dirPath )' + END +
+            (2*TAB) + _QtIfwScript.log( ('"%s' % (_QT_IFW_INSTALLER_TEMP_DIR,)) + 
+                                        ': " + dirPath', isAutoQuote=False ) +                 
+            TAB + EBLK + 
+            TAB + 'return dirPath' + END + 
+            EBLK + NEW +
+            'function __maintenanceTempPath( suffix ) ' + SBLK +  # TODO: Test in NIX/MAC            
+            TAB + 'var dirPath = installer.value( ' + 
+                ('"%s"' % (_QT_IFW_MAINTENANCE_TEMP_DIR,)) + ', "" )' + END +
+            TAB + 'if( dirPath === "" ) ' + SBLK +            
+            (2*TAB) + 'dirPath = Dir.toNativeSeparator( ' + # NOTE: __installerPrefix() is CORRECT HERE!
+                'getEnv("temp") + "/__" + __installerPrefix() + "-maintenance" )' + END +
+            (2*TAB) + 'installer.setValue( ' + 
+            ('"%s"' % (_QT_IFW_MAINTENANCE_TEMP_DIR,)) + ', dirPath )' + END +
+            (2*TAB) + _QtIfwScript.log( ('"%s' % (_QT_IFW_MAINTENANCE_TEMP_DIR,)) + 
+                                        ': " + dirPath', isAutoQuote=False ) +                 
+            TAB + EBLK + 
+            TAB + 'return dirPath' + END +             
+            EBLK + NEW +
+            'function __installerPrefix() ' + SBLK +  # TODO: Test in NIX/MAC            
+            TAB + 'return rootFileName( installer.value("InstallerFilePath") )' + END +                  
+            EBLK + NEW +
+            'function __maintenanceToolPrefix() ' + SBLK +  # TODO: Test in NIX/MAC            
+            TAB + ('return rootFileName( "%s" )' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END +                  
+            EBLK + NEW +                                                                                     
+            'function resolveQtIfwPath( path ) ' + SBLK +
+            TAB + 'path = Dir.fromNativeSeparator( path )' + END +
+            TAB + 'for( var i=0; i != dynamicPathVars.length; ++i ) ' + SBLK +                                    
+            (2*TAB) + 'var varName = dynamicPathVars[i]' + END +
+            (2*TAB) + 'var varVal = installer.value( varName )' + END +
+            (2*TAB) + 'path = path.split( "@" + varName + "@" ).join( varVal )' + END +
+            (2*TAB) + EBLK +             
+            TAB + 'return path' + END +                                                                                                                          
+            EBLK + NEW +                                   
+            'function isWindows() ' + SBLK +
+            TAB + 'return systemInfo.kernelType === "winnt"' + END +
+            EBLK + NEW +
+            'function isMacOs() ' + SBLK +
+            TAB + 'return systemInfo.kernelType === "darwin"' + END +
+            EBLK + NEW +
+            'function isLinux() ' + SBLK +
+            TAB + 'return systemInfo.kernelType === "linux"' + END +
+            EBLK + NEW +
             'function getEnv( varName ) ' + SBLK +
             TAB + 'return installer.environmentVariable( varName )' + END +
             EBLK + NEW +
-            'function setEnv( varName, value ) ' + SBLK + # TODO: Test in NIX/MAC   
-                TAB + 'var result = installer.execute( ' +
-                    ('"setx", [varName, value]' if IS_WINDOWS else
-                     '"sh", ["-c", "export " + varName + "=\\"" + value + "\\""]' ) + ' )' + END +                
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("setEnv failed.")' + END +
-            EBLK + NEW +
-            'function delEnv( varName ) ' + SBLK +
-            # TODO!
-            EBLK + NEW +                                                          
             'function fileName( filePath ) ' + SBLK +
             TAB + 'var pathParts = Dir.fromNativeSeparator( filePath ).split("/")' + END +
             TAB + 'return pathParts[pathParts.length-1]' + END +
@@ -874,73 +970,6 @@ class _QtIfwScript:
             TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
             TAB + 'return installer.executeDetached( binPath, args )' + END +
             EBLK + NEW +            
-            'function isMaintenaceTool() ' + SBLK +  # TODO: Test in NIX/MAC            
-            TAB + 'var isTool = rootFileName( installerlockFilePath() ).startsWith( ' + 
-                  ('rootFileName( "%s" ) ) ' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END +
-            TAB + _QtIfwScript.log( '"isMaintenaceTool: " + isTool', isAutoQuote=False ) +                  
-            TAB + 'return isTool' + END +                  
-            EBLK + NEW +
-            # TODO: This logic could possibly fail when installers / uninstallers 
-            # for *other* programs are running at the same time...          
-            'function installerlockFilePath() ' + SBLK +  # TODO: Test in NIX/MAC            
-            TAB + 'var lockFilePath = installer.value( "__lockFilePath", "" )' + END +
-            TAB + 'if( lockFilePath === "" ) ' + SBLK +                        
-            (2*TAB) + 'var lockFileName = ""' + END +
-            (2*TAB) + 'var installerPrefix = rootFileName( installer.value("InstallerFilePath") )' + END +
-            (2*TAB) +('var maintToolPrefix = rootFileName( "%s" )' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END +
-            (2*TAB) + 'var lockFileDir = getEnv("temp")' + END +
-            (2*TAB) + 'var lockFileGlob = Dir.toNativeSeparator( lockFileDir + "/*.lock" )' + END +
-            (2*TAB) + 'var sortByTime = true' + END +            
-            (2*TAB) + 'var lockFiles = dirList( lockFileGlob, sortByTime )' + END +
-            (2*TAB) + 'for( var i=0; i < lockFiles.length; i++ )' + SBLK +
-                (3*TAB) + 'if( lockFiles[i].startsWith(installerPrefix) ||' + NEW + 
-                (3*TAB) + '    lockFiles[i].startsWith(maintToolPrefix) )' + END +
-                (3*TAB) + '    lockFileName = lockFiles[i]' + END +                                         
-            (2*TAB) + EBLK +                
-            (2*TAB) + 'if( lockFileName === "" )' + NEW +
-                (3*TAB) + 'silentAbort("Lock file path could not be resolved")' + END +                
-            (2*TAB) + 'lockFilePath = Dir.toNativeSeparator( lockFileDir + "/" + lockFileName )' + END +            
-            (2*TAB) + _QtIfwScript.log( '"lockFilePath: " + lockFilePath', isAutoQuote=False ) +
-            (2*TAB) + 'installer.setValue( "__lockFilePath", lockFilePath )'  + END +
-            TAB + EBLK +                         
-            TAB + 'return lockFilePath' + END +
-            EBLK + NEW +            
-            'function launchWatchDog() ' + SBLK +  # TODO: Test in NIX/MAC            
-            TAB + 'var watchDogPath = installer.value( "__watchDogPath", "" )' + END +
-            TAB + 'if( watchDogPath === "" ) ' + SBLK +            
-            (2*TAB) + 'var watchDogName = ""' + END +
-            (2*TAB) + 'var watchDogDir = getEnv("temp")' + END +
-            (2*TAB) + 'var watchDogGlob = Dir.toNativeSeparator( watchDogDir + "/" + ' +
-                ('"%s*%s"' % (_QT_IFW_WATCH_DOG_PREFIX,_QT_IFW_WATCH_DOG_EXT)) + ' )' + END +
-            (2*TAB) + 'var watchDogFiles = dirList( watchDogGlob )' + END +
-            (2*TAB) + 'watchDogPath = Dir.toNativeSeparator( watchDogDir + "/" + ' + 
-                ('"%s" + watchDogFiles.length + "%s"' % 
-                 (_QT_IFW_WATCH_DOG_PREFIX,_QT_IFW_WATCH_DOG_EXT)) + " )" + END +
-            (2*TAB) + 'installer.setValue( "__watchDogPath", watchDogPath )' + END +
-            TAB + EBLK +   
-            TAB + _QtIfwScript.log( '"__watchDogPath: " + watchDogPath', isAutoQuote=False ) +            
-            (
-            TAB + 'var vbs = ' + NEW +
-            (2*TAB) + '"On Error Resume Next\\n" + ' + NEW + 
-            (2*TAB) + '"Set oFSO = CreateObject(\\"Scripting.FileSystemObject\\")\\n" + ' + NEW +                        
-            (2*TAB) + '"While oFSO.FileExists(\\"" + installerlockFilePath() + "\\")\\n" + ' + NEW +            
-            (2*TAB) + '"    WScript.Sleep(3000)\\n" + ' + NEW +
-            (2*TAB) + '"Wend\\n" + ' + NEW +
-            (2*TAB) + '"oFSO.DeleteFolder \\"" + Dir.temp() + "\\"\\n" + ' + NEW +
-            (2*TAB) + '"oFSO.DeleteFile WScript.ScriptFullName\\n" ' + END +            
-            TAB + 'executeVbScriptDetached( watchDogPath, vbs )' + END 
-            if IS_WINDOWS else 
-            TAB + '' + END) + # TODO: FILLIN!!
-            EBLK + NEW +                                                                         
-            'function resolveQtIfwPath( path ) ' + SBLK +
-            TAB + 'path = Dir.fromNativeSeparator( path )' + END +
-            TAB + 'for( var i=0; i != dynamicPathVars.length; ++i ) ' + SBLK +                                    
-            (2*TAB) + 'var varName = dynamicPathVars[i]' + END +
-            (2*TAB) + 'var varVal = installer.value( varName )' + END +
-            (2*TAB) + 'path = path.split( "@" + varName + "@" ).join( varVal )' + END +
-            (2*TAB) + EBLK +             
-            TAB + 'return path' + END +                                                                                                                          
-            EBLK + NEW +                        
             'function resolveNativePath( path ) ' + SBLK +    # TODO: Test in NIX/MAC  
                 TAB + 'path = Dir.toNativeSeparator( path )' + END +            
                 TAB + 'var echoCmd = "' +
@@ -1411,7 +1440,8 @@ Controller.prototype.%s = function(){
                                     
     @staticmethod        
     def _purgeTempFiles():                  
-        return _QtIfwScript.removeDir( QT_IFW_INSTALLER_TEMP_DIR ) 
+        return _QtIfwScript.removeDir( 
+            _QtIfwScript._TEMP_DIR, isAutoQuote=False ) 
                                             
     @staticmethod        
     def currentPageWidget():                
@@ -1852,19 +1882,22 @@ Controller.prototype.%s = function(){
         EBLK =_QtIfwScript.END_BLOCK        
                               
         self.controllerConstructorBody = (
+            TAB + 'installer.setValue( ' + 
+                ('"%s"' % (_QT_IFW_INSTALLER_TEMP_DIR,)) + ', "" )' + END + 
+            TAB + 'installer.setValue( ' + 
+                ('"%s"' % (_QT_IFW_MAINTENANCE_TEMP_DIR,)) + ', "" )' + END + 
             TAB + 'installer.setValue( "__lockFilePath", "" )' + END +
             TAB + 'installer.setValue( "__watchDogPath", "" )' + END +
-            TAB + 'installer.setValue( "InstallerTempDir", "" )' + END + 
-            TAB + 'clearErrorLog()' + END +            
+            TAB + 'clearErrorLog()' + END +
+            TAB + '__installerTempPath()' + END +
+            TAB + '__maintenanceTempPath()' + END +            
             TAB + 'makeDir( Dir.temp() )' + END +
-            TAB + 'if( isMaintenaceTool() )' + END +
-            (2*TAB) + 'setEnv( "qtifw-maintenace-temp", Dir.temp() )' + END +                        
-            TAB + 'launchWatchDog()' + END )        
+            TAB + '__launchWatchDog()' + END )        
         if self.virtualArgs :  
             self.controllerConstructorBody += TAB + 'initGlobals()' + END
 
         self.controllerConstructorBody += (
-            #_QtIfwScript.ifMaintenanceTool() +
+            _QtIfwScript.ifMaintenanceTool() +
                 _QtIfwScript.genResources( self._maintenanceToolResources ) )
         
         HIDE_PAGE_TMPLT = ( TAB + 
@@ -2562,7 +2595,7 @@ Component.prototype.%s = function(){
                 setArgs +=( '%sretCodes = "{%s}"%s' % 
                     (TAB,",".join([str(c) for c in task.successRetCodes]),END) )
             
-            uninstExePath = ( joinPathQtIfw( QT_IFW_INSTALLER_TEMP_DIR, 
+            uninstExePath = ( joinPathQtIfw( QT_IFW_MAINTENANCE_TEMP_DIR, 
                                              task.uninstScript.fileName() )
                 if task.uninstScript 
                 else task.uninstExePath if task.uninstExePath 
