@@ -528,10 +528,9 @@ This class works in an analogous manner to [QtIfwControlScript](#qtifwcontrolscr
 Please refer to the that documentation for an explanation of how use these script
 objects in general. 
 
-Note that [QtIfwShortcut](#qtifwshortcut) objects are used for the `shortcuts` 
-attribute of this class, [QtIfwExternalOp](#qtifwexternalop) objects
-are used for the `externalOps` attribute of this class.
-
+Note that for this class [QtIfwShortcut](#qtifwshortcut) objects are used for the `shortcuts` 
+attribute, [QtIfwExternalOp](#qtifwexternalop) objects are used for `externalOps`,
+and [QtIfwKillOp](#qtifwexternalop) objects are used for `killOps`.
 
 Constructor:       
 
@@ -551,11 +550,8 @@ Attributes & default values:
     uiPages     = []
 
     externalOps = []
+    killOps     = []
     customOperations = None
-
-    killFirstExes  = None
-    killLastExes   = None
-    isKillElevated = True        
     
     embeddedResources = None    
     packageGlobals = None
@@ -667,6 +663,34 @@ in **reverse order**.  It is possible (and common), to define operations as only
 for installation or only for uninstallation.  Having direct counterparts is not 
 required.  When defining an `externalOps` list with "pure uninstallation" actions, 
 you should especially keep the reverse order of such operations in mind.    
+
+## QtIfwKillOp
+
+This class is used to drive process killing operations. Such actions are frequently 
+useful prior to installing or uninstalling software, especially when it comes to
+instances of the target programs themselves.  
+     
+This class is employed by [QtIfwPackageScript](#qtifwpackagescript), and is internally
+used to actually generate and inject [QtIfwExternalOp](#qtifwexternalop) objects.     
+
+Constructor:
+       
+	QtIfwKillOp( processName, onInstall=True, onUninstall=True ):
+
+Attributes & default values:
+                  
+        processName = <required>
+        onInstall   = True
+        onUninstall = True
+        isElevated  = True 
+
+Notes:
+
+Kill operations are performed prior to any others during either on install or uninstall process.
+**ALL** processes with the given `processName` will be forcefully terminated.
+For convenience, instead of passing the explicit name the of process, you may instead pass a 
+[QtIfwPackage](#qtifwpackage).  In which case, the name of the "primary executable" will be 
+automatically extracted from that.  
         
 ## QtIfwExeWrapper
 

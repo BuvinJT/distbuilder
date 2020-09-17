@@ -23,6 +23,7 @@ from distbuilder.qt_installer import \
     , QtIfwPackageScript \
     , QtIfwShortcut \
     , QtIfwExternalOp \
+    , QtIfwKillOp \
     , QtIfwExeWrapper \
     , QtIfwUiPage \
     , QtIfwTargetDirPage \

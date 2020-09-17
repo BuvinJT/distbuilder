@@ -2260,12 +2260,9 @@ Component.prototype.%s = function(){
         self.uiPages          = uiPages
         
         self.externalOps      = externalOps
+        self.killOps          = []
         self.customOperations = None
-
-        self.killFirstExes    = None
-        self.killLastExes     = None
-        self.isKillElevated   = True
-        
+                
         # Linux Only
         self.isAskPassProgRequired = False
 
@@ -2530,26 +2527,24 @@ Component.prototype.%s = function(){
                         '%s\n    }' % (x11Ops,) )
 
     def __addKillOperations( self ):
-        if not self.killFirstExes and not self.killLastExes: return
+        if not self.killOps: return
         killPath = _QtIfwScript._KILLALL_PATH
         killArgs = _QtIfwScript._KILLALL_ARGS 
-        retCodes = [0,128] # This is WINDOWS, cross platform?       
-        def toExOp( killExe ):
-            if   isinstance( killExe, six.string_types ):
-                installExe = uninstallExe = killExe
-            elif isinstance( killExe , tuple ):
-                installExe, uninstallExe = killExe
-            return QtIfwExternalOp( isElevated=self.isKillElevated, 
+        # success=0, process not running=128 in WINDOWS
+        retCodes = [0,128] if IS_WINDOWS else [0] # TODO: not running code in mac/linux 127 perhaps?       
+        def toExOp( installExe, uninstallExe, isElevated ):
+            return QtIfwExternalOp( isElevated=isElevated, 
                 exePath=killPath                   if installExe else None,       
                 args=killArgs+[installExe]         if installExe else None,
                 successRetCodes=retCodes           if installExe else None,                    
                 uninstExePath=killPath             if uninstallExe else None, 
                 uninstArgs=killArgs+[uninstallExe] if uninstallExe else None,                                         
-                uninstRetCodes=retCodes            if uninstallExe else None )             
-        firstOps=( [ toExOp( killExe ) for killExe in self.killFirstExes ] 
-                   if self.killFirstExes else [] )
-        lastOps=( [ toExOp( killExe ) for killExe in self.killLastExes ]
-                  if self.killLastExes else [] )
+                uninstRetCodes=retCodes            if uninstallExe else None )                         
+        firstOps=( [ toExOp( op.processName, None, op.isElevated ) 
+                     for op in self.killOps if op.onInstall ] )
+        # on uninstall, the operations occur in reverse, thus the last are first
+        lastOps=( [ toExOp( None, op.processName, op.isElevated ) 
+                     for op in self.killOps if op.onUninstall ] )
         if self.externalOps is None: self.externalOps=[]                         
         self.externalOps = firstOps + self.externalOps + lastOps
             
@@ -2720,7 +2715,16 @@ class QtIfwExternalOp:
         self.isElevated      = isElevated 
         self.workingDir      = workingDir
                 
-        self.onErrorMessage  = onErrorMessage
+        self.onErrorMessage  = onErrorMessage # TODO: TEST!
+
+# -----------------------------------------------------------------------------
+class QtIfwKillOp: 
+    def __init__( self, processName, onInstall=True, onUninstall=True ):        
+        self.processName = ( normBinaryName( processName.exeName ) 
+            if isinstance( processName, QtIfwPackage ) else processName )         
+        self.onInstall   = onInstall
+        self.onUninstall = onUninstall
+        self.isElevated  = True  
             
 # -----------------------------------------------------------------------------
 class QtIfwUiPage():

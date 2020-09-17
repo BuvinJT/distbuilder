@@ -1,6 +1,6 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
-        QtIfwExternalOp as IfwExOp, ExecutableScript, \
-        joinPath, normBinaryName, QT_IFW_HOME_DIR, IS_WINDOWS
+        QtIfwExternalOp, QtIfwKillOp, ExecutableScript, \
+        joinPath,QT_IFW_HOME_DIR, IS_WINDOWS
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Custom Installer Ops Example"
@@ -27,18 +27,16 @@ class BuildProcess( PyToBinInstallerProcess ):
                 'del /q "%s"' % (EXAMPLE_FILEPATH,) if IS_WINDOWS else
                 'rm "%s"'  % (EXAMPLE_FILEPATH,) ) )                        
             pkg.pkgScript.externalOps += [ 
-                IfwExOp( script=createFileScript, 
-                   uninstScript=removeFileScript )
+                QtIfwExternalOp( script=createFileScript, 
+                           uninstScript=removeFileScript )
             ]
         
         def addKillOps( pkg ):
-            pkg.pkgScript.killLastExes=[ # last is first on uninstall!
-                (None, normBinaryName( pkg.exeName )) ]
+            pkg.pkgScript.killOps += [ QtIfwKillOp( pkg ) ]
         
-        pkg = cfg.packages[0]
-            
+        pkg = cfg.packages[0]            
         addNativeScriptOps( pkg )
-        #addKillOps( pkg )
+        addKillOps( pkg )
     
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
