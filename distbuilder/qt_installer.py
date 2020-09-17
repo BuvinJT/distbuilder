@@ -2551,38 +2551,53 @@ Component.prototype.%s = function(){
     def __addExecuteOperations( self ):
         if not self.externalOps: return        
         
+        TAB  = _QtIfwScript.TAB
+        END  = _QtIfwScript.END_LINE
+        NEW  = _QtIfwScript.NEW_LINE
+        SBLK = _QtIfwScript.START_BLOCK  # @UnusedVariable
+        EBLK = _QtIfwScript.END_BLOCK
+        
         # generate the install scripts here and now, to apply dynamic
         # changes (e.g. path selection) made during the user interactions
         installScripts = [ op.script for op in self.externalOps 
                 if isinstance( op.script, ExecutableScript ) ]
         self.componentCreateOperationsBody += (
-            _QtIfwScript.NEW_LINE +
+            NEW +
             _QtIfwScript.ifInstalling( isMultiLine=True ) +
                 _QtIfwScript.genResources( installScripts ) +
-            _QtIfwScript.END_BLOCK )
+            EBLK )
                     
-        TAB = _QtIfwScript.TAB 
-        END = _QtIfwScript.END_LINE
         shellPath   = "cmd.exe" if IS_WINDOWS else "sh"
         shellSwitch = "/c"      if IS_WINDOWS else "-c"                    
+        
+        #if not IS_WINDOWS: 
+        #        halt( "VBScript is not supported on this platform!" )
+        #addVbsOperation( component, isElevated, vbs )
+        
         self.componentCreateOperationsBody += (            
 """
-    var shellPath     = "%s";
-    var shellSwitch   = "%s";
-    var execPath      = "";
-    var retCodes      = "";
-    var undoPath      = "";
-    var undoRetCodes  = "";                   
-    var execArgs      = [];     
-       
-""") % ( shellPath, shellSwitch )                    
+    var shellPath      = "%s";
+    var shellSwitch    = "%s";
+    var execPath       = "";
+    var retCodes       = "";
+    var undoPath       = "";
+    var undoRetCodes   = "";                   
+    var execArgs       = [];     
+""") % ( shellPath, shellSwitch )
+        if IS_WINDOWS:
+            self.componentCreateOperationsBody += (            
+"""
+    var vbsInterpreter  = "cscript";
+    var vbsNologoSwitch = "/Nologo";
+""")
         for task in self.externalOps :   
             setArgs = ""
             exePath = ( joinPathQtIfw( QT_IFW_INSTALLER_TEMP_DIR, 
                                        task.script.fileName() )
                 if task.script 
                 else task.exePath if task.exePath 
-                else None )      
+                else None )   
+            scriptType=( task.script.extension if task.script else None )   
             if exePath:
                 if not IS_WINDOWS: exePath = exePath.replace(" ", "\\\\ ")
                 setArgs += '%sexecPath = "%s"%s' % (TAB,exePath,END)
@@ -2606,7 +2621,9 @@ Component.prototype.%s = function(){
             args=[]                        
             if exePath :                 
                 if task.successRetCodes: args+=["retCodes"]       
-                args+=["shellPath", "shellSwitch"]
+                if scriptType=="vbs": 
+                    args+=["vbsInterpreter", "vbsNologoSwitch"]
+                else: args+=["shellPath", "shellSwitch"]
                 if IS_WINDOWS:
                     args+=["execPath"]
                     if task.args: args+=['"%s"' % (a,) for a in task.args]                    
@@ -2623,7 +2640,9 @@ Component.prototype.%s = function(){
                 if not exePath : args+=["shellPath", "shellSwitch"] # dummy install action
                 args+=['"UNDOEXECUTE"']                
                 if task.uninstRetCodes: args+=["undoRetCodes"]
-                args+=["shellPath", "shellSwitch"]
+                if scriptType=="vbs": 
+                    args+=["vbsInterpreter", "vbsNologoSwitch"]
+                else: args+=["shellPath", "shellSwitch"]
                 if IS_WINDOWS:
                     args+=["undoPath"]
                     if task.uninstArgs: 
