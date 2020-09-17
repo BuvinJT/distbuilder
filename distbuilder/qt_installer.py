@@ -485,8 +485,8 @@ class _QtIfwScript:
     
     PATH_SEP = '"\\\\"' if IS_WINDOWS else '"/"'  
     
-    MAINTENANCE_TOOL_NAME  = '"%s"' % ( 
-        util.normBinaryName( "maintenancetool", isGui=True ) )
+    MAINTENANCE_TOOL_NAME  = util.normBinaryName( 
+        "maintenancetool", isGui=True )
     
     VERBOSE_CMD_SWITCH_ARG = "-v"    
     TARGET_DIR_KEY         = "TargetDir"
@@ -654,7 +654,6 @@ class _QtIfwScript:
         return _QtIfwScript.__GET_ENV_VAR_TMPL % (
             _QtIfwScript._autoQuote( varName, isAutoQuote ) )
 
-
     @staticmethod        
     def killAll( exeName, isAutoQuote=True ):                  
         return _QtIfwScript.__KILLALL_PROG_TMPL % (
@@ -813,7 +812,7 @@ class _QtIfwScript:
         pathVarsList = ",".join([ '"%s"' % (v,) 
                                   for v in QT_IFW_DYNAMIC_PATH_VARS ])
 
-        self.qtScriptLib = (                     
+        self.qtScriptLib = (              
             NEW +
             'var dynamicPathVars = [ ' + pathVarsList + ' ]' + END +
             NEW +                                                         
@@ -841,6 +840,19 @@ class _QtIfwScript:
             (2*TAB) + 'return path' + END + 
             EBLK +            
             '};' + NEW +                                    
+            'function getEnv( varName ) ' + SBLK +
+            TAB + 'return installer.environmentVariable( varName )' + END +
+            EBLK + NEW +
+            'function setEnv( varName, value ) ' + SBLK + # TODO: Test in NIX/MAC   
+                TAB + 'var result = installer.execute( ' +
+                    ('"setx", [varName, value]' if IS_WINDOWS else
+                     '"sh", ["-c", "export " + varName + "=\\"" + value + "\\""]' ) + ' )' + END +                
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("setEnv failed.")' + END +
+            EBLK + NEW +
+            'function delEnv( varName ) ' + SBLK +
+            # TODO!
+            EBLK + NEW +                                                          
             'function fileName( filePath ) ' + SBLK +
             TAB + 'var pathParts = Dir.fromNativeSeparator( filePath ).split("/")' + END +
             TAB + 'return pathParts[pathParts.length-1]' + END +
@@ -863,9 +875,9 @@ class _QtIfwScript:
             TAB + 'return installer.executeDetached( binPath, args )' + END +
             EBLK + NEW +            
             'function isMaintenaceTool() ' + SBLK +  # TODO: Test in NIX/MAC            
-            TAB + 'var isTool = rootFileName( installerlockFilePath() ) == ' + 
-                  ('rootFileName( %s )' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END +
-            TAB + _QtIfwScript.log( '"isMaintenaceTool: " + isMaintenaceTool', isAutoQuote=False ) +                  
+            TAB + 'var isTool = rootFileName( installerlockFilePath() ).startsWith( ' + 
+                  ('rootFileName( "%s" ) ) ' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END +
+            TAB + _QtIfwScript.log( '"isMaintenaceTool: " + isTool', isAutoQuote=False ) +                  
             TAB + 'return isTool' + END +                  
             EBLK + NEW +
             # TODO: This logic could possibly fail when installers / uninstallers 
@@ -875,8 +887,8 @@ class _QtIfwScript:
             TAB + 'if( lockFilePath === "" ) ' + SBLK +                        
             (2*TAB) + 'var lockFileName = ""' + END +
             (2*TAB) + 'var installerPrefix = rootFileName( installer.value("InstallerFilePath") )' + END +
-            (2*TAB) +('var maintToolPrefix = rootFileName( %s )' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END +
-            (2*TAB) + 'var lockFileDir = installer.environmentVariable("temp")' + END +
+            (2*TAB) +('var maintToolPrefix = rootFileName( "%s" )' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END +
+            (2*TAB) + 'var lockFileDir = getEnv("temp")' + END +
             (2*TAB) + 'var lockFileGlob = Dir.toNativeSeparator( lockFileDir + "/*.lock" )' + END +
             (2*TAB) + 'var sortByTime = true' + END +            
             (2*TAB) + 'var lockFiles = dirList( lockFileGlob, sortByTime )' + END +
@@ -897,7 +909,7 @@ class _QtIfwScript:
             TAB + 'var watchDogPath = installer.value( "__watchDogPath", "" )' + END +
             TAB + 'if( watchDogPath === "" ) ' + SBLK +            
             (2*TAB) + 'var watchDogName = ""' + END +
-            (2*TAB) + 'var watchDogDir = installer.environmentVariable("temp")' + END +
+            (2*TAB) + 'var watchDogDir = getEnv("temp")' + END +
             (2*TAB) + 'var watchDogGlob = Dir.toNativeSeparator( watchDogDir + "/" + ' +
                 ('"%s*%s"' % (_QT_IFW_WATCH_DOG_PREFIX,_QT_IFW_WATCH_DOG_EXT)) + ' )' + END +
             (2*TAB) + 'var watchDogFiles = dirList( watchDogGlob )' + END +
@@ -909,6 +921,7 @@ class _QtIfwScript:
             TAB + _QtIfwScript.log( '"__watchDogPath: " + watchDogPath', isAutoQuote=False ) +            
             (
             TAB + 'var vbs = ' + NEW +
+            (2*TAB) + '"On Error Resume Next\\n" + ' + NEW + 
             (2*TAB) + '"Set oFSO = CreateObject(\\"Scripting.FileSystemObject\\")\\n" + ' + NEW +                        
             (2*TAB) + '"While oFSO.FileExists(\\"" + installerlockFilePath() + "\\")\\n" + ' + NEW +            
             (2*TAB) + '"    WScript.Sleep(3000)\\n" + ' + NEW +
@@ -1671,7 +1684,7 @@ Controller.prototype.%s = function(){
         self.controllerGlobals += (
             'function toMaintenanceToolPath( dir ) ' + SBLK +
                 TAB + 'return dir + ' + _QtIfwScript.PATH_SEP + ' + ' +
-                    _QtIfwScript.MAINTENANCE_TOOL_NAME + END + 
+                    ('"%s"' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END + 
             EBLK + NEW +            
             'function maintenanceToolExists( dir ) ' + SBLK +
                 TAB + 'return ' + _QtIfwScript.pathExists( 
@@ -1843,8 +1856,9 @@ Controller.prototype.%s = function(){
             TAB + 'installer.setValue( "__watchDogPath", "" )' + END +
             TAB + 'installer.setValue( "InstallerTempDir", "" )' + END + 
             TAB + 'clearErrorLog()' + END +            
-            TAB + 'installerlockFilePath()' + END +           
-            TAB + 'makeDir( Dir.temp() )' + END + 
+            TAB + 'makeDir( Dir.temp() )' + END +
+            TAB + 'if( isMaintenaceTool() )' + END +
+            (2*TAB) + 'setEnv( "qtifw-maintenace-temp", Dir.temp() )' + END +                        
             TAB + 'launchWatchDog()' + END )        
         if self.virtualArgs :  
             self.controllerConstructorBody += TAB + 'initGlobals()' + END
@@ -2287,7 +2301,7 @@ Component.prototype.%s = function(){
                     TAB + 'return vbs' + END +
                 EBLK + NEW + #TODO: Add UNDO operation
                 'function addVbsOperation( component, isElevated, vbs ) ' + SBLK +
-                    TAB + 'var vbsPath = installer.environmentVariable("temp")' + 
+                    TAB + 'var vbsPath = getEnv("temp")' + 
                             '+ "/__qtIfwInstaller.vbs"' + END +
                     TAB + 'var cmd = ["cscript", vbsPath]' + END +
                     TAB + 'component.addOperation( "Delete", vbsPath )' + END +
