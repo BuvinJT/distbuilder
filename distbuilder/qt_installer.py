@@ -2547,7 +2547,8 @@ Component.prototype.%s = function(){
                      for op in self.killOps if op.onUninstall ] )
         if self.externalOps is None: self.externalOps=[]                         
         self.externalOps = firstOps + self.externalOps + lastOps
-            
+
+    # TODO: Clean up this ugly mess!            
     def __addExecuteOperations( self ):
         if not self.externalOps: return        
         
@@ -2569,11 +2570,7 @@ Component.prototype.%s = function(){
                     
         shellPath   = "cmd.exe" if IS_WINDOWS else "sh"
         shellSwitch = "/c"      if IS_WINDOWS else "-c"                    
-        
-        #if not IS_WINDOWS: 
-        #        halt( "VBScript is not supported on this platform!" )
-        #addVbsOperation( component, isElevated, vbs )
-        
+                
         self.componentCreateOperationsBody += (            
 """
     var shellPath      = "%s";
@@ -2587,9 +2584,19 @@ Component.prototype.%s = function(){
         if IS_WINDOWS:
             self.componentCreateOperationsBody += (            
 """
-    var vbsInterpreter  = "cscript";
-    var vbsNologoSwitch = "/Nologo";
+    var vbsInterpreter = "cscript";
+    var vbsNologo      = "/Nologo";    
+    var psInterpreter  = "powershell";
+    var psNologo       = "-NoLogo";
+    var psExecPolicy   = "-ExecutionPolicy";
+    var psBypassPolicy = "Bypass";
+    var psExecScript   = "-File";
 """)
+        if IS_WINDOWS:
+            self.componentCreateOperationsBody += (            
+"""
+    var osaInterpreter = "osascript";
+""")            
         for task in self.externalOps :   
             setArgs = ""
             exePath = ( joinPathQtIfw( QT_IFW_INSTALLER_TEMP_DIR, 
@@ -2622,7 +2629,12 @@ Component.prototype.%s = function(){
             if exePath :                 
                 if task.successRetCodes: args+=["retCodes"]       
                 if scriptType=="vbs": 
-                    args+=["vbsInterpreter", "vbsNologoSwitch"]
+                    args+=["vbsInterpreter", "vbsNologo"]
+                elif scriptType=="ps1":
+                    args+=["psInterpreter", "psNologo", 
+                           "psExecPolicy", "psBypassPolicy", "psExecScript"]
+                elif scriptType=="scpt":            
+                    args+=["osaInterpreter"]                                
                 else: args+=["shellPath", "shellSwitch"]
                 if IS_WINDOWS:
                     args+=["execPath"]
@@ -2641,7 +2653,12 @@ Component.prototype.%s = function(){
                 args+=['"UNDOEXECUTE"']                
                 if task.uninstRetCodes: args+=["undoRetCodes"]
                 if scriptType=="vbs": 
-                    args+=["vbsInterpreter", "vbsNologoSwitch"]
+                    args+=["vbsInterpreter", "vbsNologo"]
+                elif scriptType=="ps1":
+                    args+=["psInterpreter", "psNologo", 
+                           "psExecPolicy", "psBypassPolicy", "psExecScript"]
+                elif scriptType=="scpt":            
+                    args+=["osaInterpreter"]                                              
                 else: args+=["shellPath", "shellSwitch"]
                 if IS_WINDOWS:
                     args+=["undoPath"]

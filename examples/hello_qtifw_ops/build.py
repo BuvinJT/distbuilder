@@ -1,6 +1,6 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
         QtIfwExternalOp, QtIfwKillOp, ExecutableScript, \
-        joinPath, QT_IFW_HOME_DIR, IS_WINDOWS
+        joinPath, printErr, QT_IFW_HOME_DIR, IS_WINDOWS, IS_MACOS
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Custom Installer Ops Example"
@@ -14,32 +14,55 @@ f.iconFilePath     = "../hello_world_tk/demo.ico"
 f.version          = (1,0,0,0)
 f.setupName        = "HelloIfwOpsSetup"
 
-# TODO: Add more!
-(NATIVE, VBSCRIPT, POWERSCRIPT, APPLESCRIPT) = range(4)
-DEMO_OPTION = VBSCRIPT 
-
-EXAMPLE_FILEPATH = joinPath( QT_IFW_HOME_DIR, "distbuilder-example.dat" )
+# SET A DEMO OPTION TO TEST A GIVEN SCRIPT TYPE
+(SHELL, VBSCRIPT, POWERSHELL, APPLESCRIPT) = range(4)
+DEMO_OPTION = POWERSHELL
 
 class BuildProcess( PyToBinInstallerProcess ):
     def onQtIfwConfig( self, cfg ):    
-        
-        # short 'n sweet one liner shell commands   
-        def addNativeScriptOps( pkg ):                    
-            createFileScript = ExecutableScript( "createFile", script=(
-                'echo. > "%s"' % (EXAMPLE_FILEPATH,) if IS_WINDOWS else
-                'touch "%s"'  % (EXAMPLE_FILEPATH,) ) )
-            removeFileScript = ExecutableScript( "removeFile" , script=( 
-                'del /q "%s"' % (EXAMPLE_FILEPATH,) if IS_WINDOWS else
-                'rm "%s"'  % (EXAMPLE_FILEPATH,) ) )                        
-            pkg.pkgScript.externalOps += [ 
-                QtIfwExternalOp( script=createFileScript, 
-                           uninstScript=removeFileScript )
-            ]
 
-        # robust demo
-        def addVbScriptOps( pkg ):                                
-            createFileScript = ExecutableScript( 
-                "createFile", extension="vbs", script=(
+        def addExternalOps( pkg ):                    
+
+            # Short 'n sweet one liner shell commands
+            # By default, an "ExecutableScript" is run as **Batch** on Windows 
+            # (i.e. literally vs the slight nuance of "cmd command syntax"). 
+            # On Linux or macOS, the *default* shell script interpreter ("sh") 
+            # e.g. **Bash** is employed. (TODO: respect shebangs in QtIFW!)       
+            def shellCreateFileOp( filePath ):                    
+                createFileScript = ExecutableScript( "createFile", script=(
+                    'echo. > "%s"' % (filePath,) if IS_WINDOWS else
+                    'touch "%s"'  % (filePath,) ) )
+                removeFileScript = ExecutableScript( "removeFile" , script=( 
+                    'del /q "%s"' % (filePath,) if IS_WINDOWS else
+                    'rm "%s"'  % (filePath,) ) )                        
+                return QtIfwExternalOp( script=createFileScript, 
+                                  uninstScript=removeFileScript )
+    
+            # The PowerShell equivalent 
+            def powerShellCreateFileOp( filePath ):
+                if not IS_WINDOWS: 
+                    printErr( "PowerShell scripts are not INHERTENTLY "
+                              "supported by this platform!", isFatal=True )                         
+                createFileScript = ExecutableScript( 
+                    "createFile", extension="ps1", script=(
+                    "New-Item '%s'" % (filePath,) ))
+                removeFileScript = ExecutableScript( 
+                    "removeFile" , extension="ps1", script=( 
+                    "Remove-Item '%s'" % (filePath,) ))                        
+                return QtIfwExternalOp( script=createFileScript, 
+                                  uninstScript=removeFileScript )
+    
+            # A more robust illustration of the same operations written in VBScript.
+            # Note: The stdout / stderr messages will appear in the installer log, 
+            # and in the verbose / detailed output.
+            # If an error code is returned, QtIFW will alert the user, allowing them 
+            # to terminate the process, retry it, or ignore it.   
+            def vbScriptCreateFileOp( filePath ):        
+                if not IS_WINDOWS: 
+                    printErr( "VBScript is not supported by this platform!", 
+                              isFatal=True )                                 
+                createFileScript = ExecutableScript( 
+                    "createFile", extension="vbs", script=(
 """
 On Error Resume Next
 Const ERROR_CODE=1
@@ -51,9 +74,9 @@ Else
     WScript.StdErr.WriteLine "Could not create: {0}"
     WScript.Quit ERROR_CODE
 End If
-""" ).format(EXAMPLE_FILEPATH) )
-            removeFileScript = ExecutableScript( 
-                "removeFile", extension="vbs", script=(
+""" ).format(filePath) )
+                removeFileScript = ExecutableScript( 
+                    "removeFile", extension="vbs", script=(
 """
 On Error Resume Next
 Const ERROR_CODE=1
@@ -65,24 +88,45 @@ If oFSO.FileExists("{0}") Then
 Else
     WScript.StdOut.WriteLine "Removed: {0}" 
 End If
-""" ).format(EXAMPLE_FILEPATH) )
-            pkg.pkgScript.externalOps += [ 
-                QtIfwExternalOp( script=createFileScript, 
-                           uninstScript=removeFileScript )
-            ]
+""" ).format(filePath) )
+                return QtIfwExternalOp( script=createFileScript, 
+                                  uninstScript=removeFileScript )
+            
+            # An AppleScript equivalent (for macOS)
+            def appleScriptCreateFileOp( filePath ): 
+                if not IS_MACOS:
+                    printErr( "AppleScript is not supported by this platform!", 
+                              isFatal=True )                                 
+                createFileScript = ExecutableScript( 
+                    "createFile", extension="scpt", script=(
+"""
+set exampleFile to open for access "{0}" with write permission
+close access exampleFile
+""" ).format(filePath) )
+                removeFileScript = ExecutableScript( 
+                    "removeFile" , extension="scpt", script=( 
+"""
+tell application "Finder"
+    delete file "{0}"
+end tell
+""" ).format(filePath) )
+                return QtIfwExternalOp( script=createFileScript, 
+                                  uninstScript=removeFileScript )                
+
+            filePath = joinPath( QT_IFW_HOME_DIR, "distbuilder-example.dat" )
+            genOp = { SHELL:       shellCreateFileOp
+                    , POWERSHELL:  powerShellCreateFileOp
+                    , VBSCRIPT:    vbScriptCreateFileOp
+                    , APPLESCRIPT: appleScriptCreateFileOp
+                    }
+            pkg.pkgScript.externalOps += [ genOp[ DEMO_OPTION ]( filePath ) ]        
         
-        def addPowerScriptOps( pkg ): pass # TODO
-        
-        def addAppleScriptOps( pkg ): pass # TODO    
-        
+        # TO TEST A KILL OP, THE TARGET PROGRAM MUST BE RUNNING 
         def addKillOps( pkg ):
             pkg.pkgScript.killOps += [ QtIfwKillOp( pkg ) ]
         
-        pkg = cfg.packages[0]    
-        if   DEMO_OPTION == NATIVE:      addNativeScriptOps( pkg )
-        elif DEMO_OPTION == VBSCRIPT:    addVbScriptOps( pkg )
-        elif DEMO_OPTION == POWERSCRIPT: addPowerScriptOps( pkg )
-        elif DEMO_OPTION == APPLESCRIPT: addAppleScriptOps( pkg )
+        pkg = cfg.packages[0]            
+        addExternalOps( pkg )
         addKillOps( pkg )
     
 p = BuildProcess( configFactory, isDesktopTarget=True )
