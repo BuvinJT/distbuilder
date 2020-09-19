@@ -32,4 +32,5 @@ class BuildProcess( PyToBinInstallerProcess ):
     
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
+p.isScriptDebugTestInstall = True
 p.run()       

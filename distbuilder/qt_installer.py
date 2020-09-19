@@ -22,8 +22,10 @@ BUILD_SETUP_DIR_PATH = absPath( "build_setup" )
 INSTALLER_DIR_PATH = "installer"
 
 QT_IFW_VERBOSE_SWITCH = '-v'
+_KEEP_TEMP_SWITCH = "_keeptemp"
 _SILENT_FORCED_ARGS = ["-f"]
 _LOUD_FORCED_ARGS   = ["auto=true", "onexist=remove"]
+_DEBUG_SCRIPTS_ARGS = ["_keeptemp=true"]
 
 __BIN_SUB_DIR = "bin"
 __QT_IFW_UNINSTALL_EXE_NAME = util.normBinaryName( "Uninstaller", isGui=True )
@@ -1449,8 +1451,10 @@ Controller.prototype.%s = function(){
                                     
     @staticmethod        
     def _purgeTempFiles():                  
-        return _QtIfwScript.removeDir( 
-            _QtIfwScript._TEMP_DIR, isAutoQuote=False ) 
+        return( _QtIfwScript.ifCmdLineSwitch( _KEEP_TEMP_SWITCH, 
+                                              isNegated=True ) +
+                _QtIfwScript.removeDir( 
+            _QtIfwScript._TEMP_DIR, isAutoQuote=False ) ) 
                                             
     @staticmethod        
     def currentPageWidget():                
@@ -1902,6 +1906,8 @@ Controller.prototype.%s = function(){
             TAB + '__installerTempPath()' + END +
             TAB + '__maintenanceTempPath()' + END +            
             TAB + 'makeDir( Dir.temp() )' + END +
+            TAB + _QtIfwScript.ifCmdLineSwitch( _KEEP_TEMP_SWITCH, 
+                                                isNegated=True ) +
             TAB + '__launchWatchDog()' + END )        
         if self.virtualArgs :  
             self.controllerConstructorBody += TAB + 'initGlobals()' + END
