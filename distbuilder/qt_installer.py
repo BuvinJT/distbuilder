@@ -135,11 +135,7 @@ QT_IFW_DYNAMIC_PATH_VARS = [
 def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
 
 # -----------------------------------------------------------------------------
-class QtIfwConfig:
-    """
-    Refer to the Qt Installer Framework docs for command line usage details.
-    """    
-    
+class QtIfwConfig:   
     def __init__( self, 
                   installerDefDirPath=None,
                   packages=None,                  
@@ -241,6 +237,7 @@ class QtIfwConfigXml( _QtIfwXml ):
         
     __RUN_PROG_DESCR_TMPLT = "Run %s now."    
     
+    # QtIfwConfigXml
     def __init__( self, name, version, publisher,
                   iconFilePath=None, 
                   controlScriptName=None,
@@ -373,6 +370,7 @@ class QtIfwPackage:
             normpath( QtIfwPackage.__PACKAGES_PATH_TMPLT 
                       % (INSTALLER_DIR_PATH,) ) )
     
+    # QtIfwPackage
     def __init__( self, pkgId=None, pkgType=None, name=None,
                   subDirName=None,  
                   srcDirPath=None, srcExePath=None, 
@@ -443,6 +441,7 @@ class QtIfwPackageXml( _QtIfwXml ):
     __UIS_TAG    = "UserInterfaces"
     __UI_TAG     = "UserInterface"
         
+    # QtIfwPackageXml   
     def __init__( self, pkgName, displayName, description, 
                   version, scriptName=None, isDefault=True ) :
         _QtIfwXml.__init__( self, QtIfwPackageXml.__ROOT_TAG, 
@@ -575,9 +574,10 @@ class _QtIfwScript:
     __WRITE_FILE_TMPL  = "writeFile( resolveQtIfwPath( %s ), %s );"
     __DELETE_FILE_TMPL = "deleteFile( resolveQtIfwPath( %s ), %s );"
 
-    __EMBED_RES_TMPLT      = 'var %s = "%s";\n\n'
-    __EXT_DELIM_PLACEHOLDER   = "_dot_"
-    __SCRIPT_FROM_B64_TMPL = 'writeScriptFromBase64( "%s", %s )%s'
+    __EMBED_RES_TMPLT       = 'var %s = %s;\n\n'
+    __EMBED_RES_CHUNK_SIZE  = 128
+    __EXT_DELIM_PLACEHOLDER = "_dot_"
+    __SCRIPT_FROM_B64_TMPL  = 'writeScriptFromBase64( "%s", %s )%s'
     
     # Note, there is in fact an installer.killProcess(string absoluteFilePath)
     # this custom kill takes a process name, with no specific path
@@ -593,12 +593,21 @@ class _QtIfwScript:
 
     @staticmethod
     def embedResources( embeddedResources ):
+        def chunks(s, n):
+            """Produce `n`-character chunks from `s`."""
+            for start in range(0, len(s), n):
+                yield s[start:start+n]
+        
         def embed( res ):
             if isinstance( res, ExecutableScript ):
                 script = res
                 varName = script.fileName().replace(".","_dot_")
-                return( _QtIfwScript.__EMBED_RES_TMPLT % 
-                    (varName, script.toBase64( toString=True )) )                 
+                b64 = script.toBase64( toString=True )
+                b64Literals = ""
+                for chunk in chunks(b64, _QtIfwScript.__EMBED_RES_CHUNK_SIZE):
+                    b64Literals += '%s%s"%s"' % (
+                        _QtIfwScript.NEW_LINE, _QtIfwScript.TAB, chunk)                
+                return _QtIfwScript.__EMBED_RES_TMPLT % (varName, b64Literals)                 
         raw = ""
         for res in embeddedResources: raw += embed( res )
         return raw
@@ -799,6 +808,7 @@ class _QtIfwScript:
         return _QtIfwScript.__DELETE_FILE_TMPL % (
             _QtIfwScript._autoQuote( path, isAutoQuote ),) 
             
+    # _QtIfwScript            
     def __init__( self, fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None, 
                   virtualArgs={}, isAutoLib=True ) :
@@ -1366,7 +1376,6 @@ class _QtIfwScript:
     def dirPath( self )   : """PURE VIRTUAL"""     
 
 # -----------------------------------------------------------------------------
-
 class QtIfwControlScript( _QtIfwScript ):
         
     __DIR_TMPLT  = "%s/config"
@@ -1512,6 +1521,7 @@ Controller.prototype.%s = function(){
     def getText( controlName ):                
         return QtIfwControlScript.__GET_TEXT_TMPL % (controlName,)   
     
+    # QtIfwControlScript
     def __init__( self, 
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
@@ -2248,7 +2258,8 @@ Component.prototype.%s = function(){
         s = s.replace( "[IS_TERMINAL]", "false" if isGui else "true" )
         s = s.replace( "[WORKING_DIR]", wrkDir )        
         return s 
-                              
+                
+    # QtIfwPackageScript                              
     def __init__( self, pkgName, 
                   shortcuts=[], externalOps=[], uiPages=[],                    
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
@@ -2597,6 +2608,7 @@ Component.prototype.%s = function(){
 """
     var osaInterpreter = "osascript";
 """)            
+        self.componentCreateOperationsBody += NEW            
         for task in self.externalOps :   
             setArgs = ""
             exePath = ( joinPathQtIfw( QT_IFW_INSTALLER_TEMP_DIR, 
@@ -2628,12 +2640,22 @@ Component.prototype.%s = function(){
             args=[]                        
             if exePath :                 
                 if task.successRetCodes: args+=["retCodes"]       
-                if scriptType=="vbs": 
+                if scriptType=="vbs":                     
+                    if not IS_WINDOWS: 
+                        raise Exception( 
+                            "VBScript is not supported by this platform!" )                                            
                     args+=["vbsInterpreter", "vbsNologo"]
                 elif scriptType=="ps1":
+                    if not IS_WINDOWS: 
+                        raise Exception( 
+                            "PowerShell scripts are not INHERTENTLY "
+                            "supported by this platform!" )                                             
                     args+=["psInterpreter", "psNologo", 
                            "psExecPolicy", "psBypassPolicy", "psExecScript"]
                 elif scriptType=="scpt":            
+                    if not IS_MACOS:
+                        raise Exception( 
+                            "AppleScript is not supported by this platform!" )                                                     
                     args+=["osaInterpreter"]                                
                 else: args+=["shellPath", "shellSwitch"]
                 if IS_WINDOWS:
@@ -2679,8 +2701,8 @@ Component.prototype.%s = function(){
             
             # TODO: add workingdirectory= and errormessage=
             self.componentCreateOperationsBody +=(
-                '%scomponent.add%sOperation( "Execute", execArgs )%s'                       
-                ) % (TAB,"Elevated" if task.isElevated else "",END)
+                '%scomponent.add%sOperation( "Execute", execArgs )%s%s'                       
+                ) % (TAB,"Elevated" if task.isElevated else "",END,NEW)
                                                                 
     def __addAskPassProgResolution( self ):
         TAB = _QtIfwScript.TAB 
@@ -2732,7 +2754,101 @@ class QtIfwShortcut:
         self.isDesktopShortcut = False
       
 # -----------------------------------------------------------------------------
-class QtIfwExternalOp: 
+class QtIfwExternalOp:
+
+    ON_INSTALL, ON_UNINSTALL, ON_BOTH, AUTO_UNDO = range(4) 
+
+    __AUTO_SCRIPT_COUNT=0
+    
+    @staticmethod
+    def CreateRegistryEntry( event, key, valueName=None, value="", valueType="String" ):
+        if not IS_WINDOWS: util._onPlatformErr()
+        valueName = "-Name '%s '" % (valueName,) if valueName else ""
+        if value is None: value=""
+        return QtIfwExternalOp.__genScriptOp( event, 
+            script=QtIfwExternalOp.CreateRegistryEntryScript( key, valueName, value, valueType ), 
+            uninstScript=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
+            isElevated=True )
+    
+    @staticmethod
+    def RemoveRegistryEntry( event, key, valueName=None ):
+        if not IS_WINDOWS: util._onPlatformErr()    
+        return QtIfwExternalOp.__genScriptOp( event, 
+            script=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
+            canAutoUndo=False, isElevated=True )
+    
+    @staticmethod
+    def CreateStartupEntry( pkg=None, exePath=None, displayName=None, 
+                            isAllUsers=False ):
+        if pkg :
+            if not displayName: displayName = pkg.pkgXml.DisplayName
+            if not exePath:  
+                try:    exeName = pkg.exeWrapper.wrapperScript.fileName()
+                except: exeName = normBinaryName( pkg.exeName, pkg.isGui )
+                exePath = joinPathQtIfw( 
+                    ( joinPathQtIfw( QT_IFW_TARGET_DIR, pkg.subDirName ) 
+                      if pkg.subDirName else QT_IFW_TARGET_DIR ), exeName )
+        if exePath is None or displayName is None:
+            raise Exception( "Missing required arguments" )    
+        if IS_WINDOWS:
+            # TODO: IS THIS SUPPORTED IN LEGACY WINDOWS VERSIONS?
+            #     If not, just fall back to shortcuts in startup folders... 
+            # See: https://devblogs.microsoft.com/powershell/how-to-access-or-modify-startup-items-in-the-window-registry/
+            return QtIfwExternalOp.CreateRegistryEntry( QtIfwExternalOp.AUTO_UNDO, 
+                key = "%s:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run" % (
+                    "HKLM" if isAllUsers else "HKCU" ),
+                valueName=displayName, value=exePath )
+        elif IS_LINUX: 
+            # TODO: Fill in
+            util._onPlatformErr()
+        elif IS_MACOS: 
+            # TODO: Fill in
+            util._onPlatformErr()
+
+    @staticmethod
+    def __genScriptOp( event, script, uninstScript, canAutoUndo=True, isElevated=False ):    
+        if   event==QtIfwExternalOp.ON_INSTALL:
+            onInstall   = script
+            onUninstall = None
+        elif event==QtIfwExternalOp.ON_UNINSTALL:
+            onInstall   = None 
+            onUninstall = script if uninstScript is None else uninstScript
+        elif event==QtIfwExternalOp.ON_BOTH:
+            onInstall   = script 
+            onUninstall = script        
+        elif event==QtIfwExternalOp.AUTO_UNDO:
+            if not canAutoUndo: 
+                raise Exception( 
+                    "Installer operation cannot be automatically undone." )
+            onInstall   = script 
+            onUninstall = uninstScript                  
+        return QtIfwExternalOp( script=onInstall, uninstScript=onUninstall,
+                                isElevated=isElevated ) 
+    
+    # See
+    # https://blog.netwrix.com/2018/09/11/how-to-get-edit-create-and-delete-registry-keys-with-powershell/
+    # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-itemproperty?view=powershell-7
+    @staticmethod
+    def CreateRegistryEntryScript( key, valueName=None, value="", valueType="String" ):
+        valueName = "-Name '%s '" % (valueName,) if valueName else ""
+        if value is None: value=""
+        QtIfwExternalOp.__AUTO_SCRIPT_COUNT+=1
+        return ExecutableScript( 
+            "createRegEntry_%d" % (QtIfwExternalOp.__AUTO_SCRIPT_COUNT,), 
+            extension="ps1", script=(
+            "New-ItemProperty -Path '%s' %s-Value '%s' -PropertyType '%s'" 
+            % (key, valueName, value, valueType) ) )
+    
+    @staticmethod
+    def RemoveRegistryEntryScript( key, valueName=None ):
+        valueName = "-Name '%s '" % (valueName,) if valueName else ""
+        QtIfwExternalOp.__AUTO_SCRIPT_COUNT+=1
+        return ExecutableScript( "removeRegEntry_%d" % (
+            QtIfwExternalOp.__AUTO_SCRIPT_COUNT,),
+            extension="ps1", script=(
+            "Remove-ItemProperty -Path '%s' %s" % (key, valueName) ) )
+ 
+    # QtIfwExternalOp
     def __init__( self, 
               script=None,       exePath=None,       args=[], successRetCodes=[0],  
         uninstScript=None, uninstExePath=None, uninstArgs=[],  uninstRetCodes=[0],
@@ -2754,7 +2870,7 @@ class QtIfwExternalOp:
         self.onErrorMessage  = onErrorMessage # TODO: TEST!
 
 # -----------------------------------------------------------------------------
-class QtIfwKillOp: 
+class QtIfwKillOp:
     def __init__( self, processName, onInstall=True, onUninstall=True ):        
         self.processName = ( normBinaryName( processName.exeName ) 
             if isinstance( processName, QtIfwPackage ) else processName )         
@@ -2794,7 +2910,8 @@ class QtIfwUiPage():
         return util._toLibResPath( joinPath( 
                 QtIfwUiPage.__UI_RES_DIR_NAME, 
                 QtIfwUiPage.__toFileName( name ) ) )
-        
+    
+    # QtIfwUiPage    
     def __init__( self, name, pageOrder=None, 
                   sourcePath=None, content=None,
                   onLoad=None, onEnter=None ) :
@@ -3015,6 +3132,7 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
  
     __PWD_PREFIX_CMD_TMPLT = 'cd "%s" && ' # cross platform!
     
+    # QtIfwExeWrapper
     def __init__( self, exeName, isGui=False, 
                   wrapperScript=None,
                   exeDir=QT_IFW_TARGET_DIR, 
@@ -3287,7 +3405,7 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
             if util._isMacApp( self.exeName ):
                 self._args = [self._runProgram]
                 self._runProgram = util._LAUNCH_MACOS_APP_CMD
-                            
+
 # -----------------------------------------------------------------------------    
 def installQtIfw( installerPath=None, version=None, targetPath=None ):    
     if installerPath is None :        

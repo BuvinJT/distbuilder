@@ -1,9 +1,8 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
-        QtIfwExternalOp, QtIfwKillOp, ExecutableScript, \
-        joinPath, printErr, QT_IFW_HOME_DIR, IS_WINDOWS, IS_MACOS
+    QtIfwExternalOp, ExecutableScript, joinPath, QT_IFW_HOME_DIR, IS_WINDOWS
 
 f = configFactory  = ConfigFactory()
-f.productName      = "Hello Custom Installer Ops Example"
+f.productName      = "Hello Installer Embedded Scripts Example"
 f.description      = "A Distribution Builder Example"
 f.companyTradeName = "Some Company"
 f.companyLegalName = "Some Company Inc."    
@@ -12,16 +11,16 @@ f.isGui            = True
 f.entryPointPy     = "../run_conditions_app/hello_gui.py"  
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
 f.version          = (1,0,0,0)
-f.setupName        = "HelloIfwOpsSetup"
+f.setupName        = "HelloIfwEmbeddedScriptsSetup"
 
 # SET A DEMO OPTION TO TEST A GIVEN SCRIPT TYPE
-(SHELL, VBSCRIPT, POWERSHELL, APPLESCRIPT) = range(4)
-DEMO_OPTION = POWERSHELL
+(SHELL, POWERSHELL, VBSCRIPT, APPLESCRIPT) = range(4)
+DEMO_OPTION = SHELL
 
 class BuildProcess( PyToBinInstallerProcess ):
     def onQtIfwConfig( self, cfg ):    
 
-        def addExternalOps( pkg ):                    
+        def addEmbeddedScripts( pkg ):                    
 
             # Short 'n sweet one liner shell commands
             # By default, an "ExecutableScript" is run as **Batch** on Windows 
@@ -40,9 +39,6 @@ class BuildProcess( PyToBinInstallerProcess ):
     
             # The PowerShell equivalent 
             def powerShellCreateFileOp( filePath ):
-                if not IS_WINDOWS: 
-                    printErr( "PowerShell scripts are not INHERTENTLY "
-                              "supported by this platform!", isFatal=True )                         
                 createFileScript = ExecutableScript( 
                     "createFile", extension="ps1", script=(
                     "New-Item '%s'" % (filePath,) ))
@@ -57,10 +53,7 @@ class BuildProcess( PyToBinInstallerProcess ):
             # and in the verbose / detailed output.
             # If an error code is returned, QtIFW will alert the user, allowing them 
             # to terminate the process, retry it, or ignore it.   
-            def vbScriptCreateFileOp( filePath ):        
-                if not IS_WINDOWS: 
-                    printErr( "VBScript is not supported by this platform!", 
-                              isFatal=True )                                 
+            def vbScriptCreateFileOp( filePath ):                                                
                 createFileScript = ExecutableScript( 
                     "createFile", extension="vbs", script=(
 """
@@ -94,9 +87,6 @@ End If
             
             # An AppleScript equivalent (for macOS)
             def appleScriptCreateFileOp( filePath ): 
-                if not IS_MACOS:
-                    printErr( "AppleScript is not supported by this platform!", 
-                              isFatal=True )                                 
                 createFileScript = ExecutableScript( 
                     "createFile", extension="scpt", script=(
 """
@@ -120,14 +110,9 @@ end tell
                     , APPLESCRIPT: appleScriptCreateFileOp
                     }
             pkg.pkgScript.externalOps += [ genOp[ DEMO_OPTION ]( filePath ) ]        
-        
-        # TO TEST A KILL OP, THE TARGET PROGRAM MUST BE RUNNING 
-        def addKillOps( pkg ):
-            pkg.pkgScript.killOps += [ QtIfwKillOp( pkg ) ]
-        
+                
         pkg = cfg.packages[0]            
-        addExternalOps( pkg )
-        addKillOps( pkg )
+        addEmbeddedScripts( pkg )
     
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True

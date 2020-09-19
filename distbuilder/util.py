@@ -78,8 +78,8 @@ _WINDOWS_ICON_EXT = ".ico"
 _MACOS_ICON_EXT   = ".icns" 
 _LINUX_ICON_EXT   = ".png" 
 
-__NOT_SUPPORTED_MSG = ( "Sorry this operation is not supported " +
-                        "this for this platform!" )
+__NOT_SUPPORTED_MSG =( 
+    "This operation/feature is not supported on the current platform!" )
 
 __SCRUB_CMD_TMPL = "{0}{1}"
 __DBL_QUOTE      = '"'
@@ -757,6 +757,8 @@ def printExc( e, isDetailed=False, isFatal=False ):
         printErr( traceback.format_exc() )
     else : printErr( e )
     if isFatal: exit(1)
+
+def _onPlatformErr(): raise Exception( __NOT_SUPPORTED_MSG )
             
 # -----------------------------------------------------------------------------           
 def download( url, saveToPath=None, preserveName=True ):
