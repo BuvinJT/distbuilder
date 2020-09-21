@@ -33,8 +33,9 @@ setup (
 	install_requires = [		  
           "six"           
 		, "PyInstaller"   
-		, "argparse"
-		, "opy_distbuilder>=0.9.2.2"  
+		, "argparse"        
+        , "opy_distbuilder>=0.9.1.1" # workaround, as 0.9.2.X is still in dev...
+		#, "opy_distbuilder>=0.9.2.2"  
 	],
 	include_package_data=True, # extra files defined in MANIFEST.in
 )

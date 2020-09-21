@@ -3678,12 +3678,9 @@ def __mergePackageObjects( srcPkg, destPkg, subDirName=None ):
         if srcPkg.pkgScript.customOperations:
             try: destScript.customOperations.extend( srcPkg.pkgScript.customOperations )
             except: destScript.customOperations = srcPkg.pkgScript.customOperations
-        if srcPkg.pkgScript.killFirstExes:
-            try: destScript.killFirstExes.extend( srcPkg.pkgScript.killFirstExes )
-            except: destScript.killFirstExes = srcPkg.pkgScript.killFirstExes
-        if srcPkg.pkgScript.killLastExes:
-            try: destScript.killLastExes.extend( srcPkg.pkgScript.killLastExes )
-            except: destScript.killLastExes = srcPkg.pkgScript.killLastExes
+        if srcPkg.pkgScript.killOps:
+            try: destScript.killOps.extend( srcPkg.pkgScript.killOps )
+            except: destScript.killOps = srcPkg.pkgScript.killOps
         print( "\nRegenerating installer package script: %s...\n" 
                 % (destScript.path()) )
         destScript._generate()

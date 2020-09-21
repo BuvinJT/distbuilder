@@ -1,9 +1,14 @@
-import opy  # Custom Library
-from opy import OpyConfig, analyze, patch, \
-    obfuscatedId  # @UnusedImport
-from distbuilder.util import *  # @UnusedWildImport
 import six
-
+from distbuilder.util import *  # @UnusedWildImport
+try:
+    import opy  # Custom Library
+    from opy import OpyConfig, analyze, patch, \
+        obfuscatedId  # @UnusedImport
+except Exception as e:
+    obfuscatedId = None # PATCH
+    printErr( "OPY import error. Obfuscation features are currently broken!" ) 
+    printExc( e, isFatal=False )
+    
 OBFUS_DIR_PATH = absPath( "obfuscated" )
 STAGE_DIR_PATH = absPath( "stage" )
 
