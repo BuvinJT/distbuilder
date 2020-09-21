@@ -12,25 +12,23 @@ f.entryPointPy     = "../run_conditions_app/hello_gui.py"
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
 f.version          = (1,0,0,0)
 f.setupName        = "HelloIfwConveniencesSetup"
-
  
 class BuildProcess( PyToBinInstallerProcess ):
     def onQtIfwConfig( self, cfg ):            
 
         def addLaunchOnStartupOp( pkg ):
             pkg.pkgScript.externalOps += [ 
-                QtIfwExternalOp.CreateStartupEntry( pkg ) ]
+                QtIfwExternalOp.CreateStartupEntry( pkg ) ] # Notable option: isAllUsers=True
 
         def addKillOps( pkg ):
             pkg.pkgScript.killOps += [ QtIfwKillOp( pkg ) ]
         
         pkg = cfg.packages[0]
-        # TO TEST ...
+        # REBOOT POST INSTALL TO TEST 
         addLaunchOnStartupOp( pkg )        
         # TO TEST KILL OPS, THE TARGET PROGRAM MUST BE LEFT RUNNING!            
         addKillOps( pkg ) 
     
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
-p.isScriptDebugTestInstall = True
 p.run()       

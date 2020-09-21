@@ -116,4 +116,6 @@ end tell
     
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isTestingInstall = True
+# uncomment to leave scripts in temp directory, post dynamic modifications 
+# p.isScriptDebugTestInstall = True   
 p.run()       

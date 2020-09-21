@@ -1317,7 +1317,7 @@ class _QtIfwScript:
                 TAB + 'var path = writeFile( Dir.temp() + "/__qtIfwInstaller.vbs", vbs )' + END +
                 TAB + 'var result = installer.execute(' + 
                     '"cscript", ["//Nologo", path])' + END +
-                TAB + _QtIfwScript.log( "Result:" ) +                
+                TAB + _QtIfwScript.log( "Vbs execution Result:" ) +                
                 TAB + _QtIfwScript.log( "result[0]", isAutoQuote=False ) + 
                 TAB + 'if( result[1] != 0 ) ' + NEW +
                 (2*TAB) + 'throw new Error("VbScript operation failed.")' + END +
@@ -2794,6 +2794,13 @@ class QtIfwExternalOp:
     ON_INSTALL, ON_UNINSTALL, ON_BOTH, AUTO_UNDO = range(4) 
 
     __AUTO_SCRIPT_COUNT=0
+
+    # TODO: Expand upon registry functions
+    
+    # TODO: Deal with 64 bit vs 32 bit registry contexts
+    # Allow the use of either literal paths or implicit wow64 resolution
+    # Some thoughts:     
+    # https://stackoverflow.com/questions/630382/how-to-access-the-64-bit-registry-from-a-32-bit-powershell-instance
     
     @staticmethod
     def CreateRegistryEntry( event, key, valueName=None, value="", valueType="String" ):
