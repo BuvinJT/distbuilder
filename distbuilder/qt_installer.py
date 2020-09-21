@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from datetime import date
 from abc import ABCMeta, abstractmethod
+import string
 
 QT_IFW_DEFAULT_VERSION = "3.2.2"
 QT_IFW_DOWNLOAD_URL_BASE = "https://download.qt.io/official_releases/qt-installer-framework"
@@ -55,6 +56,8 @@ SHORTCUT_WIN_MINIMIZED = 7
 QT_IFW_ASKPASS_KEY = "askpass"
 QT_IFW_ASKPASS_PLACEHOLDER = "[%s]" % (QT_IFW_ASKPASS_KEY,)
 QT_IFW_ASKPASS_TEMP_FILE_PATH = "/tmp/{0}.path".format( QT_IFW_ASKPASS_KEY )
+
+QT_IFW_DYNAMIC_SYMBOL = "@"
 
 QT_IFW_ROOT_DIR      = "@RootDir@"
 QT_IFW_TARGET_DIR    = "@TargetDir@"
@@ -579,7 +582,7 @@ class _QtIfwScript:
     __EMBED_RES_TMPLT       = 'var %s = %s;\n\n'
     __EMBED_RES_CHUNK_SIZE  = 128
     __EXT_DELIM_PLACEHOLDER = "_dot_"
-    __SCRIPT_FROM_B64_TMPL  = 'writeScriptFromBase64( "%s", %s )%s'
+    __SCRIPT_FROM_B64_TMPL  = 'writeScriptFromBase64( "%s", %s, %s )%s'
     
     # Note, there is in fact an installer.killProcess(string absoluteFilePath)
     # this custom kill takes a process name, with no specific path
@@ -616,13 +619,29 @@ class _QtIfwScript:
     
     @staticmethod
     def genResources( embeddedResources ):
+        
+        MAX_VAR_LENGTH = 64 # Not a true limit to the language, just a sanity check for this context
+        VAR_NAME_CHARS = string.digits + string.ascii_letters + "_"
+        
+        def isValidVarName( name ):
+            if name.strip()=="" or len(name) > MAX_VAR_LENGTH: return False
+            for c in name: 
+                if c not in VAR_NAME_CHARS: return False
+            return True
+        
         def gen( script ):
             if isinstance( script, ExecutableScript ):
                 scriptName = script.fileName()
-                varName = scriptName.replace(
+                resourceVarName = scriptName.replace(
                     ".", _QtIfwScript.__EXT_DELIM_PLACEHOLDER ) 
+                dynamicVarNames = str(script).split( QT_IFW_DYNAMIC_SYMBOL )
+                dynamicVarNames = [ v for v in dynamicVarNames 
+                                    if isValidVarName( v ) ]
+                dynamicVarNames = "[ %s ]" % (
+                    ",".join( ['"%s"' % (v,) for v in dynamicVarNames] ), )
                 return ( _QtIfwScript.__SCRIPT_FROM_B64_TMPL % 
-                         (scriptName, varName, _QtIfwScript.END_LINE) )
+                         (scriptName, resourceVarName, dynamicVarNames, 
+                          _QtIfwScript.END_LINE) )
             return ""        
         return "".join( [ gen( res ) for res in embeddedResources ] )
 
@@ -1086,9 +1105,9 @@ class _QtIfwScript:
                 TAB + _QtIfwScript.log( '"removed dir: " + path', isAutoQuote=False ) + 
                 TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                            
-            'function writeScriptFromBase64( fileName, b64 ) ' + SBLK +  # TODO: Test in NIX/MAC                
+            'function writeScriptFromBase64( fileName, b64, varNames ) ' + SBLK +  # TODO: Test in NIX/MAC                
             TAB + 'var path = writeFileFromBase64( fileName, b64 )' + END +
-            TAB + 'replaceQtIfwVarsInFile( path )' +  END +            
+            TAB + 'replaceQtIfwVarsInFile( path, varNames )' +  END +            
             EBLK + NEW +                                                                         
             'function writeFileFromBase64( fileName, b64 ) ' + SBLK +      # TODO: Test in NIX/MAC
                 TAB + 'var path = Dir.toNativeSeparator( Dir.temp() + "/" + fileName )' + END +            
@@ -1123,7 +1142,7 @@ class _QtIfwScript:
                 TAB + 'deleteFile( tempPath )' + END +
                 TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                
-            'function replaceQtIfwVarsInFile( path ) ' + SBLK +          # TODO: Test in NIX/MAC
+            'function replaceQtIfwVarsInFile( path, varNames ) ' + SBLK +          # TODO: Test in NIX/MAC
             (
             TAB + 'var vbs = ' + NEW +
             (2*TAB) + '"Const ForReading = 1\\n" + ' + NEW +
@@ -1136,8 +1155,8 @@ class _QtIfwScript:
             (2*TAB) + '"Set oFile = oFSO.OpenTextFile(sFileName, ForReading)\\n" + ' + NEW +
             (2*TAB) + '"sText = oFile.ReadAll\\n" + ' + NEW +
             (2*TAB) + '"oFile.Close\\n" ' + END +
-            TAB + 'for( var i=0; i != dynamicPathVars.length; ++i ) ' + SBLK +                                    
-            (2*TAB) + 'var varName = dynamicPathVars[i]' + END +
+            TAB + 'for( var i=0; i != varNames.length; ++i ) ' + SBLK +                                    
+            (2*TAB) + 'var varName = varNames[i]' + END +
             (2*TAB) + 'var varVal = Dir.toNativeSeparator( installer.value( varName ) )' + END +
             (2*TAB) + 'vbs += "sText = Replace(sText, Amp + \\"" + varName + "\\" + Amp, \\"" + varVal + "\\")\\n"' + NEW +
             TAB + EBLK +
@@ -1770,6 +1789,8 @@ Controller.prototype.%s = function(){
                     ', "' + _QtIfwScript.MAINTAIN_MODE_CMD_ARG + '=' + 
                     _QtIfwScript.MAINTAIN_MODE_OPT_REMOVE_ALL + '" ' 
                     "]" + END +
+                TAB + _QtIfwScript.ifCmdLineSwitch( _KEEP_TEMP_SWITCH ) +
+                    'args.push( "' + _KEEP_TEMP_SWITCH + '=true" )' + END +                     
                 TAB + 'var exeResult' + END +
                 (TAB + 'var regPaths = maintenanceToolPaths()' + END + 
                  TAB + 'if( regPaths != null )' + SBLK +
@@ -1903,9 +1924,14 @@ Controller.prototype.%s = function(){
             TAB + 'installer.setValue( "__lockFilePath", "" )' + END +
             TAB + 'installer.setValue( "__watchDogPath", "" )' + END +
             TAB + 'clearErrorLog()' + END +
+            TAB +  _QtIfwScript.log( ('"%s = " + ' % (_KEEP_TEMP_SWITCH,)) +
+                _QtIfwScript.lookupValue(_KEEP_TEMP_SWITCH, "false" ), 
+                isAutoQuote=False ) +
             TAB + '__installerTempPath()' + END +
             TAB + '__maintenanceTempPath()' + END +            
             TAB + 'makeDir( Dir.temp() )' + END +
+            # currently the entire point of the watchdog is purge temp files,
+            # so when _keeptemp is enabled, just drop that entire mechanism!
             TAB + _QtIfwScript.ifCmdLineSwitch( _KEEP_TEMP_SWITCH, 
                                                 isNegated=True ) +
             TAB + '__launchWatchDog()' + END )        
