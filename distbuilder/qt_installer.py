@@ -606,12 +606,13 @@ class _QtIfwScript:
         def embed( res ):
             if isinstance( res, ExecutableScript ):
                 script = res
-                varName = script.fileName().replace(".","_dot_")
+                varName = script.fileName().replace(".","_dot_")                
                 b64 = script.toBase64( toString=True )
                 b64Literals = ""
                 for chunk in chunks(b64, _QtIfwScript.__EMBED_RES_CHUNK_SIZE):
-                    b64Literals += '%s%s"%s"' % (
-                        _QtIfwScript.NEW_LINE, _QtIfwScript.TAB, chunk)                
+                    concat = "  " if b64Literals=="" else "+ " 
+                    b64Literals += '%s%s%s"%s"' % (
+                        _QtIfwScript.NEW_LINE, _QtIfwScript.TAB, concat, chunk)                
                 return _QtIfwScript.__EMBED_RES_TMPLT % (varName, b64Literals)                 
         raw = ""
         for res in embeddedResources: raw += embed( res )
@@ -632,16 +633,19 @@ class _QtIfwScript:
         def gen( script ):
             if isinstance( script, ExecutableScript ):
                 scriptName = script.fileName()
+                scriptContent = str(script)
                 resourceVarName = scriptName.replace(
                     ".", _QtIfwScript.__EXT_DELIM_PLACEHOLDER ) 
-                dynamicVarNames = str(script).split( QT_IFW_DYNAMIC_SYMBOL )
+                dynamicVarNames = scriptContent.split( QT_IFW_DYNAMIC_SYMBOL )
                 dynamicVarNames = [ v for v in dynamicVarNames 
                                     if isValidVarName( v ) ]
                 dynamicVarNames = "[ %s ]" % (
                     ",".join( ['"%s"' % (v,) for v in dynamicVarNames] ), )
-                return ( _QtIfwScript.__SCRIPT_FROM_B64_TMPL % 
-                         (scriptName, resourceVarName, dynamicVarNames, 
-                          _QtIfwScript.END_LINE) )
+                return ( _QtIfwScript.log( "script: %s" % (scriptName,) ) +
+                    _QtIfwScript.log( scriptContent ) +
+                    _QtIfwScript.__SCRIPT_FROM_B64_TMPL % 
+                    (scriptName, resourceVarName, dynamicVarNames, 
+                    _QtIfwScript.END_LINE) )
             return ""        
         return "".join( [ gen( res ) for res in embeddedResources ] )
 
@@ -1111,12 +1115,10 @@ class _QtIfwScript:
             EBLK + NEW +                                                                         
             'function writeFileFromBase64( fileName, b64 ) ' + SBLK +      # TODO: Test in NIX/MAC
                 TAB + 'var path = Dir.toNativeSeparator( Dir.temp() + "/" + fileName )' + END +            
+                TAB + 'var tempPath = Dir.toNativeSeparator( Dir.temp() + "/" + fileName + ".b64" )' + END +
                 (TAB + 'b64 = "-----BEGIN CERTIFICATE-----\\n" + '
                        'b64 + "\\n-----END CERTIFICATE-----\\n"' + END 
                 if IS_WINDOWS else "" ) +
-                TAB + 'var tempPath = Dir.temp() + ' + 
-                    (('"\\\\%s.b64"' if IS_WINDOWS else '"/%s.b64"') % 
-                     (_QT_IFW_TEMP_NAME,)) + END +
                 TAB + 'writeFile( tempPath, b64 )' + END +                                 
                 TAB + 'var decodeCmd = "' +
                     ('echo off\\n'                     
@@ -1139,7 +1141,7 @@ class _QtIfwScript:
                 TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
                 (2*TAB) + 'throw new Error("writeFileFromBase64 failed. (file does not exists)")' + END +
                 TAB + _QtIfwScript.log( '"Wrote file from base64: " + path', isAutoQuote=False ) + 
-                TAB + 'deleteFile( tempPath )' + END +
+                #TAB + 'deleteFile( tempPath )' + END +
                 TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                
             'function replaceQtIfwVarsInFile( path, varNames ) ' + SBLK +          # TODO: Test in NIX/MAC
@@ -1939,8 +1941,9 @@ Controller.prototype.%s = function(){
             self.controllerConstructorBody += TAB + 'initGlobals()' + END
 
         self.controllerConstructorBody += (
-            _QtIfwScript.ifMaintenanceTool() +
-                _QtIfwScript.genResources( self._maintenanceToolResources ) )
+            _QtIfwScript.ifMaintenanceTool( isMultiLine=True ) +
+                _QtIfwScript.genResources( self._maintenanceToolResources ) +
+            EBLK )
         
         HIDE_PAGE_TMPLT = ( TAB + 
             'installer.setDefaultPageVisible(QInstaller.%s, false)' ) + END
@@ -2795,8 +2798,6 @@ class QtIfwExternalOp:
     @staticmethod
     def CreateRegistryEntry( event, key, valueName=None, value="", valueType="String" ):
         if not IS_WINDOWS: util._onPlatformErr()
-        valueName = "-Name '%s '" % (valueName,) if valueName else ""
-        if value is None: value=""
         return QtIfwExternalOp.__genScriptOp( event, 
             script=QtIfwExternalOp.CreateRegistryEntryScript( key, valueName, value, valueType ), 
             uninstScript=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
@@ -2817,8 +2818,8 @@ class QtIfwExternalOp:
             if not exePath:  
                 try:    exeName = pkg.exeWrapper.wrapperScript.fileName()
                 except: exeName = normBinaryName( pkg.exeName, pkg.isGui )
-                exePath = joinPathQtIfw( 
-                    ( joinPathQtIfw( QT_IFW_TARGET_DIR, pkg.subDirName ) 
+                exePath = joinPath( 
+                    ( joinPath( QT_IFW_TARGET_DIR, pkg.subDirName ) 
                       if pkg.subDirName else QT_IFW_TARGET_DIR ), exeName )
         if exePath is None or displayName is None:
             raise Exception( "Missing required arguments" )    
@@ -2862,7 +2863,7 @@ class QtIfwExternalOp:
     # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-itemproperty?view=powershell-7
     @staticmethod
     def CreateRegistryEntryScript( key, valueName=None, value="", valueType="String" ):
-        valueName = "-Name '%s '" % (valueName,) if valueName else ""
+        valueName = "-Name '%s' " % (valueName,) if valueName else ""
         if value is None: value=""
         QtIfwExternalOp.__AUTO_SCRIPT_COUNT+=1
         return ExecutableScript( 
@@ -2873,7 +2874,7 @@ class QtIfwExternalOp:
     
     @staticmethod
     def RemoveRegistryEntryScript( key, valueName=None ):
-        valueName = "-Name '%s '" % (valueName,) if valueName else ""
+        valueName = "-Name '%s' " % (valueName,) if valueName else ""
         QtIfwExternalOp.__AUTO_SCRIPT_COUNT+=1
         return ExecutableScript( "removeRegEntry_%d" % (
             QtIfwExternalOp.__AUTO_SCRIPT_COUNT,),
