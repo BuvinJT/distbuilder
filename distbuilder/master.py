@@ -22,6 +22,7 @@ from distbuilder.opy_library import \
 from distbuilder.qt_installer import \
       _stageInstallerPackages \
     , _buildInstaller \
+    , _addQtIfwResources \
     , _addQtIfwUiPages \
     , joinPathQtIfw \
     , QtIfwConfig \
@@ -36,6 +37,7 @@ from distbuilder.qt_installer import \
     , DEFAULT_SETUP_NAME \
     , DEFAULT_QT_IFW_SCRIPT_NAME \
     , QT_IFW_VERBOSE_SWITCH \
+    , _DEBUG_SCRIPTS_ARGS \
     , QT_IFW_TARGET_DIR \
     , _SILENT_FORCED_ARGS \
     , _LOUD_FORCED_ARGS \
@@ -138,6 +140,7 @@ class ConfigFactory:
                             configXml=self.qtIfwConfigXml(), 
                             controlScript=self.qtIfwControlScript(),
                             setupExeName=self.setupName ) 
+        _addQtIfwResources( cfg, self.ifwPackages )        
         _addQtIfwUiPages( cfg, self.ifwUiPages )
         return cfg 
 
@@ -457,9 +460,10 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
         self.isDesktopTarget     = isDesktopTarget
         self.isHomeDirTarget     = isHomeDirTarget
         
-        self.isTestingInstall       = False        
-        self.isAutoTestInstall      = False
-        self.isVerboseTestInstall   = True
+        self.isTestingInstall         = False        
+        self.isAutoTestInstall        = False
+        self.isVerboseTestInstall     = True
+        self.isScriptDebugTestInstall = False
         
         # Results
         self.setupPath = None
@@ -489,12 +493,13 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
             self.setupPath = moveToHomeDir( self.setupPath )    
         if self.isTestingInstall or self.isAutoTestInstall:            
             verboseArgs = ( 
-                [QT_IFW_VERBOSE_SWITCH] if self.isVerboseTestInstall else [] )       
+                [QT_IFW_VERBOSE_SWITCH] if self.isVerboseTestInstall else [] )
+            debugArgs = _DEBUG_SCRIPTS_ARGS if self.isScriptDebugTestInstall else [] 
             autoArgs = ( 
                 ( _SILENT_FORCED_ARGS if self.configFactory.isSilentSetup else
                   _LOUD_FORCED_ARGS ) 
                 if self.isAutoTestInstall else [] )
-            run( self.setupPath, verboseArgs + autoArgs,
+            run( self.setupPath, verboseArgs + debugArgs + autoArgs,
                  isDebug=True,
                  isElevated=self.isAutoTestInstall )
         

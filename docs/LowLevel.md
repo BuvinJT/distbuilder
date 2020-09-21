@@ -306,12 +306,10 @@ resolved at *runtime* by QtIFW.  Note these are applicable for **BOTH** direct
 [Installer Script](#installer-scripting) generation, and as parameters
 and attributes for many higher level functions and objects in this library.   
 
-    QT_IFW_OS 
-
     QT_IFW_TARGET_DIR 
 
     QT_IFW_ROOT_DIR 
-
+    
     QT_IFW_HOME_DIR 
     QT_IFW_DESKTOP_DIR
 
@@ -323,6 +321,9 @@ and attributes for many higher level functions and objects in this library.
     QT_IFW_USER_STARTMENU_DIR
     QT_IFW_ALLUSERS_STARTMENU_DIR
     
+    QT_IFW_INSTALLER_TEMP_DIR
+    QT_IFW_MAINTENANCE_TEMP_DIR
+    
     QT_IFW_INSTALLER_DIR 
     QT_IFW_INTALLER_PATH
      
@@ -331,6 +332,8 @@ and attributes for many higher level functions and objects in this library.
     QT_IFW_TITLE 
     QT_IFW_PUBLISHER 
     QT_IFW_URL
+
+    QT_IFW_OS 
 
 Note: use [joinPathQtIfw](#joinpathqtifw) to build paths with such constants. 
 
@@ -426,8 +429,15 @@ Static Functions:
     ifInstalling( isMultiLine=False )
     ifMaintenanceTool( isMultiLine=False )
 
-    fileExists( path, isAutoQuote=True )
-    ifFileExists( path, isAutoQuote=True, isMultiLine=False )   
+    pathExists( path, isAutoQuote=True )
+    ifPathExists( path, isAutoQuote=True, isMultiLine=False )   
+    ifNotPathExists( path, isAutoQuote=True, isMultiLine=False )
+    
+    makeDir( path )            <path can include native env vars> 
+    removeDir( path ) 		   <path can include native env vars>
+    	
+    writeFile( path, content ) <path can include native env vars>
+    deleteFile( path ) 	       <path can include native env vars>	
     
     yesNoPopup( msg, title="Question", resultVar="result" )             
     yesNoCancelPopup( msg, title="Question", resultVar="result" )                  
@@ -435,9 +445,7 @@ Static Functions:
                             onYes="", onNo="", onCancel="" )
     ifYesNoPopup( msg, title="Question", resultVar="result", 
                  isMultiLine=False )
-    
-    Dir.toNativeSparator( path ) 
-    
+        
     _autoQuote( value, isAutoQuote )
 
 In addition, QtIfwControlScript provides: 
@@ -478,17 +486,33 @@ Static Functions:
 If writing scripts directly for distbulder integration, you may also employ the 
 following add-on **QT SCRIPT** functions:
 
-	execute( binPath, args )
+    execute( binPath, args )
+    executeDetached( binPath, args )
+		
+    resolveQtIfwPath( path )		
+    resolveNativePath( path )
+    
+    fileName( filePath )
+    rootFileName( filePath )
+    
+    Dir.temp()
+    Dir.toNativeSparator( path ) 
+    Dir.fromNativeSparator( path )
 	
-	sleep( seconds )
-
-    killAll( progName )
-	
+	dirList( path )   		   <path can include native env vars, and wild cards>
+		
+    makeDir( path )
+    removeDir( path )
+    	
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
 	
 	clearErrorLog()
 	writeErrorLog( msg )
+
+	sleep( seconds )
+
+    killAll( progName )
 
 	quit( msg )
 	abort( msg )
@@ -503,11 +527,16 @@ following add-on **QT SCRIPT** functions:
 	maintenanceToolExists( dir )
 	toMaintenanceToolPath( dir )
 	
+    isWindows()
+    isMacOs()
+    isLinux()
+	
 	<Windows Only>   
 		maintenanceToolPaths()	<resolves via registry lookups>
 		isOsRegisteredProgram()	
 		executeVbScript( vbs )
-	
+		executeVbScriptDetached( scriptPath, vbs )
+			
 		<Package Context Only>
 			addVbsOperation( component, isElevated, vbs )
 			setShortcutWindowStyleVbs( shortcutPath, styleCode )
@@ -1023,11 +1052,14 @@ preparing the program for distribution:
 ## ExecutableScript
 
 Executable scripts have wide ranging potential for use with this library.  
-They may be employed as part of the build process, or deployed
-with a distribution. 
+They may be employed as part of the build process, deployed with a 
+distribution, or run in an embedded process of some form. 
 
-The ExecutableScript class is used to generate / bundle such scripts. By 
-default, this is a batch file on Windows, or a shell script on Linux or Mac.
+The ExecutableScript class is used to generate / bundle scripts. By default, 
+the script is a batch file on Windows, or a shell script on Linux or Mac.
+
+The class [QtIfwExternalOp](ConfigClasses.md#qtifwexternalop)) optionally 
+employs this class to embedded custom installer scripts into it's processes.    
 
 The class [QtIfwExeWrapper](ConfigClasses.md#qtifwexewrapper)) often contains 
 a class of his type, used as a "wrapper" over a deployed executable.  In some 
@@ -1036,8 +1068,7 @@ tools the library leans on, and/or is added directly by distbuilder.
 
 Class [PyInstHook](ConfigClasses.md#pyinsthook)) is a derived class from 
 ExecutableScript. Note that it is a Python script rather than the default type
-for a given platform.  This derivation is a good example of where you would 
-want to the `read` function and the line parsing/building functions.
+for a given platform.  
 
 Constructor:       
 
@@ -1056,14 +1087,17 @@ Attributes & default values:
 Functions:   
 
     fileName()
-    
+        
     read( dirPath  )
     write( dirPath )
-
+    
     toLines()        
     fromLines( lines )
     injectLine( injection, lineNo )               
-
+    
+    toBase64( toString=False )
+    fromBase64( data )
+    
     debug()        
         
 Details:

@@ -23,6 +23,7 @@ from distbuilder.qt_installer import \
     , QtIfwPackageScript \
     , QtIfwShortcut \
     , QtIfwExternalOp \
+    , QtIfwKillOp \
     , QtIfwExeWrapper \
     , QtIfwUiPage \
     , QtIfwTargetDirPage \
@@ -47,6 +48,8 @@ from distbuilder.qt_installer import \
     , QT_IFW_USER_STARTMENU_DIR \
     , QT_IFW_ALLUSERS_STARTMENU_DIR \
     , QT_IFW_ROOT_DIR \
+    , QT_IFW_INSTALLER_TEMP_DIR \
+    , QT_IFW_MAINTENANCE_TEMP_DIR \
     , QT_IFW_INSTALLER_DIR \
     , QT_IFW_INTALLER_PATH \
     , QT_IFW_PRODUCT_NAME \
@@ -96,6 +99,7 @@ from distbuilder.util import \
     , THIS_DIR \
     , DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE \
     , absPath \
+    , toNativePath \
     , exists \
     , isFile \
     , isDir \

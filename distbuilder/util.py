@@ -25,6 +25,7 @@ from distutils.sysconfig import get_python_lib
 import inspect  # @UnusedImport
 from time import sleep
 from struct import calcsize
+import base64
 
 # -----------------------------------------------------------------------------   
 __plat = platform.system()
@@ -77,8 +78,8 @@ _WINDOWS_ICON_EXT = ".ico"
 _MACOS_ICON_EXT   = ".icns" 
 _LINUX_ICON_EXT   = ".png" 
 
-__NOT_SUPPORTED_MSG = ( "Sorry this operation is not supported " +
-                        "this for this platform!" )
+__NOT_SUPPORTED_MSG =( 
+    "This operation/feature is not supported on the current platform!" )
 
 __SCRUB_CMD_TMPL = "{0}{1}"
 __DBL_QUOTE      = '"'
@@ -576,6 +577,9 @@ def absPath( relativePath, basePath=None ):
     if basePath is None: basePath=THIS_DIR        
     return realpath( normpath( joinPath( basePath, relativePath ) ) )
 
+def toNativePath( path ): 
+    return path.replace("/","\\") if IS_WINDOWS else path.replace("\\","/")
+    
 def tempDirPath(): return gettempdir()
 
 # mktemp returns a temp file path, but doesn't create it.
@@ -753,6 +757,8 @@ def printExc( e, isDetailed=False, isFatal=False ):
         printErr( traceback.format_exc() )
     else : printErr( e )
     if isFatal: exit(1)
+
+def _onPlatformErr(): raise Exception( __NOT_SUPPORTED_MSG )
             
 # -----------------------------------------------------------------------------           
 def download( url, saveToPath=None, preserveName=True ):
@@ -876,7 +882,16 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         if lineNo : lines.insert( lineNo-1, injection )
         else : lines.append( injection )
         self.fromLines( lines )
+        
+    def toBase64( self, toString=False ):
+        ret = base64.b64encode( str(self).encode('utf-8') )
+        return ret.decode('utf-8') if toString else ret
 
+    def fromBase64( self, data ):
+        self.script = base64.b64decode( data ).decode('utf-8')
+        self.shebang = None 
+        # TODO: resolve shebang programmatically, and remove it from self.script        
+        
 # -----------------------------------------------------------------------------           
 if IS_WINDOWS :
     class _WindowsSharedFile:
