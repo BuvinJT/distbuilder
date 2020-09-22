@@ -1,11 +1,13 @@
-import six
-from distbuilder import util
-from distbuilder.util import *  # @UnusedWildImport
-import xml.etree.ElementTree as ET
-from xml.dom import minidom
+import string
 from datetime import date
 from abc import ABCMeta, abstractmethod
-import string
+import xml.etree.ElementTree as ET
+from xml.dom import minidom
+
+import six
+
+from distbuilder import util
+from distbuilder.util import *  # @UnusedWildImport
 
 QT_IFW_DEFAULT_VERSION = "3.2.2"
 QT_IFW_DOWNLOAD_URL_BASE = "https://download.qt.io/official_releases/qt-installer-framework"
@@ -743,16 +745,16 @@ class _QtIfwScript:
         return _QtIfwScript.lookupValueList( 
             arg, default, delimiter="," )
 
-    @staticmethod        
-    def ifInstalling( isMultiLine=False ):
-        return 'if( %s )%s\n%s' % (
-            _QtIfwScript.__IS_INSTALLER,
-            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
-
     @staticmethod
     def ifMaintenanceTool( isMultiLine=False ):
         return 'if( %s )%s\n%s' % (
             _QtIfwScript.__IS_MAINTENANCE_TOOL,
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+
+    @staticmethod        
+    def ifInstalling( isMultiLine=False ):
+        return 'if( %s )%s\n%s' % (
+            _QtIfwScript.__IS_INSTALLER,
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
     @staticmethod        
@@ -2108,19 +2110,23 @@ Controller.prototype.%s = function(){
         )
 
     def __genFinishedPageCallbackBody( self ):
-        self.finishedPageCallbackBody = (         
-            QtIfwControlScript.enable( 
-                QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
-                self.isRunProgInteractive ) +                  
-            QtIfwControlScript.setVisible( 
-                QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
-                self.isRunProgVisible ) +                  
-            _QtIfwScript.ifCmdLineArg( 
-                _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +               
-                _QtIfwScript.TAB + QtIfwControlScript.setCheckBox( 
+        TAB  = _QtIfwScript.TAB
+        EBLK = _QtIfwScript.END_BLOCK
+        self.finishedPageCallbackBody = (                
+            _QtIfwScript.ifInstalling( isMultiLine=True ) +
+            TAB + QtIfwControlScript.enable( 
                     QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
-                        _QtIfwScript.cmdLineSwitchArg(
-                            _QtIfwScript.RUN_PROGRAM_CMD_ARG ) ) + 
+                    self.isRunProgInteractive ) +                              
+            TAB + QtIfwControlScript.setVisible( 
+                    QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
+                    self.isRunProgVisible ) +                  
+            TAB + _QtIfwScript.ifCmdLineArg( 
+                    _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +               
+                    _QtIfwScript.TAB + QtIfwControlScript.setCheckBox( 
+                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
+                            _QtIfwScript.cmdLineSwitchArg(
+                                _QtIfwScript.RUN_PROGRAM_CMD_ARG ) ) +
+            EBLK +         
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.FINISH_BUTTON ) 
