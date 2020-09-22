@@ -1729,11 +1729,21 @@ Controller.prototype.%s = function(){
     def __appendUiPageCallbacks( self ):    
         if self.uiPages: 
             for p in self.uiPages:
-                # enter page event handler
+                # enter page event handler                
+                if p.onAutoPilotClickNext:
+                    clickNext=(
+                        _QtIfwScript.TAB +
+                        _QtIfwScript.ifCmdLineSwitch( 
+                            _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
+                            QtIfwControlScript.clickButton( 
+                                QtIfwControlScript.NEXT_BUTTON ) )
+                    try: p.onEnter += clickNext
+                    except: p.onEnter = clickNext
+                                                    
                 if p.onEnter:
                     self.script += (                         
                         QtIfwControlScript.__UI_PAGE_CALLBACK_FUNC_TMPLT % 
-                        ( p.name, p.onEnter ) )                
+                        ( p.name, p.onEnter ) )
 
     def __genGlobals( self ):
         NEW = _QtIfwScript.NEW_LINE
@@ -2968,6 +2978,7 @@ class QtIfwUiPage():
         self.onEnter        = onEnter
         self.supportFuncs   = {} 
         self.replacements   = {}
+        self.onAutoPilotClickNext = True        
         if sourcePath:
             with open( sourcePath, 'r' ) as f: self.content = f.read()
         else: self.content = content  
@@ -3063,7 +3074,6 @@ class QtIfwTargetDirPage( QtIfwUiPage ):
     page.targetDirectory.setText( Dir.toNativeSeparator(
         QFileDialog.getExistingDirectory("", page.targetDirectory.text) ) );
 """) % ( QtIfwTargetDirPage.NAME, )
-
         
         QtIfwUiPage.__init__( self, QtIfwTargetDirPage.NAME,
             sourcePath=QtIfwTargetDirPage.__SRC, onLoad=ON_LOAD )
