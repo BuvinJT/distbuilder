@@ -1595,7 +1595,7 @@ Controller.prototype.%s = function(){
         self.performInstallationPageCallbackBody = None
         self.isAutoPerformInstallationPageCallback = True
         
-        self.isFinishedPageCallbackBody = True
+        self.isFinishedPageVisible = True
         self.finishedPageCallbackBody = None
         self.isAutoFinishedPageCallback = True        
 
@@ -1975,7 +1975,7 @@ Controller.prototype.%s = function(){
             hidePage( QT_IFW_READY_PAGE )
         if not self.isPerformInstallationPageVisible:                                                                    
             hidePage( QT_IFW_INSTALL_PAGE )
-        if not self.isFinishedPageCallbackBody:                                                                    
+        if not self.isFinishedPagePageVisible:                                                                    
             hidePage( QT_IFW_FINISHED_PAGE )
             
         for signalName, (slotName, _) in six.iteritems( self.__standardEventSlots ):    
@@ -3706,15 +3706,16 @@ def __mergePackageObjects( srcPkg, destPkg, subDirName=None ):
 # -----------------------------------------------------------------------------            
 def buildInstaller( qtIfwConfig, isSilent ):
     ''' returns setupExePath '''
-    _stageInstallerPackages( qtIfwConfig )
+    _stageInstallerPackages( qtIfwConfig, isSilent )
     return _buildInstaller( qtIfwConfig, isSilent )
 
-def _stageInstallerPackages( qtIfwConfig ):
+def _stageInstallerPackages( qtIfwConfig, isSilent ):
     __validateConfig( qtIfwConfig )        
+    if isSilent: __toSilentConfig( qtIfwConfig )
     __initBuild( qtIfwConfig )    
     __addInstallerResources( qtIfwConfig )     
 
-def _buildInstaller( qtIfwConfig, isSilent ):
+def _buildInstaller( qtIfwConfig, isSilent ):    
     setupExePath = __build( qtIfwConfig )    
     __postBuild( qtIfwConfig )
     if isSilent : setupExePath = __buildSilentWrapper( qtIfwConfig )
@@ -3923,6 +3924,16 @@ def __postBuild( qtIfwConfig ):  # @UnusedVariable
         if   p.srcDirPath and isDir(  p.srcDirPath): removeDir(  p.srcDirPath )
         elif p.srcExePath and isFile( p.srcExePath): removeFile( p.srcExePath )                    
 
+def __toSilentConfig( qtIfwConfig ):
+    qtIfwConfig.controlScript.isIntroductionPageVisible         = False                                                                   
+    qtIfwConfig.controlScript.isTargetDirectoryPageVisible      = False
+    qtIfwConfig.controlScript.isComponentSelectionPageVisible   = False
+    qtIfwConfig.controlScript.isLicenseAgreementPageVisible     = False
+    qtIfwConfig.controlScript.isStartMenuDirectoryPageVisible   = False
+    qtIfwConfig.controlScript.isReadyForInstallationPageVisible = False
+    qtIfwConfig.controlScript.isPerformInstallationPageVisible  = False
+    qtIfwConfig.controlScript.isFinishedPagePageVisible         = False 
+    
 def __buildSilentWrapper( qtIfwConfig ) :
     print( "Building silent wrapper executable...\n" )
     from distbuilder.master import PyToBinPackageProcess, ConfigFactory

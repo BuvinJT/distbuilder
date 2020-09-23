@@ -385,7 +385,7 @@ Attributes & default values:
     performInstallationPageCallbackBody = None
     isAutoPerformInstallationPageCallback = True
         
-	isFinishedPageCallbackBody = True        
+	isFinishedPageVisible = True        
     finishedPageCallbackBody = None
     isAutoFinishedPageCallback = True        
 

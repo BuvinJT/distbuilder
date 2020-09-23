@@ -481,7 +481,7 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
         ifwConfig = self.configFactory.qtIfwConfig( packages=self.ifwPackages )
         self.onQtIfwConfig( ifwConfig )     
         
-        _stageInstallerPackages( ifwConfig )
+        _stageInstallerPackages( ifwConfig, self.configFactory.isSilentSetup )
         self.onPackagesStaged( ifwConfig, ifwConfig.packages )
                    
         self.setupPath = _buildInstaller( 
