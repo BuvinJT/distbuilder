@@ -3925,13 +3925,14 @@ def __postBuild( qtIfwConfig ):  # @UnusedVariable
         elif p.srcExePath and isFile( p.srcExePath): removeFile( p.srcExePath )                    
 
 def __toSilentConfig( qtIfwConfig ):
-    qtIfwConfig.controlScript.isIntroductionPageVisible         = False                                                                   
+    # Minimum visible pages required for functionality
+    qtIfwConfig.controlScript.isIntroductionPageVisible         = True                                                                     
     qtIfwConfig.controlScript.isTargetDirectoryPageVisible      = False
     qtIfwConfig.controlScript.isComponentSelectionPageVisible   = False
     qtIfwConfig.controlScript.isLicenseAgreementPageVisible     = False
     qtIfwConfig.controlScript.isStartMenuDirectoryPageVisible   = False
-    qtIfwConfig.controlScript.isReadyForInstallationPageVisible = False
-    qtIfwConfig.controlScript.isPerformInstallationPageVisible  = False
+    qtIfwConfig.controlScript.isReadyForInstallationPageVisible = True 
+    qtIfwConfig.controlScript.isPerformInstallationPageVisible  = True 
     qtIfwConfig.controlScript.isFinishedPagePageVisible         = False 
     
 def __buildSilentWrapper( qtIfwConfig ) :

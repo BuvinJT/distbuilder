@@ -6,31 +6,22 @@
 
 ## v.0.7.8.x **(WIP)**
 
-* Finish developing/testing QtIfwExternalOp.
- 
-## v.0.8.x
-			
-* Improve and stabilize Opy to the point it can handle *most* scripts without *any*
-manual intervention. 
-   
-* "Perfect" Opy "library bundling" (for both private and PyPi libraries). 
+* Test, and confirm / fix UNinstallation mechanism for silent installers via the original installer.
 
-* Add git integration: Clone/pull to build project from multiple remote sources
+* Fix workflow flaws with auto uninstall, so it's less possible for a user to screw that up.
+(Such as by not clicking the UAC prompt on Windows for the uninstaller...) 
 
-## v.0.9.0
+* RESTORE Linux / Mac QtIFW integration (broken during Windows development of 0.7.8.x)
 
-* TEST (and develop as needed) QtIFW packages which: 
-	* contain only "data" (no exe)
-	* are not enabled for install by default
-	* do not install shortcuts
+* Add she bang respect / a Windows equivalent to ExecutableScript / QtIwfExternalOp 
+embedded scripting mechanism, allowing interepter paths / options to be defined.  Thus
+allowing options for embedding Python, Java, ect.
 
-* Add Qt IFW Package Licenses (EULAs)
+* Add "pure" QScript (custom operations) examples / features for QtIFW. 
 
-* Add "version control" for installers. Auto launch maintainencetool when trying to 
-install the same version.  Have prompts questioning if the using wants to update 
-or revert to a prior version.
+* Revisit silent installers, using new page hiding features to further minimize 
+"quick flashes" of the ui.
 
-## v.0.9.1
 
 * Add these Qt IFW script generation features:
 	* Directory creation on target (e.g. user data directories)		
@@ -38,29 +29,35 @@ or revert to a prior version.
 	* Windows Registry functions, analogous settings on other platforms
 	(e.g. plist on Mac)     
 	* Dependency installation via package managers (partially developed already)
+ 
+## v.0.8.0
+
+* Add "version control" / "update control" for installers. 
+Auto launch maintainencetool when trying to install the same version.
+Have prompts questioning if the using wants to update or revert to a prior version.
+
+* Add Qt IFW Package Licenses (EULAs)
+
+* TEST (and develop as needed) QtIFW packages which: 
+	* contain only "data" (no exe)
+	* are not enabled for install by default
+	* do not install shortcuts
+
+## v.0.8.1
 
 * Provide *dynamically* assigned values for "QtIfwExeWrapper" via Installer 
 (for target) at runtime / during installation. 
 
-* Breifly revisit "QtIfwExeWrapper" details.  Non gui on Windows?
+* Revisit "QtIfwExeWrapper" details.  Specifically, NON gui on Windows?
+
+* Revisit silent installers, in NON GUI environments e.g. CentOS. Provide a natural
+uninstall, i.e. a means to run the Maintenance Tool OR alternatively, the original installer 
+could drive an uninstall.
   
-## v.0.9.2
+## v.0.8.2
 
-* Revisit silent installers, using new page hiding features to further minimize 
-"quick flashes" of the ui.
 
-* Test, and confirm / fix UNinstallation mechanism for silent installers,
-notably in non GUI environments. (Can this already be done via the Maintenance Tool
-and / or the original installer?)
-
-## v.0.9.3
-
-* Further develop QtIfwUiPage derived classes and resources.
-
-* Further refine QtIfw script abstractions. Handle design complications with the 
-fact custom pages can be accessed via the currentPageWidget() method. 
-
-## v.0.9.4
+## v.0.8.4
 
 * Add option for appending platform suffix onto installer file names. 
 
@@ -69,6 +66,22 @@ fact custom pages can be accessed via the currentPageWidget() method.
 * Add all yet to be provided parameters for PyInstaller.  
 
 * Add all yet to be provided elements for the various Qt IFW XML config classes.  
+
+## v.0.8.3
+
+* Further develop QtIfwUiPage derived classes and resources.
+
+* Further refine QtIfw script abstractions. Handle design complications with the 
+fact custom pages can be accessed via the currentPageWidget() method. 
+
+## v.0.9.x
+			
+* Improve and stabilize Opy to the point it can handle *most* scripts without *any*
+manual intervention. 
+   
+* "Perfect" Opy "library bundling" (for both private and PyPi libraries). 
+
+* Add git integration: Clone/pull to build project from multiple remote sources
 
 ## v.1.0
 
