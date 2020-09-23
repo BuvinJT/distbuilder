@@ -657,6 +657,16 @@ class _QtIfwScript:
             _QtIfwScript._autoQuote( msg, isAutoQuote ),)
 
     @staticmethod        
+    def logValue( key, defaultVal="" ):                  
+        return _QtIfwScript.log( ('"%s = " + ' % (key,)) +
+                _QtIfwScript.lookupValue(key, defaultVal ), 
+                isAutoQuote=False ) 
+
+    @staticmethod        
+    def logSwitch( key ): 
+        return  _QtIfwScript.logValue( key, defaultVal="false" ) 
+
+    @staticmethod        
     def debugPopup( msg, isAutoQuote=True ):                  
         return _QtIfwScript.__DEBUG_POPUP_TMPL % (
              _QtIfwScript._autoQuote( msg, isAutoQuote ),) 
@@ -1535,9 +1545,13 @@ Controller.prototype.%s = function(){
 
     # Note: checkbox controls also work on radio buttons!
     @staticmethod        
-    def setCheckBox( checkboxName, isCheck=True ):                
+    def setCheckBox( checkboxName, isCheck=True ):
+        if isinstance( isCheck, six.string_types ):
+            state = isCheck
+        else:
+            state = _QtIfwScript.TRUE if isCheck else _QtIfwScript.FALSE                        
         return QtIfwControlScript.__SET_CHECKBOX_STATE_TMPL % ( 
-            checkboxName, _QtIfwScript.TRUE if isCheck else _QtIfwScript.FALSE )
+            checkboxName, state )
 
     @staticmethod        
     def setText( controlName, text, isAutoQuote=True ):                
@@ -1938,9 +1952,16 @@ Controller.prototype.%s = function(){
             TAB + 'installer.setValue( "__lockFilePath", "" )' + END +
             TAB + 'installer.setValue( "__watchDogPath", "" )' + END +
             TAB + 'clearErrorLog()' + END +
-            TAB +  _QtIfwScript.log( ('"%s = " + ' % (_KEEP_TEMP_SWITCH,)) +
-                _QtIfwScript.lookupValue(_KEEP_TEMP_SWITCH, "false" ), 
-                isAutoQuote=False ) +
+            TAB + _QtIfwScript.logSwitch( _KEEP_TEMP_SWITCH ) + 
+            TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
+            TAB + _QtIfwScript.logValue( _QtIfwScript.START_MENU_DIR_CMD_ARG ) +
+            TAB + _QtIfwScript.logSwitch( _QtIfwScript.ACCEPT_EULA_CMD_ARG ) +
+            TAB + _QtIfwScript.logValue( _QtIfwScript.INSTALL_LIST_CMD_ARG ) +
+            TAB + _QtIfwScript.logValue( _QtIfwScript.EXCLUDE_LIST_CMD_ARG ) +
+            TAB + _QtIfwScript.logSwitch(  _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +
+            TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
+            TAB + _QtIfwScript.logSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +                                                 
+            TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) +
             TAB + '__installerTempPath()' + END +
             TAB + '__maintenanceTempPath()' + END +            
             TAB + 'makeDir( Dir.temp() )' + END +
@@ -3926,14 +3947,14 @@ def __postBuild( qtIfwConfig ):  # @UnusedVariable
 
 def __toSilentConfig( qtIfwConfig ):
     # Minimum visible pages required for functionality
-    qtIfwConfig.controlScript.isIntroductionPageVisible         = True                                                                     
+    qtIfwConfig.controlScript.isIntroductionPageVisible         = True  # Core requirement                                                                   
     qtIfwConfig.controlScript.isTargetDirectoryPageVisible      = False
     qtIfwConfig.controlScript.isComponentSelectionPageVisible   = False
     qtIfwConfig.controlScript.isLicenseAgreementPageVisible     = False
     qtIfwConfig.controlScript.isStartMenuDirectoryPageVisible   = False
-    qtIfwConfig.controlScript.isReadyForInstallationPageVisible = True 
-    qtIfwConfig.controlScript.isPerformInstallationPageVisible  = True 
-    qtIfwConfig.controlScript.isFinishedPagePageVisible         = False 
+    qtIfwConfig.controlScript.isReadyForInstallationPageVisible = True  # Core requirement
+    qtIfwConfig.controlScript.isPerformInstallationPageVisible  = True  # Core requirement
+    qtIfwConfig.controlScript.isFinishedPagePageVisible         = True  # need for auto flipping run option ? 
     
 def __buildSilentWrapper( qtIfwConfig ) :
     print( "Building silent wrapper executable...\n" )
@@ -4059,12 +4080,23 @@ import glob
         helpers = ""
         preProcess = ""
 
-        createInstallerProcess = (
-"""    
+        runInstallerProcess = (
+""" 
+    PS                  = "powershell"
+    PS_START            = "Start-Process"
+    PS_PATH_SWITCH      = "-FilePath"
+    PS_WAIT_SWITCH      = "-Wait"
+    PS_WIN_STYLE_SWITCH = "-WindowStyle"
+    PS_WIN_STYLE_HIDDEN = "Hidden"
+    PS_ARGS_SWITCH      = "-ArgumentList"
+    argList =( [] if len(ARGS)==0 else
+        [PS_ARGS_SWITCH, ",".join( [ '"%s"' % (a,) for a in ARGS ])] )        
     processStartupInfo = STARTUPINFO()
     processStartupInfo.dwFlags |= STARTF_USESHOWWINDOW 
-    process = Popen( [EXE_PATH] + ARGS, cwd=WORK_DIR,
-                     shell=False,
+    process = Popen( [PS, PS_START, PS_PATH_SWITCH, EXE_PATH, 
+                      PS_WAIT_SWITCH, PS_WIN_STYLE_SWITCH, PS_WIN_STYLE_HIDDEN] 
+                      + argList, 
+                     cwd=WORK_DIR, shell=False,
                      startupinfo=processStartupInfo,                                                                
                      universal_newlines=True,
                      stdout=PIPE, stderr=PIPE )
@@ -4182,7 +4214,7 @@ def runAppleScript( script ):
 """)
 
             
-        createInstallerProcess = (
+        runInstallerProcess = (
 """    
     process = Popen( [ "sudo", BIN_PATH ] + ARGS, cwd=WORK_DIR,
                      shell=False,
@@ -4274,7 +4306,7 @@ def installTempDependencies():
     installTempDependencies()
 """)
 
-        createInstallerProcess = (
+        runInstallerProcess = (
 """
     process = Popen( [ "sudo", "xvfb-run", "./%s" % (EXE_NAME,) ] + ARGS, 
                      cwd=WORK_DIR,
@@ -4341,16 +4373,16 @@ def removeIfwErrLog(): pass
 
 sys.exit( main() )
 """).format( 
-      exeName 
-    , util._normEscapePath(wrkDir)
-    , util._normEscapePath(scriptPath) 
-    , imports             
-    , IS_WINDOWS  
-    , helpers
-    , preProcess
-    , createInstallerProcess
-    , cleanUp
-    , ( (', "target=%s"' % (util._normEscapePath(targetDir),)) 
+      exeName                               #{0} 
+    , util._normEscapePath(wrkDir)          #{1}
+    , util._normEscapePath(scriptPath)      #{2}
+    , imports                               #{3}
+    , IS_WINDOWS                            #{4}
+    , helpers                               #{5}
+    , preProcess                            #{6}
+    , runInstallerProcess                   #{7}
+    , cleanUp                               #{8}
+    , ( (', "target=%s"' % (util._normEscapePath(targetDir),))  #{9} 
         if isQtIfwInstaller else "" )
 )
     else:
@@ -4483,27 +4515,27 @@ def removeIfwErrLog():
 
 sys.exit( main() )
 """).format( exeName 
-    , ("%s=true" % (_QtIfwScript.AUTO_PILOT_CMD_ARG,))
-    , _QtIfwScript.ERR_LOG_PATH_CMD_ARG    
-    , ("%s=false" % (_QtIfwScript.RUN_PROGRAM_CMD_ARG,))
-    , _QtIfwScript.VERBOSE_CMD_SWITCH_ARG
-    , _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG
-    , _QtIfwScript.TARGET_EXISTS_OPT_REMOVE
-    , _QtIfwScript.TARGET_EXISTS_OPT_FAIL       
-    , _QtIfwScript.TARGET_DIR_CMD_ARG
-    , _QtIfwScript.START_MENU_DIR_CMD_ARG 
-    , IS_WINDOWS
-    , _QtIfwScript.INSTALL_LIST_CMD_ARG 
-    , _QtIfwScript.INCLUDE_LIST_CMD_ARG
-    , _QtIfwScript.EXCLUDE_LIST_CMD_ARG
-    , componentsRepr
-    , componentsEpilogue
-    , componentsPrefix
-    , imports
-    , helpers
-    , preProcess
-    , createInstallerProcess
-    , cleanUp
+    , ("%s=true" % (_QtIfwScript.AUTO_PILOT_CMD_ARG,))      # {0}
+    , _QtIfwScript.ERR_LOG_PATH_CMD_ARG                     # {1}
+    , ("%s=false" % (_QtIfwScript.RUN_PROGRAM_CMD_ARG,))    # {2}
+    , _QtIfwScript.VERBOSE_CMD_SWITCH_ARG                   # {3}
+    , _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG                # {4}
+    , _QtIfwScript.TARGET_EXISTS_OPT_REMOVE                 # {5}
+    , _QtIfwScript.TARGET_EXISTS_OPT_FAIL                   # {6}
+    , _QtIfwScript.TARGET_DIR_CMD_ARG                       # {7}
+    , _QtIfwScript.START_MENU_DIR_CMD_ARG                   # {8}
+    , IS_WINDOWS                                            # {9}
+    , _QtIfwScript.INSTALL_LIST_CMD_ARG                     # {10}
+    , _QtIfwScript.INCLUDE_LIST_CMD_ARG                     # {11}
+    , _QtIfwScript.EXCLUDE_LIST_CMD_ARG                     # {12}
+    , componentsRepr                                        # {13}
+    , componentsEpilogue                                    # {14}
+    , componentsPrefix                                      # {15}
+    , imports                                               # {16}
+    , helpers                                               # {17}
+    , preProcess                                            # {18}
+    , runInstallerProcess                                   # {19}
+    , cleanUp                                               # {20}
 )
 
 def __generateQtIfwInstallPyScript( installerPath, ifwScriptPath, 
