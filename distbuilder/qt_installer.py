@@ -1744,20 +1744,20 @@ Controller.prototype.%s = function(){
         if self.uiPages: 
             for p in self.uiPages:
                 # enter page event handler                
+                logEntry = _QtIfwScript.log( 
+                    "(Custom) %sPageEntered" % (p.name,) ) 
+                try: p.onEnter = logEntry + p.onEnter
+                except: p.onEnter = logEntry
                 if p.onAutoPilotClickNext:
-                    clickNext=(
+                    p.onEnter +=(
                         _QtIfwScript.TAB +
                         _QtIfwScript.ifCmdLineSwitch( 
                             _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                             QtIfwControlScript.clickButton( 
                                 QtIfwControlScript.NEXT_BUTTON ) )
-                    try: p.onEnter += clickNext
-                    except: p.onEnter = clickNext
-                                                    
-                if p.onEnter:
-                    self.script += (                         
-                        QtIfwControlScript.__UI_PAGE_CALLBACK_FUNC_TMPLT % 
-                        ( p.name, p.onEnter ) )
+                self.script += (                         
+                    QtIfwControlScript.__UI_PAGE_CALLBACK_FUNC_TMPLT % 
+                    ( p.name, p.onEnter ) )
 
     def __genGlobals( self ):
         NEW = _QtIfwScript.NEW_LINE
@@ -1996,7 +1996,7 @@ Controller.prototype.%s = function(){
             hidePage( QT_IFW_READY_PAGE )
         if not self.isPerformInstallationPageVisible:                                                                    
             hidePage( QT_IFW_INSTALL_PAGE )
-        if not self.isFinishedPagePageVisible:                                                                    
+        if not self.isFinishedPageVisible:                                                                    
             hidePage( QT_IFW_FINISHED_PAGE )
             
         for signalName, (slotName, _) in six.iteritems( self.__standardEventSlots ):    
@@ -2034,6 +2034,7 @@ Controller.prototype.%s = function(){
                                  
     def __genIntroductionPageCallbackBody( self ):
         self.introductionPageCallbackBody = (
+            _QtIfwScript.log("IntroductionPageCallback") +
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
@@ -2041,6 +2042,7 @@ Controller.prototype.%s = function(){
 
     def __genTargetDirectoryPageCallbackBody( self ):
         self.targetDirectoryPageCallbackBody = (
+            _QtIfwScript.log("TargetDirectoryPageCallback") +
             _QtIfwScript.ifCmdLineArg( 
                 _QtIfwScript.TARGET_DIR_CMD_ARG ) +
                 _QtIfwScript.TAB + QtIfwControlScript.setText(
@@ -2055,6 +2057,7 @@ Controller.prototype.%s = function(){
 
     def __genComponentSelectionPageCallbackBody( self ):
         self.componentSelectionPageCallbackBody = (
+            _QtIfwScript.log("ComponentSelectionPageCallback") +
             QtIfwControlScript.assignCurPageWidgetVar( "page" ) +            
             '    ' + _QtIfwScript.ifCmdLineArg( 
                 _QtIfwScript.INSTALL_LIST_CMD_ARG ) + 
@@ -2090,6 +2093,7 @@ Controller.prototype.%s = function(){
 
     def __genLicenseAgreementPageCallbackBody( self ):
         self.licenseAgreementPageCallbackBody = (
+            _QtIfwScript.log("LicenseAgreementPageCallback") +
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
             '{\n' +                        
                 QtIfwControlScript.setCheckBox( 
@@ -2109,6 +2113,7 @@ Controller.prototype.%s = function(){
 
     def __genStartMenuDirectoryPageCallbackBody( self ):
         self.startMenuDirectoryPageCallbackBody = (
+            _QtIfwScript.log("StartMenuDirectoryPageCallback") +
             _QtIfwScript.ifCmdLineArg( 
                 _QtIfwScript.START_MENU_DIR_CMD_ARG ) +
                 _QtIfwScript.TAB + 
@@ -2135,6 +2140,7 @@ Controller.prototype.%s = function(){
 
     def __genPerformInstallationPageCallbackBody( self ):
         self.performInstallationPageCallbackBody = (
+            _QtIfwScript.log("PerformInstallationPageCallback") +
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
@@ -2144,6 +2150,7 @@ Controller.prototype.%s = function(){
         TAB  = _QtIfwScript.TAB
         EBLK = _QtIfwScript.END_BLOCK
         self.finishedPageCallbackBody = (                
+            _QtIfwScript.log("FinishedPageCallback") +
             _QtIfwScript.ifInstalling( isMultiLine=True ) +
             TAB + QtIfwControlScript.enable( 
                     QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
@@ -2481,6 +2488,10 @@ Component.prototype.%s = function(){
                 self.componentLoadedCallbackBody += ( NEW + TAB + 
                     (ADD_CUSTOM_PAGE_TMPLT % ( p.name, p.pageOrder )) + END )         
 
+            self.componentLoadedCallbackBody += (
+                _QtIfwScript.log( 
+                    "(Custom) %sPageLoaded" % (p.name,) ) )  
+    
             if p._incOnLoadBase:
                 self.componentLoadedCallbackBody += (
                     QtIfwUiPage.BASE_ON_LOAD_TMPT % (p.name,) )
@@ -3947,14 +3958,14 @@ def __postBuild( qtIfwConfig ):  # @UnusedVariable
 
 def __toSilentConfig( qtIfwConfig ):
     # Minimum visible pages required for functionality
-    qtIfwConfig.controlScript.isIntroductionPageVisible         = True  # Core requirement                                                                   
+    qtIfwConfig.controlScript.isIntroductionPageVisible         = True  # required                                                                   
     qtIfwConfig.controlScript.isTargetDirectoryPageVisible      = False
     qtIfwConfig.controlScript.isComponentSelectionPageVisible   = False
     qtIfwConfig.controlScript.isLicenseAgreementPageVisible     = False
     qtIfwConfig.controlScript.isStartMenuDirectoryPageVisible   = False
-    qtIfwConfig.controlScript.isReadyForInstallationPageVisible = True  # Core requirement
-    qtIfwConfig.controlScript.isPerformInstallationPageVisible  = True  # Core requirement
-    qtIfwConfig.controlScript.isFinishedPagePageVisible         = True  # need for auto flipping run option ? 
+    qtIfwConfig.controlScript.isReadyForInstallationPageVisible = True  # required
+    qtIfwConfig.controlScript.isPerformInstallationPageVisible  = True  # required
+    qtIfwConfig.controlScript.isFinishedPageVisible             = False 
     
 def __buildSilentWrapper( qtIfwConfig ) :
     print( "Building silent wrapper executable...\n" )
