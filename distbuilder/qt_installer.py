@@ -4048,9 +4048,11 @@ def __buildSilentWrapper( qtIfwConfig ) :
     print( "Building silent wrapper executable...\n" )
     from distbuilder.master import PyToBinPackageProcess, ConfigFactory
     
-    # On macOS, a "gui" .app must be build because that provides a .plist
-    # and an application we can best manipulate via AppleScript
+    cfgXml    = qtIfwConfig.configXml
+    ctrlScrpt = qtIfwConfig.controlScript
     
+    # On macOS, a "gui" .app must be build because that provides a .plist
+    # and an application we can best manipulate via AppleScript    
     srcSetupExeName   = util.normBinaryName( qtIfwConfig.setupExeName, isGui=True )    
     destSetupExeName  = util.normBinaryName( qtIfwConfig.setupExeName, isGui=False ) 
     nestedExeName     = util.normBinaryName( __NESTED_INSTALLER_NAME,  isGui=True )
@@ -4060,9 +4062,10 @@ def __buildSilentWrapper( qtIfwConfig ) :
                            package.pkgXml.pkgName, 
                            package.pkgXml.DisplayName) 
                            for package in qtIfwConfig.packages ]            
-    wrapperScript     = __silentQtIfwScript( nestedExeName, componentList )
-        
-    cfgXml            = qtIfwConfig.configXml
+    wrapperScript     = __silentQtIfwScript( nestedExeName, componentList,
+        isRunSwitch=( False if cfgXml.RunProgram is None else 
+                      None if ctrlScrpt.isRunProgInteractive and 
+                              ctrlScrpt.isRunProgVisible else True ) )
                                                
     f = configFactory  = ConfigFactory()
     f.productName      = cfgXml.Name
@@ -4117,12 +4120,14 @@ def __buildSilentWrapper( qtIfwConfig ) :
                     
     BuildProcess( configFactory ).run()
     return absPath( destSetupExeName )
-    
+
+# TODO: Break up this monolith!    
 def __silentQtIfwScript( exeName, componentList=[],
                          isQtIfwInstaller=False,
                          isQtIfwUnInstaller=False,
                          scriptPath=None,
-                         wrkDir=None, targetDir=None) :
+                         wrkDir=None, targetDir=None,
+                         isRunSwitch=None ) :
     """
     Runs the IFW exe from inside the PyInstaller MEIPASS directory,
     with elevated privileges, hidden from view, gathering
@@ -4492,6 +4497,7 @@ IFW_ERR_LOG_NAME = "installer.err"
 IFW_ERR_LOG_PATH = os.path.join( WORK_DIR, IFW_ERR_LOG_NAME )
 
 VERBOSE_SWITCH = "{4}"
+IS_RUN_SWITCH  = {22}
 
 components = {14}
 componentsEpilogue = ( 
@@ -4525,6 +4531,10 @@ def wrapperArgs():
     parser.add_argument( '-f', '--force', default=False, 
                          help='force installation (uninstall existing installation)', 
                          action='store_true' )
+    if IS_RUN_SWITCH is None:                     
+        parser.add_argument( '-r', '--run', default=False, 
+                             help='run the program immediately post install', 
+                             action='store_true' )
     parser.add_argument( '-t', '--target', default=None,
                          help='target directory' )
                          
@@ -4545,9 +4555,12 @@ def wrapperArgs():
 def toIwfArgs( wrapperArgs ):
     # silent install always uses:
     #     auto pilot mode
-    #     client defined error log path
-    #     run at end disabled
-    args = ["{1}", ("{2}=%s" % IFW_ERR_LOG_NAME), "{3}"] 
+    #     client defined error log path    
+    args = ["{1}", ("{2}=%s" % IFW_ERR_LOG_NAME)]
+    
+    # run at end option    
+    args.append( "{3}=%s" % str( wrapperArgs.run 
+            if IS_RUN_SWITCH is None else IS_RUN_SWITCH ).lower() )
 
     if wrapperArgs.verbose : args.append( VERBOSE_SWITCH )    
     args.append( "{5}={6}" if wrapperArgs.force else "{5}={7}" )
@@ -4602,28 +4615,30 @@ def removeIfwErrLog():
         os.remove( IFW_ERR_LOG_PATH )
 
 sys.exit( main() )
-""").format( exeName 
-    , ("%s=true" % (_QtIfwScript.AUTO_PILOT_CMD_ARG,))      # {0}
-    , _QtIfwScript.ERR_LOG_PATH_CMD_ARG                     # {1}
-    , ("%s=false" % (_QtIfwScript.RUN_PROGRAM_CMD_ARG,))    # {2}
-    , _QtIfwScript.VERBOSE_CMD_SWITCH_ARG                   # {3}
-    , _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG                # {4}
-    , _QtIfwScript.TARGET_EXISTS_OPT_REMOVE                 # {5}
-    , _QtIfwScript.TARGET_EXISTS_OPT_FAIL                   # {6}
-    , _QtIfwScript.TARGET_DIR_CMD_ARG                       # {7}
-    , _QtIfwScript.START_MENU_DIR_CMD_ARG                   # {8}
-    , IS_WINDOWS                                            # {9}
-    , _QtIfwScript.INSTALL_LIST_CMD_ARG                     # {10}
-    , _QtIfwScript.INCLUDE_LIST_CMD_ARG                     # {11}
-    , _QtIfwScript.EXCLUDE_LIST_CMD_ARG                     # {12}
-    , componentsRepr                                        # {13}
-    , componentsEpilogue                                    # {14}
-    , componentsPrefix                                      # {15}
-    , imports                                               # {16}
-    , helpers                                               # {17}
-    , preProcess                                            # {18}
-    , runInstallerProcess                                   # {19}
-    , cleanUp                                               # {20}
+""").format( 
+       exeName                                              # {0}
+    , ("%s=true" % (_QtIfwScript.AUTO_PILOT_CMD_ARG,))      # {1}
+    , _QtIfwScript.ERR_LOG_PATH_CMD_ARG                     # {2}
+    , _QtIfwScript.RUN_PROGRAM_CMD_ARG                      # {3}
+    , _QtIfwScript.VERBOSE_CMD_SWITCH_ARG                   # {4}
+    , _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG                # {5}
+    , _QtIfwScript.TARGET_EXISTS_OPT_REMOVE                 # {6}
+    , _QtIfwScript.TARGET_EXISTS_OPT_FAIL                   # {7}
+    , _QtIfwScript.TARGET_DIR_CMD_ARG                       # {8}
+    , _QtIfwScript.START_MENU_DIR_CMD_ARG                   # {9}
+    , IS_WINDOWS                                            # {10}
+    , _QtIfwScript.INSTALL_LIST_CMD_ARG                     # {11}
+    , _QtIfwScript.INCLUDE_LIST_CMD_ARG                     # {12}
+    , _QtIfwScript.EXCLUDE_LIST_CMD_ARG                     # {13}
+    , componentsRepr                                        # {14}
+    , componentsEpilogue                                    # {15}
+    , componentsPrefix                                      # {16}
+    , imports                                               # {17}
+    , helpers                                               # {18}
+    , preProcess                                            # {19}
+    , runInstallerProcess                                   # {20}
+    , cleanUp                                               # {21}
+    , str(isRunSwitch)                                      # {22}
 )
 
 def __generateQtIfwInstallPyScript( installerPath, ifwScriptPath, 
@@ -4634,7 +4649,7 @@ def __generateQtIfwInstallPyScript( installerPath, ifwScriptPath,
         installerName, 
         isQtIfwInstaller=isInstaller, isQtIfwUnInstaller=(not isInstaller), 
         scriptPath=ifwScriptPath, wrkDir=installerDir,
-        targetDir=targetPath )    
+        targetDir=targetPath, isRunSwitch=False )    
     filePath = joinPath( tempDirPath(), 
         __QT_IFW_AUTO_INSTALL_PY_SCRIPT_NAME if isInstaller else
         __QT_IFW_AUTO_UNINSTALL_PY_SCRIPT_NAME )
@@ -4642,7 +4657,11 @@ def __generateQtIfwInstallPyScript( installerPath, ifwScriptPath,
     #print( "\n%s\n" % (script,) )
     with open( filePath, 'w' ) as f: f.write( script ) 
     return filePath 
-            
+        
+"""
+THIS IS INJECTED INTO THE QT IFW TOOL INSTALLATION ITSELF.
+I.E. IT IS NOT FOR THE PRODUCTS OF DISTBUILDER 
+"""            
 def __generateQtIfwInstallerQScript() :
     script = (
 """
