@@ -1522,8 +1522,10 @@ Controller.prototype.%s = function(){
                         
     __CLICK_BUTTON_TMPL       = "gui.clickButton(%s);\n"
     __CLICK_BUTTON_DELAY_TMPL = "gui.clickButton(%s, %d);\n"
-    
-    __SET_ENBALE_STATE_TMPL = (
+
+    __ENABLE_NEXT_BUTTON_TMPL = "gui.currentPageWidget().complete=%s;\n" 
+     
+    __SET_ENABLE_STATE_TMPL = (
         "gui.currentPageWidget().%s.setEnabled(%s);\n" )
     
     __SET_VISIBLE_STATE_TMPL = (
@@ -1539,6 +1541,22 @@ Controller.prototype.%s = function(){
 
     __ASSIGN_TEXT_TMPL = ( "    var %s = gui.currentPageWidget().%s.text;\n" ) 
 
+    __SET_CUSTPAGE_TITLE_TMPL = "%s.windowTitle = %s;\n" 
+
+    __SET_CUSTPAGE_ENABLE_STATE_TMPL = (
+        "%s.%s.setEnabled(%s);\n" )
+    
+    __SET_CUSTPAGE_VISIBLE_STATE_TMPL = (
+        "%s.%s.setVisible(%s);\n" )
+    
+    __SET_CUSTPAGE_CHECKBOX_STATE_TMPL = (
+        "%s.%s.setChecked(%s);\n" )
+
+    __SET_CUSTPAGE_TEXT_TMPL = (
+        "%s.%s.setText(%s);\n" )
+       
+    __GET_CUSTPAGE_TEXT_TMPL = ( "%s.%s.text" )
+
     __UI_PAGE_CALLBACK_FUNC_TMPLT = (
 """
     Controller.prototype.Dynamic%sCallback = function() {
@@ -1546,10 +1564,15 @@ Controller.prototype.%s = function(){
     }
 """    )
                   
-    NEXT_BUTTON   = "buttons.NextButton"
-    BACK_BUTTON   = "buttons.BackButton"
-    CANCEL_BUTTON = "buttons.CancelButton"
-    FINISH_BUTTON = "buttons.FinishButton"
+    BACK_BUTTON     = "buttons.BackButton"
+    NEXT_BUTTON     = "buttons.NextButton"
+    COMMIT_BUTTON   = "buttons.CommitButton"
+    FINISH_BUTTON   = "buttons.FinishButton"
+    CANCEL_BUTTON   = "buttons.CancelButton"
+    HELP_BUTTON     = "buttons.HelpButton"
+    CUSTOM_BUTTON_1 = "buttons.CustomButton1"
+    CUSTOM_BUTTON_2 = "buttons.CustomButton2"
+    CUSTOM_BUTTON_3 = "buttons.CustomButton3"
     
     TARGET_DIR_EDITBOX       = "TargetDirectoryLineEdit"
     START_MENU_DIR_EDITBOX   = "StartMenuPathLineEdit"
@@ -1606,14 +1629,21 @@ Controller.prototype.%s = function(){
             if delayMillis else
             QtIfwControlScript.__CLICK_BUTTON_TMPL 
                 % (buttonName,) )
-
+     
     @staticmethod        
-    def enable( controlName, isEnable=True ):                
-        return QtIfwControlScript.__SET_ENBALE_STATE_TMPL % ( 
+    def enableNextButton( isEnable=True ):
+        return QtIfwControlScript.__ENABLE_NEXT_BUTTON_TMPL % ( 
+            _QtIfwScript.TRUE if isEnable else _QtIfwScript.FALSE)
+        
+    @staticmethod        
+    def enable( controlName, isEnable=True ):
+        """ DOES NOT WORK FOR WIZARD BUTTONS!!! """                
+        return QtIfwControlScript.__SET_ENABLE_STATE_TMPL % ( 
             controlName, _QtIfwScript.TRUE if isEnable else _QtIfwScript.FALSE)
 
     @staticmethod        
-    def setVisible( controlName, isVisible=True ):                
+    def setVisible( controlName, isVisible=True ):
+        """ DOES NOT WORK FOR WIZARD BUTTONS!!! """                
         return QtIfwControlScript.__SET_VISIBLE_STATE_TMPL % ( 
             controlName, _QtIfwScript.TRUE if isVisible else _QtIfwScript.FALSE)
 
@@ -1635,6 +1665,43 @@ Controller.prototype.%s = function(){
     @staticmethod        
     def getText( controlName ):                
         return QtIfwControlScript.__GET_TEXT_TMPL % (controlName,)   
+
+
+    @staticmethod        
+    def setCustomPageTitle( text, isAutoQuote=True, pageVar="page" ):                
+        return QtIfwControlScript.__SET_CUSTPAGE_TITLE_TMPL % ( pageVar, 
+                _QtIfwScript._autoQuote( text, isAutoQuote ) )
+
+    @staticmethod        
+    def enableCustom( controlName, isEnable=True, pageVar="page" ):
+        """ DOES NOT WORK FOR WIZARD BUTTONS!!! """                
+        return QtIfwControlScript.__SET_CUSTPAGE_ENABLE_STATE_TMPL % ( pageVar, 
+            controlName, _QtIfwScript.TRUE if isEnable else _QtIfwScript.FALSE)
+
+    @staticmethod        
+    def setCustomVisible( controlName, isVisible=True, pageVar="page" ):
+        """ DOES NOT WORK FOR WIZARD BUTTONS!!! """                
+        return QtIfwControlScript.__SET_CUSTPAGE_VISIBLE_STATE_TMPL % ( pageVar, 
+            controlName, _QtIfwScript.TRUE if isVisible else _QtIfwScript.FALSE)
+
+    # Note: checkbox controls also work on radio buttons!
+    @staticmethod        
+    def setCustomCheckBox( checkboxName, isCheck=True, pageVar="page" ):
+        if isinstance( isCheck, six.string_types ):
+            state = isCheck
+        else:
+            state = _QtIfwScript.TRUE if isCheck else _QtIfwScript.FALSE                        
+        return QtIfwControlScript.__SET_CUSTPAGE_CHECKBOX_STATE_TMPL % ( pageVar, 
+            checkboxName, state )
+
+    @staticmethod        
+    def setCustomText( controlName, text, isAutoQuote=True, pageVar="page" ):                
+        return QtIfwControlScript.__SET_CUSTPAGE_TEXT_TMPL % ( pageVar, 
+                controlName, _QtIfwScript._autoQuote( text, isAutoQuote ) )
+
+    @staticmethod        
+    def getCustomText( controlName, pageVar="page" ):                
+        return QtIfwControlScript.__GET_CUSTPAGE_TEXT_TMPL % (pageVar, controlName)   
     
     # QtIfwControlScript
     def __init__( self, 
@@ -1816,22 +1883,16 @@ Controller.prototype.%s = function(){
 
     def __appendUiPageCallbacks( self ):    
         if self.uiPages: 
-            for p in self.uiPages:
+            for p in self.uiPages:                
                 # enter page event handler                
-                logEntry = _QtIfwScript.log( 
-                    "(Custom) %sPageEntered" % (p.name,) ) 
-                try: p.onEnter = logEntry + p.onEnter
-                except: p.onEnter = logEntry
-                if p.onAutoPilotClickNext:
-                    p.onEnter +=(
-                        _QtIfwScript.TAB +
-                        _QtIfwScript.ifCmdLineSwitch( 
-                            _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
-                            QtIfwControlScript.clickButton( 
-                                QtIfwControlScript.NEXT_BUTTON ) )
+                onEnter = _QtIfwScript.log( 
+                    "(Custom) %sPageCallback" % (p.name,) ) 
+                onEnter +=( QtIfwUiPage.BASE_ON_ENTER_TMPT % 
+                            (p.name, p.onEnter) 
+                           if p._isOnEnterBase else p.onEnter )                    
                 self.script += (                         
                     QtIfwControlScript.__UI_PAGE_CALLBACK_FUNC_TMPLT % 
-                    ( p.name, p.onEnter ) )
+                    ( p.name, onEnter ) )
 
     def __genGlobals( self ):
         NEW = _QtIfwScript.NEW_LINE
@@ -2206,13 +2267,10 @@ Controller.prototype.%s = function(){
 
     def __genReadyForInstallationPageCallbackBody( self ):
         self.readyForInstallationPageCallbackBody = (
+            _QtIfwScript.log("ReadyForInstallationPageCallback") +            
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
-                    QtIfwControlScript.NEXT_BUTTON ) + 
-            '    else {\n' +                
-            '        ' + _QtIfwScript.ifInstalling() +
-                        ' managePriorInstallation();\n' +
-            '    }\n'    
+                    QtIfwControlScript.NEXT_BUTTON )  
         )                
 
     def __genPerformInstallationPageCallbackBody( self ):
@@ -2569,7 +2627,7 @@ Component.prototype.%s = function(){
                 _QtIfwScript.log( 
                     "(Custom) %sPageLoaded" % (p.name,) ) )  
     
-            if p._incOnLoadBase:
+            if p._isOnLoadBase:
                 self.componentLoadedCallbackBody += (
                     QtIfwUiPage.BASE_ON_LOAD_TMPT % (p.name,) )
                               
@@ -3065,6 +3123,16 @@ class QtIfwUiPage():
         page.minimumSize.width=491;   
     }    
 """)
+
+    BASE_ON_ENTER_TMPT = (    
+"""
+    var page = gui.pageWidgetByObjectName("Dynamic%s");
+    if( installer.value( "auto", "" )=="true" )
+        gui.clickButton(buttons.NextButton);
+    else {
+    %s                        
+    }
+""")
     
     @staticmethod
     def __toFileName( name ): 
@@ -3080,14 +3148,14 @@ class QtIfwUiPage():
     def __init__( self, name, pageOrder=None, 
                   sourcePath=None, content=None,
                   onLoad=None, onEnter=None ) :
-        self.name           = name
-        self.pageOrder      = pageOrder if pageOrder in _DEFAULT_PAGES else None        
-        self._incOnLoadBase = True
-        self.onLoad         = onLoad
-        self.onEnter        = onEnter
-        self.supportFuncs   = {} 
-        self.replacements   = {}
-        self.onAutoPilotClickNext = True        
+        self.name            = name
+        self.pageOrder       = pageOrder if pageOrder in _DEFAULT_PAGES else None        
+        self.onLoad          = onLoad
+        self.onEnter         = onEnter
+        self.supportFuncs    = {} 
+        self.replacements    = {}
+        self._isOnLoadBase   = True
+        self._isOnEnterBase  = True        
         if sourcePath:
             with open( sourcePath, 'r' ) as f: self.content = f.read()
         else: self.content = content  
@@ -3136,6 +3204,56 @@ class QtIfwSimpleTextPage( QtIfwUiPage ):
             QtIfwSimpleTextPage.__TEXT_PLACEHOLDER : text 
         })
                     
+# -----------------------------------------------------------------------------    
+class QtIfwPriorInstallationPage( QtIfwUiPage ):
+    
+    NAME  = "PriorInstallation"
+    
+    __TEXT_LABEL      = "description"
+    __CONTINUE_BUTTON = "continueButton"
+    __STOP_BUTTON     = "stopButton"
+    __NOTE_LABEL      = "note"
+    
+    __TITLE = "Prior Installation Detected"
+    
+    __PAGE_ORDER = QT_IFW_READY_PAGE
+    __SRC = QtIfwUiPage._pageResPath( "priorinstallation" )
+                
+    def __init__( self ) :
+        TAB = _QtIfwScript.TAB
+        NEW = _QtIfwScript.NEW_LINE
+        END = _QtIfwScript.END_LINE
+        SBLK =_QtIfwScript.START_BLOCK
+        EBLK =_QtIfwScript.END_BLOCK
+
+        ON_LOAD = ""    
+            
+        ON_ENTER = ( 
+            (2*TAB) + _QtIfwScript.ifInstalling( isMultiLine=True ) +
+                (3*TAB) + QtIfwControlScript.enableNextButton( False ) +                
+                (3*TAB) + QtIfwControlScript.setCustomPageTitle( 
+                     QtIfwPriorInstallationPage.__TITLE ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwPriorInstallationPage.__TEXT_LABEL ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwPriorInstallationPage.__CONTINUE_BUTTON ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwPriorInstallationPage.__STOP_BUTTON ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwPriorInstallationPage.__NOTE_LABEL ) +
+                            
+                #(3*TAB) + 'managePriorInstallation()' + END +
+                #setText( controlName, text, isAutoQuote=True )
+                #(3*TAB) + QtIfwControlScript.enableNextButton( True ) +
+            (2*TAB) + EBLK 
+        )
+
+        QtIfwUiPage.__init__( self, QtIfwPriorInstallationPage.NAME,
+            pageOrder=QtIfwPriorInstallationPage.__PAGE_ORDER, 
+            sourcePath=QtIfwPriorInstallationPage.__SRC,
+            onLoad=ON_LOAD, onEnter=ON_ENTER  )
+        self.onAutoPilotClickNext = False
+                                       
 # -----------------------------------------------------------------------------    
 class QtIfwTargetDirPage( QtIfwUiPage ):
     
@@ -3902,6 +4020,7 @@ def __addInstallerResources( qtIfwConfig ) :
     
     _addQtIfwResources( qtIfwConfig, qtIfwConfig.packages )
     _addQtIfwUiPages( qtIfwConfig, QtIfwTargetDirPage(), isOverWrite=False )
+    _addQtIfwUiPages( qtIfwConfig, QtIfwPriorInstallationPage(), isOverWrite=False )
     
     genQtIfwCntrlRes( qtIfwConfig ) 
                                       

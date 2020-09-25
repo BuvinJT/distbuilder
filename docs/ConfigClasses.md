@@ -817,8 +817,8 @@ Attributes:
     onEnter        = None       
     supportFuncs   = {}  
 
-    onAutoPilotClickNext = True
-    _incOnLoadBase       = True    
+    _isOnLoadBase  = True    
+    _isOnEnterBase = True
         
 Functions:
 
@@ -852,18 +852,21 @@ this specified page.
 
 **onEnter**: Qt Script snippet invoked upon showing the page.
 
-**onAutoPilotClickNext**: Note, this is enabled by default. When this is set to `True`, some 
-auto generated script will be added to the installer, which will execute at the end of  `onEnter`.  What the script does is automatically "click" the "Next" button upon displaying the page, when running in "auto pilot mode" (e.g. within a 
-[Silent Installer](LowLevel.md#silent-installers) context).  
-
-**_incOnLoadBase**: *Protected* Note, this is enabled by default. When this is set to `True`,
-some auto generated script will be added to the installer, which will execute prior to
+**_isOnLoadBase**: *Protected* Note, this is enabled by default. When this is set to `True`,
+an auto generated script will be added to the installer, which will execute prior to
 `onLoad`.  This "base" script will dynamically resize the page, so it fits properly on each
 alternate platform's version of the installer.
-It is recommended you leave this in place, unless you are overwriting it. The
-effect of having this in place will additionally be to create a `var page`, which refers to
-this page. The OnLoadScript may then make use of that variant to access the page widget or the
-child widgets on it.
+It is recommended you leave this in place, unless you are overwriting it. 
+Having this in place will additionally create a `var page`, which refers to
+this page. The `onLoad` script may then make use of that variant to access the page widget or the child widgets on it.
+See [Installer Scripting](LowLevel.md#installer-scripting)
+
+**_isOnEnterBase**: *Protected* Note, this is enabled by default. When this is set to `True`, 
+an auto generated script will be added to the installer, which will execute prior to `onEnter`.  This "base" script will automatically "click" the "Next" button upon displaying the page, when running in "auto pilot mode" (e.g. within a 
+[Silent Installer](LowLevel.md#silent-installers) context).  
+Having this in place will additionally create a `var page`, which refers to
+this page. The `onEnter` script may then make use of that variant to access the page widget or the child widgets on it.
+See [Installer Scripting](LowLevel.md#installer-scripting)
 
 **supportFuncs**: Qt Script "support functions" dictionary containing entries in the form: name:body.
 The typical use case for this attribute involves the onLoad script connecting events
@@ -875,6 +878,16 @@ in the `content` will be resolved.
 
 TODO: elaborate on ui replacements, the "resolve" function, provide a base example .ui...
       
+### QtIfwPriorInstallationPage
+
+This class is derived from `QtIfwUiPage`. As one would assume, this provides a base
+from which to start modifying the distbuilder addition to QtIFW "Prior Installation" 
+installer page.  If another page has not been supplied for this, distbuilder will use this class to apply it's own default customization to the natural QtIfw interface.  
+
+Constructor:
+
+    QtIfwPriorInstallationPage()  # 0 arguments!                
+
 ### QtIfwTargetDirPage
 
 This class is derived from `QtIfwUiPage`. As one would assume, this provides a base

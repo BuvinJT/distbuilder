@@ -451,7 +451,7 @@ Static Functions:
         
     _autoQuote( value, isAutoQuote )
 
-In addition, QtIfwControlScript provides: 
+In addition, **QtIfwControlScript** provides: 
 
 Static Constants :
 
@@ -468,23 +468,36 @@ Static Constants :
 Static Functions:      
                    
     pageWidget( name )     
-    customPageWidget( name ): 
+    customPageWidget( name )
     currentPageWidget()                
-    assignPageWidgetVar( pageName, varName="page" ):                           
-    assignCustomPageWidgetVar( pageName, varName="page" ):                
-    assignCurPageWidgetVar( varName="page" ):                                 
+    assignPageWidgetVar( pageName, varName="page" )                         
+    assignCustomPageWidgetVar( pageName, varName="page" )               
+    assignCurPageWidgetVar( varName="page" )                              
     
-    enable( controlName, isEnable=True )
-
+    clickButton( buttonName, delayMillis=None )                
+    
+    enable( controlName, isEnable=True )	
     setVisible( controlName, isVisible=True )
     
     getText( controlName )
     setText( controlName, text, isAutoQuote=True )
     
-    clickButton( buttonName, delayMillis=None )                
-
     	(Note: check box controls also work on radio buttons)    
     setCheckBox( checkboxName, isCheck=True ): <pass Python bool or dynamic QScript logic>    
+
+	<CUSTOM ("DYNAMIC") PAGES ONLY>	
+	    enableNextButton( isEnable=True )				
+	    setCustomPageTitle( text, isAutoQuote=True, pageVar="page" )                
+
+	    enableCustom( controlName, isEnable=True, pageVar="page" )
+	    setCustomVisible( controlName, isVisible=True, pageVar="page" )
+
+	    setCustomText( controlName, text, isAutoQuote=True, pageVar="page" )                
+	    getCustomText( controlName, pageVar="page" )
+
+	    setCustomCheckBox( checkboxName, isCheck=True, pageVar="page" )
+
+See [QtIfwUiPage](ConfigClasses.md#qtifwuipage)
 
 If writing scripts directly for distbulder integration, you may also employ the 
 following add-on **QT SCRIPT** functions:
