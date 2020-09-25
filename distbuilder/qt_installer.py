@@ -550,6 +550,8 @@ class _QtIfwScript:
     NO     = "QMessageBox.No"
     CANCEL = "QMessageBox.Cancel"
 
+    __STRING_TO_BOOL_TMPL = '(%s=="%s")'
+
     __LOG_TMPL = "console.log(%s);\n"
     __DEBUG_POPUP_TMPL = ( 
         'QMessageBox.information("debugbox", "Debug", ' +
@@ -675,6 +677,19 @@ class _QtIfwScript:
     def errorPopup( msg, isAutoQuote=True ):                  
         return _QtIfwScript.__ERROR_POPUP_TMPL % (
              _QtIfwScript._autoQuote( msg, isAutoQuote ),) 
+
+    @staticmethod        
+    def boolToString( b ):
+        if isinstance( b, six.string_types ):
+            return '(%s ? "%s":"%s")' % ( 
+                b, _QtIfwScript.TRUE, _QtIfwScript.FALSE )                          
+        return '"%s"' % ( _QtIfwScript.TRUE if b else _QtIfwScript.FALSE )  
+
+    @staticmethod        
+    def stringToBool( value, isAutoQuote=True ):
+        return _QtIfwScript.__STRING_TO_BOOL_TMPL % (
+            _QtIfwScript._autoQuote( value, isAutoQuote ),
+            _QtIfwScript.TRUE ) 
         
     @staticmethod        
     def setValue( key, value, isAutoQuote=True ):                  
@@ -888,10 +903,20 @@ class _QtIfwScript:
             TAB + EBLK +            
             '};' + NEW +
             'function isMaintenanceTool() ' + SBLK +  # TODO: Test in NIX/MAC            
-            TAB + 'var isTool = rootFileName( __lockFilePath() ).startsWith( ' + 
-                  ('rootFileName( "%s" ) )' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END +
-            TAB + _QtIfwScript.log( '"isMaintenanceTool: " + isTool', isAutoQuote=False ) +                  
-            TAB + 'return isTool' + END +                  
+            TAB + 'var isMaintenance = false' + END + 
+            TAB + 'var __isMaintenance = installer.value( "__isMaintenance", "" )' + END + 
+            TAB + 'if( __isMaintenance === "" ) ' + SBLK +
+            (2*TAB) + '__lockFilePath()' + END +
+            (2*TAB) + '__isMaintenance = installer.value( "__isMaintenance", "false" )' + END +
+            (2*TAB) + 'isMaintenance = ' + _QtIfwScript.stringToBool( 
+                '__isMaintenance', isAutoQuote=False ) + END +             
+            (2*TAB) + _QtIfwScript.log( '"isMaintenanceTool: " + isMaintenance', isAutoQuote=False ) +
+            TAB + EBLK +
+            TAB + 'else ' + SBLK +
+                (2*TAB) + 'isMaintenance = ' + _QtIfwScript.stringToBool( 
+                    '__isMaintenance', isAutoQuote=False ) + END +             
+            TAB + EBLK +                  
+            TAB + 'return isMaintenance' + END +                                   
             EBLK + NEW +            
             # TODO: This logic could possibly fail when installers / uninstallers 
             # for *other* programs are running at the same time...          
@@ -914,7 +939,11 @@ class _QtIfwScript:
                 (3*TAB) + 'silentAbort("Lock file path could not be resolved")' + END +                
             (2*TAB) + 'path = Dir.toNativeSeparator( lockFileDir + "/" + lockFileName )' + END +            
             (2*TAB) + _QtIfwScript.log( '"lockFilePath: " + path', isAutoQuote=False ) +
-            (2*TAB) + 'installer.setValue( "__lockFilePath", path )'  + END +
+            (2*TAB) + 'installer.setValue( "__lockFilePath", path )'  + END +            
+            (2*TAB) + 'var isMaintenance = rootFileName( lockFileName ).startsWith( ' + 
+                  ('rootFileName( "%s" ) )' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END +
+            (2*TAB) + 'installer.setValue( "__isMaintenance", ' + 
+                _QtIfwScript.boolToString( 'isMaintenance' ) + ' )'  + END +              
             TAB + EBLK +                         
             TAB + 'return path' + END +
             EBLK + NEW +            
@@ -937,11 +966,15 @@ class _QtIfwScript:
             (2*TAB) + '"oFSO.DeleteFile WScript.ScriptFullName\\n" ' + END +            
             TAB + 'executeVbScriptDetached( watchDogPath, vbs )' + END 
             if IS_WINDOWS else 
-            TAB + '' + END) + # TODO: FILLIN!!
+            TAB + '' + END) + # TODO: FILLIN!!            
             EBLK + NEW +
+            'function __tempRootFilePath( extension ) ' + SBLK +  # TODO: Test in NIX/MAC
+            TAB + 'return __tempPath( "." + (extension ? extension : "tmp") ) ' + END +                                                                              
+            EBLK + NEW +            
             'function __tempPath( suffix ) ' + SBLK +  # TODO: Test in NIX/MAC            
-            TAB + 'return (isMaintenanceTool() ? __maintenanceTempPath() : __installerTempPath()) + ' +
-                      '(suffix ? suffix : "")' + END +                  
+            TAB + 'return (isMaintenanceTool() ? ' +
+                    '__maintenanceTempPath() : __installerTempPath()) + ' +
+                                                '(suffix ? suffix : "")' + END +                  
             EBLK + NEW +
             'function __installerTempPath( suffix ) ' + SBLK +  # TODO: Test in NIX/MAC            
             TAB + 'var dirPath = installer.value( ' + 
@@ -1003,20 +1036,6 @@ class _QtIfwScript:
             'function rootFileName( filePath ) ' + SBLK +
             TAB + 'return fileName( filePath ).split(".")[0]' + END +
             EBLK + NEW +                                                            
-            'function execute( binPath, args ) ' + SBLK +
-            TAB + 'var cmd = "\\"" + binPath + "\\""' + END +
-            TAB + 'for( i=0; i < args.length; i++ )' + NEW +
-            (2*TAB) + 'cmd += (" " + args[i])' + END +
-            TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
-            TAB + 'return installer.execute( binPath, args )' + END +
-            EBLK + NEW +
-            'function executeDetached( binPath, args ) ' + SBLK +
-            TAB + 'var cmd = "\\"" + binPath + "\\""' + END +
-            TAB + 'for( i=0; i < args.length; i++ )' + NEW +
-            (2*TAB) + 'cmd += (" " + args[i])' + END +
-            TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
-            TAB + 'return installer.executeDetached( binPath, args )' + END +
-            EBLK + NEW +            
             'function resolveNativePath( path ) ' + SBLK +    # TODO: Test in NIX/MAC  
                 TAB + 'path = Dir.toNativeSeparator( path )' + END +            
                 TAB + 'var echoCmd = "' +
@@ -1318,21 +1337,50 @@ class _QtIfwScript:
                 TAB + 'gui.clickButton(buttons.CancelButton)' + END +
                 TAB + 'gui.clickButton(buttons.FinishButton)' + END +                
                 TAB + '' + END +                    
-            EBLK + NEW                                              
+            EBLK + NEW +            
+            'function execute( binPath, args ) ' + SBLK +
+            TAB + 'var cmd = "\\"" + binPath + "\\""' + END +
+            TAB + 'for( i=0; i < args.length; i++ )' + NEW +
+            (2*TAB) + 'cmd += (" " + args[i])' + END +
+            TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
+            TAB + 'return installer.execute( binPath, args )' + END +
+            EBLK + NEW +
+            'function executeDetached( binPath, args ) ' + SBLK +
+            TAB + 'var cmd = "\\"" + binPath + "\\""' + END +
+            TAB + 'for( i=0; i < args.length; i++ )' + NEW +
+            (2*TAB) + 'cmd += (" " + args[i])' + END +
+            TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
+            TAB + 'return installer.executeDetached( binPath, args )' + END +
+            EBLK + NEW +              
+            'function executeHidden( binPath, args, isElevated ) ' + SBLK + # TODO: Test in NIX/MAC 
+            ( 
+            (TAB+ 'var ps = "Start-Process -FilePath \'" + binPath + "\' ' +
+                            '-Wait -WindowStyle Hidden"' + END +
+            TAB + 'if( isElevated ) ps += " -Verb RunAs"' + END +
+            TAB + 'if( args ) ' + NEW +  
+            (2*TAB) + 'ps += " -ArgumentList " + "\\"" + args.join("\\",\\"") + "\\""' + END +            
+            TAB + 'executePowerShell( ps )' + END ) 
+            if IS_WINDOWS else 
+            (TAB + 'var shell = ""' + END)# TODO: Fill in! 
+            if IS_LINUX else
+            (TAB + '// The hidden feature is not yet supported on macOS!' + NEW +
+            TAB + 'execute( binPath, args )' + END )
+            ) +              
+            EBLK + NEW                                                                       
         )        
         if IS_WINDOWS : 
-            # EMBEDDED VB SCRIPT
             self.qtScriptLib += (
             'function executeVbScript( vbs ) ' + SBLK +
                 TAB + _QtIfwScript.log( "Executing VbScript:" ) +
                 TAB + _QtIfwScript.log( "vbs", isAutoQuote=False ) +          
-                TAB + 'var path = writeFile( Dir.temp() + "/__qtIfwInstaller.vbs", vbs )' + END +
+                TAB + 'var path = writeFile( __tempRootFilePath( "vbs" ), vbs )' + END +
                 TAB + 'var result = installer.execute(' + 
                     '"cscript", ["//Nologo", path])' + END +
-                TAB + _QtIfwScript.log( "Vbs execution Result:" ) +                
-                TAB + _QtIfwScript.log( "result[0]", isAutoQuote=False ) + 
+                TAB + _QtIfwScript.log( 
+                    '"> Script return code: " + (result.length==2 ? result[1] : "?" )', 
+                    isAutoQuote=False ) + 
                 TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("VbScript operation failed.")' + END +
+                (2*TAB) + 'throw new Error("VBScript operation failed.")' + END +
                 TAB + 'for( i=0; i < 3; i++ )' + SBLK +
                 (2*TAB) + 'try{ deleteFile( path ); break; }' + NEW +                          
                 (2*TAB) + 'catch(e){ sleep(1); }' + NEW +
@@ -1345,6 +1393,32 @@ class _QtIfwScript:
                 TAB + 'var path = writeFile( scriptPath, vbs )' + END +
                 TAB + 'var result = installer.executeDetached(' + 
                     '"cscript", ["//Nologo", path])' + END +
+            EBLK + NEW +            
+            'function executePowerShell( ps ) ' + SBLK +
+                TAB + _QtIfwScript.log( "Executing PowerShell Script:" ) +
+                TAB + _QtIfwScript.log( "ps", isAutoQuote=False ) +          
+                TAB + 'var path = writeFile( __tempRootFilePath( "ps1" ), ps )' + END +
+                TAB + 'var result = installer.execute(' + 
+                    '"powershell", ["-NoLogo", "-ExecutionPolicy", "Bypass", ' +
+                                    '"-File", path])' + END +
+                TAB + _QtIfwScript.log( 
+                    '"> Script return code: " + (result.length==2 ? result[1] : "?" )', 
+                    isAutoQuote=False ) +                
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("PowerShell operation failed.")' + END +
+                TAB + 'for( i=0; i < 3; i++ )' + SBLK +
+                (2*TAB) + 'try{ deleteFile( path ); break; }' + NEW +                          
+                (2*TAB) + 'catch(e){ sleep(1); }' + NEW +
+                TAB + EBLK + NEW +
+            EBLK + NEW +
+            'function executePowerShellDetached( scriptPath, ps ) ' + SBLK +
+                TAB + _QtIfwScript.log( "Executing Detached PowerShell Script:" ) +
+                TAB + _QtIfwScript.log( "scriptPath", isAutoQuote=False ) +                
+                TAB + _QtIfwScript.log( "ps", isAutoQuote=False ) +          
+                TAB + 'var path = writeFile( scriptPath, ps )' + END +
+                TAB + 'var result = installer.executeDetached(' + 
+                    '"powershell", ["-NoLogo", "-ExecutionPolicy", "Bypass", ' +
+                                    '"-File", path])' + END +
             EBLK + NEW                                                          
             )
         elif IS_LINUX:
@@ -1810,7 +1884,8 @@ Controller.prototype.%s = function(){
                 TAB + 'return false' + END +                 
             EBLK + NEW +            
             'function removeTarget( isAuto ) ' + SBLK +
-                TAB + _QtIfwScript.log('Removing existing installation...') +  
+                TAB + _QtIfwScript.log('Removing existing installation...') +
+                TAB + 'var isElevated=true' + END +  
                 TAB + 'var args=[ "-v", ' +                     
                     '"' + _QtIfwScript.AUTO_PILOT_CMD_ARG + '=' +
                     _QtIfwScript.TRUE + '" ' + 
@@ -1822,19 +1897,20 @@ Controller.prototype.%s = function(){
                 TAB + 'var exeResult' + END +
                 (TAB + 'var regPaths = maintenanceToolPaths()' + END + 
                  TAB + 'if( regPaths != null )' + SBLK +
-                (2*TAB) + 'for( i=0; i < regPaths.length; i++ )' + NEW +
-                    (3*TAB) + 'exeResult = execute( regPaths[i], args )' + END + 
+                (2*TAB) + 'for( i=0; i < regPaths.length; i++ )' + SBLK +
+                    (3*TAB) + 'executeHidden( regPaths[i], args, isElevated )' + END +
+                (2*TAB) + EBLK +                        
                 TAB + EBLK +
                 TAB + 'else '
                 if IS_WINDOWS else TAB) +
                 _QtIfwScript.ifCmdLineArg( 
                     _QtIfwScript.TARGET_DIR_CMD_ARG ) +
-                    'exeResult = execute( toMaintenanceToolPath( ' +
+                    'executeHidden( toMaintenanceToolPath( ' +
                         _QtIfwScript.cmdLineArg( 
-                    _QtIfwScript.TARGET_DIR_CMD_ARG ) + ' ), args )' + END +
+                    _QtIfwScript.TARGET_DIR_CMD_ARG ) + ' ), args, isElevated )' + END +
                 TAB + 'else ' + NEW +                        
-                (2*TAB) + 'exeResult = execute( toMaintenanceToolPath( ' +
-                        _QtIfwScript.targetDir() + ' ), args )' + END +
+                (2*TAB) + 'executeHidden( toMaintenanceToolPath( ' +
+                        _QtIfwScript.targetDir() + ' ), args, isElevated )' + END +
                 TAB + '// The MaintenanceTool is not removed until a moment\n' + 
                 TAB + '// or two has elapsed after it was closed...' + NEW +
                 TAB + _QtIfwScript.log('Verifying uninstall...') +    
@@ -1948,7 +2024,8 @@ Controller.prototype.%s = function(){
             TAB + 'installer.setValue( ' + 
                 ('"%s"' % (_QT_IFW_INSTALLER_TEMP_DIR,)) + ', "" )' + END + 
             TAB + 'installer.setValue( ' + 
-                ('"%s"' % (_QT_IFW_MAINTENANCE_TEMP_DIR,)) + ', "" )' + END + 
+                ('"%s"' % (_QT_IFW_MAINTENANCE_TEMP_DIR,)) + ', "" )' + END +
+            TAB + 'installer.setValue( "__isMaintenance", "" )' + END +            
             TAB + 'installer.setValue( "__lockFilePath", "" )' + END +
             TAB + 'installer.setValue( "__watchDogPath", "" )' + END +
             TAB + 'clearErrorLog()' + END +

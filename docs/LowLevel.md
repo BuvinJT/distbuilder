@@ -407,6 +407,9 @@ Static Functions:
     log( msg, isAutoQuote=True )            
     debugPopup( msg, isAutoQuote=True )
     errorPopup( msg, isAutoQuote=True )
+
+    boolToString( b )	<pass Python bool or dynamic QScript logic>
+    stringToBool( value, isAutoQuote=True )
                       
     setValue( key, value, isAutoQuote=True )               
     lookupValue( key, default="", isAutoQuote=True )            
@@ -481,7 +484,7 @@ Static Functions:
     clickButton( buttonName, delayMillis=None )                
 
     	(Note: check box controls also work on radio buttons)    
-    setCheckBox( checkboxName, isCheck=True ):    
+    setCheckBox( checkboxName, isCheck=True ): <pass Python bool or dynamic QScript logic>    
 
 If writing scripts directly for distbulder integration, you may also employ the 
 following add-on **QT SCRIPT** functions:
