@@ -23,13 +23,16 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>[TITLE]</string>
+   <string></string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="description">
+    <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="text">
-      <string>[TEXT]</string>
+      <string></string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

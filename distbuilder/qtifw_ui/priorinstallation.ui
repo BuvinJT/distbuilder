@@ -31,9 +31,6 @@
     <property name="visible">
       <bool>false</bool>
      </property>
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
      <property name="text">
       <string>How would you like to proceed?</string>
      </property>
@@ -70,11 +67,8 @@
     <property name="visible">
       <bool>false</bool>
      </property>
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
      <property name="text">
-      <string>Click &quot;Cancel&quot; to exit without modifying your programs.</string>
+      <string>Click &quot;Cancel&quot; to exit without modifying your program.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

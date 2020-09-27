@@ -487,7 +487,8 @@ Static Functions:
 
 	<CUSTOM ("DYNAMIC") PAGES ONLY>	
 	    enableNextButton( isEnable=True )				
-	    setCustomPageTitle( text, isAutoQuote=True, pageVar="page" )                
+	    setCustomPageTitle( title, isAutoQuote=True, pageVar="page" )                
+		setCustomPageText( title, text, isAutoQuote=True, pageVar="page" )
 
 	    enableCustom( controlName, isEnable=True, pageVar="page" )
 	    setCustomVisible( controlName, isVisible=True, pageVar="page" )
@@ -567,6 +568,8 @@ following add-on **QT SCRIPT** functions:
 	    isPackageInstalled( pkg )
 	    installPackage( pkg ) 
 	    unInstallPackage( pkg ) 
+
+	setCustomPageText( page, title, description )
 
 ### QtIfwPackage list manipulation
 

@@ -180,8 +180,8 @@ class _QtIfwXmlElement( ET.Element ):
         if parent is not None: parent.append( self )                                                        
 
 # -----------------------------------------------------------------------------
-@six.add_metaclass(ABCMeta)
-class _QtIfwXml():
+@six.add_metaclass( ABCMeta )
+class _QtIfwXml:
 
     __HEADER = '<?xml version="1.0" encoding="UTF-8"?>'
 
@@ -483,7 +483,7 @@ class QtIfwPackageXml( _QtIfwXml ):
 
 
 # -----------------------------------------------------------------------------
-@six.add_metaclass(ABCMeta)
+@six.add_metaclass( ABCMeta )
 class _QtIfwScript:
 
     TAB         = "    "
@@ -1557,6 +1557,8 @@ Controller.prototype.%s = function(){
        
     __GET_CUSTPAGE_TEXT_TMPL = ( "%s.%s.text" )
 
+    __SET_CUSTPAGE_CORE_TEXT_TMPL = "setCustomPageText( %s, %s, %s )" 
+
     __UI_PAGE_CALLBACK_FUNC_TMPLT = (
 """
     Controller.prototype.Dynamic%sCallback = function() {
@@ -1668,10 +1670,18 @@ Controller.prototype.%s = function(){
 
 
     @staticmethod        
-    def setCustomPageTitle( text, isAutoQuote=True, pageVar="page" ):                
+    def setCustomPageTitle( title, isAutoQuote=True, pageVar="page" ):                
         return QtIfwControlScript.__SET_CUSTPAGE_TITLE_TMPL % ( pageVar, 
-                _QtIfwScript._autoQuote( text, isAutoQuote ) )
+                _QtIfwScript._autoQuote( title, isAutoQuote ) )
 
+    @staticmethod        
+    def setCustomPageText( title, text, isAutoQuote=True, pageVar="page" ):
+        if title is None: title=""
+        if text is None: text="" 
+        return QtIfwControlScript.__SET_CUSTPAGE_CORE_TEXT_TMPL % ( pageVar, 
+                _QtIfwScript._autoQuote( title, isAutoQuote ), 
+                _QtIfwScript._autoQuote( text, isAutoQuote ) )
+    
     @staticmethod        
     def enableCustom( controlName, isEnable=True, pageVar="page" ):
         """ DOES NOT WORK FOR WIZARD BUTTONS!!! """                
@@ -1702,7 +1712,7 @@ Controller.prototype.%s = function(){
     @staticmethod        
     def getCustomText( controlName, pageVar="page" ):                
         return QtIfwControlScript.__GET_CUSTPAGE_TEXT_TMPL % (pageVar, controlName)   
-    
+
     # QtIfwControlScript
     def __init__( self, 
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
@@ -2073,6 +2083,21 @@ Controller.prototype.%s = function(){
                 TAB + 'return maintenanceToolPaths() != null' + END + 
             EBLK + NEW           
             )
+
+            self.controllerGlobals += (
+"""
+function setCustomPageText( page, title, description ) {
+    page.windowTitle = title;
+    if( description ){
+        page.description.setText( description );
+        page.description.setVisible( true );
+    }
+    else{
+        page.description.setVisible( false );
+        page.description.setText( "" );            
+    }
+}
+""")
 
     def __genControllerConstructorBody( self ):
         NEW = _QtIfwScript.NEW_LINE
@@ -2624,7 +2649,7 @@ Component.prototype.%s = function(){
                     (ADD_CUSTOM_PAGE_TMPLT % ( p.name, p.pageOrder )) + END )         
 
             self.componentLoadedCallbackBody += (
-                _QtIfwScript.log( 
+                _QtIfwScript.TAB + _QtIfwScript.log( 
                     "(Custom) %sPageLoaded" % (p.name,) ) )  
     
             if p._isOnLoadBase:
@@ -3172,7 +3197,9 @@ class QtIfwUiPage():
         })
         
     def write( self, dirPath ):
-        if self.content is None : return
+        if self.content is None : 
+            raise Exception( "No content found for QtIfwUiPage: %s" % 
+                             (self.name,) )
         if not isDir( dirPath ): makeDir( dirPath )
         filePath = joinPath( dirPath, self.fileName() )
         content = self.__resolveContent()
@@ -3205,55 +3232,124 @@ class QtIfwSimpleTextPage( QtIfwUiPage ):
         })
                     
 # -----------------------------------------------------------------------------    
-class QtIfwPriorInstallationPage( QtIfwUiPage ):
+class QtIfwPerformOperationPage( QtIfwUiPage ):
+    
+    __SRC = QtIfwUiPage._pageResPath( "performoperation" )
+ 
+    def __init__( self, name, pageOrder, 
+                  operation, onSuccessDelayMillis=None ) :
+
+        PERFORM_OP_NAME = "PerformOp_%s" % (name,)
+        
+        ON_SUCCESS =( QtIfwControlScript.enableNextButton() 
+            if( onSuccessDelayMillis is not None and 
+                onSuccessDelayMillis <= 0 ) else
+                QtIfwControlScript.clickButton(
+            QtIfwControlScript.NEXT_BUTTON, onSuccessDelayMillis )
+        ) 
+
+        ON_ENTER =( 
+"""
+        %s
+        if( %s() ){
+            %s
+        }
+""") % (QtIfwControlScript.enableNextButton( False ),
+        PERFORM_OP_NAME, ON_SUCCESS) 
+        
+        QtIfwUiPage.__init__( self, name, pageOrder=pageOrder,  
+            sourcePath=QtIfwPerformOperationPage.__SRC, 
+            onEnter=ON_ENTER )
+        
+        self.supportFuncs.update({ 
+              PERFORM_OP_NAME: operation
+        })
+
+# -----------------------------------------------------------------------------    
+class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
     
     NAME  = "PriorInstallation"
+
+    __SRC = QtIfwUiPage._pageResPath( "priorinstallation" )
+    __PAGE_ORDER = QT_IFW_READY_PAGE
+
+    __TITLE = "Prior Installation Detected"
     
     __TEXT_LABEL      = "description"
     __CONTINUE_BUTTON = "continueButton"
     __STOP_BUTTON     = "stopButton"
     __NOTE_LABEL      = "note"
-    
-    __TITLE = "Prior Installation Detected"
-    
-    __PAGE_ORDER = QT_IFW_READY_PAGE
-    __SRC = QtIfwUiPage._pageResPath( "priorinstallation" )
                 
     def __init__( self ) :
         TAB = _QtIfwScript.TAB
-        NEW = _QtIfwScript.NEW_LINE
-        END = _QtIfwScript.END_LINE
-        SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK
 
-        ON_LOAD = ""    
+        ON_CONTINUE_CLICKED_NAME = "onPriorInstallContinueClicked"
+        ON_CONTINUE_CLICKED = QtIfwControlScript.enableNextButton()
+
+        ON_STOP_CLICKED_NAME = "onPriorInstallStopClicked"     
+        ON_STOP_CLICKED = QtIfwControlScript.enableNextButton( False ) 
+
+        ON_LOAD =( 
+"""
+    page.%s.released.connect(this, this.%s);
+    page.%s.released.connect(this, this.%s);
+""" ) % ( QtIfwOnPriorInstallationPage.__CONTINUE_BUTTON, 
+            ON_CONTINUE_CLICKED_NAME,
+          QtIfwOnPriorInstallationPage.__STOP_BUTTON,     
+            ON_STOP_CLICKED_NAME )     
+            
+        #(3*TAB) + 'managePriorInstallation()' + END +
+        #setText( controlName, text, isAutoQuote=True )
+        #(3*TAB) + QtIfwControlScript.enableNextButton( True ) +
             
         ON_ENTER = ( 
             (2*TAB) + _QtIfwScript.ifInstalling( isMultiLine=True ) +
                 (3*TAB) + QtIfwControlScript.enableNextButton( False ) +                
                 (3*TAB) + QtIfwControlScript.setCustomPageTitle( 
-                     QtIfwPriorInstallationPage.__TITLE ) +
+                     QtIfwOnPriorInstallationPage.__TITLE ) +
                 (3*TAB) + QtIfwControlScript.setCustomVisible( 
-                    QtIfwPriorInstallationPage.__TEXT_LABEL ) +
+                    QtIfwOnPriorInstallationPage.__TEXT_LABEL ) +
                 (3*TAB) + QtIfwControlScript.setCustomVisible( 
-                    QtIfwPriorInstallationPage.__CONTINUE_BUTTON ) +
+                    QtIfwOnPriorInstallationPage.__CONTINUE_BUTTON ) +
                 (3*TAB) + QtIfwControlScript.setCustomVisible( 
-                    QtIfwPriorInstallationPage.__STOP_BUTTON ) +
+                    QtIfwOnPriorInstallationPage.__STOP_BUTTON ) +
                 (3*TAB) + QtIfwControlScript.setCustomVisible( 
-                    QtIfwPriorInstallationPage.__NOTE_LABEL ) +
-                            
-                #(3*TAB) + 'managePriorInstallation()' + END +
-                #setText( controlName, text, isAutoQuote=True )
-                #(3*TAB) + QtIfwControlScript.enableNextButton( True ) +
+                    QtIfwOnPriorInstallationPage.__NOTE_LABEL ) +                            
             (2*TAB) + EBLK 
         )
 
-        QtIfwUiPage.__init__( self, QtIfwPriorInstallationPage.NAME,
-            pageOrder=QtIfwPriorInstallationPage.__PAGE_ORDER, 
-            sourcePath=QtIfwPriorInstallationPage.__SRC,
+        QtIfwUiPage.__init__( self, QtIfwOnPriorInstallationPage.NAME,
+            pageOrder=QtIfwOnPriorInstallationPage.__PAGE_ORDER, 
+            sourcePath=QtIfwOnPriorInstallationPage.__SRC,
             onLoad=ON_LOAD, onEnter=ON_ENTER  )
-        self.onAutoPilotClickNext = False
-                                       
+        
+        self.supportFuncs.update({ 
+              ON_CONTINUE_CLICKED_NAME: ON_CONTINUE_CLICKED
+            , ON_STOP_CLICKED_NAME: ON_STOP_CLICKED
+        })
+                                                      
+# -----------------------------------------------------------------------------    
+class QtIfwRemovePriorInstallationPage( QtIfwPerformOperationPage ):
+  
+    NAME = "RemovePriorInstallation"
+    
+    __PAGE_ORDER = QT_IFW_READY_PAGE
+    __ON_SUCCESS_DELAY_MILLIS=2500
+    __OPERATION=(
+"""
+console.log("removing!")
+return true;
+""")
+
+    def __init__( self ):
+        QtIfwPerformOperationPage.__init__( self, 
+            name=QtIfwRemovePriorInstallationPage.NAME, 
+            pageOrder=QtIfwRemovePriorInstallationPage.__PAGE_ORDER,
+            onSuccessDelayMillis=
+                QtIfwRemovePriorInstallationPage.__ON_SUCCESS_DELAY_MILLIS, 
+            operation=QtIfwRemovePriorInstallationPage.__OPERATION  )
+        
 # -----------------------------------------------------------------------------    
 class QtIfwTargetDirPage( QtIfwUiPage ):
     
@@ -3262,8 +3358,27 @@ class QtIfwTargetDirPage( QtIfwUiPage ):
 
     def __init__( self ):
             
-        ON_TARGET_CHANGED_NAME        = "targetDirectoryChanged"
+        ON_TARGET_CHANGED_NAME = "targetDirectoryChanged"
+        ON_TARGET_CHANGED = (
+"""
+    var page = gui.pageWidgetByObjectName("Dynamic%s");
+    var dir = page.targetDirectory.text;
+    dir = Dir.toNativeSeparator(dir);
+    page.warning.setText( !installer.fileExists(dir) ? "" :
+        "<p style=\\"color: red\\">" +
+            "WARNING: The path specified already exists. " +
+            "All prior content will be erased!" + 
+        "</p>" );        
+    installer.setValue("TargetDir", dir);
+""") % ( QtIfwTargetDirPage.NAME, )
+        
         ON_TARGET_BROWSE_CLICKED_NAME = "targetChooserClicked"
+        ON_TARGET_BROWSE_CLICKED = (
+"""
+    var page = gui.pageWidgetByObjectName("Dynamic%s");
+    page.targetDirectory.setText( Dir.toNativeSeparator(
+        QFileDialog.getExistingDirectory("", page.targetDirectory.text) ) );
+""") % ( QtIfwTargetDirPage.NAME, )
     
         ON_LOAD = (    
 """
@@ -3281,26 +3396,6 @@ class QtIfwTargetDirPage( QtIfwUiPage ):
     page.targetDirectory.textChanged.connect(this, this.%s);    
     page.targetChooser.released.connect(this, this.%s);
 """) % ( ON_TARGET_CHANGED_NAME, ON_TARGET_BROWSE_CLICKED_NAME )
-    
-        ON_TARGET_CHANGED = (
-"""
-    var page = gui.pageWidgetByObjectName("Dynamic%s");
-    var dir = page.targetDirectory.text;
-    dir = Dir.toNativeSeparator(dir);
-    page.warning.setText( !installer.fileExists(dir) ? "" :
-        "<p style=\\"color: red\\">" +
-            "WARNING: The path specified already exists. " +
-            "All prior content will be erased!" + 
-        "</p>" );        
-    installer.setValue("TargetDir", dir);
-""") % ( QtIfwTargetDirPage.NAME, )
-
-        ON_TARGET_BROWSE_CLICKED = (
-"""
-    var page = gui.pageWidgetByObjectName("Dynamic%s");
-    page.targetDirectory.setText( Dir.toNativeSeparator(
-        QFileDialog.getExistingDirectory("", page.targetDirectory.text) ) );
-""") % ( QtIfwTargetDirPage.NAME, )
         
         QtIfwUiPage.__init__( self, QtIfwTargetDirPage.NAME,
             sourcePath=QtIfwTargetDirPage.__SRC, onLoad=ON_LOAD )
@@ -4020,7 +4115,8 @@ def __addInstallerResources( qtIfwConfig ) :
     
     _addQtIfwResources( qtIfwConfig, qtIfwConfig.packages )
     _addQtIfwUiPages( qtIfwConfig, QtIfwTargetDirPage(), isOverWrite=False )
-    _addQtIfwUiPages( qtIfwConfig, QtIfwPriorInstallationPage(), isOverWrite=False )
+    _addQtIfwUiPages( qtIfwConfig, QtIfwOnPriorInstallationPage(), isOverWrite=False )
+    #_addQtIfwUiPages( qtIfwConfig, QtIfwRemovePriorInstallationPage(), isOverWrite=False )
     
     genQtIfwCntrlRes( qtIfwConfig ) 
                                       
@@ -4081,7 +4177,7 @@ def genQtIfwCntrlRes( qtIfwConfig ) :
                         
 def __addUiPages( qtIfwConfig, package ) :
     for ui in package.uiPages:
-        if isinstance( ui, QtIfwUiPage ): 
+        if isinstance( ui, QtIfwUiPage ):
             ui.resolve( qtIfwConfig ) 
             ui.write( package.metaDirPath() )
                 

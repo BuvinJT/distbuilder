@@ -877,18 +877,57 @@ writing the `.ui` file for the installer definition the library the generates, a
 in the `content` will be resolved.
 
 TODO: elaborate on ui replacements, the "resolve" function, provide a base example .ui...
-      
-### QtIfwPriorInstallationPage
+
+### QtIfwPerformOperationPage
+
+This class is derived from `QtIfwUiPage`. It provides a "blank" page for performing
+custom operations as one steps through the IFW wizard in the natural manner.
+Optionally, you may dynamically control the title / descriptive text displayed as
+your operation proceeds, and upon success / failure.  To do so, call the QStript function:
+`setCustomPageText( page, title, description )` or build it via the Python helper:
+`setCustomPageText( title, text, isAutoQuote=True, pageVar="page" )`.
+
+Constructor:
+
+    QtIfwPerformOperationPage( name, pageOrder, operation, 
+                               onSuccessDelayMillis=None )                
+
+Details:
+
+**operation**: The custom QScript to execute, driving the operation. At the end of this
+script, this **MUST RETURN A BOOLEAN (TRUE/FASLE) INDICATION OF SUCCESS**.  If success
+is indicated, the `onSuccessDelayMillis` parameter will dictate what occurs next.  If
+a failure is indicated (via a return of *false*), then nothing will occur post operation.
+The page cannot be advanced in this state.  The user may only click the "Cancel" button
+to quite the installer.  
+
+**onSuccessDelayMillis**: By default, this is set to `None`, which indicates that upon
+success, the page should advanced instantly.  If a value greater than 0 is provided, the
+page will automatically advance after a delay of that duration.  Alternatively, an integer value of 0 (or less than 0), will indicate a manual advancement will take place.  The
+"Next" button will become enabled, and the user may click such when they choose. 
+
+## QtIfwOnPriorInstallationPage
 
 This class is derived from `QtIfwUiPage`. As one would assume, this provides a base
-from which to start modifying the distbuilder addition to QtIFW "Prior Installation" 
+from which to start modifying the distbuilder addition to QtIFW "Prior Installation Detected" 
 installer page.  If another page has not been supplied for this, distbuilder will use this class to apply it's own default customization to the natural QtIfw interface.  
 
 Constructor:
 
-    QtIfwPriorInstallationPage()  # 0 arguments!                
+    QtIfwOnPriorInstallationPage()  # 0 arguments!                
 
-### QtIfwTargetDirPage
+### QtIfwRemovePriorInstallationPage
+
+This class is derived from `QtIfwPerformOperationPage`.  It works in concert with 
+`QtIfwOnPriorInstallationPage`, performing the actual action of the removal.  If desired,
+you may supply your own custom definition of this page, else the library will inject the
+default version of this.
+
+Constructor:
+
+    QtIfwRemoveInstallationPage()  # 0 arguments!                
+
+### QtIfwTargetDirPagege
 
 This class is derived from `QtIfwUiPage`. As one would assume, this provides a base
 from which to start modifying the "Target Directory" installer page.  If another page 
