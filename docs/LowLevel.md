@@ -483,12 +483,14 @@ Static Functions:
     setText( controlName, text, isAutoQuote=True )
     
     	(Note: check box controls also work on radio buttons)    
+    isChecked( checkboxName )
     setCheckBox( checkboxName, isCheck=True ): <pass Python bool or dynamic QScript logic>    
-
+    
 	<CUSTOM ("DYNAMIC") PAGES ONLY>	
-	    enableNextButton( isEnable=True )				
-	    setCustomPageTitle( title, isAutoQuote=True, pageVar="page" )                
-		setCustomPageText( title, text, isAutoQuote=True, pageVar="page" )
+	    enableNextButton( isEnable=True ) <does not work on standard wizard pages!>				
+	    
+	    setCustomPageTitle( title, isAutoQuote=True, pageVar="page" )     	               
+		setCustomPageText( title, description, isAutoQuote=True, pageVar="page" )
 
 	    enableCustom( controlName, isEnable=True, pageVar="page" )
 	    setCustomVisible( controlName, isVisible=True, pageVar="page" )
@@ -496,6 +498,7 @@ Static Functions:
 	    setCustomText( controlName, text, isAutoQuote=True, pageVar="page" )                
 	    getCustomText( controlName, pageVar="page" )
 
+        isCustomChecked( checkboxName, pageVar="page" )
 	    setCustomCheckBox( checkboxName, isCheck=True, pageVar="page" )
 
 See [QtIfwUiPage](ConfigClasses.md#qtifwuipage)

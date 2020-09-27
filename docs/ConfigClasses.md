@@ -815,7 +815,8 @@ Attributes:
  
     onLoad         = None
     onEnter        = None       
-    supportFuncs   = {}  
+    eventHandlers  = {}
+    supportFuncs   = None  
 
     _isOnLoadBase  = True    
     _isOnEnterBase = True
@@ -848,9 +849,11 @@ Conversely, to add a *new* page, give it some other name and specify the
 **pageOrder**: If **not** a replacement, the page will be added added BEFORE 
 this specified page.
 
-**onLoad**: Qt Script snippet invoked when loading the page into memory, before showing it. 
+**onLoad**: Qt Script snippet invoked when loading the page into memory. This is executed within a **package** script, when then "component" is constructed.  It's scope therefore is limited to such, and it cannot call functions defined in the **controller script**.  UI page resources are contained within packages, which is why they are loaded and configured from there.
 
-**onEnter**: Qt Script snippet invoked upon showing the page.
+**onEnter**: Qt Script snippet invoked upon entering / displaying the page to the user.
+This is executed within a **controller** script, it's scope is limited to such.  Therefore,
+**package** script functions and globals are not available here.   
 
 **_isOnLoadBase**: *Protected* Note, this is enabled by default. When this is set to `True`,
 an auto generated script will be added to the installer, which will execute prior to
@@ -868,15 +871,18 @@ Having this in place will additionally create a `var page`, which refers to
 this page. The `onEnter` script may then make use of that variant to access the page widget or the child widgets on it.
 See [Installer Scripting](LowLevel.md#installer-scripting)
 
-**supportFuncs**: Qt Script "support functions" dictionary containing entries in the form: name:body.
-The typical use case for this attribute involves the onLoad script connecting events
-to handlers. The `supportFuncs` then provide the handler definitions. 
+**eventHandlers**: Qt Script "event handler" dictionary containing entries in the form: name:body.
+The typical use case for this attribute involves the `onLoad` script connecting events (e.g. button clicks) to handlers. The `eventHandlers` then provide the handler definitions. 
+These are defined within a **package** script, but are **controller.prototypes**.
+
+**supportFuncs**: Open ended Qt Script attribute, for injecting whatever additional
+support/helper function definitions maybe handy.  Note that these will live in the global space of the **controller** script. Be careful to avoid name conflicts!
              
 **replacements**: A dictionary containing entries in the form: placeholder:value.  Upon 
 writing the `.ui` file for the installer definition the library the generates, all "replacements"
 in the `content` will be resolved.
 
-TODO: elaborate on ui replacements, the "resolve" function, provide a base example .ui...
+TODO: further explain the complicate logic for page order (for replacement pages, or multiple pages with the same order...).  Also elaborate on ui replacements, the "resolve" function, provide a base example .ui in the docs...
 
 ### QtIfwPerformOperationPage
 

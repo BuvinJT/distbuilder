@@ -56,9 +56,6 @@ could drive an uninstall.
   
 ## v.0.8.2
 
-
-## v.0.8.4
-
 * Add option for appending platform suffix onto installer file names. 
 
 * Add tarball alternative to zip packaging.
@@ -71,10 +68,13 @@ could drive an uninstall.
 
 * Further develop QtIfwUiPage derived classes and resources.
 
-* Further refine QtIfw script abstractions. Handle design complications with the 
-fact custom pages can be accessed via the currentPageWidget() method. 
+## v.0.9.0
 
-## v.0.9.x
+* Large scale refactoring, to simplify the library and make it more user friendly. 
+Rename high level process classes and functions.  Consider dialing back the volume
+of published low level functions? 
+
+## v.0.9.1+
 			
 * Improve and stabilize Opy to the point it can handle *most* scripts without *any*
 manual intervention. 
