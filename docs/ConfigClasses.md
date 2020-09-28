@@ -389,6 +389,8 @@ Attributes & default values:
     finishedPageCallbackBody = None
     isAutoFinishedPageCallback = True        
 
+    onPageChangeCallbackBody = None
+
 	isRunProgVisible = True
 	isRunProgInteractive = True
 	
@@ -887,25 +889,31 @@ TODO: further explain the complicate logic for page order (for replacement pages
 ### QtIfwPerformOperationPage
 
 This class is derived from `QtIfwUiPage`. It provides a "blank" page for performing
-custom operations as one steps through the IFW wizard in the natural manner.
-Optionally, you may dynamically control the title / descriptive text displayed as
-your operation proceeds, and upon success / failure.  To do so, call the QStript function:
-`setCustomPageText( page, title, description )` or build it via the Python helper:
-`setCustomPageText( title, text, isAutoQuote=True, pageVar="page" )`.
+custom operations during the installation process.  Note that these operations take place
+outside of the main, built-in "installer operations", and instead allow more dynamic 
+actions to place "around" that process. 
+Optionally, you may control the UI as your operation proceeds, and upon success / failure.  
+To do so, call the QScript function:
+`setCustomPageText( page, title, description )` or build that script via the Python helper:
+`setCustomPageText( title, description, isAutoQuote=True, pageVar="page" )`.
 
 Constructor:
 
-    QtIfwPerformOperationPage( name, pageOrder, operation, 
+    QtIfwPerformOperationPage( name, operation="",
+                               order=QT_IFW_PRE_INSTALL, 
                                onSuccessDelayMillis=None )                
 
 Details:
 
 **operation**: The custom QScript to execute, driving the operation. At the end of this
-script, this **MUST RETURN A BOOLEAN (TRUE/FASLE) INDICATION OF SUCCESS**.  If success
+script, you this **MUST RETURN A BOOLEAN (TRUE/FASLE) INDICATION OF SUCCESS**.  If success
 is indicated, the `onSuccessDelayMillis` parameter will dictate what occurs next.  If
 a failure is indicated (via a return of *false*), then nothing will occur post operation.
-The page cannot be advanced in this state.  The user may only click the "Cancel" button
-to quite the installer.  
+The page cannot be advanced in this failure state. The user may only click the 
+"Cancel" button to quit the installer.  
+
+**order**: You may NOT specify one the standard options for a `QtIfwUiPage` attribute
+ `pageOrder`.  Instead, use either `QT_IFW_PRE_INSTALL` or `QT_IFW_POST_INSTALL`.
 
 **onSuccessDelayMillis**: By default, this is set to `None`, which indicates that upon
 success, the page should advanced instantly.  If a value greater than 0 is provided, the

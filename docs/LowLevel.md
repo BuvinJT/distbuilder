@@ -486,8 +486,8 @@ Static Functions:
     assignCustomPageWidgetVar( pageName, varName="page" )               
     assignCurPageWidgetVar( varName="page" )                              
     
+    toDefaultPageId( pageName )
     hideDefaultPage( pageName )
-    removeCustomPage( pageName )
     
     clickButton( buttonName, delayMillis=None )                
     
@@ -503,6 +503,8 @@ Static Functions:
     
 	<CUSTOM ("DYNAMIC") PAGES ONLY>	
 	    enableNextButton( isEnable=True ) <does not work on standard wizard pages!>				
+	    
+	    removeCustomPage( pageName )
 	    
 	    setCustomPageTitle( title, isAutoQuote=True, pageVar="page" )     	               
 		setCustomPageText( title, description, isAutoQuote=True, pageVar="page" )

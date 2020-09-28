@@ -99,9 +99,11 @@ QT_IFW_LICENSE_PAGE    = "LicenseAgreement"
 QT_IFW_START_MENU_PAGE = "StartMenuDirectory"
 QT_IFW_READY_PAGE      = "ReadyForInstallation"
 QT_IFW_INSTALL_PAGE    = "PerformInstallation"
-QT_IFW_FINISHED_PAGE   = "Finished"
+QT_IFW_FINISHED_PAGE   = "InstallationFinished"
 
 QT_IFW_REPLACE_PAGE_PREFIX="Replace"
+
+(QT_IFW_PRE_INSTALL, QT_IFW_POST_INSTALL) = range(2)
 
 _DEFAULT_PAGES = [
       QT_IFW_INTRO_PAGE      
@@ -1399,7 +1401,7 @@ class _QtIfwScript:
             TAB + EBLK + 
             TAB + 'throw new Error("Owner not found for page: " + pageName )' + END +
             EBLK + NEW +                                    
-            'function removePage( pageName ) ' + SBLK +
+            'function removeCustomPage( pageName ) ' + SBLK +
             TAB + 'installer.removeWizardPage( getPageOwner( pageName ), pageName )' + END +
             EBLK + NEW +
             'function execute( binPath, args ) ' + SBLK +
@@ -1568,6 +1570,13 @@ Controller.prototype.%s = function(){
 }\n
 """ )
 
+    __CONTROLER_PAGE_CHANGED_CALLBACK_FUNC_TMPLT =(            
+"""
+Controller.prototype.onCurrentPageChanged = function(pageId){
+    %s
+}
+""")
+
     __CONTROLER_CONNECT_TMPLT = ( 
         "%s.connect(this, Controller.prototype.%s);\n" ) 
     __WIDGET_CONNECT_TMPLT = ( 
@@ -1587,7 +1596,12 @@ Controller.prototype.%s = function(){
     __CLICK_BUTTON_TMPL       = "gui.clickButton(%s);\n"
     __CLICK_BUTTON_DELAY_TMPL = "gui.clickButton(%s, %d);\n"
 
-    __REMOVE_PAGE_TMPLT = 'removePage( "%s" );\n'
+    __TO_PAGE_CONSTANT_TMPLT = 'QInstaller.%s' 
+
+    __HIDE_PAGE_TMPLT = ( 
+        'installer.setDefaultPageVisible(QInstaller.%s, false);\n' ) 
+      
+    __REMOVE_PAGE_TMPLT = 'removeCustomPage( "%s" );\n'
 
     __ENABLE_NEXT_BUTTON_TMPL = "gui.currentPageWidget().complete=%s;\n" 
      
@@ -1680,8 +1694,16 @@ Controller.prototype.Dynamic%sCallback = function() {
         return QtIfwControlScript.__CUSTOM_PAGE_WIDGET_VAR_TMPLT % (
                 varName, pageName )                        
 
+    @staticmethod
+    def toDefaultPageId( pageName ): 
+        return QtIfwControlScript.__TO_PAGE_CONSTANT_TMPLT % (pageName,)
+
+    @staticmethod
+    def hideDefaultPage( pageName ): 
+        return QtIfwControlScript.__HIDE_PAGE_TMPLT % (pageName,)
+
     @staticmethod        
-    def removePage( pageName ):                
+    def removeCustomPage( pageName ):                
         return QtIfwControlScript.__REMOVE_PAGE_TMPLT % ( pageName,)                        
             
     @staticmethod        
@@ -1848,15 +1870,14 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.finishedPageCallbackBody = None
         self.isAutoFinishedPageCallback = True        
 
+        self.onPageChangeCallbackBody = None
+
         self.isRunProgInteractive = True
         self.isRunProgVisible = True
 
         self.__widgetEventSlots = {}
 
-        self.__standardEventSlots = {}    
-        self.registerStandardEventHandler( 
-            'installationFinished', 'onInstallFinished',
-            QtIfwControlScript._purgeTempFiles() );                                                                 
+        self.__standardEventSlots = {}            
         self.registerStandardEventHandler( 
             'uninstallationFinished', 'onUninstallFinished',
             QtIfwControlScript._purgeTempFiles() );                                                                 
@@ -1868,8 +1889,7 @@ Controller.prototype.Dynamic%sCallback = function() {
             QtIfwControlScript._purgeTempFiles() );                                                                 
         self.registerGuiEventHandler( 
             'interrupted', 'onGuiInterrupted',
-            QtIfwControlScript._purgeTempFiles() );                                                                 
-                
+            QtIfwControlScript._purgeTempFiles() );                                                                                 
         self.__autoPilotEventSlots = {}
         self.registerAutoPilotEventHandler( 
             'installationFinished', 'onAutoInstallFinished',
@@ -1906,7 +1926,11 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.registerStandardEventHandler( 
             'installationStarted', 'onInstallationStarted',
             self.__onInstallationStarted() )
-                
+
+        self.registerStandardEventHandler( 
+            'installationFinished', 'onInstallFinished',
+            self.__onInstallationFinished() );                                                                 
+                        
         if self.isAutoLib: _QtIfwScript._genLib( self )        
         if self.qtScriptLib: self.script += self.qtScriptLib
 
@@ -1969,6 +1993,10 @@ Controller.prototype.Dynamic%sCallback = function() {
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
                 (QT_IFW_FINISHED_PAGE, self.finishedPageCallbackBody) )
 
+        self.__prependPageChangeCallbackBody()
+        self.script += QtIfwControlScript.__CONTROLER_PAGE_CHANGED_CALLBACK_FUNC_TMPLT % (
+                self.onPageChangeCallbackBody, )
+                         
         for _, (funcName, funcBody) in six.iteritems( self.__standardEventSlots ):    
             self.script += ( 
                 QtIfwControlScript.__CONTROLER_CALLBACK_FUNC_TMPLT %
@@ -1984,9 +2012,44 @@ Controller.prototype.Dynamic%sCallback = function() {
     def __onInstallationStarted( self ):
         funcBody = _QtIfwScript.log("installationStarted")
         for ui in self.uiPages:
-            if isinstance( ui, QtIfwPerformOperationPage ):            
-                funcBody += QtIfwControlScript.removePage( ui.name ) 
+            if( isinstance( ui, QtIfwPerformOperationPage ) and 
+                ui.pageOrder==QT_IFW_INSTALL_PAGE ):                            
+                funcBody += QtIfwControlScript.removeCustomPage( ui.name ) 
         return funcBody                                                 
+
+    def __onInstallationFinished( self ):
+        return ( _QtIfwScript.log("installationFinished") +
+                  QtIfwControlScript._purgeTempFiles() ) 
+                  
+    def __prependPageChangeCallbackBody( self ):
+
+        TAB = _QtIfwScript.TAB
+        SBLK =_QtIfwScript.START_BLOCK
+        EBLK =_QtIfwScript.END_BLOCK                                    
+
+        prepend = _QtIfwScript.log( 
+            '"Page changed to:" + pageId', isAutoQuote=False )
+                        
+        isPostInstallOpPage=False            
+        for ui in self.uiPages:
+            if( isinstance( ui, QtIfwPerformOperationPage ) and 
+                ui.pageOrder==QT_IFW_FINISHED_PAGE ):          
+                isPostInstallOpPage=True                  
+                break
+        if isPostInstallOpPage:
+            prepend +=(
+                TAB + ('if( pageId == %s )' % (
+                    QtIfwControlScript.toDefaultPageId( 
+                        QT_IFW_FINISHED_PAGE),)) + SBLK +
+                (2*TAB) + _QtIfwScript.log( 
+                    "Beginning post install operations..." ) +
+                (2*TAB) + QtIfwControlScript.hideDefaultPage( 
+                    QT_IFW_INSTALL_PAGE )  +
+                EBLK )
+                               
+        self.onPageChangeCallbackBody =( prepend + 
+            (self.onPageChangeCallbackBody 
+            if self.onPageChangeCallbackBody else "") )
 
     def __appendUiPageFunctions( self ):    
         if self.uiPages: 
@@ -2239,10 +2302,9 @@ function setCustomPageText( page, title, description ) {
                 _QtIfwScript.genResources( self._maintenanceToolResources ) +
             EBLK )
         
-        HIDE_PAGE_TMPLT = ( TAB + 
-            'installer.setDefaultPageVisible(QInstaller.%s, false)' ) + END
         def hidePage( pageName ): 
-            self.controllerConstructorBody += HIDE_PAGE_TMPLT % (pageName,)
+            self.controllerConstructorBody += (
+                QtIfwControlScript.hideDefaultPage( pageName ) )
         if not self.isIntroductionPageVisible:                                                                    
             hidePage( QT_IFW_INTRO_PAGE )
         if not self.isTargetDirectoryPageVisible:                                                                    
@@ -2259,6 +2321,10 @@ function setCustomPageText( page, title, description ) {
             hidePage( QT_IFW_INSTALL_PAGE )
         if not self.isFinishedPageVisible:                                                                    
             hidePage( QT_IFW_FINISHED_PAGE )
+                
+        self.controllerConstructorBody += ( 
+            QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
+                ("installer.currentPageChanged", "onCurrentPageChanged") )            
             
         for signalName, (slotName, _) in six.iteritems( self.__standardEventSlots ):    
             self.controllerConstructorBody += ( 
@@ -2449,15 +2515,22 @@ class QtIfwPackageScript( _QtIfwScript ):
 """
 Controller.prototype.%s = function(){
     %s
-}\n
+}
 """ )
 
     __COMPONENT_CALLBACK_FUNC_TMPLT = (
 """
 Component.prototype.%s = function(){
     %s
-}\n
+}
 """ )
+    
+    __CONTROLER_PAGE_CHANGED_CALLBACK_FUNC_TMPLT =(            
+"""
+Controller.prototype.onCurrentPageChanged = function(pageId){
+    %s
+}
+""")
     
     __COMPONENT_LOADED_HNDLR_NAME = "componentLoaded"
             
@@ -3333,9 +3406,9 @@ class QtIfwSimpleTextPage( QtIfwUiPage ):
 class QtIfwPerformOperationPage( QtIfwUiPage ):
     
     __SRC = QtIfwUiPage._pageResPath( "performoperation" )
-    __PAGE_ORDER = QT_IFW_INSTALL_PAGE
 
     def __init__( self, name, operation="",
+                  order=QT_IFW_PRE_INSTALL, 
                   onSuccessDelayMillis=None ) :
 
         TAB  = _QtIfwScript.TAB
@@ -3345,7 +3418,9 @@ class QtIfwPerformOperationPage( QtIfwUiPage ):
         
         PERFORM_OP_NAME = "_performOp%s" % (name,)
         PERFORM_OP_DONE_VALUE = "_isPerformOp%sDone" % (name,)
-        
+
+        isPreInstall = order != QT_IFW_POST_INSTALL
+                
         ON_SUCCESS = (
             _QtIfwScript.setBoolValue( PERFORM_OP_DONE_VALUE, True ) + 
             QtIfwControlScript.enableNextButton() 
@@ -3363,7 +3438,8 @@ class QtIfwPerformOperationPage( QtIfwUiPage ):
         (2*TAB) + EBLK )
         
         QtIfwUiPage.__init__( self, name,   
-            pageOrder=QtIfwPerformOperationPage.__PAGE_ORDER,
+            pageOrder=(QT_IFW_INSTALL_PAGE if isPreInstall else 
+                       QT_IFW_FINISHED_PAGE),
             sourcePath=QtIfwPerformOperationPage.__SRC,
             onEnter=ON_ENTER )
         
@@ -3455,9 +3531,12 @@ return true;
     def __init__( self ):
         QtIfwPerformOperationPage.__init__( self, 
             QtIfwRemovePriorInstallationPage.NAME, 
+            operation=QtIfwRemovePriorInstallationPage.__OPERATION,
+            order=QT_IFW_PRE_INSTALL, 
+            #order=QT_IFW_POST_INSTALL, # ALPHA TESTING QtIfwPerformOperationPage ...            
             onSuccessDelayMillis=
                 QtIfwRemovePriorInstallationPage.__ON_SUCCESS_DELAY_MILLIS, 
-            operation=QtIfwRemovePriorInstallationPage.__OPERATION  )
+             )
         
 # -----------------------------------------------------------------------------    
 class QtIfwTargetDirPage( QtIfwUiPage ):
