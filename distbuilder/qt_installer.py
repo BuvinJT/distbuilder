@@ -1816,7 +1816,15 @@ Controller.prototype.Dynamic%sCallback = function() {
 
         self.__widgetEventSlots = {}
 
-        self.__standardEventSlots = {}        
+        self.__standardEventSlots = {}    
+        self.registerStandardEventHandler( 
+            'installationStarted', 'onInstallationStarted',
+            # -------------------- POC! --------------------
+            _QtIfwScript.log("installationStarted") +            
+            "var comps=installer.components(); " +
+            _QtIfwScript.log('"comps.length:" + comps.length', isAutoQuote=False) +
+            'installer.removeWizardPage( comps[0], "RemovePriorInstallation" );' )
+            #--------------------                                                                         
         self.registerStandardEventHandler( 
             'installationFinished', 'onInstallFinished',
             QtIfwControlScript._purgeTempFiles() );                                                                 
@@ -3287,7 +3295,7 @@ class QtIfwPerformOperationPage( QtIfwUiPage ):
 
     def __init__( self, name, operation="", onSuccessDelayMillis=None ) :
 
-        TAB = _QtIfwScript.TAB
+        TAB  = _QtIfwScript.TAB
         SBLK = _QtIfwScript.START_BLOCK
         EBLK = _QtIfwScript.END_BLOCK
         #END = _QtIfwScript.END_LINE
