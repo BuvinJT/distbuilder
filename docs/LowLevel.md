@@ -446,6 +446,9 @@ Static Functions:
 	
     targetDir()
     productName() 
+                
+    getComponent( name, isAutoQuote=True )	
+    getPageOwner( pageName, isAutoQuote=True ) <returns Component>
     
     yesNoPopup( msg, title="Question", resultVar="result" )             
     yesNoCancelPopup( msg, title="Question", resultVar="result" )                  
@@ -482,6 +485,9 @@ Static Functions:
     assignPageWidgetVar( pageName, varName="page" )                         
     assignCustomPageWidgetVar( pageName, varName="page" )               
     assignCurPageWidgetVar( varName="page" )                              
+    
+    hideDefaultPage( pageName )
+    removeCustomPage( pageName )
     
     clickButton( buttonName, delayMillis=None )                
     
@@ -581,6 +587,9 @@ following add-on **QT SCRIPT** functions:
 	    installPackage( pkg ) 
 	    unInstallPackage( pkg ) 
 
+    getComponent( name )
+    getPageOwner( pageName )
+    removePage( pageName )
 	setCustomPageText( page, title, description )
 
 ### QtIfwPackage list manipulation

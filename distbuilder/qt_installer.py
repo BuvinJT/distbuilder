@@ -576,6 +576,9 @@ class _QtIfwScript:
     __SET_MSGBOX_AUTO_ANSWER_TMPL = (        
         'installer.setMessageBoxAutomaticAnswer( "%s", %s );' )
     
+    __GET_COMPONENT_TMPL  = 'getComponent( %s )' 
+    __GET_PAGE_OWNER_TMPL = 'getPageOwner( %s )'
+    
     __VALUE_TMPL      = "installer.value( %s, %s )"
     __VALUE_LIST_TMPL = "installer.values( %s, %s )"
     __SET_VALUE_TMPL  = "installer.setValue( %s, %s );\n"
@@ -889,9 +892,16 @@ class _QtIfwScript:
             _QtIfwScript._autoQuote( path, isAutoQuote ),) 
 
     @staticmethod        
-    def getComponent( name, isAutoQuote=True ):                  
+    def getComponent( name, isAutoQuote=True ):
+        if isinstance( name, QtIfwPackage ): name = name.name                  
         return _QtIfwScript.__GET_COMPONENT_TMPL % (
             _QtIfwScript._autoQuote( name, isAutoQuote ),) 
+
+    @staticmethod        
+    def getPageOwner( pageName, isAutoQuote=True ):
+        if isinstance( pageName, QtIfwUiPage ): pageName = pageName.name                  
+        return _QtIfwScript.__GET_PAGE_OWNER_TMPL % (
+            _QtIfwScript._autoQuote( pageName, isAutoQuote ),) 
             
     # _QtIfwScript            
     def __init__( self, fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
@@ -1370,7 +1380,28 @@ class _QtIfwScript:
                 TAB + 'gui.clickButton(buttons.CancelButton)' + END +
                 TAB + 'gui.clickButton(buttons.FinishButton)' + END +                
                 TAB + '' + END +                    
-            EBLK + NEW +            
+            EBLK + NEW +
+            'function getComponent( name ) ' + SBLK +
+            TAB + 'var comps=installer.components()' + END +
+            TAB + 'for( i=0; i< comps.length; i++ ) ' + SBLK +
+            (2*TAB) + 'if( comps[i].name == name ) return comps[i]' + END +
+            TAB + EBLK + 
+            TAB + 'throw new Error("Component not found: " + name )' + END +
+            EBLK + NEW +
+            'function getPageOwner( pageName ) ' + SBLK +
+            TAB + 'var comps=installer.components()' + END +
+            TAB + 'for( i=0; i < comps.length; i++ ) ' + SBLK +
+            (2*TAB) + 'var owner = comps[i]' + END +
+            (2*TAB) + 'for( j=0; j < comps[i].userInterfaces.length; j++ ) ' + SBLK +
+                (3*TAB) + 'var page = comps[i].userInterfaces[j]' + END +
+                (3*TAB) + 'if( page == pageName ) return owner' + END +
+            (2*TAB) + EBLK +
+            TAB + EBLK + 
+            TAB + 'throw new Error("Owner not found for page: " + pageName )' + END +
+            EBLK + NEW +                                    
+            'function removePage( pageName ) ' + SBLK +
+            TAB + 'installer.removeWizardPage( getPageOwner( pageName ), pageName )' + END +
+            EBLK + NEW +
             'function execute( binPath, args ) ' + SBLK +
             TAB + 'var cmd = "\\"" + binPath + "\\""' + END +
             TAB + 'for( i=0; i < args.length; i++ )' + NEW +
@@ -1556,6 +1587,8 @@ Controller.prototype.%s = function(){
     __CLICK_BUTTON_TMPL       = "gui.clickButton(%s);\n"
     __CLICK_BUTTON_DELAY_TMPL = "gui.clickButton(%s, %d);\n"
 
+    __REMOVE_PAGE_TMPLT = 'removePage( "%s" );\n'
+
     __ENABLE_NEXT_BUTTON_TMPL = "gui.currentPageWidget().complete=%s;\n" 
      
     __SET_ENABLE_STATE_TMPL = (
@@ -1646,6 +1679,10 @@ Controller.prototype.Dynamic%sCallback = function() {
     def assignCustomPageWidgetVar( pageName, varName="page" ):                
         return QtIfwControlScript.__CUSTOM_PAGE_WIDGET_VAR_TMPLT % (
                 varName, pageName )                        
+
+    @staticmethod        
+    def removePage( pageName ):                
+        return QtIfwControlScript.__REMOVE_PAGE_TMPLT % ( pageName,)                        
             
     @staticmethod        
     def connectWidgetEventHandler( controlName, eventName, slotName ):
@@ -1818,14 +1855,6 @@ Controller.prototype.Dynamic%sCallback = function() {
 
         self.__standardEventSlots = {}    
         self.registerStandardEventHandler( 
-            'installationStarted', 'onInstallationStarted',
-            # -------------------- POC! --------------------
-            _QtIfwScript.log("installationStarted") +            
-            "var comps=installer.components(); " +
-            _QtIfwScript.log('"comps.length:" + comps.length', isAutoQuote=False) +
-            'installer.removeWizardPage( comps[0], "RemovePriorInstallation" );' )
-            #--------------------                                                                         
-        self.registerStandardEventHandler( 
             'installationFinished', 'onInstallFinished',
             QtIfwControlScript._purgeTempFiles() );                                                                 
         self.registerStandardEventHandler( 
@@ -1868,9 +1897,15 @@ Controller.prototype.Dynamic%sCallback = function() {
                                     signalName, slotName, slotBody ) :
         self.__widgetEventSlots[pageId][controlName][signalName] = (
             slotName, slotBody )
-                                                             
+                                                            
     def _generate( self ) :        
         self.script = ""
+
+        # this handler registration is deferred because it is dynamically 
+        # driven the UI pages added 
+        self.registerStandardEventHandler( 
+            'installationStarted', 'onInstallationStarted',
+            self.__onInstallationStarted() )
                 
         if self.isAutoLib: _QtIfwScript._genLib( self )        
         if self.qtScriptLib: self.script += self.qtScriptLib
@@ -1945,6 +1980,13 @@ Controller.prototype.Dynamic%sCallback = function() {
                 (funcName, funcBody) )
         
         self.__appendUiPageFunctions()
+
+    def __onInstallationStarted( self ):
+        funcBody = _QtIfwScript.log("installationStarted")
+        for ui in self.uiPages:
+            if isinstance( ui, QtIfwPerformOperationPage ):            
+                funcBody += QtIfwControlScript.removePage( ui.name ) 
+        return funcBody                                                 
 
     def __appendUiPageFunctions( self ):    
         if self.uiPages: 
@@ -3293,7 +3335,8 @@ class QtIfwPerformOperationPage( QtIfwUiPage ):
     __SRC = QtIfwUiPage._pageResPath( "performoperation" )
     __PAGE_ORDER = QT_IFW_INSTALL_PAGE
 
-    def __init__( self, name, operation="", onSuccessDelayMillis=None ) :
+    def __init__( self, name, operation="",
+                  onSuccessDelayMillis=None ) :
 
         TAB  = _QtIfwScript.TAB
         SBLK = _QtIfwScript.START_BLOCK
