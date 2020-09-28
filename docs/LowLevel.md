@@ -411,17 +411,15 @@ Static Functions:
     boolToString( b )	<pass Python bool or dynamic QScript logic>
     stringToBool( value, isAutoQuote=True )
                       
-    setValue( key, value, isAutoQuote=True )               
-    lookupValue( key, default="", isAutoQuote=True )            
+    setValue( key, value, isAutoQuote=True )
+    setBoolValue( key, b, isAutoQuote=True )
+                   
+    lookupValue( key, default="", isAutoQuote=True )
+    lookupBoolValue( key, isAutoQuote=True )            
     lookupValueList( key, defaultList=[], isAutoQuote=True, 
                      delimiter=None )
-                          
-    getEnv( varName, isAutoQuote=True )
-    
-	killAll( exeName, isAutoQuote=True )    
-	
-    targetDir()
-    productName() 
+
+    ifBoolValue( key, isNegated=False, isMultiLine=False )
     
     cmdLineArg( arg, default="" )
     cmdLineSwitchArg( arg )
@@ -441,6 +439,13 @@ Static Functions:
     	
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
+                          
+    getEnv( varName, isAutoQuote=True )
+    
+	killAll( exeName, isAutoQuote=True )    
+	
+    targetDir()
+    productName() 
     
     yesNoPopup( msg, title="Question", resultVar="result" )             
     yesNoCancelPopup( msg, title="Question", resultVar="result" )                  
@@ -448,6 +453,10 @@ Static Functions:
                             onYes="", onNo="", onCancel="" )
     ifYesNoPopup( msg, title="Question", resultVar="result", 
                  isMultiLine=False )
+
+	<It is not possible to re-enable the user prompt after using these!>
+    disableQuit()		<negate with disableQuitPrompt>         
+    disableQuitPrompt()         
         
     _autoQuote( value, isAutoQuote )
 

@@ -545,10 +545,14 @@ class _QtIfwScript:
         var IS_OPENSUSE = (systemInfo.productType === "opensuse");             
 """ )
 
-    OK     = "QMessageBox.Yes"
-    YES    = "QMessageBox.Yes" 
-    NO     = "QMessageBox.No"
-    CANCEL = "QMessageBox.Cancel"
+    QUIT_MSGBOX_ID = "cancelInstallation"
+
+    OK      = "QMessageBox.Yes"
+    YES     = "QMessageBox.Yes" 
+    NO      = "QMessageBox.No"
+    CANCEL  = "QMessageBox.Cancel"
+    
+    RESTORE_MSGBOX_DEFAULT = "QMessageBox.RestoreDefaults"
 
     __STRING_TO_BOOL_TMPL = '(%s=="%s")'
 
@@ -569,9 +573,12 @@ class _QtIfwScript:
         'var %s = QMessageBox.question("yesnocancelbox", "%s", ' +
             '"%s", QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel );\n' )
     
+    __SET_MSGBOX_AUTO_ANSWER_TMPL = (        
+        'installer.setMessageBoxAutomaticAnswer( "%s", %s );' )
+    
     __VALUE_TMPL      = "installer.value( %s, %s )"
     __VALUE_LIST_TMPL = "installer.values( %s, %s )"
-    __SET_VALUE_TMPL  = "installer.setValue( %s, %s )"
+    __SET_VALUE_TMPL  = "installer.setValue( %s, %s );\n"
 
     __GET_ENV_VAR_TMPL = "installer.environmentVariable( %s )"
 
@@ -698,10 +705,30 @@ class _QtIfwScript:
             _QtIfwScript._autoQuote( value, isAutoQuote ))
 
     @staticmethod        
+    def setBoolValue( key, b, isAutoQuote=True ):                  
+        return _QtIfwScript.__SET_VALUE_TMPL % (            
+            _QtIfwScript._autoQuote( key, isAutoQuote ),
+            _QtIfwScript.boolToString( b ) )
+
+    @staticmethod        
     def lookupValue( key, default="", isAutoQuote=True ):                  
         return _QtIfwScript.__VALUE_TMPL % (
             _QtIfwScript._autoQuote( key, isAutoQuote ),
             _QtIfwScript._autoQuote( default, isAutoQuote ))
+
+    @staticmethod        
+    def lookupBoolValue( key, isAutoQuote=True ):
+        return ( '(%s=="%s")' % 
+            ( _QtIfwScript.lookupValue( key, isAutoQuote=isAutoQuote ) ,
+              _QtIfwScript.TRUE ) )
+
+    @staticmethod        
+    def ifBoolValue( key, isNegated=False, isMultiLine=False ):
+        return 'if( %s%s"%s" )%s\n%s' % (
+            _QtIfwScript.lookupValue( key ),
+            ("!=" if isNegated else "==") ,
+            _QtIfwScript.TRUE,
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
     @staticmethod        
     def lookupValueList( key, defaultList=[], isAutoQuote=True, 
@@ -741,29 +768,20 @@ class _QtIfwScript:
         return _QtIfwScript.lookupValue( _QtIfwScript.PRODUCT_NAME_KEY )
     
     @staticmethod        
-    def ifCmdLineArg( arg, isNegated=False, isMultiLine=False, ):   
-        return 'if( %s%s"" )%s\n%s' % (
-            _QtIfwScript.lookupValue( arg ),            
-            ("==" if isNegated else "!="),
-            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+    def ifCmdLineArg( arg, isNegated=False, isMultiLine=False ):   
+        return _QtIfwScript.ifBoolValue( arg, isNegated, isMultiLine )
 
     @staticmethod        
     def ifCmdLineSwitch( arg, isNegated=False, isMultiLine=False ):
-        return 'if( %s%s"%s" )%s\n%s' % (
-            _QtIfwScript.lookupValue( arg ),
-            ("!=" if isNegated else "==") ,
-            _QtIfwScript.TRUE,
-            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+        return _QtIfwScript.ifBoolValue( arg, isNegated, isMultiLine )
 
     @staticmethod        
     def cmdLineArg( arg, default="" ):
         return _QtIfwScript.lookupValue( arg, default )
 
     @staticmethod        
-    def cmdLineSwitchArg( arg ):
-        return ( '(%s=="%s")' % 
-            ( _QtIfwScript.lookupValue( arg ),
-              _QtIfwScript.TRUE ) )
+    def cmdLineSwitchArg( arg, isAutoQuote=True ):
+        return _QtIfwScript.lookupBoolValue( arg, isAutoQuote ) 
 
     @staticmethod        
     def cmdLineListArg( arg, default=[] ):                  
@@ -823,6 +841,16 @@ class _QtIfwScript:
             ( resultVar, onYes, onNo, onCancel ) )
 
     @staticmethod        
+    def disableQuit():         
+        return _QtIfwScript.__SET_MSGBOX_AUTO_ANSWER_TMPL % (
+            _QtIfwScript.QUIT_MSGBOX_ID, QtIfwControlScript.NO )
+
+    @staticmethod        
+    def disableQuitPrompt():         
+        return _QtIfwScript.__SET_MSGBOX_AUTO_ANSWER_TMPL % (
+            _QtIfwScript.QUIT_MSGBOX_ID, QtIfwControlScript.YES )
+
+    @staticmethod        
     def pathExists( path, isAutoQuote=True ):                  
         return _QtIfwScript.__PATH_EXISTS_TMPL % (
             _QtIfwScript._autoQuote( path, isAutoQuote ),) 
@@ -859,6 +887,11 @@ class _QtIfwScript:
     def deleteFile( path, isAutoQuote=True ):                  
         return _QtIfwScript.__DELETE_FILE_TMPL % (
             _QtIfwScript._autoQuote( path, isAutoQuote ),) 
+
+    @staticmethod        
+    def getComponent( name, isAutoQuote=True ):                  
+        return _QtIfwScript.__GET_COMPONENT_TMPL % (
+            _QtIfwScript._autoQuote( name, isAutoQuote ),) 
             
     # _QtIfwScript            
     def __init__( self, fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
@@ -1315,7 +1348,7 @@ class _QtIfwScript:
                 TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
                 (2*TAB) + 'throw new Error("Write error log failed. (file does not exists)")' + END +
                 TAB + _QtIfwScript.log( '"Wrote error log to: " + path', isAutoQuote=False ) +                                                                                                
-            EBLK + NEW +                                                 
+            EBLK + NEW +
             'function silentAbort( msg ) ' + SBLK +
                 TAB + 'writeErrorLog( msg )' + END +
                 TAB + 'throw new Error( msg )' + END +                    
@@ -1635,9 +1668,10 @@ Controller.prototype.Dynamic%sCallback = function() {
      
     @staticmethod        
     def enableNextButton( isEnable=True ):
+        """ ONLY WORKS ON DYNAMIC / CUSTOM PAGES! """
         return QtIfwControlScript.__ENABLE_NEXT_BUTTON_TMPL % ( 
             _QtIfwScript.TRUE if isEnable else _QtIfwScript.FALSE)
-        
+                            
     @staticmethod        
     def enable( controlName, isEnable=True ):
         """ DOES NOT WORK FOR WIZARD BUTTONS!!! """                
@@ -1929,7 +1963,7 @@ Controller.prototype.Dynamic%sCallback = function() {
             self.controllerGlobals += (
             'function initGlobals() ' + SBLK )
             for k,v in six.iteritems( self.virtualArgs ):            
-                self.controllerGlobals += TAB + _QtIfwScript.setValue(k,v) +END 
+                self.controllerGlobals += TAB + _QtIfwScript.setValue(k,v)  
             self.controllerGlobals += EBLK + NEW             
         self.controllerGlobals += (
             'function toMaintenanceToolPath( dir ) ' + SBLK +
@@ -2966,7 +3000,7 @@ Component.prototype.%s = function(){
         self.componentCreateOperationsBody += ( 
             TAB + _QtIfwScript.setValue( 
                 '"' + QT_IFW_ASKPASS_KEY + '"', 
-                'getAskPassProg()', isAutoQuote=False ) + END +
+                'getAskPassProg()', isAutoQuote=False ) +
             TAB + 'writeFile( "' + QT_IFW_ASKPASS_TEMP_FILE_PATH + '", ' +
             _QtIfwScript.lookupValue( QT_IFW_ASKPASS_KEY ) + ')' + END
         )
@@ -3249,28 +3283,37 @@ class QtIfwSimpleTextPage( QtIfwUiPage ):
 class QtIfwPerformOperationPage( QtIfwUiPage ):
     
     __SRC = QtIfwUiPage._pageResPath( "performoperation" )
- 
-    def __init__( self, name, pageOrder, 
-                  operation, onSuccessDelayMillis=None ) :
+    __PAGE_ORDER = QT_IFW_INSTALL_PAGE
 
-        PERFORM_OP_NAME = "_performOp%s" % (name,)
+    def __init__( self, name, operation="", onSuccessDelayMillis=None ) :
+
+        TAB = _QtIfwScript.TAB
+        SBLK = _QtIfwScript.START_BLOCK
+        EBLK = _QtIfwScript.END_BLOCK
+        #END = _QtIfwScript.END_LINE
         
-        ON_SUCCESS = QtIfwControlScript.enableNextButton()
+        PERFORM_OP_NAME = "_performOp%s" % (name,)
+        PERFORM_OP_DONE_VALUE = "_isPerformOp%sDone" % (name,)
+        
+        ON_SUCCESS = (
+            _QtIfwScript.setBoolValue( PERFORM_OP_DONE_VALUE, True ) + 
+            QtIfwControlScript.enableNextButton() 
+        ) 
         if onSuccessDelayMillis is None or onSuccessDelayMillis > 0:
             ON_SUCCESS += QtIfwControlScript.clickButton(
                 QtIfwControlScript.NEXT_BUTTON, onSuccessDelayMillis )
 
         ON_ENTER =( 
-"""
-        %s
-        if( %s() ){
-            %s
-        }
-""") % (QtIfwControlScript.enableNextButton( False ),
-        PERFORM_OP_NAME, ON_SUCCESS) 
+        (2*TAB) + _QtIfwScript.ifBoolValue( PERFORM_OP_DONE_VALUE ) +
+            (2*TAB) + QtIfwControlScript.clickButton(
+                            QtIfwControlScript.NEXT_BUTTON ) +
+        (2*TAB) + ('else if( %s() )' % PERFORM_OP_NAME) + SBLK +
+        ON_SUCCESS +
+        (2*TAB) + EBLK )
         
-        QtIfwUiPage.__init__( self, name, pageOrder=pageOrder,  
-            sourcePath=QtIfwPerformOperationPage.__SRC, 
+        QtIfwUiPage.__init__( self, name,   
+            pageOrder=QtIfwPerformOperationPage.__PAGE_ORDER,
+            sourcePath=QtIfwPerformOperationPage.__SRC,
             onEnter=ON_ENTER )
         
         self.supportFuncs =(
@@ -3351,7 +3394,6 @@ class QtIfwRemovePriorInstallationPage( QtIfwPerformOperationPage ):
   
     NAME = "RemovePriorInstallation"
     
-    __PAGE_ORDER = QT_IFW_READY_PAGE
     __ON_SUCCESS_DELAY_MILLIS=2500
     __OPERATION=(
 """
@@ -3361,8 +3403,7 @@ return true;
 
     def __init__( self ):
         QtIfwPerformOperationPage.__init__( self, 
-            name=QtIfwRemovePriorInstallationPage.NAME, 
-            pageOrder=QtIfwRemovePriorInstallationPage.__PAGE_ORDER,
+            QtIfwRemovePriorInstallationPage.NAME, 
             onSuccessDelayMillis=
                 QtIfwRemovePriorInstallationPage.__ON_SUCCESS_DELAY_MILLIS, 
             operation=QtIfwRemovePriorInstallationPage.__OPERATION  )
@@ -4132,9 +4173,8 @@ def __addInstallerResources( qtIfwConfig ) :
     
     _addQtIfwResources( qtIfwConfig, qtIfwConfig.packages )
     _addQtIfwUiPages( qtIfwConfig, QtIfwTargetDirPage(), isOverWrite=False )
-    # These have to be added in reverse order, when they have the same page order attribute 
-    _addQtIfwUiPages( qtIfwConfig, QtIfwRemovePriorInstallationPage(), isOverWrite=False )
     _addQtIfwUiPages( qtIfwConfig, QtIfwOnPriorInstallationPage(), isOverWrite=False )
+    _addQtIfwUiPages( qtIfwConfig, QtIfwRemovePriorInstallationPage(), isOverWrite=False )
     
     genQtIfwCntrlRes( qtIfwConfig ) 
                                       
