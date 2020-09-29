@@ -695,6 +695,11 @@ class _QtIfwScript:
              _QtIfwScript._autoQuote( msg, isAutoQuote ),) 
 
     @staticmethod        
+    def toBool( b ):
+        if isinstance( b, six.string_types ): return b                          
+        return _QtIfwScript.TRUE if b else _QtIfwScript.FALSE   
+
+    @staticmethod        
     def boolToString( b ):
         if isinstance( b, six.string_types ):
             return '(%s ? "%s":"%s")' % ( 
@@ -1606,9 +1611,7 @@ Controller.prototype.onCurrentPageChanged = function(pageId){
         'installer.setDefaultPageVisible(QInstaller.%s, false);\n' ) 
       
     __REMOVE_PAGE_TMPLT = 'removeCustomPage( "%s" );\n'
-
-    __ENABLE_NEXT_BUTTON_TMPL = "gui.currentPageWidget().complete=%s;\n" 
-     
+ 
     __SET_ENABLE_STATE_TMPL = (
         "gui.currentPageWidget().%s.setEnabled(%s);\n" )
     
@@ -1619,7 +1622,7 @@ Controller.prototype.onCurrentPageChanged = function(pageId){
         "gui.currentPageWidget().%s.setChecked(%s);\n" )
     
     __GET_CHECKBOX_STATE_TMPL = (
-        "gui.currentPageWidget().%s.isChecked()" )
+        "gui.currentPageWidget().%s.checked" )
 
     __SET_TEXT_TMPL = (
         "gui.currentPageWidget().%s.setText(%s);\n" )
@@ -1628,6 +1631,8 @@ Controller.prototype.onCurrentPageChanged = function(pageId){
 
     __ASSIGN_TEXT_TMPL = "    var %s = gui.currentPageWidget().%s.text;\n" 
 
+    __ENABLE_NEXT_BUTTON_TMPL = "gui.currentPageWidget().complete=%s;\n" 
+    
     __SET_CUSTPAGE_TITLE_TMPL = "%s.windowTitle = %s;\n" 
 
     __SET_CUSTPAGE_ENABLE_STATE_TMPL = "%s.%s.setEnabled(%s);\n" 
@@ -1636,7 +1641,7 @@ Controller.prototype.onCurrentPageChanged = function(pageId){
     
     __SET_CUSTPAGE_CHECKBOX_STATE_TMPL = "%s.%s.setChecked(%s);\n" 
 
-    __GET_CUSTPAGE_CHECKBOX_STATE_TMPL = "%s.%s.isChecked()" 
+    __GET_CUSTPAGE_CHECKBOX_STATE_TMPL = "%s.%s.checked" 
     
     __SET_CUSTPAGE_TEXT_TMPL = "%s.%s.setText(%s);\n" 
        
@@ -1728,34 +1733,24 @@ Controller.prototype.Dynamic%sCallback = function() {
             if delayMillis else
             QtIfwControlScript.__CLICK_BUTTON_TMPL 
                 % (buttonName,) )
-     
-    @staticmethod        
-    def enableNextButton( isEnable=True ):
-        """ ONLY WORKS ON DYNAMIC / CUSTOM PAGES! """
-        return QtIfwControlScript.__ENABLE_NEXT_BUTTON_TMPL % ( 
-            _QtIfwScript.TRUE if isEnable else _QtIfwScript.FALSE)
-                            
+                                 
     @staticmethod        
     def enable( controlName, isEnable=True ):
         """ DOES NOT WORK FOR WIZARD BUTTONS!!! """                
         return QtIfwControlScript.__SET_ENABLE_STATE_TMPL % ( 
-            controlName, _QtIfwScript.TRUE if isEnable else _QtIfwScript.FALSE)
+            controlName, _QtIfwScript.toBool( isEnable ) )
 
     @staticmethod        
     def setVisible( controlName, isVisible=True ):
         """ DOES NOT WORK FOR WIZARD BUTTONS!!! """                
         return QtIfwControlScript.__SET_VISIBLE_STATE_TMPL % ( 
-            controlName, _QtIfwScript.TRUE if isVisible else _QtIfwScript.FALSE)
+            controlName, _QtIfwScript.toBool( isVisible ) )
 
     # Note: checkbox controls also work on radio buttons!
     @staticmethod        
     def setCheckBox( checkboxName, isCheck=True ):
-        if isinstance( isCheck, six.string_types ):
-            state = isCheck
-        else:
-            state = _QtIfwScript.TRUE if isCheck else _QtIfwScript.FALSE                        
         return QtIfwControlScript.__SET_CHECKBOX_STATE_TMPL % ( 
-            checkboxName, state )
+            checkboxName, _QtIfwScript.toBool( isCheck ) )
 
     # Note: checkbox controls also work on radio buttons!
     @staticmethod        
@@ -1772,6 +1767,11 @@ Controller.prototype.Dynamic%sCallback = function() {
     def getText( controlName ):                
         return QtIfwControlScript.__GET_TEXT_TMPL % (controlName,)   
 
+    @staticmethod        
+    def enableNextButton( isEnable=True ):
+        """ ONLY WORKS ON DYNAMIC / CUSTOM PAGES! """
+        return QtIfwControlScript.__ENABLE_NEXT_BUTTON_TMPL % ( 
+            _QtIfwScript.toBool( isEnable ) )
 
     @staticmethod        
     def setCustomPageTitle( title, isAutoQuote=True, pageVar="page" ):                
@@ -1790,23 +1790,19 @@ Controller.prototype.Dynamic%sCallback = function() {
     def enableCustom( controlName, isEnable=True, pageVar="page" ):
         """ DOES NOT WORK FOR WIZARD BUTTONS!!! """                
         return QtIfwControlScript.__SET_CUSTPAGE_ENABLE_STATE_TMPL % ( pageVar, 
-            controlName, _QtIfwScript.TRUE if isEnable else _QtIfwScript.FALSE)
+            controlName, _QtIfwScript.toBool( isEnable ) )
 
     @staticmethod        
     def setCustomVisible( controlName, isVisible=True, pageVar="page" ):
         """ DOES NOT WORK FOR WIZARD BUTTONS!!! """                
         return QtIfwControlScript.__SET_CUSTPAGE_VISIBLE_STATE_TMPL % ( pageVar, 
-            controlName, _QtIfwScript.TRUE if isVisible else _QtIfwScript.FALSE)
+            controlName, _QtIfwScript.toBool( isVisible ) )
 
     # Note: checkbox controls also work on radio buttons!
     @staticmethod        
     def setCustomCheckBox( checkboxName, isCheck=True, pageVar="page" ):
-        if isinstance( isCheck, six.string_types ):
-            state = isCheck
-        else:
-            state = _QtIfwScript.TRUE if isCheck else _QtIfwScript.FALSE                        
         return QtIfwControlScript.__SET_CUSTPAGE_CHECKBOX_STATE_TMPL % ( pageVar, 
-            checkboxName, state )
+            checkboxName, _QtIfwScript.toBool( isCheck ) )
 
     # Note: checkbox controls also work on radio buttons!
     @staticmethod        
@@ -3477,7 +3473,7 @@ class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
         EBLK =_QtIfwScript.END_BLOCK
 
         ON_CONTINUE_CLICKED_NAME = "onPriorInstallContinueClicked"
-        ON_CONTINUE_CLICKED = QtIfwControlScript.enableNextButton()
+        ON_CONTINUE_CLICKED = QtIfwControlScript.enableNextButton() 
 
         ON_STOP_CLICKED_NAME = "onPriorInstallStopClicked"     
         ON_STOP_CLICKED = QtIfwControlScript.enableNextButton( False ) 
@@ -3497,7 +3493,7 @@ class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
             
         ON_ENTER = ( 
             (2*TAB) + _QtIfwScript.ifInstalling( isMultiLine=True ) +            
-                (3*TAB) + QtIfwControlScript.enableNextButton( 
+                (3*TAB) + QtIfwControlScript.enableNextButton(                     
                     QtIfwControlScript.isCustomChecked( 
                         QtIfwOnPriorInstallationPage.__CONTINUE_BUTTON ) ) +                
                 (3*TAB) + QtIfwControlScript.setCustomPageTitle( 

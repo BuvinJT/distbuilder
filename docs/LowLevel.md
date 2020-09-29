@@ -408,7 +408,8 @@ Static Functions:
     debugPopup( msg, isAutoQuote=True )
     errorPopup( msg, isAutoQuote=True )
 
-    boolToString( b )	<pass Python bool or dynamic QScript logic>
+	toBool( b )         <pass Python bool or dynamic QScript logic as Python string> 
+    boolToString( b )	<pass Python bool or dynamic QScript logic as Python string>
     stringToBool( value, isAutoQuote=True )
                       
     setValue( key, value, isAutoQuote=True )
@@ -502,7 +503,7 @@ Static Functions:
     setCheckBox( checkboxName, isCheck=True ): <pass Python bool or dynamic QScript logic>    
     
 	<CUSTOM ("DYNAMIC") PAGES ONLY>	
-	    enableNextButton( isEnable=True ) <does not work on standard wizard pages!>				
+	    enableNextButton( isEnable=True ) <can't do on standard wizard pages!>				
 	    
 	    removeCustomPage( pageName )
 	    
