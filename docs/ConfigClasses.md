@@ -356,6 +356,9 @@ Attributes & default values:
         
     controllerConstructorBody = None
     isAutoControllerConstructor = True
+
+    onPageChangeCallbackBody = None
+    isAutoPageChangeCallBack = True
                                     
 	isIntroductionPageVisible = True                                                                                                                                
     introductionPageCallbackBody = None
@@ -388,8 +391,6 @@ Attributes & default values:
 	isFinishedPageVisible = True        
     finishedPageCallbackBody = None
     isAutoFinishedPageCallback = True        
-
-    onPageChangeCallbackBody = None
 
 	isRunProgVisible = True
 	isRunProgInteractive = True
