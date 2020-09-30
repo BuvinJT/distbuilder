@@ -892,11 +892,7 @@ TODO: further explain the complicate logic for page order (for replacement pages
 This class is derived from `QtIfwUiPage`. It provides a "blank" page for performing
 custom operations during the installation process.  Note that these operations take place
 outside of the main, built-in "installer operations", and instead allow more dynamic 
-actions to place "around" that process. 
-Optionally, you may control the UI as your operation proceeds, and upon success / failure.  
-To do so, call the QScript function:
-`setCustomPageText( page, title, description )` or build that script via the Python helper:
-`setCustomPageText( title, description, isAutoQuote=True, pageVar="page" )`.
+actions to place "around" that process. Optionally, you may also control the UI as your operation proceeds, and set custom messages upon success / failure.  
 
 Constructor:
 
@@ -912,6 +908,12 @@ is indicated, the `onSuccessDelayMillis` parameter will dictate what occurs next
 a failure is indicated (via a return of *false*), then nothing will occur post operation.
 The page cannot be advanced in this failure state. The user may only click the 
 "Cancel" button to quit the installer.  
+
+This function will have a reference to UI page passed to it (called `page`).
+As your operation proceeds, you may wish to call 
+`setCustomPageText( page, title, description )`
+(or build that script via the Python helper:
+`setCustomPageText( title, description, isAutoQuote=True, pageVar="page" )`).  
 
 **order**: You may NOT specify one the standard options for a `QtIfwUiPage` attribute
  `pageOrder`.  Instead, use either `QT_IFW_PRE_INSTALL` or `QT_IFW_POST_INSTALL`.

@@ -3427,7 +3427,7 @@ class QtIfwPerformOperationPage( QtIfwUiPage ):
         (2*TAB) + _QtIfwScript.ifBoolValue( PERFORM_OP_DONE_VALUE ) +
             (2*TAB) + QtIfwControlScript.clickButton(
                             QtIfwControlScript.NEXT_BUTTON ) +
-        (2*TAB) + ('else if( %s() )' % PERFORM_OP_NAME) + SBLK +
+        (2*TAB) + ('else if( %s( page ) )' % PERFORM_OP_NAME) + SBLK +
         ON_SUCCESS +
         (2*TAB) + EBLK )
         
@@ -3438,9 +3438,7 @@ class QtIfwPerformOperationPage( QtIfwUiPage ):
             onEnter=ON_ENTER )
         
         self.supportFuncs =(
-            'function ' + PERFORM_OP_NAME + '()' + SBLK +
-            TAB + QtIfwControlScript.assignCustomPageWidgetVar(
-                    QtIfwOnPriorInstallationPage.NAME ) +
+            'function ' + PERFORM_OP_NAME + '( page )' + SBLK +
             operation +
             EBLK
         )
@@ -3560,6 +3558,7 @@ class QtIfwRemovePriorInstallationPage( QtIfwPerformOperationPage ):
             
         OPERATION=(
             TAB + _QtIfwScript.ifBoolValue( _REMOVE_TARGET_KEY, isMultiLine=True ) +
+                _QtIfwScript.log( "Removal in progress..." ) +            
                 QtIfwControlScript.setCustomPageText(
                 self.__TITLE, "Removal in progress..." ) +
                 (2*TAB) + 'if( removeTarget( false ) ) ' + SBLK +
