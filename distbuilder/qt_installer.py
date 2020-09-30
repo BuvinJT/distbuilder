@@ -541,6 +541,9 @@ class _QtIfwScript:
     
     _TEMP_DIR = "Dir.temp()"
         
+    __GAIN_ELEVATION = "installer.gainAdminRights();\n"
+    __DROP_ELEVATION = "installer.dropAdminRights();\n"
+        
     __IS_INSTALLER   = "installer.isInstaller()"
     __IS_UNINSTALLER = "installer.isUninstaller()"
 
@@ -760,6 +763,12 @@ class _QtIfwScript:
         return _QtIfwScript.__VALUE_LIST_TMPL % (
             _QtIfwScript._autoQuote( key, isAutoQuote ),
             defList )
+        
+    @staticmethod        
+    def gainElevation(): return _QtIfwScript.__GAIN_ELEVATION
+    
+    @staticmethod        
+    def dropElevation(): return _QtIfwScript.__DROP_ELEVATION 
         
     @staticmethod        
     def getEnv( varName, isAutoQuote=True ):                  
@@ -2346,6 +2355,7 @@ function setCustomPageText( page, title, description ) {
     def __genIntroductionPageCallbackBody( self ):
         self.introductionPageCallbackBody = (
             _QtIfwScript.log("IntroductionPageCallback") +
+            _QtIfwScript.gainElevation() + 
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 

@@ -405,8 +405,6 @@ Static Constants :
 Static Functions:      
                                                    
     log( msg, isAutoQuote=True )            
-    debugPopup( msg, isAutoQuote=True )
-    errorPopup( msg, isAutoQuote=True )
 
 	toBool( b )         <pass Python bool or dynamic QScript logic as Python string> 
     boolToString( b )	<pass Python bool or dynamic QScript logic as Python string>
@@ -431,6 +429,11 @@ Static Functions:
     ifInstalling( isMultiLine=False )
     ifMaintenanceTool( isMultiLine=False )
 
+    gainElevation()
+    dropElevation() 
+                          
+    getEnv( varName, isAutoQuote=True )
+
     pathExists( path, isAutoQuote=True )
     ifPathExists( path, isAutoQuote=True, isMultiLine=False )   
     ifNotPathExists( path, isAutoQuote=True, isMultiLine=False )
@@ -440,17 +443,17 @@ Static Functions:
     	
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
-                          
-    getEnv( varName, isAutoQuote=True )
-    
+    	        
 	killAll( exeName, isAutoQuote=True )    
-	
+        
     targetDir()
     productName() 
                 
     getComponent( name, isAutoQuote=True )	
     getPageOwner( pageName, isAutoQuote=True ) <returns Component>
     
+    debugPopup( msg, isAutoQuote=True )
+    errorPopup( msg, isAutoQuote=True )    
     yesNoPopup( msg, title="Question", resultVar="result" )             
     yesNoCancelPopup( msg, title="Question", resultVar="result" )                  
     switchYesNoCancelPopup( msg, title="Question", resultVar="result", 
