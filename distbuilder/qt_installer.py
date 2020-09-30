@@ -125,6 +125,8 @@ _PAGE_NAME_PLACHOLDER = "[PAGE_NAME]"
 _ENV_TEMP_DIR     = "%temp%" if IS_WINDOWS else "/tmp"
 _QT_IFW_TEMP_NAME = "__distbuilder-qtifw"
 
+_REMOVE_TARGET_KEY = "__removeTarget"
+
 _QT_IFW_WATCH_DOG_SUFFIX = "-watchdog"
 _QT_IFW_WATCH_DOG_EXT    = ".vbs" if IS_WINDOWS else ""
 
@@ -1647,7 +1649,7 @@ Controller.prototype.onCurrentPageChanged = function(pageId){
        
     __GET_CUSTPAGE_TEXT_TMPL = "%s.%s.text"
 
-    __SET_CUSTPAGE_CORE_TEXT_TMPL = "setCustomPageText( %s, %s, %s )" 
+    __SET_CUSTPAGE_CORE_TEXT_TMPL = "setCustomPageText( %s, %s, %s );\n" 
 
     __UI_PAGE_CALLBACK_FUNC_TMPLT = (
 """
@@ -2155,9 +2157,16 @@ Controller.prototype.Dynamic%sCallback = function() {
                 (2*TAB) + _QtIfwScript.log('Waiting for uninstall to finish...') +                
                 (2*TAB) + 'sleep( 1 )' + END +                
                 TAB + EBLK +
-                TAB + 'if( targetExists( isAuto ) ) ' + NEW +
-                (2*TAB) + 'silentAbort("Failed to removed the program.")' + END +
+                TAB + 'if( targetExists( isAuto ) ) ' + SBLK +
+                (2*TAB) + 'if( isAuto ) ' + 
+                    (3*TAB) + 'silentAbort("Failed to removed the program.")' + END +
+                (2*TAB) + 'else ' + SBLK +
+                    (3*TAB) + _QtIfwScript.log('Failed to removed the program') +
+                    (3*TAB) + 'return false' + END +
+                (2*TAB) + EBLK +
+                TAB + EBLK +
                 TAB + _QtIfwScript.log('Successfully removed the program.') +
+                TAB + 'return true' + END +
             EBLK + NEW +
             'function autoManagePriorInstallation() ' + SBLK +
                 TAB + "if( targetExists( true ) ) " + SBLK +
@@ -2169,40 +2178,10 @@ Controller.prototype.Dynamic%sCallback = function() {
                     (3*TAB) + 'removeTarget( true )' + END +
                     (3*TAB) + 'break' + END +
                 (2*TAB) + 'default:' + NEW +
-                    (2*TAB) + _QtIfwScript.switchYesNoCancelPopup(  
-                  'This program is already installed. ' +
-                  'Would you like to uninstall it first?', 
-                  title='Uninstall first?', 
-                  resultVar="uninstallChoice", 
-                  onYes='removeTarget( true );', 
-                  onNo="// proceed without action...",
-                  onCancel='silentAbort("This program is already installed.");'
-                  ) +
-                  (3*TAB) + 'break' + END +                  
+                    (3*TAB) + 'silentAbort("This program is already installed.")' + END +
                   EBLK +           
                 EBLK +                         
-            EBLK + NEW +
-            'function managePriorInstallation() ' + SBLK +
-                TAB + "if( targetExists( false ) ) " + SBLK +
-                (2*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
-                    _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
-                (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_REMOVE + '":' + NEW + 
-                    (3*TAB) + 'removeTarget( false )' + END +
-                    (3*TAB) + 'break' + END +
-                (2*TAB) + 'default:' + NEW +
-                    (2*TAB) + _QtIfwScript.ifYesNoPopup(  
-                  'This program is already installed. ' +
-                  'Do you wish to replace the prior installation? ' +
-                  '(Select \\"No\\" to cancel and quit.)', 
-                  title='Replace prior?', 
-                  resultVar="uninstallChoice" ) + 
-                        (2*TAB) + 'removeTarget( false )' + END +                  
-                    TAB + 'else' + NEW +
-                        (2*TAB) + 'quit()' + END +         
-                    (3*TAB) + 'break' + END +                  
-                  EBLK +         
-                EBLK +                         
-            EBLK + NEW                                                                          
+            EBLK + NEW 
             )
 
         if IS_WINDOWS : 
@@ -2278,6 +2257,8 @@ function setCustomPageText( page, title, description ) {
             TAB + 'installer.setValue( "__isMaintenance", "" )' + END +            
             TAB + 'installer.setValue( "__lockFilePath", "" )' + END +
             TAB + 'installer.setValue( "__watchDogPath", "" )' + END +
+            TAB + 'installer.setValue( ' +
+                ('"%s"' % (_REMOVE_TARGET_KEY,) ) + ', "" )' + END +
             TAB + 'clearErrorLog()' + END +
             TAB + _QtIfwScript.logSwitch( _KEEP_TEMP_SWITCH ) + 
             TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
@@ -3447,11 +3428,12 @@ class QtIfwPerformOperationPage( QtIfwUiPage ):
             onEnter=ON_ENTER )
         
         self.supportFuncs =(
-"""
-function %s() {
-%s
-}
-""") % ( PERFORM_OP_NAME, operation )
+            'function ' + PERFORM_OP_NAME + '()' + SBLK +
+            TAB + QtIfwControlScript.assignCustomPageWidgetVar(
+                    QtIfwOnPriorInstallationPage.NAME ) +
+            operation +
+            EBLK
+        )
 
 # -----------------------------------------------------------------------------    
 class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
@@ -3469,8 +3451,30 @@ class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
     __NOTE_LABEL      = "note"
                 
     def __init__( self ) :
-        TAB = _QtIfwScript.TAB
-        EBLK =_QtIfwScript.END_BLOCK
+        TAB  = _QtIfwScript.TAB
+        END  = _QtIfwScript.END_LINE
+        NEW  = _QtIfwScript.NEW_LINE
+        SBLK = _QtIfwScript.START_BLOCK
+        EBLK = _QtIfwScript.END_BLOCK
+
+        IS_PAGE_SHOWN_NAME = "isPriorInstallationPageShown"
+        IS_PAGE_SHOWN =(
+            'function ' + IS_PAGE_SHOWN_NAME + '() ' + SBLK +
+                TAB + _QtIfwScript.ifInstalling( isMultiLine=True ) +
+                    (2*TAB) + "if( targetExists( false ) ) " + SBLK +
+                        (3*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, True ) +
+                        (3*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
+                            _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
+                        (3*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_REMOVE + '":' + NEW + 
+                            (4*TAB) + 'return false' + END +
+                        (3*TAB) + 'default:' + NEW +                
+                            (4*TAB) + 'return true' + END +
+                        (3*TAB) + EBLK +         
+                    (2*TAB) + EBLK +        
+                TAB + EBLK +     
+                TAB + 'return false' + END +                
+            EBLK + NEW 
+        )
 
         ON_CONTINUE_CLICKED_NAME = "onPriorInstallContinueClicked"
         ON_CONTINUE_CLICKED = QtIfwControlScript.enableNextButton() 
@@ -3486,13 +3490,9 @@ class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
             ON_CONTINUE_CLICKED_NAME,
           QtIfwOnPriorInstallationPage.__STOP_BUTTON,     
             ON_STOP_CLICKED_NAME )     
-            
-        #(3*TAB) + 'managePriorInstallation()' + END +
-        #setText( controlName, text, isAutoQuote=True )
-        #(3*TAB) + QtIfwControlScript.enableNextButton( True ) +
-            
+   
         ON_ENTER = ( 
-            (2*TAB) + _QtIfwScript.ifInstalling( isMultiLine=True ) +            
+            (2*TAB) + 'if( ' + IS_PAGE_SHOWN_NAME + '() )' + SBLK +            
                 (3*TAB) + QtIfwControlScript.enableNextButton(                     
                     QtIfwControlScript.isCustomChecked( 
                         QtIfwOnPriorInstallationPage.__CONTINUE_BUTTON ) ) +                
@@ -3506,7 +3506,21 @@ class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
                     QtIfwOnPriorInstallationPage.__STOP_BUTTON ) +
                 (3*TAB) + QtIfwControlScript.setCustomVisible( 
                     QtIfwOnPriorInstallationPage.__NOTE_LABEL ) +                            
-            (2*TAB) + EBLK 
+            (2*TAB) + EBLK + 
+            (2*TAB) +  'else '  + SBLK +
+                (3*TAB) + QtIfwControlScript.enableNextButton() +
+                (3*TAB) + QtIfwControlScript.setCustomPageTitle( "" ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwOnPriorInstallationPage.__TEXT_LABEL, False ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwOnPriorInstallationPage.__CONTINUE_BUTTON, False ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwOnPriorInstallationPage.__STOP_BUTTON, False ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwOnPriorInstallationPage.__NOTE_LABEL, False ) +                                             
+                (3*TAB) + QtIfwControlScript.clickButton(
+                    QtIfwControlScript.NEXT_BUTTON ) +                
+            (2*TAB) + EBLK            
         )
 
         QtIfwUiPage.__init__( self, QtIfwOnPriorInstallationPage.NAME,
@@ -3514,6 +3528,7 @@ class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
             sourcePath=QtIfwOnPriorInstallationPage.__SRC,
             onLoad=ON_LOAD, onEnter=ON_ENTER  )
         
+        self.supportFuncs = IS_PAGE_SHOWN
         self.eventHandlers.update({ 
               ON_CONTINUE_CLICKED_NAME: ON_CONTINUE_CLICKED
             , ON_STOP_CLICKED_NAME: ON_STOP_CLICKED
@@ -3524,22 +3539,37 @@ class QtIfwRemovePriorInstallationPage( QtIfwPerformOperationPage ):
   
     NAME = "RemovePriorInstallation"
     
-    __ON_SUCCESS_DELAY_MILLIS=2500
-    __OPERATION=(
-"""
-console.log("removing!")
-return true;
-""")
-
+    __TITLE = "Removing Prior Installation"
+    
     def __init__( self ):
+
+        TAB  = _QtIfwScript.TAB
+        END  = _QtIfwScript.END_LINE
+        SBLK = _QtIfwScript.START_BLOCK
+        EBLK = _QtIfwScript.END_BLOCK
+            
+        OPERATION=(
+            TAB + _QtIfwScript.ifBoolValue( _REMOVE_TARGET_KEY, isMultiLine=True ) +
+                QtIfwControlScript.setCustomPageText(
+                self.__TITLE, "Removal in progress..." ) +
+                (2*TAB) + 'if( removeTarget( false ) ) ' + SBLK +
+                    (3*TAB) + QtIfwControlScript.setCustomPageText(
+                        self.__TITLE, "The program was successfully removed!" ) +
+                    (3*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, False ) +
+                (2*TAB) + EBLK +
+                (2*TAB) + 'else ' + SBLK +
+                    (3*TAB) + QtIfwControlScript.setCustomPageText(
+                        "ERROR", "Program removal failed!" ) +
+                    (3*TAB) + 'return false' + END +
+                (2*TAB) + EBLK +
+            TAB + EBLK +    
+            TAB + 'return true' + END
+        )
+        
         QtIfwPerformOperationPage.__init__( self, 
             QtIfwRemovePriorInstallationPage.NAME, 
-            operation=QtIfwRemovePriorInstallationPage.__OPERATION,
-            order=QT_IFW_PRE_INSTALL, 
-            #order=QT_IFW_POST_INSTALL, # ALPHA TESTING QtIfwPerformOperationPage ...            
-            onSuccessDelayMillis=
-                QtIfwRemovePriorInstallationPage.__ON_SUCCESS_DELAY_MILLIS, 
-             )
+            operation=OPERATION, order=QT_IFW_PRE_INSTALL, 
+            onSuccessDelayMillis=2500 )
         
 # -----------------------------------------------------------------------------    
 class QtIfwTargetDirPage( QtIfwUiPage ):

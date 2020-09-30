@@ -45,7 +45,7 @@
       <bool>false</bool>
      </property>    
      <property name="text">
-      <string>Remove the prior installation and continue.</string>
+      <string>Completely remove the prior installation.</string>
      </property>
     </widget>
    </item>
