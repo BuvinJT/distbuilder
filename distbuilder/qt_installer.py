@@ -8,6 +8,7 @@ import six
 
 from distbuilder import util
 from distbuilder.util import *  # @UnusedWildImport
+from builtins import staticmethod
 
 QT_IFW_DEFAULT_VERSION = "3.2.2"
 QT_IFW_DOWNLOAD_URL_BASE = "https://download.qt.io/official_releases/qt-installer-framework"
@@ -2121,7 +2122,7 @@ Controller.prototype.Dynamic%sCallback = function() {
             for p in self.uiPages:
                 if p.asyncFuncs:
                     [self.registerAsyncFunc(f) for f in p.asyncFuncs]       
-                if p.supportFuncs: self.script += p.supportFuncs                             
+                if p.supportScript: self.script += p.supportScript                             
                 # enter page event handler                
                 onEnter = _QtIfwScript.log( 
                     "(Custom) %sPageCallback" % (p.name,) ) 
@@ -3214,10 +3215,10 @@ function %s( %s ){
 }    
 """)
     
-    def __init__( self, name, parms=[], body="",
+    def __init__( self, name, args=[], body="",
                   standardPageId=None, customPageName=None ):
         self.name  = name
-        self.parms = parms
+        self.args  = args
         self.body  = body
         self.standardPageId = standardPageId
         self.customPageName = customPageName
@@ -3234,10 +3235,10 @@ function %s( %s ){
             self._realName(), concat.join( args ) )
 
     def _define( self ):
-        parms =( ["page"] + self.parms
-            if self.standardPageId or self.customPageName else self.parms )
+        args =( ["page"] + self.args
+            if self.standardPageId or self.customPageName else self.args )
         return self.__DEFINITION_TMPLT % ( 
-            self._realName(), ", ".join( parms ), self.body )       
+            self._realName(), ", ".join( args ), self.body )       
 
     def _execute( self ):
         snippet = 'var args = value.split( "%s" );\n' % (self.__ARG_DELIMITER,)        
@@ -3250,11 +3251,11 @@ function %s( %s ){
             snippet +=QtIfwControlScript.assignCustomPageWidgetVar(
                 self.customPageName )
             argOffset+=1        
-        for i, p in enumerate( self.parms ):
+        for i, p in enumerate( self.args ):
             snippet +=( "var {0} = args.length > {1} ? args[{1}] : null;\n"
                         .format(p, i+argOffset) )                    
-        parms =( ["page"] + self.parms
-            if self.standardPageId or self.customPageName else self.parms )    
+        parms =( ["page"] + self.args
+            if self.standardPageId or self.customPageName else self.args )    
         snippet += "%s( %s );\n" % (self._realName(), ", ".join( parms ))
         return snippet   
 
@@ -3442,9 +3443,9 @@ class QtIfwUiPage():
         self.onLoad          = onLoad
         self.onEnter         = onEnter
         self.eventHandlers   = {} 
-        self.replacements    = {}
-        self.supportFuncs    = None
         self.asyncFuncs      = []
+        self.supportScript   = None
+        self.replacements    = {}
         self._isOnLoadBase   = True
         self._isOnEnterBase  = True        
         if sourcePath:
@@ -3502,35 +3503,60 @@ class QtIfwPerformOperationPage( QtIfwUiPage ):
     
     __SRC = QtIfwUiPage._pageResPath( "performoperation" )
 
+    
+    @staticmethod
+    def __performOpName( name ): return "_performOp%s" % (name,) 
+
+    @staticmethod
+    def __onCompletedName( name ): 
+        return "%sCompleted" % ( 
+            QtIfwPerformOperationPage.__performOpName( name ), )  
+
+    @staticmethod
+    def onCompleted( name ):
+        return "%s();\n" % ( 
+            QtIfwPerformOperationPage.__onCompletedName( name ), )  
+
     def __init__( self, name, operation="",
                   order=QT_IFW_PRE_INSTALL, 
-                  onSuccessDelayMillis=None ) :
+                  onCompletedDelayMillis=None ) :
 
         TAB  = _QtIfwScript.TAB
+        NEW  = _QtIfwScript.NEW_LINE
+        #END  = _QtIfwScript.END_LINE
         SBLK = _QtIfwScript.START_BLOCK
         EBLK = _QtIfwScript.END_BLOCK
-        #END = _QtIfwScript.END_LINE
-        
-        PERFORM_OP_NAME = "_performOp%s" % (name,)
-        PERFORM_OP_DONE_VALUE = "_isPerformOp%sDone" % (name,)
 
         isPreInstall = order != QT_IFW_POST_INSTALL
-                
-        ON_SUCCESS = (
-            _QtIfwScript.setBoolValue( PERFORM_OP_DONE_VALUE, True ) + 
-            QtIfwControlScript.enableNextButton() 
-        ) 
-        if onSuccessDelayMillis is None or onSuccessDelayMillis > 0:
-            ON_SUCCESS += QtIfwControlScript.clickButton(
-                QtIfwControlScript.NEXT_BUTTON, onSuccessDelayMillis )
-
+        
+        PERFORM_OP_DONE_VALUE = "_isPerformOp%sDone" % (name,)
+                                
         ON_ENTER =( 
-        (2*TAB) + _QtIfwScript.ifBoolValue( PERFORM_OP_DONE_VALUE ) +
-            (2*TAB) + QtIfwControlScript.clickButton(
-                            QtIfwControlScript.NEXT_BUTTON ) +
-        (2*TAB) + ('else if( %s( page ) )' % PERFORM_OP_NAME) + SBLK +
-        ON_SUCCESS +
-        (2*TAB) + EBLK )
+            (2*TAB) + _QtIfwScript.ifBoolValue( PERFORM_OP_DONE_VALUE ) +
+                (2*TAB) + QtIfwControlScript.clickButton(
+                                QtIfwControlScript.NEXT_BUTTON ) +
+            (2*TAB) + 'else ' + SBLK +
+                (2*TAB) + QtIfwControlScript.enableNextButton( False )  +     
+                (2*TAB) + ('if( %s( page ) )' % self.__performOpName( name )) + NEW +
+                    (3*TAB) + self.onCompleted( name ) +            
+            (2*TAB) + EBLK                     
+        )
+        OP_FUNC =(
+            'function ' + self.__performOpName( name ) + '( page )' + SBLK +
+                operation +
+            EBLK
+        )
+        ON_COMPLETED =(
+            'function ' + self.__onCompletedName( name ) + '()' + SBLK +
+            QtIfwControlScript.assignCustomPageWidgetVar( name ) +     
+            _QtIfwScript.setBoolValue( PERFORM_OP_DONE_VALUE, True ) +
+            (2*TAB) + QtIfwControlScript.enableNextButton()  +                         
+            (QtIfwControlScript.clickButton(
+                QtIfwControlScript.NEXT_BUTTON, onCompletedDelayMillis ) 
+            if onCompletedDelayMillis is None or onCompletedDelayMillis > 0 
+            else "") +             
+            EBLK            
+        )        
         
         QtIfwUiPage.__init__( self, name,   
             pageOrder=(QT_IFW_INSTALL_PAGE if isPreInstall else 
@@ -3538,12 +3564,8 @@ class QtIfwPerformOperationPage( QtIfwUiPage ):
             sourcePath=QtIfwPerformOperationPage.__SRC,
             onEnter=ON_ENTER )
         
-        self.supportFuncs =(
-            'function ' + PERFORM_OP_NAME + '( page )' + SBLK +
-            operation +
-            EBLK
-        )
-
+        self.supportScript = OP_FUNC + NEW + ON_COMPLETED 
+            
 # -----------------------------------------------------------------------------    
 class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
     
@@ -3637,7 +3659,7 @@ class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
             sourcePath=QtIfwOnPriorInstallationPage.__SRC,
             onLoad=ON_LOAD, onEnter=ON_ENTER  )
         
-        self.supportFuncs = IS_PAGE_SHOWN
+        self.supportScript = IS_PAGE_SHOWN
         self.eventHandlers.update({ 
               ON_CONTINUE_CLICKED_NAME: ON_CONTINUE_CLICKED
             , ON_STOP_CLICKED_NAME: ON_STOP_CLICKED
@@ -3658,38 +3680,34 @@ class QtIfwRemovePriorInstallationPage( QtIfwPerformOperationPage ):
         EBLK = _QtIfwScript.END_BLOCK
 
         removeTargetFunc = QtIfwAsyncFunc( "RemoveTarget", 
-            parms=["test"], customPageName=self.NAME, body=(
-                _QtIfwScript.log( "ASYNC RemoveTarget!" ) + 
-                _QtIfwScript.log( "test", isAutoQuote=False ) + 
-                QtIfwControlScript.setCustomPageText(
-                '"%s"' % self.__TITLE, "test", isAutoQuote=False ) 
+            customPageName=self.NAME, body=(
+           TAB + 'if( removeTarget( false ) ) ' + SBLK +
+               (2*TAB) + QtIfwControlScript.setCustomPageText(
+                   self.__TITLE, "The program was successfully removed!" ) +
+               (2*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, False ) +
+               (2*TAB) + self.onCompleted( self.NAME ) +
+           TAB + EBLK +
+           TAB + 'else ' + SBLK +
+               (2*TAB) + QtIfwControlScript.setCustomPageText(
+                   "ERROR", "Program removal failed!" ) +
+           TAB + EBLK 
         ))
             
         OPERATION=(
             TAB + _QtIfwScript.ifBoolValue( _REMOVE_TARGET_KEY, isMultiLine=True ) +
                 _QtIfwScript.log( "Removing prior installation..." ) +            
                 QtIfwControlScript.setCustomPageText(
-                self.__TITLE, "Removal in progress..." ) +
-                removeTargetFunc.invoke( ["testing a,b,c..."] ) +
-                #(2*TAB) + 'if( removeTarget( false ) ) ' + SBLK +
-                #    (3*TAB) + QtIfwControlScript.setCustomPageText(
-                #        self.__TITLE, "The program was successfully removed!" ) +
-                #    (3*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, False ) +
-                #(2*TAB) + EBLK +
-                #(2*TAB) + 'else ' + SBLK +
-                #    (3*TAB) + QtIfwControlScript.setCustomPageText(
-                #        "ERROR", "Program removal failed!" ) +
-                #    (3*TAB) + 'return false' + END +
-                #(2*TAB) + EBLK +
+                    self.__TITLE, "Removal in progress..." ) +
+                removeTargetFunc.invoke() +
+                TAB + 'return false' + END +
             TAB + EBLK +    
-            #TAB + 'return true' + END
-            TAB + 'return false' + END
+            TAB + 'return true' + END 
         )
         
         QtIfwPerformOperationPage.__init__( self, 
             QtIfwRemovePriorInstallationPage.NAME, 
             operation=OPERATION, order=QT_IFW_PRE_INSTALL, 
-            onSuccessDelayMillis=2500 )
+            onCompletedDelayMillis=2500 )
         
         self.asyncFuncs=[ removeTargetFunc ]
         

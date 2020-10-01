@@ -827,8 +827,9 @@ Attributes:
     onLoad         = None
     onEnter        = None       
     eventHandlers  = {}
-    supportFuncs   = None  
-
+    asyncFuncs     = []
+    supportScript  = None  
+    
     _isOnLoadBase  = True    
     _isOnEnterBase = True
         
@@ -882,12 +883,19 @@ Having this in place will additionally create a `var page`, which refers to
 this page. The `onEnter` script may then make use of that variant to access the page widget or the child widgets on it.
 See [Installer Scripting](LowLevel.md#installer-scripting)
 
-**eventHandlers**: Qt Script "event handler" dictionary containing entries in the form: name:body.
-The typical use case for this attribute involves the `onLoad` script connecting events (e.g. button clicks) to handlers. The `eventHandlers` then provide the handler definitions. 
-These are defined within a **package** script, but are **controller.prototypes**.
+**eventHandlers**: Qt Script simple "event handler" dictionary containing entries in the form: name:body.
+The typical use case for this attribute involves the `onLoad` script connecting events (e.g. button clicks) to handlers. The `eventHandlers` then provide the definitions for what to do
+upon event occurrences. (Note: These are defined within a **package** script, but are **controller.prototypes**.)
+Note this uses the Qt signal/slot mechanism for **built-in** widget types.  You must add your
+own "connections", via the Qt Script rules for such (again typically within your `onLoad`).  
+An example of that would look like: `page.mybutton.released.connect(this, this.myhandler);`.
 
-**supportFuncs**: Open ended Qt Script attribute, for injecting whatever additional
-support/helper function definitions maybe handy.  Note that these will live in the global space of the **controller** script. Be careful to avoid name conflicts!
+**asyncFuncs**: List of [QtIfwAsyncFunc](#qtifwasyncfunc) objects.  This is to used be in 
+a somewhat similar to `eventHandlers`, but without any direct binding to widget signals.
+Instead, you invoke these yourself, programatically.
+
+**supportScript**: A **completely open ended** Qt Script (string) attribute, for injecting 
+any additional support/helper function definitions which maybe handy.  Note that these will live in the global space of the **controller** script. Be careful to avoid name conflicts!
              
 **replacements**: A dictionary containing entries in the form: placeholder:value.  Upon 
 writing the `.ui` file for the installer definition the library the generates, all "replacements"
@@ -897,6 +905,55 @@ TODO: further explain the complicate logic for page order (for replacement pages
 
 ### QtIfwAsyncFunc
 
+This class is used to define QScript functions within an installer, which may be invoked
+**asynchronously**.  The primary application for this mechanism is to allow UI modifications
+to be redrawn on the screen, while performing long "blocking" operations.  To use it
+in this manner, you should execute your UI modification code, and then invoke a
+blocking operation which is defined within one of these async functions.  The UI will
+thus be updated prior to the block.  At the end of the long running async function,
+you may repeat the pattern, if desired, to again update the screen prior to initiating
+another task which would prevent a screen refresh.  Such a design pattern simulates 
+synchronous code, while getting the benefit of having the UI change through out it.
+
+The most typical use case for this class is in conjunction with a 
+[QtIfwPerformOperationPage](#qtifwperformoperationpage).
+
+Constructor:
+
+    QtIfwAsyncFunc( name, parms=[], body="",
+                    standardPageId=None, customPageName=None )
+        
+Attributes:   
+
+    name  = <required>
+	args = []
+    body  = ""
+    standardPageId = None
+    customPageName = None
+
+Functions:
+
+    invoke( args=[], isAutoQuote=True ):        
+
+Details:
+
+**name**: The function name.  (Note this will not be the complete, *real* function name in the generated QScript).
+
+**args**: The names of the function arguments. 
+
+**body**: The body of the function.
+
+***standardPageId**: Provide a standard page id constant to effectively bind the 
+function to the page.  You will magically have a `page` var within the function 
+to access the UI elements.
+
+**customPageName**: Provide the name of a custom page effectively bind the 
+function to the page.  You will magically have a `page` var within the function 
+to access the UI elements.
+
+**invoke()**: Returns a string to do be injected into whatever QScript you are dynamically 
+generating.  (This not somehow literally "invoke" the function when called from the Python
+library! )
 
 ### QtIfwPerformOperationPage
 
@@ -909,30 +966,41 @@ Constructor:
 
     QtIfwPerformOperationPage( name, operation="",
                                order=QT_IFW_PRE_INSTALL, 
-                               onSuccessDelayMillis=None )                
+                               onCompletedDelayMillis=None )            
+                               
+Static Functions:
+
+    onCompleted( name )                                           
 
 Details:
 
-**operation**: The custom QScript to execute, driving the operation. At the end of this
-script, you this **MUST RETURN A BOOLEAN (TRUE/FASLE) INDICATION OF SUCCESS**.  If success
-is indicated, the `onSuccessDelayMillis` parameter will dictate what occurs next.  If
-a failure is indicated (via a return of *false*), then nothing will occur post operation.
-The page cannot be advanced in this failure state. The user may only click the 
-"Cancel" button to quit the installer.  
+**operation**: The custom QScript to execute, kicking off the operation. At the end of this
+script, you this should explicitly return a boolean indication of completion.  If completion is indicated (i.e. **true** is returned), the `onCompletedDelayMillis` parameter will dictate what occurs next (see the description for the constructor argument). If **false** is returned, then nothing will occur directly following the initial (synchronous) "kick off".
 
-This function will have a reference to UI page passed to it (called `page`).
-As your operation proceeds, you may wish to call 
+You may wish to return **false** from the **operation** script, so you that you may continue
+the custom task by employing [QtIfwAsyncFunc](#qtifwasyncfunc).  At the end of such a 
+function, you may inject what is returned from the static `onCompleted( name )` function 
+of this class, in order to allow the advancement of the installer wizard.  
+
+The `operation` function will have a reference to the UI page passed to it (called `page`).
+During your operation, you may wish to call functions such as 
 `setCustomPageText( page, title, description )`
 (or build that script via the Python helper:
 `setCustomPageText( title, description, isAutoQuote=True, pageVar="page" )`).  
 
-**order**: You may NOT specify one the standard options for a `QtIfwUiPage` attribute
- `pageOrder`.  Instead, use either `QT_IFW_PRE_INSTALL` or `QT_IFW_POST_INSTALL`.
+**order**: Specify either `QT_IFW_PRE_INSTALL` or `QT_IFW_POST_INSTALL`.
+Note: You may NOT specify one of the standard options for a `QtIfwUiPage` attribute
+ `pageOrder`.  
 
-**onSuccessDelayMillis**: By default, this is set to `None`, which indicates that upon
-success, the page should advanced instantly.  If a value greater than 0 is provided, the
-page will automatically advance after a delay of that duration.  Alternatively, an integer value of 0 (or less than 0), will indicate a manual advancement will take place.  The
+**onCompletedDelayMillis**: By default, this is set to `None`, which indicates that upon
+completion, the page should advanced instantly.  If a value greater than 0 is provided, the
+page will automatically advance after a delay of that duration.  Alternatively, an integer 
+value of 0 (or less than 0), will indicate a manual advancement will take place.  The
 "Next" button will become enabled, and the user may click such when they choose. 
+
+**onCompleted( name )**:  Returns a string to do be injected into whatever QScript you are 
+dynamically generating.  (This not somehow literally "invoke" the function when called from 
+the Python library! )
 
 ## QtIfwOnPriorInstallationPage
 
