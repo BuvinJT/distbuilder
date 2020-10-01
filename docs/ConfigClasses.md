@@ -359,7 +359,10 @@ Attributes & default values:
 
     onPageChangeCallbackBody = None
     isAutoPageChangeCallBack = True
-                                    
+      
+    onValueChangeCallbackBody = None
+    isAutoValueChangeCallBack = True
+                                        
 	isIntroductionPageVisible = True                                                                                                                                
     introductionPageCallbackBody = None
     isAutoIntroductionPageCallback = True
@@ -397,16 +400,21 @@ Attributes & default values:
 	
 Object Methods:
     
+    registerAsyncFunc( func ) <takes QtIfwAsyncFunc>	      
+    registerStandardEventHandler( signalName, slotName, slotBody )
+    registerAutoPilotEventHandler( signalName, slotName, slotBody )    
+    registerGuiEventHandler( signalName, slotName, slotBody )
+    registerWidgetEventHandler( pageId, controlName, 
+                                signalName, slotName, slotBody ) 
+                                    
+    _generate()
+    
     write()
     debug()
 
     exists()       	 
 	path()
 	dirPath()   
-
-	registerAutoPilotSlot( signalName, slotName, slotBody )
-
-    _generate()
     
 ## QtIfwPackage
 
@@ -886,6 +894,9 @@ writing the `.ui` file for the installer definition the library the generates, a
 in the `content` will be resolved.
 
 TODO: further explain the complicate logic for page order (for replacement pages, or multiple pages with the same order...).  Also elaborate on ui replacements, the "resolve" function, provide a base example .ui in the docs...
+
+### QtIfwAsyncFunc
+
 
 ### QtIfwPerformOperationPage
 

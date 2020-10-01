@@ -482,13 +482,15 @@ Static Constants :
     RUN_PROGRAM_CHECKBOX     
 
 Static Functions:      
-                   
-    pageWidget( name )     
-    customPageWidget( name )
+
     currentPageWidget()                
-    assignPageWidgetVar( pageName, varName="page" )                         
+    assignCurrentPageWidgetVar( varName="page" )                              
+                   
+    pageWidget( pageId )     
+    assignPageWidgetVar( pageId, varName="page" )                         
+
+    customPageWidget( pageName )
     assignCustomPageWidgetVar( pageName, varName="page" )               
-    assignCurPageWidgetVar( varName="page" )                              
     
     toDefaultPageId( pageName )
     hideDefaultPage( pageName )

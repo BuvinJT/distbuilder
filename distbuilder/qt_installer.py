@@ -1597,10 +1597,24 @@ Controller.prototype.onCurrentPageChanged = function(pageId){
 }
 """)
 
+    __CONTROLER_VALUE_CHANGED_CALLBACK_FUNC_TMPLT =(            
+"""
+Controller.prototype.onValueChanged = function(key,value){
+    %s
+}
+""")
+
     __CONTROLER_CONNECT_TMPLT = ( 
         "%s.connect(this, Controller.prototype.%s);\n" ) 
     __WIDGET_CONNECT_TMPLT = ( 
         "gui.currentPageWidget().%s.%s.connect(this, this.%s);\n" )
+
+    __CURRENT_PAGE_WIDGET = "gui.currentPageWidget()"
+    __CUR_PG_WIDGET_VAR_TMPLT = "    var %s = gui.currentPageWidget();\n"
+
+    __PAGE_WIDGET_BY_ID = 'gui.pageById(QInstaller.%s)'
+    __PAGE_WIDGET_BY_ID_VAR_TMPLT = ( 
+        '    var %s = gui.pageById(QInstaller.%s);\n' )
 
     __PAGE_WIDGET = 'gui.pageWidgetByObjectName("%s")'
     __PAGE_WIDGET_VAR_TMPLT = ( 
@@ -1609,10 +1623,7 @@ Controller.prototype.onCurrentPageChanged = function(pageId){
     __CUSTOM_PAGE_WIDGET = 'gui.pageWidgetByObjectName("Dynamic%s")'
     __CUSTOM_PAGE_WIDGET_VAR_TMPLT = ( 
         '    var %s = gui.pageWidgetByObjectName("Dynamic%s");\n' )
-            
-    __CURRENT_PAGE_WIDGET = "gui.currentPageWidget()"
-    __CUR_PG_WIDGET_VAR_TMPLT = "    var %s = gui.currentPageWidget();\n"
-                        
+                                    
     __CLICK_BUTTON_TMPL       = "gui.clickButton(%s);\n"
     __CLICK_BUTTON_DELAY_TMPL = "gui.clickButton(%s, %d);\n"
 
@@ -1694,20 +1705,20 @@ Controller.prototype.Dynamic%sCallback = function() {
         return QtIfwControlScript.__CURRENT_PAGE_WIDGET            
 
     @staticmethod        
-    def pageWidget( name ): 
-        return QtIfwControlScript._PAGE_WIDGET % (name,)     
+    def pageWidget( pageId ): 
+        return QtIfwControlScript.__PAGE_WIDGET_BY_ID % (pageId,)     
 
     @staticmethod        
     def customPageWidget( name ): 
         return QtIfwControlScript.__CUSTOM_PAGE_WIDGET % (name,)     
 
     @staticmethod        
-    def assignCurPageWidgetVar( varName="page" ):                
+    def assignCurrentPageWidgetVar( varName="page" ):                
         return QtIfwControlScript.__CUR_PG_WIDGET_VAR_TMPLT % (varName,)            
 
     @staticmethod        
-    def assignPageWidgetVar( pageName, varName="page" ):                
-        return QtIfwControlScript.__PAGE_WIDGET_VAR_TMPLT % (varName,pageName)            
+    def assignPageWidgetVar( pageId, varName="page" ):                
+        return QtIfwControlScript.__PAGE_WIDGET_BY_ID_VAR_TMPLT % (varName,pageId)            
 
     @staticmethod        
     def assignCustomPageWidgetVar( pageName, varName="page" ):                
@@ -1849,6 +1860,9 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.controllerConstructorBody = None
         self.isAutoControllerConstructor = True
 
+        self.onValueChangeCallbackBody = None
+        self.isAutoValueChangeCallBack = True
+        
         self.onPageChangeCallbackBody = None
         self.isAutoPageChangeCallBack = True
                                                    
@@ -1887,6 +1901,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.isRunProgInteractive = True
         self.isRunProgVisible = True
 
+        self.__asyncFuncs = {}        
         self.__standardEventSlots = {}            
         self.__autoPilotEventSlots = {}
         self.__widgetEventSlots = {}
@@ -1921,6 +1936,9 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.registerAutoPilotEventHandler( 
             'updateFinished', 'onAutoUpdateFinished',
             QtIfwControlScript.clickButton( QtIfwControlScript.NEXT_BUTTON ) );                                                                 
+    
+    def registerAsyncFunc( self, func ):
+        self.__asyncFuncs[ func.name ] = func
         
     def registerStandardEventHandler( self, signalName, slotName, slotBody ) :
         signalKey = "%s.%s" % (_QtIfwScript._INSTALLER_OBJ, signalName)
@@ -1955,12 +1973,6 @@ Controller.prototype.Dynamic%sCallback = function() {
             self.__genControllerConstructorBody()
         self.script += ( "function Controller() {\n%s\n}\n" % 
                          (self.controllerConstructorBody,) )
-
-        if self.isAutoPageChangeCallBack: self.__genPageChangeCallbackBody()
-        if self.onPageChangeCallbackBody:
-            self.script += (
-                QtIfwControlScript.__CONTROLER_PAGE_CHANGED_CALLBACK_FUNC_TMPLT % (
-                self.onPageChangeCallbackBody, ) )
                             
         if self.isAutoIntroductionPageCallback:
             self.__genIntroductionPageCallbackBody()
@@ -2010,18 +2022,57 @@ Controller.prototype.Dynamic%sCallback = function() {
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
                 (_QT_IFW_FINISHED_PAGE_CALLBACK_NAME, self.finishedPageCallbackBody) )
 
-        for _, (funcName, funcBody) in six.iteritems( self.__standardEventSlots ):    
+        for (funcName, funcBody) in six.itervalues( self.__standardEventSlots ):    
             self.script += ( 
                 QtIfwControlScript.__CONTROLER_CALLBACK_FUNC_TMPLT %
                 (funcName, funcBody) )
 
-        for _, (funcName, funcBody) in six.iteritems( self.__autoPilotEventSlots ):    
+        for (funcName, funcBody) in six.itervalues( self.__autoPilotEventSlots ):    
             self.script += ( 
                 QtIfwControlScript.__CONTROLER_CALLBACK_FUNC_TMPLT %
                 (funcName, funcBody) )
         
         self.__appendUiPageFunctions()
-                  
+
+        if self.isAutoPageChangeCallBack: self.__genPageChangeCallbackBody()
+        if self.onPageChangeCallbackBody:
+            self.script += (
+                QtIfwControlScript.__CONTROLER_PAGE_CHANGED_CALLBACK_FUNC_TMPLT % (
+                self.onPageChangeCallbackBody, ) )
+                            
+        if self.isAutoValueChangeCallBack: self.__genValueChangeCallbackBody()
+        if self.onValueChangeCallbackBody:        
+            self.script += (
+                QtIfwControlScript.__CONTROLER_VALUE_CHANGED_CALLBACK_FUNC_TMPLT % (
+                self.onValueChangeCallbackBody, ) )
+
+        for func in six.itervalues( self.__asyncFuncs ):
+            if isinstance( func, QtIfwAsyncFunc ): 
+                self.script += func._define()
+        
+    def __genValueChangeCallbackBody( self ):         
+
+        #prepend = _QtIfwScript.log( '"Value Changed: " + key + "=" + value', isAutoQuote=False )
+        prepend = ""
+        append  = ""
+
+        END  = _QtIfwScript.END_LINE
+        SBLK = _QtIfwScript.START_BLOCK
+        EBLK = _QtIfwScript.END_BLOCK
+                               
+        for func in six.itervalues( self.__asyncFuncs ):
+            if isinstance( func, QtIfwAsyncFunc ):                 
+                prepend +=(
+                    ('if( key==="%s" )' % (func._realName(),)) + SBLK +                    
+                    func._execute() +
+                    "return" + END +
+                    EBLK )
+
+        if self.onValueChangeCallbackBody is None:
+            self.onValueChangeCallbackBody=""                                            
+        self.onValueChangeCallbackBody =( 
+            prepend + self.onValueChangeCallbackBody + append )
+           
     def __genPageChangeCallbackBody( self ):
 
         prepend = ""
@@ -2067,7 +2118,9 @@ Controller.prototype.Dynamic%sCallback = function() {
 
     def __appendUiPageFunctions( self ):    
         if self.uiPages: 
-            for p in self.uiPages:        
+            for p in self.uiPages:
+                if p.asyncFuncs:
+                    [self.registerAsyncFunc(f) for f in p.asyncFuncs]       
                 if p.supportFuncs: self.script += p.supportFuncs                             
                 # enter page event handler                
                 onEnter = _QtIfwScript.log( 
@@ -2317,7 +2370,10 @@ function setCustomPageText( page, title, description ) {
                 
         self.controllerConstructorBody += ( 
             QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
-                ("installer.currentPageChanged", "onCurrentPageChanged") )            
+                ("installer.currentPageChanged", "onCurrentPageChanged") + 
+            QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
+                ("installer.valueChanged", "onValueChanged")                 
+            )            
             
         for signalName, (slotName, _) in six.iteritems( self.__standardEventSlots ):    
             self.controllerConstructorBody += ( 
@@ -2379,7 +2435,7 @@ function setCustomPageText( page, title, description ) {
     def __genComponentSelectionPageCallbackBody( self ):
         self.componentSelectionPageCallbackBody = (
             _QtIfwScript.log("ComponentSelectionPageCallback") +
-            QtIfwControlScript.assignCurPageWidgetVar( "page" ) +            
+            QtIfwControlScript.assignCurrentPageWidgetVar() +            
             '    ' + _QtIfwScript.ifCmdLineArg( 
                 _QtIfwScript.INSTALL_LIST_CMD_ARG ) + 
             '    {\n' +
@@ -2505,27 +2561,13 @@ class QtIfwPackageScript( _QtIfwScript ):
     __DIR_TMPLT  = "%s/packages/%s/meta"
     __PATH_TMPLT = __DIR_TMPLT + "/%s"
 
-    __CONTROLER_CALLBACK_FUNC_TMPLT = (
-"""
-Controller.prototype.%s = function(){
-    %s
-}
-""" )
-
     __COMPONENT_CALLBACK_FUNC_TMPLT = (
 """
 Component.prototype.%s = function(){
     %s
 }
 """ )
-    
-    __CONTROLER_PAGE_CHANGED_CALLBACK_FUNC_TMPLT =(            
-"""
-Controller.prototype.onCurrentPageChanged = function(pageId){
-    %s
-}
-""")
-    
+        
     __COMPONENT_LOADED_HNDLR_NAME = "componentLoaded"
             
     __WIN_ADD_SHORTCUT_TMPLT = ( 
@@ -3159,7 +3201,65 @@ class QtIfwShortcut:
         # Cross platform
         self.isAppShortcut     = True
         self.isDesktopShortcut = False
-      
+
+# -----------------------------------------------------------------------------
+class QtIfwAsyncFunc:
+    
+    __KEY_PREFIX    = "__async"
+    __ARG_DELIMITER = '__delim__'    
+    __DEFINITION_TMPLT =(
+"""
+function %s( %s ){
+%s
+}    
+""")
+    
+    def __init__( self, name, parms=[], body="",
+                  standardPageId=None, customPageName=None ):
+        self.name  = name
+        self.parms = parms
+        self.body  = body
+        self.standardPageId = standardPageId
+        self.customPageName = customPageName
+
+    def invoke( self, args=[], isAutoQuote=True ):        
+        if isAutoQuote:
+            args = ['"%s"' % (a,) for a in args]        
+        if self.standardPageId: 
+            args = ['"%s"' % (self.standardPageId,)] + args
+        elif self.customPageName: 
+            args = ['"%s"' % (self.customPageName,)] + args            
+        concat = ' + "%s" + ' % (self.__ARG_DELIMITER,)                    
+        return 'installer.setValue( "%s", %s );\n' % ( 
+            self._realName(), concat.join( args ) )
+
+    def _define( self ):
+        parms =( ["page"] + self.parms
+            if self.standardPageId or self.customPageName else self.parms )
+        return self.__DEFINITION_TMPLT % ( 
+            self._realName(), ", ".join( parms ), self.body )       
+
+    def _execute( self ):
+        snippet = 'var args = value.split( "%s" );\n' % (self.__ARG_DELIMITER,)        
+        argOffset=0
+        if self.standardPageId: 
+            snippet += QtIfwControlScript.assignPageWidgetVar(
+                self.standardPageId )                        
+            argOffset+=1
+        elif self.customPageName: 
+            snippet +=QtIfwControlScript.assignCustomPageWidgetVar(
+                self.customPageName )
+            argOffset+=1        
+        for i, p in enumerate( self.parms ):
+            snippet +=( "var {0} = args.length > {1} ? args[{1}] : null;\n"
+                        .format(p, i+argOffset) )                    
+        parms =( ["page"] + self.parms
+            if self.standardPageId or self.customPageName else self.parms )    
+        snippet += "%s( %s );\n" % (self._realName(), ", ".join( parms ))
+        return snippet   
+
+    def _realName( self ): return "%s%s" % (self.__KEY_PREFIX, self.name)    
+        
 # -----------------------------------------------------------------------------
 class QtIfwExternalOp:
 
@@ -3344,6 +3444,7 @@ class QtIfwUiPage():
         self.eventHandlers   = {} 
         self.replacements    = {}
         self.supportFuncs    = None
+        self.asyncFuncs      = []
         self._isOnLoadBase   = True
         self._isOnEnterBase  = True        
         if sourcePath:
@@ -3555,30 +3656,42 @@ class QtIfwRemovePriorInstallationPage( QtIfwPerformOperationPage ):
         END  = _QtIfwScript.END_LINE
         SBLK = _QtIfwScript.START_BLOCK
         EBLK = _QtIfwScript.END_BLOCK
+
+        removeTargetFunc = QtIfwAsyncFunc( "RemoveTarget", 
+            parms=["test"], customPageName=self.NAME, body=(
+                _QtIfwScript.log( "ASYNC RemoveTarget!" ) + 
+                _QtIfwScript.log( "test", isAutoQuote=False ) + 
+                QtIfwControlScript.setCustomPageText(
+                '"%s"' % self.__TITLE, "test", isAutoQuote=False ) 
+        ))
             
         OPERATION=(
             TAB + _QtIfwScript.ifBoolValue( _REMOVE_TARGET_KEY, isMultiLine=True ) +
-                _QtIfwScript.log( "Removal in progress..." ) +            
+                _QtIfwScript.log( "Removing prior installation..." ) +            
                 QtIfwControlScript.setCustomPageText(
                 self.__TITLE, "Removal in progress..." ) +
-                (2*TAB) + 'if( removeTarget( false ) ) ' + SBLK +
-                    (3*TAB) + QtIfwControlScript.setCustomPageText(
-                        self.__TITLE, "The program was successfully removed!" ) +
-                    (3*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, False ) +
-                (2*TAB) + EBLK +
-                (2*TAB) + 'else ' + SBLK +
-                    (3*TAB) + QtIfwControlScript.setCustomPageText(
-                        "ERROR", "Program removal failed!" ) +
-                    (3*TAB) + 'return false' + END +
-                (2*TAB) + EBLK +
+                removeTargetFunc.invoke( ["testing a,b,c..."] ) +
+                #(2*TAB) + 'if( removeTarget( false ) ) ' + SBLK +
+                #    (3*TAB) + QtIfwControlScript.setCustomPageText(
+                #        self.__TITLE, "The program was successfully removed!" ) +
+                #    (3*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, False ) +
+                #(2*TAB) + EBLK +
+                #(2*TAB) + 'else ' + SBLK +
+                #    (3*TAB) + QtIfwControlScript.setCustomPageText(
+                #        "ERROR", "Program removal failed!" ) +
+                #    (3*TAB) + 'return false' + END +
+                #(2*TAB) + EBLK +
             TAB + EBLK +    
-            TAB + 'return true' + END
+            #TAB + 'return true' + END
+            TAB + 'return false' + END
         )
         
         QtIfwPerformOperationPage.__init__( self, 
             QtIfwRemovePriorInstallationPage.NAME, 
             operation=OPERATION, order=QT_IFW_PRE_INSTALL, 
             onSuccessDelayMillis=2500 )
+        
+        self.asyncFuncs=[ removeTargetFunc ]
         
 # -----------------------------------------------------------------------------    
 class QtIfwTargetDirPage( QtIfwUiPage ):
