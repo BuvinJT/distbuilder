@@ -608,7 +608,7 @@ class _QtIfwScript:
     __EMBED_RES_TMPLT       = 'var %s = %s;\n\n'
     __EMBED_RES_CHUNK_SIZE  = 128
     __EXT_DELIM_PLACEHOLDER = "_dot_"
-    __SCRIPT_FROM_B64_TMPL  = 'writeScriptFromBase64( "%s", %s, %s )%s'
+    __SCRIPT_FROM_B64_TMPL  = '__writeScriptFromBase64( "%s", %s, %s )%s'
     
     # Note, there is in fact an installer.killProcess(string absoluteFilePath)
     # this custom kill takes a process name, with no specific path
@@ -1099,16 +1099,18 @@ class _QtIfwScript:
                 TAB + 'return ' + _QtIfwScript.pathExists( 
                     'toMaintenanceToolPath( dir )', isAutoQuote=False ) + END + 
             EBLK + NEW +
-            'function defaultTargetExists() ' + SBLK +
+            'function __defaultTargetExists() ' + SBLK +
                 TAB + 'return maintenanceToolExists( ' + 
                     _QtIfwScript.targetDir() + ' )' + END +  
             EBLK + NEW +
-            'function cmdLineTargetExists() ' + SBLK +            
+            'function __cmdLineTargetExists() ' + SBLK +            
                 TAB + 'return maintenanceToolExists( ' + 
                     _QtIfwScript.cmdLineArg( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
                     ' )' + END +
             EBLK + NEW +
-            'function targetExists( isAuto ) ' + SBLK +
+            'function targetExists() ' + SBLK +
+                'var isAuto = ' + _QtIfwScript.cmdLineSwitchArg( 
+                    _QtIfwScript.AUTO_PILOT_CMD_ARG ) + END +                
                 (TAB + 'if( isOsRegisteredProgram() ) ' + SBLK +
                  (2*TAB)  + _QtIfwScript.log('The program is OS registered.') +
                  (2*TAB) + 'return true' + END + 
@@ -1116,18 +1118,20 @@ class _QtIfwScript:
                 if IS_WINDOWS else '') +
                 TAB + _QtIfwScript.ifCmdLineArg( 
                     _QtIfwScript.TARGET_DIR_CMD_ARG, isMultiLine=True ) +
-                    'if( isAuto && cmdLineTargetExists() )'  + SBLK +
+                    'if( isAuto && __cmdLineTargetExists() )'  + SBLK +
                         (3*TAB) + _QtIfwScript.log('The command line specified target exists.') +
                         (3*TAB) + 'return true' + END +
                     (2*TAB) + EBLK +
                 TAB + EBLK +
-                TAB + 'if( defaultTargetExists() )'  + SBLK +
+                TAB + 'if( __defaultTargetExists() )'  + SBLK +
                 TAB + _QtIfwScript.log('The default target exists.') +
                 (2*TAB) + 'return true' + END +                
                 TAB + EBLK +                   
                 TAB + 'return false' + END +                 
             EBLK + NEW +            
-            'function removeTarget( isAuto ) ' + SBLK +
+            'function removeTarget() ' + SBLK +
+               'var isAuto = ' + _QtIfwScript.cmdLineSwitchArg( 
+                    _QtIfwScript.AUTO_PILOT_CMD_ARG ) + END +                
                 TAB + _QtIfwScript.log('Removing existing installation...') +
                 TAB + 'var isElevated=true' + END +  
                 TAB + 'var args=[ "-v", ' +                     
@@ -1160,11 +1164,11 @@ class _QtIfwScript:
                 TAB + _QtIfwScript.log('Verifying uninstall...') +    
                 TAB + 'var MAX_CHECKS=3' + END  +
                 TAB + 'for( var existCheck=0; existCheck < MAX_CHECKS; existCheck++ ) ' + SBLK +
-                (2*TAB) + 'if( !targetExists( isAuto ) ) break' + END +
+                (2*TAB) + 'if( !targetExists() ) break' + END +
                 (2*TAB) + _QtIfwScript.log('Waiting for uninstall to finish...') +                
                 (2*TAB) + 'sleep( 1 )' + END +                
                 TAB + EBLK +
-                TAB + 'if( targetExists( isAuto ) ) ' + SBLK +
+                TAB + 'if( targetExists() ) ' + SBLK +
                 (2*TAB) + 'if( isAuto ) ' + 
                     (3*TAB) + 'silentAbort("Failed to removed the program.")' + END +
                 (2*TAB) + 'else ' + SBLK +
@@ -1175,14 +1179,14 @@ class _QtIfwScript:
                 TAB + _QtIfwScript.log('Successfully removed the program.') +
                 TAB + 'return true' + END +
             EBLK + NEW +
-            'function autoManagePriorInstallation() ' + SBLK +
-                TAB + "if( targetExists( true ) ) " + SBLK +
+            'function __autoManagePriorInstallation() ' + SBLK +
+                TAB + "if( targetExists() ) " + SBLK +
                 (2*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
                     _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
                 (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_FAIL + '":' + NEW +
                     (3*TAB) + 'silentAbort("This program is already installed.")' + END + 
                 (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_REMOVE + '":' + NEW + 
-                    (3*TAB) + 'removeTarget( true )' + END +
+                    (3*TAB) + 'removeTarget()' + END +
                     (3*TAB) + 'break' + END +
                 (2*TAB) + 'default:' + NEW +
                     (3*TAB) + 'silentAbort("This program is already installed.")' + END +
@@ -1303,11 +1307,11 @@ class _QtIfwScript:
                 TAB + _QtIfwScript.log( '"removed dir: " + path', isAutoQuote=False ) + 
                 TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                            
-            'function writeScriptFromBase64( fileName, b64, varNames ) ' + SBLK +  # TODO: Test in NIX/MAC                
-            TAB + 'var path = writeFileFromBase64( fileName, b64 )' + END +
+            'function __writeScriptFromBase64( fileName, b64, varNames ) ' + SBLK +  # TODO: Test in NIX/MAC                
+            TAB + 'var path = __writeFileFromBase64( fileName, b64 )' + END +
             TAB + 'replaceQtIfwVarsInFile( path, varNames )' +  END +            
             EBLK + NEW +                                                                         
-            'function writeFileFromBase64( fileName, b64 ) ' + SBLK +      # TODO: Test in NIX/MAC
+            'function __writeFileFromBase64( fileName, b64 ) ' + SBLK +      # TODO: Test in NIX/MAC
                 TAB + 'var path = Dir.toNativeSeparator( Dir.temp() + "/" + fileName )' + END +            
                 TAB + 'var tempPath = Dir.toNativeSeparator( Dir.temp() + "/" + fileName + ".b64" )' + END +
                 (TAB + 'b64 = "-----BEGIN CERTIFICATE-----\\n" + '
@@ -1381,7 +1385,7 @@ class _QtIfwScript:
             TAB + 'if( result[1] != 0 ) ' + NEW +
             (2*TAB) + 'throw new Error("Sleep operation failed.")' + END +
             EBLK + NEW +      
-            'function escapeEchoText( echo ) ' + SBLK +
+            'function __escapeEchoText( echo ) ' + SBLK +
                 (TAB + 'if( echo.trim()=="" ) return "."' + END if IS_WINDOWS else '' ) +
                 TAB + 'var escaped = echo' + END +                      
                 TAB + 'return " " + escaped' + END +                                                                                          
@@ -1393,7 +1397,7 @@ class _QtIfwScript:
                 TAB + 'var writeCmd = ""' + END +
                 (TAB + 'writeCmd += "echo off && "' + END if IS_WINDOWS else "" ) +
                 TAB + 'for( i=0; i < lines.length; i++ )' + SBLK +                
-                (2*TAB) + 'var echo = escapeEchoText( lines[i] )' + END +
+                (2*TAB) + 'var echo = __escapeEchoText( lines[i] )' + END +
                 (2*TAB) + 'writeCmd += "echo" + echo + redirect + ' + NEW +
                     (3*TAB) + '" \\"" + path + "\\"' + ('\\n"' if IS_WINDOWS else ';"' ) + END +
                 (2*TAB) + 'redirect = " >>"' + END +                                               
@@ -2357,7 +2361,7 @@ Controller.prototype.Dynamic%sCallback = function() {
                 (signalName, slotName) )            
         self.controllerConstructorBody += (        
                 _QtIfwScript.ifInstalling() + 
-                    'autoManagePriorInstallation()' + END +
+                    '__autoManagePriorInstallation()' + END +
                 'else ' + SBLK +
                     TAB + 'var mode = ' + _QtIfwScript.cmdLineArg( 
                         _QtIfwScript.MAINTAIN_MODE_CMD_ARG ) + END + 
@@ -2844,8 +2848,8 @@ Component.prototype.%s = function(){
                         QtIfwPackageScript.__COMPONENT_CALLBACK_FUNC_TMPLT 
                         % (funcName, funcBody) )
                 if isinstance( p, QtIfwDynamicOperationsPage ):    
-                    self.script += p.onCompletedFunc
-                    for func in p.asyncFuncs:
+                    self.script += p._onCompletedFunc
+                    for func in p._asyncFuncs:
                         if isinstance( func, QtIfwDynamicOperationsPage.AsyncFunc ): 
                             self.script += func._define()
         
@@ -3476,8 +3480,7 @@ class QtIfwDynamicOperationsPage( QtIfwUiPage ):
             if onCompletedDelayMillis is None or onCompletedDelayMillis > 0 
             else "") +             
             EBLK            
-        )        
-        self.asyncFuncs=asyncFuncs
+        )                
         ON_TIMEOUT =( 
             "var func = " + _QtIfwScript.lookupValue( 
             self.AsyncFunc._TIMEOUT_FUNC_KEY ) + END + 
@@ -3498,13 +3501,15 @@ class QtIfwDynamicOperationsPage( QtIfwUiPage ):
                        QT_IFW_FINISHED_PAGE),
             sourcePath=QtIfwDynamicOperationsPage.__SRC,
             onLoad=ON_LOAD, onEnter=ON_ENTER )
-        
-        self.operationFunc = OP_FUNC 
-        self.onCompletedFunc = ON_COMPLETED
+                
         self.supportScript = OP_FUNC + NEW + ON_COMPLETED + NEW  
         self.eventHandlers.update({ 
               ON_TIMEOUT_NAME: ON_TIMEOUT
         })        
+
+        self._asyncFuncs      = asyncFuncs
+        self._operationFunc   = OP_FUNC 
+        self._onCompletedFunc = ON_COMPLETED
 
     class AsyncFunc:
         
@@ -3601,7 +3606,7 @@ class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
         IS_PAGE_SHOWN =(
             'function ' + IS_PAGE_SHOWN_NAME + '() ' + SBLK +
                 TAB + _QtIfwScript.ifInstalling( isMultiLine=True ) +
-                    (2*TAB) + "if( targetExists( false ) ) " + SBLK +
+                    (2*TAB) + "if( targetExists() ) " + SBLK +
                         (3*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, True ) +
                         (3*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
                             _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
@@ -3691,7 +3696,7 @@ class QtIfwRemovePriorInstallationPage( QtIfwDynamicOperationsPage ):
         removeTargetFunc = self.AsyncFunc( "RemoveTarget", 
             customPageName=self.NAME, body=(
            TAB + _QtIfwScript.log( "Removing prior installation..." ) +       
-           TAB + 'if( removeTarget( false ) ) ' + SBLK +
+           TAB + 'if( removeTarget() ) ' + SBLK +
                (2*TAB) + QtIfwControlScript.setCustomPageText(
                    self.__TITLE, "The program was successfully removed!" ) +
                (2*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, False ) +

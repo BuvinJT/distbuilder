@@ -532,26 +532,39 @@ See [QtIfwUiPage](ConfigClasses.md#qtifwuipage)
 If writing scripts directly for distbulder integration, you may also employ the 
 following add-on **QT SCRIPT** functions:
 
-    execute( binPath, args )
-    executeDetached( binPath, args )
-		
-    resolveQtIfwPath( path )		
-    resolveNativePath( path )
-    
-    fileName( filePath )
-    rootFileName( filePath )
+    isWindows()
+    isMacOs()
+    isLinux()
+
+    isMaintenanceTool()
+	
+	targetExists()
+    removeTarget()
+	
+	maintenanceToolExists( dir )
+	toMaintenanceToolPath( dir )	
     
     Dir.temp()
     Dir.toNativeSparator( path ) 
     Dir.fromNativeSparator( path )
+
+    resolveQtIfwPath( path )		
+    resolveNativePath( path )
+    
+    getEnv( varName )
+    
+    fileName( filePath )
+    rootFileName( filePath )
 	
-	dirList( path )   		   <path can include native env vars, and wild cards>
+	dirList( path, isSortedByTime ) <path can include native env vars, and wild cards>
 		
     makeDir( path )
     removeDir( path )
     	
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
+	
+    replaceQtIfwVarsInFile( path, varNames )
 	
 	clearErrorLog()
 	writeErrorLog( msg )
@@ -564,40 +577,33 @@ following add-on **QT SCRIPT** functions:
 	abort( msg )
 	silentAbort( msg )
 	
-	targetExists( isAutoPilotMode )
-	defaultTargetExists()
-	cmdLineTargetExists()
-
-	removeTarget( isAutoPilotMode )
-	
-	maintenanceToolExists( dir )
-	toMaintenanceToolPath( dir )
-	
-    isWindows()
-    isMacOs()
-    isLinux()
+    execute( binPath, args )
+    executeDetached( binPath, args )
+	executeHidden( binPath, args, isElevated )
 	
 	<Windows Only>   
 		maintenanceToolPaths()	<resolves via registry lookups>
 		isOsRegisteredProgram()	
 		executeVbScript( vbs )
 		executeVbScriptDetached( scriptPath, vbs )
+		executePowerShell( ps ) 
+		executePowerShellDetached( scriptPath, ps ) 
 			
 		<Package Context Only>
 			addVbsOperation( component, isElevated, vbs )
 			setShortcutWindowStyleVbs( shortcutPath, styleCode )
 
     <Linux Only>        
-	    isAptInstalled() 
-	    isDpkgInstalled()
-	    isYumInstalled()
-	    isRpmInstalled()
-	    isPackageManagerInstalled( prog )
-	    
 	    isPackageInstalled( pkg )
 	    installPackage( pkg ) 
 	    unInstallPackage( pkg ) 
 
+	    isPackageManagerInstalled( prog )
+	    isAptInstalled() 
+	    isDpkgInstalled()
+	    isYumInstalled()
+	    isRpmInstalled()
+	    
     getComponent( name )
     getPageOwner( pageName )
     removePage( pageName )

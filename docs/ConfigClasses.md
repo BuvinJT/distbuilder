@@ -827,7 +827,6 @@ Attributes:
     onLoad         = None
     onEnter        = None       
     eventHandlers  = {}
-    asyncFuncs     = []
     supportScript  = None  
     
     _isOnLoadBase  = True    
@@ -890,10 +889,6 @@ Note this uses the Qt signal/slot mechanism for **built-in** widget types.  You 
 own "connections", via the Qt Script rules for such (again typically within your `onLoad`).  
 An example of that would look like: `page.mybutton.released.connect(this, this.myhandler);`.
 
-**asyncFuncs**: List of [QtIfwAsyncFunc](#qtifwasyncfunc) objects.  This is to used be in 
-a somewhat similar to `eventHandlers`, but without any direct binding to widget signals.
-Instead, you invoke these yourself, programatically.
-
 **supportScript**: A **completely open ended** Qt Script (string) attribute, for injecting 
 any additional support/helper function definitions which maybe handy.  Note that these will live in the global space of the **controller** script. Be careful to avoid name conflicts!
              
@@ -908,13 +903,13 @@ TODO: further explain the complicate logic for page order (for replacement pages
 This class is derived from `QtIfwUiPage`. It provides a "blank" page for performing
 custom operations during the installation process.  Note that these operations take place
 outside of the main, built-in "installer operations", and instead allow more dynamic 
-actions to place "around" that process. Optionally, you may also control the UI as your operation proceeds, and set custom messages upon success / failure.  
+actions to place "around" that process. Optionally, you may also control the UI as your operation proceeds to indicate the status / result of the operations.  
 
 Constructor:
 
-    QtIfwDynamicOperationsPage( name, operation="",
-                               order=QT_IFW_PRE_INSTALL, 
-                               onCompletedDelayMillis=None )            
+    QtIfwDynamicOperationsPage( name, operation="", asyncFuncs=[],
+                                order=QT_IFW_PRE_INSTALL, 
+                                onCompletedDelayMillis=None )            
                                
 Static Functions:
 
@@ -926,7 +921,7 @@ Details:
 script, you this should explicitly return a boolean indication of completion.  If completion is indicated (i.e. **true** is returned), the `onCompletedDelayMillis` parameter will dictate what occurs next (see the description for the constructor argument). If **false** is returned, then nothing will occur directly following the initial (synchronous) "kick off".
 
 You may wish to return **false** from the **operation** script, so you that you may continue
-the custom task by employing [QtIfwDynamicOperationsPage.AsyncFunc](#qtifwdynamicoperationspage-asyncfunc). At the end of such a 
+the custom task by employing a [QtIfwDynamicOperationsPage.AsyncFunc](#qtifwdynamicoperationspage-asyncfunc) - or a series of them. At the end of such a 
 function, you may inject what is returned from the static `onCompleted( name )` function 
 of this class, in order to allow the advancement of the installer wizard.  
 
@@ -935,6 +930,8 @@ During your operation, you may wish to call functions such as
 `setCustomPageText( page, title, description )`
 (or build that script via the Python helper:
 `setCustomPageText( title, description, isAutoQuote=True, pageVar="page" )`).  
+
+**asyncFuncs**: List of [QtIfwDynamicOperationsPage.AsyncFunc](#qtifwdynamicoperationspage-asyncfunc) objects. See the description for `operation` above.
 
 **order**: Specify either `QT_IFW_PRE_INSTALL` or `QT_IFW_POST_INSTALL`.
 Note: You may NOT specify one of the standard options for a `QtIfwUiPage` attribute
@@ -952,7 +949,7 @@ the Python library! )
 
 #### QtIfwDynamicOperationsPage.AsyncFunc
 
-This class is used to define QtScript functions within an installer, which may be invoked
+This class is used to define QtScript functions to be used by a [QtIfwDynamicOperationsPage](#qtifwdynamicoperationspage), which may be invoked
 **asynchronously**.  The primary application for this mechanism is to allow UI modifications
 to be redrawn on the screen, while performing long "blocking" operations.  To use it
 in this manner, you should execute your UI modification code, and then invoke a
@@ -962,19 +959,21 @@ you may repeat the pattern, if desired, to again update the screen prior to init
 another task which would prevent a screen refresh.  Such a design pattern simulates 
 synchronous code, while getting the benefit of having the UI change through out it.
 
-The most typical use case for this class is in conjunction with a 
-[QtIfwDynamicOperationsPage](#qtifwdynamicoperationspage).
+**Note: multiple overlapping AsyncFunc invocations are not currently supported.** The result
+of attempting will yield undesired results!  Use these sequentially, one invoking another, 
+in a chain is described previously. 
 
 Constructor:
 
-    QtIfwAsyncFunc( name, parms=[], body="",
-                    standardPageId=None, customPageName=None )
+    AsyncFunc( name, parms=[], body="", delayMillis=1,
+               standardPageId=None, customPageName=None )
         
 Attributes:   
 
-    name  = <required>
-	args = []
-    body  = ""
+    name        = <required>
+	args        = []
+    body        = ""
+    delayMillis = 1
     standardPageId = None
     customPageName = None
 
@@ -989,6 +988,8 @@ Details:
 **args**: The names of the function arguments. 
 
 **body**: The body of the function.
+
+**delayMillis**: The number of milliseconds to wait before invoking the function.
 
 ***standardPageId**: Provide a standard page id constant to effectively bind the 
 function to the page.  You will magically have a `page` var within the function 
