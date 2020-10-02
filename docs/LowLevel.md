@@ -343,16 +343,19 @@ While both QtIFW, and the distbuilder additions to it, provide many build-in fea
 for customizing installers, nothing can provide more open ended flexibility than writing
 your own scripts.
 
-QtIFW scripts are written in [Qt Script](https://doc.qt.io/qt-5/qtscript-index.html) 
-(which is conceptually a spin off from JavaScript), with
-additional custom objects and methods for this context.  To truly understand it and
-learn about all of it's features in detail, you should refer to the official 
+QtIFW scripts are written in [Qt Script](https://doc.qt.io/qt-5/qtscript-index.html),
+which is essentially [ECMAScript](https://www.ecma-international.org/memento/tc39.htm), 
+which is also the base for JavaScript... QtIFW uses a custom 
+[QScriptEngine](https://doc.qt.io/qt-5/qscriptengine.html) under the hood, which injects 
+additional custom objects and methods for this special context.  To better understand it, and
+learn about it's features in more detail, you should refer to the official 
 [QtIFW Manual](https://doc.qt.io/qtinstallerframework/index.html).
 
 The classes [QtIfwControlScript](ConfigClasses.md#qtifwcontrolscript) and
 [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript) provide abstraction layers 
 for QtIfw script generation. With these classes you can achieve a great many custom 
-behaviors, driven by scripts, without having to learn much about the language yourself. 
+behaviors, driven by scripts, without having to learn too much about Qt Script, and the
+QtIFW specifics. 
 
 Both of the distbuilder script classes provide the following **PYTHON** helpers:
 
@@ -406,8 +409,8 @@ Static Functions:
                                                    
     log( msg, isAutoQuote=True )            
 
-	toBool( b )         <pass Python bool or dynamic QScript logic as Python string> 
-    boolToString( b )	<pass Python bool or dynamic QScript logic as Python string>
+    toBool( b )         <pass Python bool or dynamic QtScript logic as Python string> 
+    boolToString( b )	<pass Python bool or dynamic QtScript logic as Python string>
     stringToBool( value, isAutoQuote=True )
                       
     setValue( key, value, isAutoQuote=True )
@@ -505,7 +508,7 @@ Static Functions:
     
     	(Note: check box controls also work on radio buttons)    
     isChecked( checkboxName )
-    setCheckBox( checkboxName, isCheck=True ): <pass Python bool or dynamic QScript logic>    
+    setCheckBox( checkboxName, isCheck=True ): <pass Python bool or dynamic QtScript logic>    
     
 	<CUSTOM ("DYNAMIC") PAGES ONLY>	
 	    enableNextButton( isEnable=True ) <can't do on standard wizard pages!>				

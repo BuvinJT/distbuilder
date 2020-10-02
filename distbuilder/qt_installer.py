@@ -869,12 +869,12 @@ class _QtIfwScript:
     @staticmethod        
     def disableQuit():         
         return _QtIfwScript.__SET_MSGBOX_AUTO_ANSWER_TMPL % (
-            _QtIfwScript.QUIT_MSGBOX_ID, QtIfwControlScript.NO )
+            _QtIfwScript.QUIT_MSGBOX_ID, _QtIfwScript.NO )
 
     @staticmethod        
     def disableQuitPrompt():         
         return _QtIfwScript.__SET_MSGBOX_AUTO_ANSWER_TMPL % (
-            _QtIfwScript.QUIT_MSGBOX_ID, QtIfwControlScript.YES )
+            _QtIfwScript.QUIT_MSGBOX_ID, _QtIfwScript.YES )
 
     @staticmethod        
     def pathExists( path, isAutoQuote=True ):                  
@@ -949,7 +949,15 @@ class _QtIfwScript:
                                   for v in QT_IFW_DYNAMIC_PATH_VARS ])
 
         self.qtScriptLib = (              
-            NEW +
+            'function isWindows() ' + SBLK +
+            TAB + 'return systemInfo.kernelType === "winnt"' + END +
+            EBLK + NEW +
+            'function isMacOs() ' + SBLK +
+            TAB + 'return systemInfo.kernelType === "darwin"' + END +
+            EBLK + NEW +
+            'function isLinux() ' + SBLK +
+            TAB + 'return systemInfo.kernelType === "linux"' + END +
+            EBLK + NEW +
             'var dynamicPathVars = [ ' + pathVarsList + ' ]' + END +
             NEW +                                                         
             'var Dir = new function () ' + SBLK +
@@ -1083,15 +1091,104 @@ class _QtIfwScript:
             (2*TAB) + EBLK +             
             TAB + 'return path' + END +                                                                                                                          
             EBLK + NEW +                                   
-            'function isWindows() ' + SBLK +
-            TAB + 'return systemInfo.kernelType === "winnt"' + END +
+            'function toMaintenanceToolPath( dir ) ' + SBLK +
+                TAB + 'return dir + ' + _QtIfwScript.PATH_SEP + ' + ' +
+                    ('"%s"' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END + 
+            EBLK + NEW +            
+            'function maintenanceToolExists( dir ) ' + SBLK +
+                TAB + 'return ' + _QtIfwScript.pathExists( 
+                    'toMaintenanceToolPath( dir )', isAutoQuote=False ) + END + 
             EBLK + NEW +
-            'function isMacOs() ' + SBLK +
-            TAB + 'return systemInfo.kernelType === "darwin"' + END +
+            'function defaultTargetExists() ' + SBLK +
+                TAB + 'return maintenanceToolExists( ' + 
+                    _QtIfwScript.targetDir() + ' )' + END +  
             EBLK + NEW +
-            'function isLinux() ' + SBLK +
-            TAB + 'return systemInfo.kernelType === "linux"' + END +
+            'function cmdLineTargetExists() ' + SBLK +            
+                TAB + 'return maintenanceToolExists( ' + 
+                    _QtIfwScript.cmdLineArg( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
+                    ' )' + END +
             EBLK + NEW +
+            'function targetExists( isAuto ) ' + SBLK +
+                (TAB + 'if( isOsRegisteredProgram() ) ' + SBLK +
+                 (2*TAB)  + _QtIfwScript.log('The program is OS registered.') +
+                 (2*TAB) + 'return true' + END + 
+                TAB + EBLK                  
+                if IS_WINDOWS else '') +
+                TAB + _QtIfwScript.ifCmdLineArg( 
+                    _QtIfwScript.TARGET_DIR_CMD_ARG, isMultiLine=True ) +
+                    'if( isAuto && cmdLineTargetExists() )'  + SBLK +
+                        (3*TAB) + _QtIfwScript.log('The command line specified target exists.') +
+                        (3*TAB) + 'return true' + END +
+                    (2*TAB) + EBLK +
+                TAB + EBLK +
+                TAB + 'if( defaultTargetExists() )'  + SBLK +
+                TAB + _QtIfwScript.log('The default target exists.') +
+                (2*TAB) + 'return true' + END +                
+                TAB + EBLK +                   
+                TAB + 'return false' + END +                 
+            EBLK + NEW +            
+            'function removeTarget( isAuto ) ' + SBLK +
+                TAB + _QtIfwScript.log('Removing existing installation...') +
+                TAB + 'var isElevated=true' + END +  
+                TAB + 'var args=[ "-v", ' +                     
+                    '"' + _QtIfwScript.AUTO_PILOT_CMD_ARG + '=' +
+                    _QtIfwScript.TRUE + '" ' + 
+                    ', "' + _QtIfwScript.MAINTAIN_MODE_CMD_ARG + '=' + 
+                    _QtIfwScript.MAINTAIN_MODE_OPT_REMOVE_ALL + '" ' 
+                    "]" + END +
+                TAB + _QtIfwScript.ifCmdLineSwitch( _KEEP_TEMP_SWITCH ) +
+                    'args.push( "' + _KEEP_TEMP_SWITCH + '=true" )' + END +                     
+                TAB + 'var exeResult' + END +
+                (TAB + 'var regPaths = maintenanceToolPaths()' + END + 
+                 TAB + 'if( regPaths != null )' + SBLK +
+                (2*TAB) + 'for( i=0; i < regPaths.length; i++ )' + SBLK +
+                    (3*TAB) + 'executeHidden( regPaths[i], args, isElevated )' + END +
+                (2*TAB) + EBLK +                        
+                TAB + EBLK +
+                TAB + 'else '
+                if IS_WINDOWS else TAB) +
+                _QtIfwScript.ifCmdLineArg( 
+                    _QtIfwScript.TARGET_DIR_CMD_ARG ) +
+                    'executeHidden( toMaintenanceToolPath( ' +
+                        _QtIfwScript.cmdLineArg( 
+                    _QtIfwScript.TARGET_DIR_CMD_ARG ) + ' ), args, isElevated )' + END +
+                TAB + 'else ' + NEW +                        
+                (2*TAB) + 'executeHidden( toMaintenanceToolPath( ' +
+                        _QtIfwScript.targetDir() + ' ), args, isElevated )' + END +
+                TAB + '// The MaintenanceTool is not removed until a moment\n' + 
+                TAB + '// or two has elapsed after it was closed...' + NEW +
+                TAB + _QtIfwScript.log('Verifying uninstall...') +    
+                TAB + 'var MAX_CHECKS=3' + END  +
+                TAB + 'for( var existCheck=0; existCheck < MAX_CHECKS; existCheck++ ) ' + SBLK +
+                (2*TAB) + 'if( !targetExists( isAuto ) ) break' + END +
+                (2*TAB) + _QtIfwScript.log('Waiting for uninstall to finish...') +                
+                (2*TAB) + 'sleep( 1 )' + END +                
+                TAB + EBLK +
+                TAB + 'if( targetExists( isAuto ) ) ' + SBLK +
+                (2*TAB) + 'if( isAuto ) ' + 
+                    (3*TAB) + 'silentAbort("Failed to removed the program.")' + END +
+                (2*TAB) + 'else ' + SBLK +
+                    (3*TAB) + _QtIfwScript.log('Failed to removed the program') +
+                    (3*TAB) + 'return false' + END +
+                (2*TAB) + EBLK +
+                TAB + EBLK +
+                TAB + _QtIfwScript.log('Successfully removed the program.') +
+                TAB + 'return true' + END +
+            EBLK + NEW +
+            'function autoManagePriorInstallation() ' + SBLK +
+                TAB + "if( targetExists( true ) ) " + SBLK +
+                (2*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
+                    _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
+                (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_FAIL + '":' + NEW +
+                    (3*TAB) + 'silentAbort("This program is already installed.")' + END + 
+                (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_REMOVE + '":' + NEW + 
+                    (3*TAB) + 'removeTarget( true )' + END +
+                    (3*TAB) + 'break' + END +
+                (2*TAB) + 'default:' + NEW +
+                    (3*TAB) + 'silentAbort("This program is already installed.")' + END +
+                  EBLK +           
+                EBLK +                         
+            EBLK + NEW + 
             'function getEnv( varName ) ' + SBLK +
             TAB + 'return installer.environmentVariable( varName )' + END +
             EBLK + NEW +
@@ -1424,6 +1521,17 @@ class _QtIfwScript:
             EBLK + NEW +                                    
             'function removeCustomPage( pageName ) ' + SBLK +
             TAB + 'installer.removeWizardPage( getPageOwner( pageName ), pageName )' + END +
+            EBLK + NEW +            
+            'function setCustomPageText( page, title, description ) {' + NEW +
+            '    page.windowTitle = title;' + NEW +
+            '    if( description ){' + NEW +
+            '        page.description.setText( description );' + NEW +
+            '        page.description.setVisible( true );' + NEW +
+            '    }' + NEW +
+            '    else{' + NEW +
+            '        page.description.setVisible( false );' + NEW +
+            '        page.description.setText( "" );' + NEW +
+            '    }' + NEW +
             EBLK + NEW +
             'function execute( binPath, args ) ' + SBLK +
             TAB + 'var cmd = "\\"" + binPath + "\\""' + END +
@@ -1454,9 +1562,48 @@ class _QtIfwScript:
             TAB + 'execute( binPath, args )' + END )
             ) +              
             EBLK + NEW                                                                       
-        )        
+        )         
         if IS_WINDOWS : 
+            # To query to the Windows registry for uninstall strings registered by
+            # QtIFW for a program of a given name, this example command works when 
+            # run directly on the command prompt. 
+            #             
+            # cmd.exe /k "@echo off & for /f delims^=^ eol^= %i in ('REG QUERY HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\ /s /f "Hello Packages Example" /t REG_SZ /c /e ^| find "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\"') do ( for /f "tokens=2*" %a in ('REG QUERY %i /v "UninstallString" ^| find "UninstallString"') do echo %b )"
+            #
+            # Unfortunately, it only seemed to be 
+            # possible to run this via an stdin pipe with the QtIFW execute function, 
+            # rather than passing it as a direct cmd argument.
+            #
+            # Note the regQueryUninstallKeys string is defined below with 
+            # multiple levels of escape. Reviewing the resulting QScript maybe easier
+            # for initial debugging than doing so in this Python layer.                
+            regQueryUninstallKeys = '@echo off & for /f delims^=^ eol^= %i in (\\\'REG QUERY HKCU\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\ /s /f \\"" + installer.value("ProductName") + "\\" /t REG_SZ /c /e ^| find \\"HKEY_CURRENT_USER\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\\\"\\\') do ( for /f \\"tokens=2*\\" %a in (\\\'REG QUERY %i /v \\"UninstallString\\" ^| find \\"UninstallString\\"\\\') do echo %b )\\n'          
             self.qtScriptLib += (
+            '// returns null if no installation is registered OR an array,' + NEW +
+            '// accounting for the fact that, while unlikely,' + NEW +
+            '// it is possible to have multiple installations of the product' + NEW +
+            '// (with different paths to them)' + NEW +
+            'function maintenanceToolPaths() ' + SBLK +
+                TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
+                (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +
+                TAB + ('var regQuery = "%s"' % (regQueryUninstallKeys,) ) + END +
+                TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
+                TAB + 'if( result[1] != 0 ) ' + NEW +
+                (2*TAB) + 'throw new Error("Registry query failed.")' + END +
+                TAB + '// remove the first line (which is a command echo)' + NEW +
+                TAB + '// remove blank lines & convert an empty array to null' + NEW +                
+                TAB + 'var retArr = result[0].split(\"\\n\")' + END +
+                TAB + 'try{ retArr.splice(0, 1)' + END + EBLK +
+                TAB + 'catch(e){ throw new Error("Registry query failed.")' + END + EBLK +
+                TAB + 'for( i=0; i < retArr.length; i++ )' + SBLK + 
+                (2*TAB) + 'retArr[i] = retArr[i].trim()' + END + 
+                (2*TAB) + 'if( retArr[i]==\"\" ) retArr.splice(i, 1)' + END + 
+                EBLK +
+                TAB + 'return retArr.length == 0 ? null : retArr' + END +                  
+            EBLK + NEW +
+            'function isOsRegisteredProgram() ' + SBLK +
+                TAB + 'return maintenanceToolPaths() != null' + END + 
+            EBLK + NEW +                           
             'function executeVbScript( vbs ) ' + SBLK +
                 TAB + _QtIfwScript.log( "Executing VbScript:" ) +
                 TAB + _QtIfwScript.log( "vbs", isAutoQuote=False ) +          
@@ -1902,7 +2049,6 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.isRunProgInteractive = True
         self.isRunProgVisible = True
 
-        self.__asyncFuncs = {}        
         self.__standardEventSlots = {}            
         self.__autoPilotEventSlots = {}
         self.__widgetEventSlots = {}
@@ -1937,10 +2083,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.registerAutoPilotEventHandler( 
             'updateFinished', 'onAutoUpdateFinished',
             QtIfwControlScript.clickButton( QtIfwControlScript.NEXT_BUTTON ) );                                                                 
-    
-    def registerAsyncFunc( self, func ):
-        self.__asyncFuncs[ func.name ] = func
-        
+            
     def registerStandardEventHandler( self, signalName, slotName, slotBody ) :
         signalKey = "%s.%s" % (_QtIfwScript._INSTALLER_OBJ, signalName)
         self.__standardEventSlots[ signalKey ] = ( slotName, slotBody )
@@ -1969,6 +2112,18 @@ Controller.prototype.Dynamic%sCallback = function() {
 
         if self.isAutoGlobals: self.__genGlobals()
         if self.controllerGlobals: self.script += self.controllerGlobals
+                                 
+        if self.isAutoPageChangeCallBack: self.__genPageChangeCallbackBody()
+        if self.onPageChangeCallbackBody:
+            self.script += (
+                QtIfwControlScript.__CONTROLER_PAGE_CHANGED_CALLBACK_FUNC_TMPLT % (
+                self.onPageChangeCallbackBody, ) )
+                            
+        if self.isAutoValueChangeCallBack: self.__genValueChangeCallbackBody()
+        if self.onValueChangeCallbackBody:        
+            self.script += (
+                QtIfwControlScript.__CONTROLER_VALUE_CHANGED_CALLBACK_FUNC_TMPLT % (
+                self.onValueChangeCallbackBody, ) )
                                  
         if self.isAutoControllerConstructor:
             self.__genControllerConstructorBody()
@@ -2034,41 +2189,11 @@ Controller.prototype.Dynamic%sCallback = function() {
                 (funcName, funcBody) )
         
         self.__appendUiPageFunctions()
-
-        if self.isAutoPageChangeCallBack: self.__genPageChangeCallbackBody()
-        if self.onPageChangeCallbackBody:
-            self.script += (
-                QtIfwControlScript.__CONTROLER_PAGE_CHANGED_CALLBACK_FUNC_TMPLT % (
-                self.onPageChangeCallbackBody, ) )
-                            
-        if self.isAutoValueChangeCallBack: self.__genValueChangeCallbackBody()
-        if self.onValueChangeCallbackBody:        
-            self.script += (
-                QtIfwControlScript.__CONTROLER_VALUE_CHANGED_CALLBACK_FUNC_TMPLT % (
-                self.onValueChangeCallbackBody, ) )
-
-        for func in six.itervalues( self.__asyncFuncs ):
-            if isinstance( func, QtIfwAsyncFunc ): 
-                self.script += func._define()
         
     def __genValueChangeCallbackBody( self ):         
-
         #prepend = _QtIfwScript.log( '"Value Changed: " + key + "=" + value', isAutoQuote=False )
         prepend = ""
         append  = ""
-
-        END  = _QtIfwScript.END_LINE
-        SBLK = _QtIfwScript.START_BLOCK
-        EBLK = _QtIfwScript.END_BLOCK
-                               
-        for func in six.itervalues( self.__asyncFuncs ):
-            if isinstance( func, QtIfwAsyncFunc ):                 
-                prepend +=(
-                    ('if( key==="%s" )' % (func._realName(),)) + SBLK +                    
-                    func._execute() +
-                    "return" + END +
-                    EBLK )
-
         if self.onValueChangeCallbackBody is None:
             self.onValueChangeCallbackBody=""                                            
         self.onValueChangeCallbackBody =( 
@@ -2086,7 +2211,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         preInstallPageNames=[]
         postInstallPageNames=[]                        
         for ui in self.uiPages:
-            if isinstance( ui, QtIfwPerformOperationPage ): 
+            if isinstance( ui, QtIfwDynamicOperationsPage ): 
                 if ui.pageOrder==QT_IFW_INSTALL_PAGE:
                     preInstallPageNames.append( ui.name )                                                 
                 elif ui.pageOrder==QT_IFW_FINISHED_PAGE:          
@@ -2120,8 +2245,6 @@ Controller.prototype.Dynamic%sCallback = function() {
     def __appendUiPageFunctions( self ):    
         if self.uiPages: 
             for p in self.uiPages:
-                if p.asyncFuncs:
-                    [self.registerAsyncFunc(f) for f in p.asyncFuncs]       
                 if p.supportScript: self.script += p.supportScript                             
                 # enter page event handler                
                 onEnter = _QtIfwScript.log( 
@@ -2135,7 +2258,7 @@ Controller.prototype.Dynamic%sCallback = function() {
 
     def __genGlobals( self ):
         NEW = _QtIfwScript.NEW_LINE
-        END = _QtIfwScript.END_LINE
+        #END = _QtIfwScript.END_LINE
         TAB = _QtIfwScript.TAB
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK
@@ -2146,165 +2269,7 @@ Controller.prototype.Dynamic%sCallback = function() {
             for k,v in six.iteritems( self.virtualArgs ):            
                 self.controllerGlobals += TAB + _QtIfwScript.setValue(k,v)  
             self.controllerGlobals += EBLK + NEW             
-        self.controllerGlobals += (
-            'function toMaintenanceToolPath( dir ) ' + SBLK +
-                TAB + 'return dir + ' + _QtIfwScript.PATH_SEP + ' + ' +
-                    ('"%s"' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END + 
-            EBLK + NEW +            
-            'function maintenanceToolExists( dir ) ' + SBLK +
-                TAB + 'return ' + _QtIfwScript.pathExists( 
-                    'toMaintenanceToolPath( dir )', isAutoQuote=False ) + END + 
-            EBLK + NEW +
-            'function defaultTargetExists() ' + SBLK +
-                TAB + 'return maintenanceToolExists( ' + 
-                    _QtIfwScript.targetDir() + ' )' + END +  
-            EBLK + NEW +
-            'function cmdLineTargetExists() ' + SBLK +            
-                TAB + 'return maintenanceToolExists( ' + 
-                    _QtIfwScript.cmdLineArg( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
-                    ' )' + END +
-            EBLK + NEW +
-            'function targetExists( isAuto ) ' + SBLK +
-                (TAB + 'if( isOsRegisteredProgram() ) ' + SBLK +
-                 (2*TAB)  + _QtIfwScript.log('The program is OS registered.') +
-                 (2*TAB) + 'return true' + END + 
-                TAB + EBLK                  
-                if IS_WINDOWS else '') +
-                TAB + _QtIfwScript.ifCmdLineArg( 
-                    _QtIfwScript.TARGET_DIR_CMD_ARG, isMultiLine=True ) +
-                    'if( isAuto && cmdLineTargetExists() )'  + SBLK +
-                        (3*TAB) + _QtIfwScript.log('The command line specified target exists.') +
-                        (3*TAB) + 'return true' + END +
-                    (2*TAB) + EBLK +
-                TAB + EBLK +
-                TAB + 'if( defaultTargetExists() )'  + SBLK +
-                TAB + _QtIfwScript.log('The default target exists.') +
-                (2*TAB) + 'return true' + END +                
-                TAB + EBLK +                   
-                TAB + 'return false' + END +                 
-            EBLK + NEW +            
-            'function removeTarget( isAuto ) ' + SBLK +
-                TAB + _QtIfwScript.log('Removing existing installation...') +
-                TAB + 'var isElevated=true' + END +  
-                TAB + 'var args=[ "-v", ' +                     
-                    '"' + _QtIfwScript.AUTO_PILOT_CMD_ARG + '=' +
-                    _QtIfwScript.TRUE + '" ' + 
-                    ', "' + _QtIfwScript.MAINTAIN_MODE_CMD_ARG + '=' + 
-                    _QtIfwScript.MAINTAIN_MODE_OPT_REMOVE_ALL + '" ' 
-                    "]" + END +
-                TAB + _QtIfwScript.ifCmdLineSwitch( _KEEP_TEMP_SWITCH ) +
-                    'args.push( "' + _KEEP_TEMP_SWITCH + '=true" )' + END +                     
-                TAB + 'var exeResult' + END +
-                (TAB + 'var regPaths = maintenanceToolPaths()' + END + 
-                 TAB + 'if( regPaths != null )' + SBLK +
-                (2*TAB) + 'for( i=0; i < regPaths.length; i++ )' + SBLK +
-                    (3*TAB) + 'executeHidden( regPaths[i], args, isElevated )' + END +
-                (2*TAB) + EBLK +                        
-                TAB + EBLK +
-                TAB + 'else '
-                if IS_WINDOWS else TAB) +
-                _QtIfwScript.ifCmdLineArg( 
-                    _QtIfwScript.TARGET_DIR_CMD_ARG ) +
-                    'executeHidden( toMaintenanceToolPath( ' +
-                        _QtIfwScript.cmdLineArg( 
-                    _QtIfwScript.TARGET_DIR_CMD_ARG ) + ' ), args, isElevated )' + END +
-                TAB + 'else ' + NEW +                        
-                (2*TAB) + 'executeHidden( toMaintenanceToolPath( ' +
-                        _QtIfwScript.targetDir() + ' ), args, isElevated )' + END +
-                TAB + '// The MaintenanceTool is not removed until a moment\n' + 
-                TAB + '// or two has elapsed after it was closed...' + NEW +
-                TAB + _QtIfwScript.log('Verifying uninstall...') +    
-                TAB + 'var MAX_CHECKS=3' + END  +
-                TAB + 'for( var existCheck=0; existCheck < MAX_CHECKS; existCheck++ ) ' + SBLK +
-                (2*TAB) + 'if( !targetExists( isAuto ) ) break' + END +
-                (2*TAB) + _QtIfwScript.log('Waiting for uninstall to finish...') +                
-                (2*TAB) + 'sleep( 1 )' + END +                
-                TAB + EBLK +
-                TAB + 'if( targetExists( isAuto ) ) ' + SBLK +
-                (2*TAB) + 'if( isAuto ) ' + 
-                    (3*TAB) + 'silentAbort("Failed to removed the program.")' + END +
-                (2*TAB) + 'else ' + SBLK +
-                    (3*TAB) + _QtIfwScript.log('Failed to removed the program') +
-                    (3*TAB) + 'return false' + END +
-                (2*TAB) + EBLK +
-                TAB + EBLK +
-                TAB + _QtIfwScript.log('Successfully removed the program.') +
-                TAB + 'return true' + END +
-            EBLK + NEW +
-            'function autoManagePriorInstallation() ' + SBLK +
-                TAB + "if( targetExists( true ) ) " + SBLK +
-                (2*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
-                    _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
-                (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_FAIL + '":' + NEW +
-                    (3*TAB) + 'silentAbort("This program is already installed.")' + END + 
-                (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_REMOVE + '":' + NEW + 
-                    (3*TAB) + 'removeTarget( true )' + END +
-                    (3*TAB) + 'break' + END +
-                (2*TAB) + 'default:' + NEW +
-                    (3*TAB) + 'silentAbort("This program is already installed.")' + END +
-                  EBLK +           
-                EBLK +                         
-            EBLK + NEW 
-            )
-
-        if IS_WINDOWS : 
-            # To query to the Windows registry for uninstall strings registered by
-            # QtIFW for a program of a given name, this example command works when 
-            # run directly on the command prompt. 
-            #             
-            # cmd.exe /k "@echo off & for /f delims^=^ eol^= %i in ('REG QUERY HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\ /s /f "Hello Packages Example" /t REG_SZ /c /e ^| find "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\"') do ( for /f "tokens=2*" %a in ('REG QUERY %i /v "UninstallString" ^| find "UninstallString"') do echo %b )"
-            #
-            # Unfortunately, it only seemed to be 
-            # possible to run this via an stdin pipe with the QtIFW execute function, 
-            # rather than passing it as a direct cmd argument.
-            #
-            # Note the regQueryUninstallKeys string is defined below with 
-            # multiple levels of escape. Reviewing the resulting QScript maybe easier
-            # for initial debugging than doing so in this Python layer.                
-            regQueryUninstallKeys = '@echo off & for /f delims^=^ eol^= %i in (\\\'REG QUERY HKCU\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\ /s /f \\"" + installer.value("ProductName") + "\\" /t REG_SZ /c /e ^| find \\"HKEY_CURRENT_USER\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\\\"\\\') do ( for /f \\"tokens=2*\\" %a in (\\\'REG QUERY %i /v \\"UninstallString\\" ^| find \\"UninstallString\\"\\\') do echo %b )\\n'          
-            self.controllerGlobals += (
-            '// returns null if no installation is registered OR an array,' + NEW +
-            '// accounting for the fact that, while unlikely,' + NEW +
-            '// it is possible to have multiple installations of the product' + NEW +
-            '// (with different paths to them)' + NEW +
-            'function maintenanceToolPaths() ' + SBLK +
-                TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
-                (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +
-                TAB + ('var regQuery = "%s"' % (regQueryUninstallKeys,) ) + END +
-                TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("Registry query failed.")' + END +
-                TAB + '// remove the first line (which is a command echo)' + NEW +
-                TAB + '// remove blank lines & convert an empty array to null' + NEW +                
-                TAB + 'var retArr = result[0].split(\"\\n\")' + END +
-                TAB + 'try{ retArr.splice(0, 1)' + END + EBLK +
-                TAB + 'catch(e){ throw new Error("Registry query failed.")' + END + EBLK +
-                TAB + 'for( i=0; i < retArr.length; i++ )' + SBLK + 
-                (2*TAB) + 'retArr[i] = retArr[i].trim()' + END + 
-                (2*TAB) + 'if( retArr[i]==\"\" ) retArr.splice(i, 1)' + END + 
-                EBLK +
-                TAB + 'return retArr.length == 0 ? null : retArr' + END +                  
-            EBLK + NEW +
-            'function isOsRegisteredProgram() ' + SBLK +
-                TAB + 'return maintenanceToolPaths() != null' + END + 
-            EBLK + NEW           
-            )
-
-            self.controllerGlobals += (
-"""
-function setCustomPageText( page, title, description ) {
-    page.windowTitle = title;
-    if( description ){
-        page.description.setText( description );
-        page.description.setVisible( true );
-    }
-    else{
-        page.description.setVisible( false );
-        page.description.setText( "" );            
-    }
-}
-""")
-
+        
     def __genControllerConstructorBody( self ):
         NEW = _QtIfwScript.NEW_LINE
         END = _QtIfwScript.END_LINE
@@ -2369,11 +2334,15 @@ function setCustomPageText( page, title, description ) {
         if not self.isFinishedPageVisible:                                                                    
             hidePage( QT_IFW_FINISHED_PAGE )
                 
-        self.controllerConstructorBody += ( 
-            QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
-                ("installer.currentPageChanged", "onCurrentPageChanged") + 
-            QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
-                ("installer.valueChanged", "onValueChanged")                 
+        if self.onPageChangeCallbackBody:                
+            self.controllerConstructorBody += ( 
+                QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
+                    ("installer.currentPageChanged", "onCurrentPageChanged") 
+                )        
+        if self.onValueChangeCallbackBody: 
+            self.controllerConstructorBody += (               
+                QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
+                    ("installer.valueChanged", "onValueChanged")                 
             )            
             
         for signalName, (slotName, _) in six.iteritems( self.__standardEventSlots ):    
@@ -2874,6 +2843,11 @@ Component.prototype.%s = function(){
                     self.script += (  
                         QtIfwPackageScript.__COMPONENT_CALLBACK_FUNC_TMPLT 
                         % (funcName, funcBody) )
+                if isinstance( p, QtIfwDynamicOperationsPage ):    
+                    self.script += p.onCompletedFunc
+                    for func in p.asyncFuncs:
+                        if isinstance( func, QtIfwDynamicOperationsPage.AsyncFunc ): 
+                            self.script += func._define()
         
     def __genComponentCreateOperationsBody( self ):
         self.componentCreateOperationsBody = ""
@@ -3204,64 +3178,6 @@ class QtIfwShortcut:
         self.isDesktopShortcut = False
 
 # -----------------------------------------------------------------------------
-class QtIfwAsyncFunc:
-    
-    __KEY_PREFIX    = "__async"
-    __ARG_DELIMITER = '__delim__'    
-    __DEFINITION_TMPLT =(
-"""
-function %s( %s ){
-%s
-}    
-""")
-    
-    def __init__( self, name, args=[], body="",
-                  standardPageId=None, customPageName=None ):
-        self.name  = name
-        self.args  = args
-        self.body  = body
-        self.standardPageId = standardPageId
-        self.customPageName = customPageName
-
-    def invoke( self, args=[], isAutoQuote=True ):        
-        if isAutoQuote:
-            args = ['"%s"' % (a,) for a in args]        
-        if self.standardPageId: 
-            args = ['"%s"' % (self.standardPageId,)] + args
-        elif self.customPageName: 
-            args = ['"%s"' % (self.customPageName,)] + args            
-        concat = ' + "%s" + ' % (self.__ARG_DELIMITER,)                    
-        return 'installer.setValue( "%s", %s );\n' % ( 
-            self._realName(), concat.join( args ) )
-
-    def _define( self ):
-        args =( ["page"] + self.args
-            if self.standardPageId or self.customPageName else self.args )
-        return self.__DEFINITION_TMPLT % ( 
-            self._realName(), ", ".join( args ), self.body )       
-
-    def _execute( self ):
-        snippet = 'var args = value.split( "%s" );\n' % (self.__ARG_DELIMITER,)        
-        argOffset=0
-        if self.standardPageId: 
-            snippet += QtIfwControlScript.assignPageWidgetVar(
-                self.standardPageId )                        
-            argOffset+=1
-        elif self.customPageName: 
-            snippet +=QtIfwControlScript.assignCustomPageWidgetVar(
-                self.customPageName )
-            argOffset+=1        
-        for i, p in enumerate( self.args ):
-            snippet +=( "var {0} = args.length > {1} ? args[{1}] : null;\n"
-                        .format(p, i+argOffset) )                    
-        parms =( ["page"] + self.args
-            if self.standardPageId or self.customPageName else self.args )    
-        snippet += "%s( %s );\n" % (self._realName(), ", ".join( parms ))
-        return snippet   
-
-    def _realName( self ): return "%s%s" % (self.__KEY_PREFIX, self.name)    
-        
-# -----------------------------------------------------------------------------
 class QtIfwExternalOp:
 
     ON_INSTALL, ON_UNINSTALL, ON_BOTH, AUTO_UNDO = range(4) 
@@ -3443,7 +3359,6 @@ class QtIfwUiPage():
         self.onLoad          = onLoad
         self.onEnter         = onEnter
         self.eventHandlers   = {} 
-        self.asyncFuncs      = []
         self.supportScript   = None
         self.replacements    = {}
         self._isOnLoadBase   = True
@@ -3499,38 +3414,43 @@ class QtIfwSimpleTextPage( QtIfwUiPage ):
         })
                     
 # -----------------------------------------------------------------------------    
-class QtIfwPerformOperationPage( QtIfwUiPage ):
+class QtIfwDynamicOperationsPage( QtIfwUiPage ):
     
     __SRC = QtIfwUiPage._pageResPath( "performoperation" )
-
-    
+     
+    _TIMER_BUTTON = "timerKludgeButton"
+     
     @staticmethod
     def __performOpName( name ): return "_performOp%s" % (name,) 
 
     @staticmethod
     def __onCompletedName( name ): 
         return "%sCompleted" % ( 
-            QtIfwPerformOperationPage.__performOpName( name ), )  
+            QtIfwDynamicOperationsPage.__performOpName( name ), )  
 
     @staticmethod
     def onCompleted( name ):
         return "%s();\n" % ( 
-            QtIfwPerformOperationPage.__onCompletedName( name ), )  
+            QtIfwDynamicOperationsPage.__onCompletedName( name ), )  
 
-    def __init__( self, name, operation="",
+    def __init__( self, name, operation="", asyncFuncs=[],
                   order=QT_IFW_PRE_INSTALL, 
                   onCompletedDelayMillis=None ) :
 
         TAB  = _QtIfwScript.TAB
         NEW  = _QtIfwScript.NEW_LINE
-        #END  = _QtIfwScript.END_LINE
+        END  = _QtIfwScript.END_LINE
         SBLK = _QtIfwScript.START_BLOCK
         EBLK = _QtIfwScript.END_BLOCK
 
         isPreInstall = order != QT_IFW_POST_INSTALL
-        
+                        
         PERFORM_OP_DONE_VALUE = "_isPerformOp%sDone" % (name,)
-                                
+
+        ON_TIMEOUT_NAME = "onPerformOp%sTimeOut" % (name,)
+
+        ON_LOAD='page.%s.released.connect(this, this.%s);\n' % ( 
+            self._TIMER_BUTTON, ON_TIMEOUT_NAME )                                
         ON_ENTER =( 
             (2*TAB) + _QtIfwScript.ifBoolValue( PERFORM_OP_DONE_VALUE ) +
                 (2*TAB) + QtIfwControlScript.clickButton(
@@ -3557,14 +3477,103 @@ class QtIfwPerformOperationPage( QtIfwUiPage ):
             else "") +             
             EBLK            
         )        
-        
+        self.asyncFuncs=asyncFuncs
+        ON_TIMEOUT =( 
+            "var func = " + _QtIfwScript.lookupValue( 
+            self.AsyncFunc._TIMEOUT_FUNC_KEY ) + END + 
+            "var argsRaw = " + _QtIfwScript.lookupValue( 
+                "func", default='""', isAutoQuote=False ) + END +            
+            _QtIfwScript.log( '"Async func requested:" + func' , isAutoQuote=False )
+        )
+        for func in asyncFuncs:
+            if isinstance( func, self.AsyncFunc ):                 
+                ON_TIMEOUT +=(
+                    ('if( func==="%s" )' % (func._realName(),)) + SBLK +                    
+                    func._execute() +
+                    "return" + END +
+                    EBLK )
+                        
         QtIfwUiPage.__init__( self, name,   
             pageOrder=(QT_IFW_INSTALL_PAGE if isPreInstall else 
                        QT_IFW_FINISHED_PAGE),
-            sourcePath=QtIfwPerformOperationPage.__SRC,
-            onEnter=ON_ENTER )
+            sourcePath=QtIfwDynamicOperationsPage.__SRC,
+            onLoad=ON_LOAD, onEnter=ON_ENTER )
         
-        self.supportScript = OP_FUNC + NEW + ON_COMPLETED 
+        self.operationFunc = OP_FUNC 
+        self.onCompletedFunc = ON_COMPLETED
+        self.supportScript = OP_FUNC + NEW + ON_COMPLETED + NEW  
+        self.eventHandlers.update({ 
+              ON_TIMEOUT_NAME: ON_TIMEOUT
+        })        
+
+    class AsyncFunc:
+        
+        _TIMEOUT_FUNC_KEY  = "__timeoutFunc"       
+        __KEY_PREFIX       = "__async"
+        __ARG_DELIMITER    = '__delim__'    
+        __DEFINITION_TMPLT =(
+    """
+    function %s( %s ){
+    %s
+    }    
+    """)
+        
+        def __init__( self, name, args=[], body="", delayMillis=1,
+                      standardPageId=None, customPageName=None ):
+            self.name           = name
+            self.args           = args
+            self.body           = body
+            self.delayMillis    = delayMillis
+            self.standardPageId = standardPageId
+            self.customPageName = customPageName
+    
+        def invoke( self, args=[], isAutoQuote=True ):        
+            if isAutoQuote:
+                args = ['"%s"' % (a,) for a in args]        
+            if self.standardPageId: 
+                args = ['"%s"' % (self.standardPageId,)] + args
+            elif self.customPageName: 
+                args = ['"%s"' % (self.customPageName,)] + args            
+            concat = ' + "%s" + ' % (self.__ARG_DELIMITER,)                    
+            return (                                 
+                ('installer.setValue( "%s", "%s" );\n' % ( 
+                self._TIMEOUT_FUNC_KEY, self._realName() )) +                
+                ('installer.setValue( "%s", %s );\n' % ( 
+                self._realName(), concat.join( args ) )) +
+                ('page.%s.animateClick( %d );\n' % ( 
+                 QtIfwDynamicOperationsPage._TIMER_BUTTON, 
+                 1 if self.delayMillis < 1 else self.delayMillis )) 
+            )
+    
+        def _define( self ):
+            args =( ["page"] + self.args
+                if self.standardPageId or self.customPageName else self.args )
+            return self.__DEFINITION_TMPLT % ( 
+                self._realName(), ", ".join( args ), self.body )       
+    
+        def _execute( self ):
+            snippet = ""
+            argOffset=0
+            if self.standardPageId: 
+                snippet += QtIfwControlScript.assignPageWidgetVar(
+                    self.standardPageId )                        
+                argOffset+=1
+            elif self.customPageName: 
+                snippet +=QtIfwControlScript.assignCustomPageWidgetVar(
+                    self.customPageName )
+                argOffset+=1
+            if len(self.args) > 0:
+                snippet = 'var args = argsRaw.split( "%s" );\n' % (self.__ARG_DELIMITER,)                                
+                for i, p in enumerate( self.args ):
+                    snippet +=( "var {0} = args.length > {1} ? args[{1}] : null;\n"
+                                .format(p, i+argOffset) )                    
+            parms =( ["page"] + self.args
+                if self.standardPageId or self.customPageName else self.args )    
+            snippet += "%s( %s );\n" % (self._realName(), ", ".join( parms ))
+            return snippet   
+    
+        def _realName( self ): return "%s%s" % (self.__KEY_PREFIX, self.name)    
+            
             
 # -----------------------------------------------------------------------------    
 class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
@@ -3666,7 +3675,7 @@ class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
         })
                                                       
 # -----------------------------------------------------------------------------    
-class QtIfwRemovePriorInstallationPage( QtIfwPerformOperationPage ):
+class QtIfwRemovePriorInstallationPage( QtIfwDynamicOperationsPage ):
   
     NAME = "RemovePriorInstallation"
     
@@ -3679,8 +3688,9 @@ class QtIfwRemovePriorInstallationPage( QtIfwPerformOperationPage ):
         SBLK = _QtIfwScript.START_BLOCK
         EBLK = _QtIfwScript.END_BLOCK
 
-        removeTargetFunc = QtIfwAsyncFunc( "RemoveTarget", 
+        removeTargetFunc = self.AsyncFunc( "RemoveTarget", 
             customPageName=self.NAME, body=(
+           TAB + _QtIfwScript.log( "Removing prior installation..." ) +       
            TAB + 'if( removeTarget( false ) ) ' + SBLK +
                (2*TAB) + QtIfwControlScript.setCustomPageText(
                    self.__TITLE, "The program was successfully removed!" ) +
@@ -3692,10 +3702,9 @@ class QtIfwRemovePriorInstallationPage( QtIfwPerformOperationPage ):
                    "ERROR", "Program removal failed!" ) +
            TAB + EBLK 
         ))
-            
+        
         OPERATION=(
-            TAB + _QtIfwScript.ifBoolValue( _REMOVE_TARGET_KEY, isMultiLine=True ) +
-                _QtIfwScript.log( "Removing prior installation..." ) +            
+            TAB + _QtIfwScript.ifBoolValue( _REMOVE_TARGET_KEY, isMultiLine=True ) +                         
                 QtIfwControlScript.setCustomPageText(
                     self.__TITLE, "Removal in progress..." ) +
                 removeTargetFunc.invoke() +
@@ -3703,13 +3712,12 @@ class QtIfwRemovePriorInstallationPage( QtIfwPerformOperationPage ):
             TAB + EBLK +    
             TAB + 'return true' + END 
         )
-        
-        QtIfwPerformOperationPage.__init__( self, 
+
+        QtIfwDynamicOperationsPage.__init__( self, 
             QtIfwRemovePriorInstallationPage.NAME, 
-            operation=OPERATION, order=QT_IFW_PRE_INSTALL, 
+            operation=OPERATION, asyncFuncs=[ removeTargetFunc ], 
+            order=QT_IFW_PRE_INSTALL, 
             onCompletedDelayMillis=2500 )
-        
-        self.asyncFuncs=[ removeTargetFunc ]
         
 # -----------------------------------------------------------------------------    
 class QtIfwTargetDirPage( QtIfwUiPage ):

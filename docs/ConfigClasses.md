@@ -632,7 +632,7 @@ While that is also a means to invoke sub processes and shell commands from QtIWF
 is more generally used in a "Controller scripting" context for on demand, 
 often conditional and/or dynamic needs.  More to the point, `QtIfwExternalOp`
 objects are bound directly to packages and to install/uninstall events, where the
-QScript `execute` function can be dropped into installation scripts anywhere, 
+QtScript `execute` function can be dropped into installation scripts anywhere, 
 in an unrestricted manner.   
 
 Constructor:
@@ -903,9 +903,56 @@ in the `content` will be resolved.
 
 TODO: further explain the complicate logic for page order (for replacement pages, or multiple pages with the same order...).  Also elaborate on ui replacements, the "resolve" function, provide a base example .ui in the docs...
 
-### QtIfwAsyncFunc
+### QtIfwDynamicOperationsPage
 
-This class is used to define QScript functions within an installer, which may be invoked
+This class is derived from `QtIfwUiPage`. It provides a "blank" page for performing
+custom operations during the installation process.  Note that these operations take place
+outside of the main, built-in "installer operations", and instead allow more dynamic 
+actions to place "around" that process. Optionally, you may also control the UI as your operation proceeds, and set custom messages upon success / failure.  
+
+Constructor:
+
+    QtIfwDynamicOperationsPage( name, operation="",
+                               order=QT_IFW_PRE_INSTALL, 
+                               onCompletedDelayMillis=None )            
+                               
+Static Functions:
+
+    onCompleted( name )                                           
+
+Details:
+
+**operation**: The custom QtScript to execute, kicking off the operation. At the end of this
+script, you this should explicitly return a boolean indication of completion.  If completion is indicated (i.e. **true** is returned), the `onCompletedDelayMillis` parameter will dictate what occurs next (see the description for the constructor argument). If **false** is returned, then nothing will occur directly following the initial (synchronous) "kick off".
+
+You may wish to return **false** from the **operation** script, so you that you may continue
+the custom task by employing [QtIfwDynamicOperationsPage.AsyncFunc](#qtifwdynamicoperationspage-asyncfunc). At the end of such a 
+function, you may inject what is returned from the static `onCompleted( name )` function 
+of this class, in order to allow the advancement of the installer wizard.  
+
+The `operation` function will have a reference to the UI page passed to it (called `page`).
+During your operation, you may wish to call functions such as 
+`setCustomPageText( page, title, description )`
+(or build that script via the Python helper:
+`setCustomPageText( title, description, isAutoQuote=True, pageVar="page" )`).  
+
+**order**: Specify either `QT_IFW_PRE_INSTALL` or `QT_IFW_POST_INSTALL`.
+Note: You may NOT specify one of the standard options for a `QtIfwUiPage` attribute
+ `pageOrder`.  
+
+**onCompletedDelayMillis**: By default, this is set to `None`, which indicates that upon
+completion, the page should advanced instantly.  If a value greater than 0 is provided, the
+page will automatically advance after a delay of that duration.  Alternatively, an integer 
+value of 0 (or less than 0), will indicate a manual advancement will take place.  The
+"Next" button will become enabled, and the user may click such when they choose. 
+
+**onCompleted( name )**:  Returns a string to do be injected into whatever QtScript you are 
+dynamically generating.  (This not somehow literally "invoke" the function when called from 
+the Python library! )
+
+#### QtIfwDynamicOperationsPage.AsyncFunc
+
+This class is used to define QtScript functions within an installer, which may be invoked
 **asynchronously**.  The primary application for this mechanism is to allow UI modifications
 to be redrawn on the screen, while performing long "blocking" operations.  To use it
 in this manner, you should execute your UI modification code, and then invoke a
@@ -916,7 +963,7 @@ another task which would prevent a screen refresh.  Such a design pattern simula
 synchronous code, while getting the benefit of having the UI change through out it.
 
 The most typical use case for this class is in conjunction with a 
-[QtIfwPerformOperationPage](#qtifwperformoperationpage).
+[QtIfwDynamicOperationsPage](#qtifwdynamicoperationspage).
 
 Constructor:
 
@@ -937,7 +984,7 @@ Functions:
 
 Details:
 
-**name**: The function name.  (Note this will not be the complete, *real* function name in the generated QScript).
+**name**: The function name.  (Note this will not be the complete, *real* function name in the generated QtScript).
 
 **args**: The names of the function arguments. 
 
@@ -951,56 +998,9 @@ to access the UI elements.
 function to the page.  You will magically have a `page` var within the function 
 to access the UI elements.
 
-**invoke()**: Returns a string to do be injected into whatever QScript you are dynamically 
+**invoke()**: Returns a string to do be injected into whatever QtScript you are dynamically 
 generating.  (This not somehow literally "invoke" the function when called from the Python
 library! )
-
-### QtIfwPerformOperationPage
-
-This class is derived from `QtIfwUiPage`. It provides a "blank" page for performing
-custom operations during the installation process.  Note that these operations take place
-outside of the main, built-in "installer operations", and instead allow more dynamic 
-actions to place "around" that process. Optionally, you may also control the UI as your operation proceeds, and set custom messages upon success / failure.  
-
-Constructor:
-
-    QtIfwPerformOperationPage( name, operation="",
-                               order=QT_IFW_PRE_INSTALL, 
-                               onCompletedDelayMillis=None )            
-                               
-Static Functions:
-
-    onCompleted( name )                                           
-
-Details:
-
-**operation**: The custom QScript to execute, kicking off the operation. At the end of this
-script, you this should explicitly return a boolean indication of completion.  If completion is indicated (i.e. **true** is returned), the `onCompletedDelayMillis` parameter will dictate what occurs next (see the description for the constructor argument). If **false** is returned, then nothing will occur directly following the initial (synchronous) "kick off".
-
-You may wish to return **false** from the **operation** script, so you that you may continue
-the custom task by employing [QtIfwAsyncFunc](#qtifwasyncfunc).  At the end of such a 
-function, you may inject what is returned from the static `onCompleted( name )` function 
-of this class, in order to allow the advancement of the installer wizard.  
-
-The `operation` function will have a reference to the UI page passed to it (called `page`).
-During your operation, you may wish to call functions such as 
-`setCustomPageText( page, title, description )`
-(or build that script via the Python helper:
-`setCustomPageText( title, description, isAutoQuote=True, pageVar="page" )`).  
-
-**order**: Specify either `QT_IFW_PRE_INSTALL` or `QT_IFW_POST_INSTALL`.
-Note: You may NOT specify one of the standard options for a `QtIfwUiPage` attribute
- `pageOrder`.  
-
-**onCompletedDelayMillis**: By default, this is set to `None`, which indicates that upon
-completion, the page should advanced instantly.  If a value greater than 0 is provided, the
-page will automatically advance after a delay of that duration.  Alternatively, an integer 
-value of 0 (or less than 0), will indicate a manual advancement will take place.  The
-"Next" button will become enabled, and the user may click such when they choose. 
-
-**onCompleted( name )**:  Returns a string to do be injected into whatever QScript you are 
-dynamically generating.  (This not somehow literally "invoke" the function when called from 
-the Python library! )
 
 ## QtIfwOnPriorInstallationPage
 
@@ -1014,7 +1014,7 @@ Constructor:
 
 ### QtIfwRemovePriorInstallationPage
 
-This class is derived from `QtIfwPerformOperationPage`.  It works in concert with 
+This class is derived from `QtIfwDynamicOperationsPage`.  It works in concert with 
 `QtIfwOnPriorInstallationPage`, performing the actual action of the removal.  If desired,
 you may supply your own custom definition of this page, else the library will inject the
 default version of this.
