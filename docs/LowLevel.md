@@ -421,13 +421,14 @@ Static Functions:
     lookupValueList( key, defaultList=[], isAutoQuote=True, 
                      delimiter=None )
 
-    ifBoolValue( key, isNegated=False, isMultiLine=False )
+    ifValueDefined( key, isNegated=False, isMultiLine=False )
+    ifBoolValue( key, isNegated=False, isHardFalse=False, isMultiLine=False )
     
     cmdLineArg( arg, default="" )
     cmdLineSwitchArg( arg )
     cmdLineListArg( arg, default=[] )
     ifCmdLineArg( arg, isNegated=False, isMultiLine=False, )  
-    ifCmdLineSwitch( arg, isNegated=False, isMultiLine=False )
+    ifCmdLineSwitch( arg, isNegated=False, isHardFalse=False, isMultiLine=False )
                       
     ifInstalling( isMultiLine=False )
     ifMaintenanceTool( isMultiLine=False )
@@ -513,6 +514,7 @@ Static Functions:
 	<CUSTOM ("DYNAMIC") PAGES ONLY>	
 	    enableNextButton( isEnable=True ) <can't do on standard wizard pages!>				
 	    
+	    insertCustomPage( pageName, position )
 	    removeCustomPage( pageName )
 	    
 	    setCustomPageTitle( title, isAutoQuote=True, pageVar="page" )     	               

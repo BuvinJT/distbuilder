@@ -743,11 +743,19 @@ class _QtIfwScript:
               _QtIfwScript.TRUE ) )
 
     @staticmethod        
-    def ifBoolValue( key, isNegated=False, isMultiLine=False ):
+    def ifValueDefined( key, isNegated=False, isMultiLine=False ):
+        return 'if( %s%s"" )%s\n%s' % (
+            _QtIfwScript.lookupValue( key ),
+            ("==" if isNegated else "!="), 
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+
+    @staticmethod        
+    def ifBoolValue( key, isNegated=False, isHardFalse=False, isMultiLine=False ):
+        if isHardFalse: isNegated=True
         return 'if( %s%s"%s" )%s\n%s' % (
             _QtIfwScript.lookupValue( key ),
-            ("!=" if isNegated else "==") ,
-            _QtIfwScript.TRUE,
+            ("!=" if isNegated and not isHardFalse else "==") ,
+            (_QtIfwScript.TRUE if isNegated and isHardFalse else _QtIfwScript.TRUE),
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
     @staticmethod        
@@ -795,11 +803,11 @@ class _QtIfwScript:
     
     @staticmethod        
     def ifCmdLineArg( arg, isNegated=False, isMultiLine=False ):   
-        return _QtIfwScript.ifBoolValue( arg, isNegated, isMultiLine )
+        return _QtIfwScript.ifValueDefined( arg, isNegated, isMultiLine )
 
     @staticmethod        
-    def ifCmdLineSwitch( arg, isNegated=False, isMultiLine=False ):
-        return _QtIfwScript.ifBoolValue( arg, isNegated, isMultiLine )
+    def ifCmdLineSwitch( arg, isNegated=False, isHardFalse=False, isMultiLine=False ):
+        return _QtIfwScript.ifBoolValue( arg, isNegated, isHardFalse, isMultiLine )
 
     @staticmethod        
     def cmdLineArg( arg, default="" ):
@@ -1169,7 +1177,7 @@ class _QtIfwScript:
                 (2*TAB) + 'sleep( 1 )' + END +                
                 TAB + EBLK +
                 TAB + 'if( targetExists() ) ' + SBLK +
-                (2*TAB) + 'if( isAuto ) ' + 
+                (2*TAB) + 'if( isAuto ) ' + NEW +
                     (3*TAB) + 'silentAbort("Failed to removed the program.")' + END +
                 (2*TAB) + 'else ' + SBLK +
                     (3*TAB) + _QtIfwScript.log('Failed to removed the program') +
@@ -1523,9 +1531,12 @@ class _QtIfwScript:
             TAB + EBLK + 
             TAB + 'throw new Error("Owner not found for page: " + pageName )' + END +
             EBLK + NEW +                                    
+            'function insertCustomPage( pageName, position ) ' + SBLK +
+            TAB + 'installer.addWizardPage( getPageOwner( pageName ), pageName, position )' + END +
+            EBLK + NEW +
             'function removeCustomPage( pageName ) ' + SBLK +
             TAB + 'installer.removeWizardPage( getPageOwner( pageName ), pageName )' + END +
-            EBLK + NEW +            
+            EBLK + NEW +                                    
             'function setCustomPageText( page, title, description ) {' + NEW +
             '    page.windowTitle = title;' + NEW +
             '    if( description ){' + NEW +
@@ -1784,7 +1795,8 @@ Controller.prototype.onValueChanged = function(key,value){
     __HIDE_PAGE_TMPLT = ( 
         'installer.setDefaultPageVisible(QInstaller.%s, false);\n' ) 
       
-    __REMOVE_PAGE_TMPLT = 'removeCustomPage( "%s" );\n'
+    __INSERT_PAGE_TMPLT = 'insertCustomPage("%s", QInstaller.%s);\n'
+    __REMOVE_PAGE_TMPLT = 'removeCustomPage("%s");\n'
  
     __SET_ENABLE_STATE_TMPL = (
         "gui.currentPageWidget().%s.setEnabled(%s);\n" )
@@ -1886,8 +1898,12 @@ Controller.prototype.Dynamic%sCallback = function() {
         return QtIfwControlScript.__HIDE_PAGE_TMPLT % (pageName,)
 
     @staticmethod        
+    def insertCustomPage( pageName, position ):                
+        return QtIfwControlScript.__INSERT_PAGE_TMPLT % (pageName, position)                        
+
+    @staticmethod        
     def removeCustomPage( pageName ):                
-        return QtIfwControlScript.__REMOVE_PAGE_TMPLT % ( pageName,)                        
+        return QtIfwControlScript.__REMOVE_PAGE_TMPLT % (pageName,)                        
             
     @staticmethod        
     def connectWidgetEventHandler( controlName, eventName, slotName ):
@@ -3602,11 +3618,20 @@ class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
         SBLK = _QtIfwScript.START_BLOCK
         EBLK = _QtIfwScript.END_BLOCK
 
+        # TODO: Test for, and resolve this problem: Add/remvoe page could screw up 
+        # the page order if multiple custom pages are intended to live before the same  
+        # default wizard pages.   
         IS_PAGE_SHOWN_NAME = "isPriorInstallationPageShown"
         IS_PAGE_SHOWN =(
             'function ' + IS_PAGE_SHOWN_NAME + '() ' + SBLK +
                 TAB + _QtIfwScript.ifInstalling( isMultiLine=True ) +
                     (2*TAB) + "if( targetExists() ) " + SBLK +
+                        # check for the "hard false" to know the page was removed
+                        (3*TAB) + _QtIfwScript.ifBoolValue( _REMOVE_TARGET_KEY, 
+                                    isHardFalse=True ) +                           
+                            (4*TAB) + QtIfwControlScript.insertCustomPage( 
+                                QtIfwRemovePriorInstallationPage.NAME,
+                                QT_IFW_INSTALL_PAGE ) +
                         (3*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, True ) +
                         (3*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
                             _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
@@ -3614,8 +3639,14 @@ class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
                             (4*TAB) + 'return false' + END +
                         (3*TAB) + 'default:' + NEW +                
                             (4*TAB) + 'return true' + END +
-                        (3*TAB) + EBLK +         
-                    (2*TAB) + EBLK +        
+                        (3*TAB) + EBLK +                                 
+                    (2*TAB) + EBLK +      
+                    (2*TAB) + "else " + SBLK +
+                        # set a "hard false"  when the page is removed
+                        (3*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, False ) +
+                        (3*TAB) + QtIfwControlScript.removeCustomPage( 
+                            QtIfwRemovePriorInstallationPage.NAME ) +
+                    (2*TAB) + EBLK +  
                 TAB + EBLK +     
                 TAB + 'return false' + END +                
             EBLK + NEW 
