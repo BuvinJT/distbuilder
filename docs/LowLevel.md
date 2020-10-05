@@ -431,8 +431,11 @@ Static Functions:
     ifCmdLineSwitch( arg, isNegated=False, isHardFalse=False, isMultiLine=False )
                       
     ifInstalling( isMultiLine=False )
-    ifMaintenanceTool( isMultiLine=False )
+    ifMaintenanceTool( isNegated=False, isMultiLine=False )
 
+    isElevated()
+    ifElevated( isNegated=False, isMultiLine=False )
+    
     gainElevation()
     dropElevation() 
                           
@@ -465,6 +468,7 @@ Static Functions:
     ifYesNoPopup( msg, title="Question", resultVar="result", 
                  isMultiLine=False )
 
+    silentQuit( msg, isAutoQuote=True )
 	<It is not possible to re-enable the user prompt after using these!>
     disableQuit()		<negate with disableQuitPrompt>         
     disableQuitPrompt()         
@@ -537,6 +541,8 @@ following add-on **QT SCRIPT** functions:
     isWindows()
     isMacOs()
     isLinux()
+
+    isElevated()
 
     isMaintenanceTool()
 	

@@ -35,6 +35,8 @@ __BIN_SUB_DIR = "bin"
 __QT_IFW_UNINSTALL_EXE_NAME = util.normBinaryName( "Uninstaller", isGui=True )
 __QT_IFW_CREATOR_EXE_NAME = util.normBinaryName( "binarycreator" )
 
+__QT_IFW_CREATOR_OFFLINE_SWITCH = "--offline-only"
+
 __QT_IFW_AUTO_INSTALL_PY_SCRIPT_NAME   = "__distb-install-qt-ifw.py"
 __QT_IFW_AUTO_UNINSTALL_PY_SCRIPT_NAME = "__distb-uninstall-qt-ifw.py"
 __QT_IFW_UNATTENDED_SCRIPT_NAME    = "__distb-unattended-qt-ifw.qs"
@@ -541,10 +543,13 @@ class _QtIfwScript:
     _INSTALLER_OBJ = "installer"
     
     _TEMP_DIR = "Dir.temp()"
-        
+
+    __SILENT_QUIT = "silentQuit(%s);\n"
+                
+    __IS_ELEVATED    = "isElevated();\n"    
     __GAIN_ELEVATION = "installer.gainAdminRights();\n"
     __DROP_ELEVATION = "installer.dropAdminRights();\n"
-        
+            
     __IS_INSTALLER   = "installer.isInstaller()"
     __IS_UNINSTALLER = "installer.isUninstaller()"
 
@@ -557,12 +562,14 @@ class _QtIfwScript:
         var IS_OPENSUSE = (systemInfo.productType === "opensuse");             
 """ )
 
-    QUIT_MSGBOX_ID = "cancelInstallation"
+    QUIT_MSGBOX_ID       = "cancelInstallation"
+    AUTH_ERROR_MSGBOX_ID = "AuthorizationError"
 
     OK      = "QMessageBox.Yes"
     YES     = "QMessageBox.Yes" 
     NO      = "QMessageBox.No"
     CANCEL  = "QMessageBox.Cancel"
+    ABORT   = "QMessageBox.Abort"
     
     RESTORE_MSGBOX_DEFAULT = "QMessageBox.RestoreDefaults"
 
@@ -586,7 +593,7 @@ class _QtIfwScript:
             '"%s", QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel );\n' )
     
     __SET_MSGBOX_AUTO_ANSWER_TMPL = (        
-        'installer.setMessageBoxAutomaticAnswer( "%s", %s );' )
+        'installer.setMessageBoxAutomaticAnswer( "%s", %s );\n' )
     
     __GET_COMPONENT_TMPL  = 'getComponent( %s )' 
     __GET_PAGE_OWNER_TMPL = 'getPageOwner( %s )'
@@ -774,6 +781,20 @@ class _QtIfwScript:
             defList )
         
     @staticmethod        
+    def silentQuit( msg, isAutoQuote=True ): 
+        return _QtIfwScript.__SILENT_QUIT % (
+            _QtIfwScript._autoQuote( msg, isAutoQuote ),)
+        
+    @staticmethod        
+    def isElevated(): return _QtIfwScript.__IS_ELEVATED
+
+    @staticmethod        
+    def ifElevated( isNegated=False, isMultiLine=False ):
+        return 'if( %sisElevated() )%s\n%s' % (
+            ("!" if isNegated else ""), 
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+        
+    @staticmethod        
     def gainElevation(): return _QtIfwScript.__GAIN_ELEVATION
     
     @staticmethod        
@@ -823,8 +844,9 @@ class _QtIfwScript:
             arg, default, delimiter="," )
 
     @staticmethod
-    def ifMaintenanceTool( isMultiLine=False ):
-        return 'if( %s )%s\n%s' % (
+    def ifMaintenanceTool( isNegated=False, isMultiLine=False ):
+        return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "", 
             _QtIfwScript.__IS_MAINTENANCE_TOOL,
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
@@ -873,6 +895,11 @@ class _QtIfwScript:
              (2*TAB) + BREAK +             
              TAB + _QtIfwScript.END_BLOCK ) % 
             ( resultVar, onYes, onNo, onCancel ) )
+
+    @staticmethod        
+    def _disableAuthErrorPrompt():         
+        return _QtIfwScript.__SET_MSGBOX_AUTO_ANSWER_TMPL % (
+            _QtIfwScript.AUTH_ERROR_MSGBOX_ID, _QtIfwScript.ABORT )
 
     @staticmethod        
     def disableQuit():         
@@ -1199,8 +1226,30 @@ class _QtIfwScript:
                 (2*TAB) + 'default:' + NEW +
                     (3*TAB) + 'silentAbort("This program is already installed.")' + END +
                   EBLK +           
-                EBLK +                         
-            EBLK + NEW + 
+                EBLK +                                         
+            EBLK + NEW +          
+            'function isElevated() ' + SBLK +      # TODO: Test in NIX/MAC
+            TAB + 'var successEcho="success"' + END +
+            TAB + 'var elevatedTestCmd = "' +
+                ('echo off\\n' 
+                 'fsutil dirty query %systemdrive% >nul'
+                 ' && echo " + successEcho + "\\n' 
+                 if IS_WINDOWS else
+                 '' ) + '"' + END + #TODO: FILL IN      
+            TAB + 'var result = installer.execute( ' +
+                ('"cmd.exe", ["/k"], elevatedTestCmd' if IS_WINDOWS else
+                 '"sh", ["-c", elevatedTestCmd]' ) + ' )' + END +
+            TAB + 'var output=""' + END + 
+            TAB + 'try' + SBLK +
+            TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
+            TAB + TAB + 'var output = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
+            EBLK +
+            TAB + 'catch(e){' + EBLK +                                        
+            TAB + 'var isElev=output==successEcho' + END +
+            TAB + _QtIfwScript.log( '"isElevated: " + result[0] + ", " + result[1]', isAutoQuote=False )+
+            TAB + _QtIfwScript.log( '"isElevated: " + isElev', isAutoQuote=False )+
+            TAB + 'return isElev' + END +
+            EBLK + NEW +                            
             'function getEnv( varName ) ' + SBLK +
             TAB + 'return installer.environmentVariable( varName )' + END +
             EBLK + NEW +
@@ -1494,7 +1543,11 @@ class _QtIfwScript:
             'function silentAbort( msg ) ' + SBLK +
                 TAB + 'writeErrorLog( msg )' + END +
                 TAB + 'throw new Error( msg )' + END +                    
-            EBLK + NEW +
+            EBLK + NEW +                        
+            'function silentQuit( msg ) ' + SBLK +
+                TAB + 'writeErrorLog( msg )' + END +
+                TAB + 'gui.rejectWithoutPrompt()' + END +                    
+            EBLK + NEW +            
             'function abort( msg ) ' + SBLK +
                 TAB + 'msg = (msg==null || msg=="" ? "Installation aborted! Closing installer..." : msg)' + END +
                 TAB + 'writeErrorLog( msg )' + END +
@@ -1799,20 +1852,17 @@ Controller.prototype.onValueChanged = function(key,value){
     __REMOVE_PAGE_TMPLT = 'removeCustomPage("%s");\n'
  
     __SET_ENABLE_STATE_TMPL = (
-        "gui.currentPageWidget().%s.setEnabled(%s);\n" )
-    
+        "gui.currentPageWidget().%s.setEnabled(%s);\n" )    
     __SET_VISIBLE_STATE_TMPL = (
-        "gui.currentPageWidget().%s.setVisible(%s);\n" )
+        "gui.currentPageWidget().%s.setVisible(%s);\n" )    
     
     __SET_CHECKBOX_STATE_TMPL = (
-        "gui.currentPageWidget().%s.setChecked(%s);\n" )
-    
+        "gui.currentPageWidget().%s.setChecked(%s);\n" )    
     __GET_CHECKBOX_STATE_TMPL = (
         "gui.currentPageWidget().%s.checked" )
 
     __SET_TEXT_TMPL = (
-        "gui.currentPageWidget().%s.setText(%s);\n" )
-       
+        "gui.currentPageWidget().%s.setText(%s);\n" )       
     __GET_TEXT_TMPL = "gui.currentPageWidget().%s.text"
 
     __ASSIGN_TEXT_TMPL = "    var %s = gui.currentPageWidget().%s.text;\n" 
@@ -1822,15 +1872,12 @@ Controller.prototype.onValueChanged = function(key,value){
     __SET_CUSTPAGE_TITLE_TMPL = "%s.windowTitle = %s;\n" 
 
     __SET_CUSTPAGE_ENABLE_STATE_TMPL = "%s.%s.setEnabled(%s);\n" 
-    
     __SET_CUSTPAGE_VISIBLE_STATE_TMPL = "%s.%s.setVisible(%s);\n" 
     
     __SET_CUSTPAGE_CHECKBOX_STATE_TMPL = "%s.%s.setChecked(%s);\n" 
-
     __GET_CUSTPAGE_CHECKBOX_STATE_TMPL = "%s.%s.checked" 
     
-    __SET_CUSTPAGE_TEXT_TMPL = "%s.%s.setText(%s);\n" 
-       
+    __SET_CUSTPAGE_TEXT_TMPL = "%s.%s.setText(%s);\n"        
     __GET_CUSTPAGE_TEXT_TMPL = "%s.%s.text"
 
     __SET_CUSTPAGE_CORE_TEXT_TMPL = "setCustomPageText( %s, %s, %s );\n" 
@@ -2221,7 +2268,8 @@ Controller.prototype.Dynamic%sCallback = function() {
            
     def __genPageChangeCallbackBody( self ):
 
-        prepend = ""
+        prepend =( _QtIfwScript.ifElevated( isNegated=True ) +
+                    _QtIfwScript.silentQuit( "Elevated privileges required!" ) )                 
         append  = ""
 
         TAB = _QtIfwScript.TAB
@@ -2400,8 +2448,11 @@ Controller.prototype.Dynamic%sCallback = function() {
                                  
     def __genIntroductionPageCallbackBody( self ):
         self.introductionPageCallbackBody = (
-            _QtIfwScript.log("IntroductionPageCallback") +
-            _QtIfwScript.gainElevation() + 
+            _QtIfwScript.log("IntroductionPageCallback") +            
+            _QtIfwScript.ifInstalling( isMultiLine=True ) +
+                QtIfwControlScript._disableAuthErrorPrompt() +
+                _QtIfwScript.gainElevation() +                
+            _QtIfwScript.END_BLOCK +   
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
@@ -4636,7 +4687,8 @@ def __build( qtIfwConfig ) :
     creatorPath = __qtIfwCreatorPath( qtIfwConfig.qtIfwDirPath )
     setupExePath = joinPath( THIS_DIR, 
                              util.normBinaryName( qtIfwConfig.setupExeName ) )
-    cmd = '%s %s "%s"' % ( creatorPath, str(qtIfwConfig), setupExePath )
+    cmd = '%s %s %s "%s"' % ( creatorPath, __QT_IFW_CREATOR_OFFLINE_SWITCH,
+                              str(qtIfwConfig), setupExePath )
     util._system( cmd )  
     setupExePath = normBinaryName( setupExePath, 
                                    isPathPreserved=True, isGui=True )
