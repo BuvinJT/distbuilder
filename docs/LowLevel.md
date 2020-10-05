@@ -436,7 +436,7 @@ Static Functions:
     isElevated()
     ifElevated( isNegated=False, isMultiLine=False )
     
-    gainElevation()
+    elevate()
     dropElevation() 
                           
     getEnv( varName, isAutoQuote=True )
@@ -468,8 +468,8 @@ Static Functions:
     ifYesNoPopup( msg, title="Question", resultVar="result", 
                  isMultiLine=False )
 
-    silentQuit( msg, isAutoQuote=True )
-	<It is not possible to re-enable the user prompt after using these!>
+    quit( msg, isSilent=False, isAutoQuote=True )
+		<It is not possible to re-enable the user prompt after using these!>
     disableQuit()		<negate with disableQuitPrompt>         
     disableQuitPrompt()         
         

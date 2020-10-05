@@ -544,9 +544,9 @@ class _QtIfwScript:
     
     _TEMP_DIR = "Dir.temp()"
 
-    __SILENT_QUIT = "silentQuit(%s);\n"
+    __QUIT = "quit(%s,%s);\n"
                 
-    __IS_ELEVATED    = "isElevated();\n"    
+    __IS_ELEVATED    = "isElevated();\n"        
     __GAIN_ELEVATION = "installer.gainAdminRights();\n"
     __DROP_ELEVATION = "installer.dropAdminRights();\n"
             
@@ -781,9 +781,10 @@ class _QtIfwScript:
             defList )
         
     @staticmethod        
-    def silentQuit( msg, isAutoQuote=True ): 
-        return _QtIfwScript.__SILENT_QUIT % (
-            _QtIfwScript._autoQuote( msg, isAutoQuote ),)
+    def quit( msg, isSilent=False, isAutoQuote=True ): 
+        return _QtIfwScript.__QUIT % (
+            _QtIfwScript._autoQuote( msg, isAutoQuote ),
+            _QtIfwScript.toBool( isSilent ) )
         
     @staticmethod        
     def isElevated(): return _QtIfwScript.__IS_ELEVATED
@@ -793,10 +794,12 @@ class _QtIfwScript:
         return 'if( %sisElevated() )%s\n%s' % (
             ("!" if isNegated else ""), 
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
-        
+
     @staticmethod        
-    def gainElevation(): return _QtIfwScript.__GAIN_ELEVATION
-    
+    def elevate():
+        return( QtIfwControlScript._disableAuthErrorPrompt() +  
+                _QtIfwScript.__GAIN_ELEVATION )
+        
     @staticmethod        
     def dropElevation(): return _QtIfwScript.__DROP_ELEVATION 
         
@@ -1144,89 +1147,89 @@ class _QtIfwScript:
                     ' )' + END +
             EBLK + NEW +
             'function targetExists() ' + SBLK +
-                'var isAuto = ' + _QtIfwScript.cmdLineSwitchArg( 
-                    _QtIfwScript.AUTO_PILOT_CMD_ARG ) + END +                
-                (TAB + 'if( isOsRegisteredProgram() ) ' + SBLK +
-                 (2*TAB)  + _QtIfwScript.log('The program is OS registered.') +
-                 (2*TAB) + 'return true' + END + 
-                TAB + EBLK                  
-                if IS_WINDOWS else '') +
-                TAB + _QtIfwScript.ifCmdLineArg( 
-                    _QtIfwScript.TARGET_DIR_CMD_ARG, isMultiLine=True ) +
-                    'if( isAuto && __cmdLineTargetExists() )'  + SBLK +
-                        (3*TAB) + _QtIfwScript.log('The command line specified target exists.') +
-                        (3*TAB) + 'return true' + END +
-                    (2*TAB) + EBLK +
-                TAB + EBLK +
-                TAB + 'if( __defaultTargetExists() )'  + SBLK +
-                TAB + _QtIfwScript.log('The default target exists.') +
-                (2*TAB) + 'return true' + END +                
-                TAB + EBLK +                   
-                TAB + 'return false' + END +                 
+            'var isAuto = ' + _QtIfwScript.cmdLineSwitchArg( 
+                _QtIfwScript.AUTO_PILOT_CMD_ARG ) + END +                
+            (TAB + 'if( isOsRegisteredProgram() ) ' + SBLK +
+             (2*TAB)  + _QtIfwScript.log('The program is OS registered.') +
+             (2*TAB) + 'return true' + END + 
+            TAB + EBLK                  
+            if IS_WINDOWS else '') +
+            TAB + _QtIfwScript.ifCmdLineArg( 
+                _QtIfwScript.TARGET_DIR_CMD_ARG, isMultiLine=True ) +
+                'if( isAuto && __cmdLineTargetExists() )'  + SBLK +
+                    (3*TAB) + _QtIfwScript.log('The command line specified target exists.') +
+                    (3*TAB) + 'return true' + END +
+                (2*TAB) + EBLK +
+            TAB + EBLK +
+            TAB + 'if( __defaultTargetExists() )'  + SBLK +
+            TAB + _QtIfwScript.log('The default target exists.') +
+            (2*TAB) + 'return true' + END +                
+            TAB + EBLK +                   
+            TAB + 'return false' + END +                 
             EBLK + NEW +            
             'function removeTarget() ' + SBLK +
-               'var isAuto = ' + _QtIfwScript.cmdLineSwitchArg( 
-                    _QtIfwScript.AUTO_PILOT_CMD_ARG ) + END +                
-                TAB + _QtIfwScript.log('Removing existing installation...') +
-                TAB + 'var isElevated=true' + END +  
-                TAB + 'var args=[ "-v", ' +                     
-                    '"' + _QtIfwScript.AUTO_PILOT_CMD_ARG + '=' +
-                    _QtIfwScript.TRUE + '" ' + 
-                    ', "' + _QtIfwScript.MAINTAIN_MODE_CMD_ARG + '=' + 
-                    _QtIfwScript.MAINTAIN_MODE_OPT_REMOVE_ALL + '" ' 
-                    "]" + END +
-                TAB + _QtIfwScript.ifCmdLineSwitch( _KEEP_TEMP_SWITCH ) +
-                    'args.push( "' + _KEEP_TEMP_SWITCH + '=true" )' + END +                     
-                TAB + 'var exeResult' + END +
-                (TAB + 'var regPaths = maintenanceToolPaths()' + END + 
-                 TAB + 'if( regPaths != null )' + SBLK +
-                (2*TAB) + 'for( i=0; i < regPaths.length; i++ )' + SBLK +
-                    (3*TAB) + 'executeHidden( regPaths[i], args, isElevated )' + END +
-                (2*TAB) + EBLK +                        
-                TAB + EBLK +
-                TAB + 'else '
-                if IS_WINDOWS else TAB) +
-                _QtIfwScript.ifCmdLineArg( 
-                    _QtIfwScript.TARGET_DIR_CMD_ARG ) +
-                    'executeHidden( toMaintenanceToolPath( ' +
-                        _QtIfwScript.cmdLineArg( 
-                    _QtIfwScript.TARGET_DIR_CMD_ARG ) + ' ), args, isElevated )' + END +
-                TAB + 'else ' + NEW +                        
-                (2*TAB) + 'executeHidden( toMaintenanceToolPath( ' +
-                        _QtIfwScript.targetDir() + ' ), args, isElevated )' + END +
-                TAB + '// The MaintenanceTool is not removed until a moment\n' + 
-                TAB + '// or two has elapsed after it was closed...' + NEW +
-                TAB + _QtIfwScript.log('Verifying uninstall...') +    
-                TAB + 'var MAX_CHECKS=3' + END  +
-                TAB + 'for( var existCheck=0; existCheck < MAX_CHECKS; existCheck++ ) ' + SBLK +
-                (2*TAB) + 'if( !targetExists() ) break' + END +
-                (2*TAB) + _QtIfwScript.log('Waiting for uninstall to finish...') +                
-                (2*TAB) + 'sleep( 1 )' + END +                
-                TAB + EBLK +
-                TAB + 'if( targetExists() ) ' + SBLK +
-                (2*TAB) + 'if( isAuto ) ' + NEW +
-                    (3*TAB) + 'silentAbort("Failed to removed the program.")' + END +
-                (2*TAB) + 'else ' + SBLK +
-                    (3*TAB) + _QtIfwScript.log('Failed to removed the program') +
-                    (3*TAB) + 'return false' + END +
-                (2*TAB) + EBLK +
-                TAB + EBLK +
-                TAB + _QtIfwScript.log('Successfully removed the program.') +
-                TAB + 'return true' + END +
+           'var isAuto = ' + _QtIfwScript.cmdLineSwitchArg( 
+                _QtIfwScript.AUTO_PILOT_CMD_ARG ) + END +                
+            TAB + _QtIfwScript.log('Removing existing installation...') +
+            TAB + 'var isElevated=true' + END +  
+            TAB + 'var args=[ "-v", ' +                     
+                '"' + _QtIfwScript.AUTO_PILOT_CMD_ARG + '=' +
+                _QtIfwScript.TRUE + '" ' + 
+                ', "' + _QtIfwScript.MAINTAIN_MODE_CMD_ARG + '=' + 
+                _QtIfwScript.MAINTAIN_MODE_OPT_REMOVE_ALL + '" ' 
+                "]" + END +
+            TAB + _QtIfwScript.ifCmdLineSwitch( _KEEP_TEMP_SWITCH ) +
+                'args.push( "' + _KEEP_TEMP_SWITCH + '=true" )' + END +                     
+            TAB + 'var exeResult' + END +
+            (TAB + 'var regPaths = maintenanceToolPaths()' + END + 
+             TAB + 'if( regPaths != null )' + SBLK +
+            (2*TAB) + 'for( i=0; i < regPaths.length; i++ )' + SBLK +
+                (3*TAB) + 'executeHidden( regPaths[i], args, isElevated )' + END +
+            (2*TAB) + EBLK +                        
+            TAB + EBLK +
+            TAB + 'else '
+            if IS_WINDOWS else TAB) +
+            _QtIfwScript.ifCmdLineArg( 
+                _QtIfwScript.TARGET_DIR_CMD_ARG ) +
+                'executeHidden( toMaintenanceToolPath( ' +
+                    _QtIfwScript.cmdLineArg( 
+                _QtIfwScript.TARGET_DIR_CMD_ARG ) + ' ), args, isElevated )' + END +
+            TAB + 'else ' + NEW +                        
+            (2*TAB) + 'executeHidden( toMaintenanceToolPath( ' +
+                    _QtIfwScript.targetDir() + ' ), args, isElevated )' + END +
+            TAB + '// The MaintenanceTool is not removed until a moment\n' + 
+            TAB + '// or two has elapsed after it was closed...' + NEW +
+            TAB + _QtIfwScript.log('Verifying uninstall...') +    
+            TAB + 'var MAX_CHECKS=3' + END  +
+            TAB + 'for( var existCheck=0; existCheck < MAX_CHECKS; existCheck++ ) ' + SBLK +
+            (2*TAB) + 'if( !targetExists() ) break' + END +
+            (2*TAB) + _QtIfwScript.log('Waiting for uninstall to finish...') +                
+            (2*TAB) + 'sleep( 1 )' + END +                
+            TAB + EBLK +
+            TAB + 'if( targetExists() ) ' + SBLK +
+            (2*TAB) + 'if( isAuto ) ' + NEW +
+                (3*TAB) + 'silentAbort("Failed to removed the program.")' + END +
+            (2*TAB) + 'else ' + SBLK +
+                (3*TAB) + _QtIfwScript.log('Failed to removed the program') +
+                (3*TAB) + 'return false' + END +
+            (2*TAB) + EBLK +
+            TAB + EBLK +
+            TAB + _QtIfwScript.log('Successfully removed the program.') +
+            TAB + 'return true' + END +
             EBLK + NEW +
             'function __autoManagePriorInstallation() ' + SBLK +
-                TAB + "if( targetExists() ) " + SBLK +
-                (2*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
-                    _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
-                (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_FAIL + '":' + NEW +
-                    (3*TAB) + 'silentAbort("This program is already installed.")' + END + 
-                (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_REMOVE + '":' + NEW + 
-                    (3*TAB) + 'removeTarget()' + END +
-                    (3*TAB) + 'break' + END +
-                (2*TAB) + 'default:' + NEW +
-                    (3*TAB) + 'silentAbort("This program is already installed.")' + END +
-                  EBLK +           
-                EBLK +                                         
+            TAB + "if( targetExists() ) " + SBLK +
+            (2*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
+                _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
+            (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_FAIL + '":' + NEW +
+                (3*TAB) + 'silentAbort("This program is already installed.")' + END + 
+            (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_REMOVE + '":' + NEW + 
+                (3*TAB) + 'removeTarget()' + END +
+                (3*TAB) + 'break' + END +
+            (2*TAB) + 'default:' + NEW +
+                (3*TAB) + 'silentAbort("This program is already installed.")' + END +
+              EBLK +           
+            EBLK +                                         
             EBLK + NEW +          
             'function isElevated() ' + SBLK +      # TODO: Test in NIX/MAC
             TAB + 'var successEcho="success"' + END +
@@ -1246,8 +1249,8 @@ class _QtIfwScript:
             EBLK +
             TAB + 'catch(e){' + EBLK +                                        
             TAB + 'var isElev=output==successEcho' + END +
-            TAB + _QtIfwScript.log( '"isElevated: " + result[0] + ", " + result[1]', isAutoQuote=False )+
-            TAB + _QtIfwScript.log( '"isElevated: " + isElev', isAutoQuote=False )+
+            #TAB + _QtIfwScript.log( '"isElevated: " + result[0] + ", " + result[1]', isAutoQuote=False )+
+            TAB + _QtIfwScript.log( '"Has elevated privileges: " + isElev', isAutoQuote=False )+
             TAB + 'return isElev' + END +
             EBLK + NEW +                            
             'function getEnv( varName ) ' + SBLK +
@@ -1261,143 +1264,143 @@ class _QtIfwScript:
             TAB + 'return fileName( filePath ).split(".")[0]' + END +
             EBLK + NEW +                                                            
             'function resolveNativePath( path ) ' + SBLK +    # TODO: Test in NIX/MAC  
-                TAB + 'path = Dir.toNativeSeparator( path )' + END +            
-                TAB + 'var echoCmd = "' +
-                    ('echo off\\n'                     
-                     'echo " + path + "\\n' 
-                     if IS_WINDOWS else
-                     'echo \\"" + path + "\\"' ) + '"' + END +      
-                TAB + 'var result = installer.execute( ' +
-                    ('"cmd.exe", ["/k"], echoCmd' if IS_WINDOWS else
-                     '"sh", ["-c", echoCmd]' ) + ' )' + END +                
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("resolveNativePath failed.")' + END +
-                TAB + 'try' + SBLK +
-                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
-                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
-                EBLK +
-                TAB + 'catch(e){ path = "";' + EBLK +
-                TAB + 'if( path=="" ) ' + NEW +
-                (2*TAB) + 'throw new Error("resolveNativePath failed.")' + END +
-                TAB + 'return path' + END +                                                                                                                          
+            TAB + 'path = Dir.toNativeSeparator( path )' + END +            
+            TAB + 'var echoCmd = "' +
+                ('echo off\\n'                     
+                 'echo " + path + "\\n' 
+                 if IS_WINDOWS else
+                 'echo \\"" + path + "\\"' ) + '"' + END +      
+            TAB + 'var result = installer.execute( ' +
+                ('"cmd.exe", ["/k"], echoCmd' if IS_WINDOWS else
+                 '"sh", ["-c", echoCmd]' ) + ' )' + END +                
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("resolveNativePath failed.")' + END +
+            TAB + 'try' + SBLK +
+            TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
+            TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
+            EBLK +
+            TAB + 'catch(e){ path = "";' + EBLK +
+            TAB + 'if( path=="" ) ' + NEW +
+            (2*TAB) + 'throw new Error("resolveNativePath failed.")' + END +
+            TAB + 'return path' + END +                                                                                                                          
             EBLK + NEW +                        
             'function dirList( path, isSortedByTime ) ' + SBLK +    # TODO: Test in NIX/MAC
-                TAB + 'var retList=[]' + END +
-                TAB + 'var sortByTime = isSortedByTime ? ' + 
-                    ( '" /O:D"' if IS_WINDOWS else '' ) + 
-                    ' : ""' + END +
-                TAB + 'path = resolveNativePath( path )' + END +
-                TAB + 'var dirLsCmd = "' +
-                    ('echo off\\n'                     
-                     'dir \\"" + path + "\\" /A /B" + sortByTime + "\\n'
-                     if IS_WINDOWS else
-                     'ls -a \\"" + path + "\\" ' ) + '"' + END +      
-                TAB + 'var result = installer.execute( ' +
-                    ('"cmd.exe", ["/k"], dirLsCmd' if IS_WINDOWS else
-                     '"sh", ["-c", dirLsCmd]' ) + ' )' + END +                
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("dir list failed.")' + END +
-                TAB + 'try' + SBLK +
-                (2*TAB) + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
-                (2*TAB) + 'cmdOutLns.splice(0, 2)' + END +                                 
-                (2*TAB) + 'for( var i=0; i < cmdOutLns.length; i++ )' + SBLK +
-                    (3*TAB) + 'var entry = cmdOutLns[i].trim()' + END +
-                    (3*TAB) + 'if( entry ) retList.push( entry );' + END +
-                (2*TAB) + EBLK +
-                EBLK +
-                TAB + 'catch(e){}' + NEW +
-                TAB + _QtIfwScript.log( '"dir list of: " + path', isAutoQuote=False ) +
-                TAB + _QtIfwScript.log( '"entries: " + retList.length', isAutoQuote=False ) +
-                TAB + 'for( var i=0; i < retList.length; i++ )' + NEW +
-                (2*TAB) + _QtIfwScript.log( 'retList[i]', isAutoQuote=False ) +
-                TAB + 'return retList' + END +                                                                                                               
+            TAB + 'var retList=[]' + END +
+            TAB + 'var sortByTime = isSortedByTime ? ' + 
+                ( '" /O:D"' if IS_WINDOWS else '' ) + 
+                ' : ""' + END +
+            TAB + 'path = resolveNativePath( path )' + END +
+            TAB + 'var dirLsCmd = "' +
+                ('echo off\\n'                     
+                 'dir \\"" + path + "\\" /A /B" + sortByTime + "\\n'
+                 if IS_WINDOWS else
+                 'ls -a \\"" + path + "\\" ' ) + '"' + END +      
+            TAB + 'var result = installer.execute( ' +
+                ('"cmd.exe", ["/k"], dirLsCmd' if IS_WINDOWS else
+                 '"sh", ["-c", dirLsCmd]' ) + ' )' + END +                
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("dir list failed.")' + END +
+            TAB + 'try' + SBLK +
+            (2*TAB) + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
+            (2*TAB) + 'cmdOutLns.splice(0, 2)' + END +                                 
+            (2*TAB) + 'for( var i=0; i < cmdOutLns.length; i++ )' + SBLK +
+                (3*TAB) + 'var entry = cmdOutLns[i].trim()' + END +
+                (3*TAB) + 'if( entry ) retList.push( entry );' + END +
+            (2*TAB) + EBLK +
+            EBLK +
+            TAB + 'catch(e){}' + NEW +
+            TAB + _QtIfwScript.log( '"dir list of: " + path', isAutoQuote=False ) +
+            TAB + _QtIfwScript.log( '"entries: " + retList.length', isAutoQuote=False ) +
+            TAB + 'for( var i=0; i < retList.length; i++ )' + NEW +
+            (2*TAB) + _QtIfwScript.log( 'retList[i]', isAutoQuote=False ) +
+            TAB + 'return retList' + END +                                                                                                               
             EBLK + NEW +                        
             'function makeDir( path ) ' + SBLK +      # TODO: Test in NIX/MAC
-                TAB + 'path = resolveNativePath( path )' + END +
-                TAB + _QtIfwScript.ifPathExists( 'path', isAutoQuote=False ) + 
-                (2*TAB) + 'return path' + END +                    
-                TAB + 'var mkDirCmd = "' +
-                    ('echo off\\n'                     
-                     'md \\"" + path + "\\"\\n'
-                     'echo " + path + "\\n' 
-                     if IS_WINDOWS else
-                     'mkdir -p \\"" + path + "\\"; '
-                     'echo \\"" + path + "\\"' ) + '"' + END +      
-                TAB + 'var result = installer.execute( ' +
-                    ('"cmd.exe", ["/k"], mkDirCmd' if IS_WINDOWS else
-                     '"sh", ["-c", mkDirCmd]' ) + ' )' + END +                
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("makeDir failed.")' + END +
-                TAB + 'try' + SBLK +
-                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
-                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
-                EBLK +
-                TAB + 'catch(e){ path = "";' + EBLK +
-                TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-                (2*TAB) + 'throw new Error("makeDir failed. (file does not exists)")' + END +
-                TAB + _QtIfwScript.log( '"made dir: " + path', isAutoQuote=False ) + 
-                TAB + 'return path' + END +                                                                                                               
+            TAB + 'path = resolveNativePath( path )' + END +
+            TAB + _QtIfwScript.ifPathExists( 'path', isAutoQuote=False ) + 
+            (2*TAB) + 'return path' + END +                    
+            TAB + 'var mkDirCmd = "' +
+                ('echo off\\n'                     
+                 'md \\"" + path + "\\"\\n'
+                 'echo " + path + "\\n' 
+                 if IS_WINDOWS else
+                 'mkdir -p \\"" + path + "\\"; '
+                 'echo \\"" + path + "\\"' ) + '"' + END +      
+            TAB + 'var result = installer.execute( ' +
+                ('"cmd.exe", ["/k"], mkDirCmd' if IS_WINDOWS else
+                 '"sh", ["-c", mkDirCmd]' ) + ' )' + END +                
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("makeDir failed.")' + END +
+            TAB + 'try' + SBLK +
+            TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
+            TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
+            EBLK +
+            TAB + 'catch(e){ path = "";' + EBLK +
+            TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+            (2*TAB) + 'throw new Error("makeDir failed. (file does not exists)")' + END +
+            TAB + _QtIfwScript.log( '"made dir: " + path', isAutoQuote=False ) + 
+            TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                
             'function removeDir( path ) ' + SBLK +        # TODO: Test in NIX/MAC                  
-                TAB + 'path = resolveNativePath( path )' + END +
-                TAB + _QtIfwScript.ifNotPathExists( 'path', isAutoQuote=False ) + 
-                (2*TAB) + 'return path' + END +                    
-                TAB + 'var rmDirCmd = "' +
-                    ('echo off\\n'                     
-                     'rd /s /q \\"" + path + "\\"\\n'
-                     'echo " + path + "\\n' 
-                     if IS_WINDOWS else
-                     'rm -R \\"" + path + "\\"; '
-                     'echo \\"" + path + "\\"' ) + '"' + END +      
-                TAB + 'var result = installer.execute( ' +
-                    ('"cmd.exe", ["/k"], rmDirCmd' if IS_WINDOWS else
-                     '"sh", ["-c", rmDirCmd]' ) + ' )' + END +                
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("removeDir failed.")' + END +
-                TAB + 'try' + SBLK +
-                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
-                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
-                EBLK +
-                TAB + 'catch(e){ path = "";' + EBLK +
-                TAB + 'if( path=="" || ' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-                (2*TAB) + 'throw new Error("removeDir failed. (file does not exists)")' + END +
-                TAB + _QtIfwScript.log( '"removed dir: " + path', isAutoQuote=False ) + 
-                TAB + 'return path' + END +                                                                                                               
+            TAB + 'path = resolveNativePath( path )' + END +
+            TAB + _QtIfwScript.ifNotPathExists( 'path', isAutoQuote=False ) + 
+            (2*TAB) + 'return path' + END +                    
+            TAB + 'var rmDirCmd = "' +
+                ('echo off\\n'                     
+                 'rd /s /q \\"" + path + "\\"\\n'
+                 'echo " + path + "\\n' 
+                 if IS_WINDOWS else
+                 'rm -R \\"" + path + "\\"; '
+                 'echo \\"" + path + "\\"' ) + '"' + END +      
+            TAB + 'var result = installer.execute( ' +
+                ('"cmd.exe", ["/k"], rmDirCmd' if IS_WINDOWS else
+                 '"sh", ["-c", rmDirCmd]' ) + ' )' + END +                
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("removeDir failed.")' + END +
+            TAB + 'try' + SBLK +
+            TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
+            TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
+            EBLK +
+            TAB + 'catch(e){ path = "";' + EBLK +
+            TAB + 'if( path=="" || ' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+            (2*TAB) + 'throw new Error("removeDir failed. (file does not exists)")' + END +
+            TAB + _QtIfwScript.log( '"removed dir: " + path', isAutoQuote=False ) + 
+            TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                            
             'function __writeScriptFromBase64( fileName, b64, varNames ) ' + SBLK +  # TODO: Test in NIX/MAC                
             TAB + 'var path = __writeFileFromBase64( fileName, b64 )' + END +
             TAB + 'replaceQtIfwVarsInFile( path, varNames )' +  END +            
             EBLK + NEW +                                                                         
             'function __writeFileFromBase64( fileName, b64 ) ' + SBLK +      # TODO: Test in NIX/MAC
-                TAB + 'var path = Dir.toNativeSeparator( Dir.temp() + "/" + fileName )' + END +            
-                TAB + 'var tempPath = Dir.toNativeSeparator( Dir.temp() + "/" + fileName + ".b64" )' + END +
-                (TAB + 'b64 = "-----BEGIN CERTIFICATE-----\\n" + '
-                       'b64 + "\\n-----END CERTIFICATE-----\\n"' + END 
-                if IS_WINDOWS else "" ) +
-                TAB + 'writeFile( tempPath, b64 )' + END +                                 
-                TAB + 'var decodeCmd = "' +
-                    ('echo off\\n'                     
-                     'certutil /decode \\"" + tempPath + "\\" '
-                        '\\"" + path + "\\" >nul 2>nul\\n'
-                        'echo " + path + "\\n' 
-                     if IS_WINDOWS else
-                     'echo $(cat \\"" + tempPath + "\\" | base64) > \\"" + path + "\\";'
-                     'echo \\"" + path + "\\"' ) + '"' + END +      
-                TAB + 'var result = installer.execute( ' +
-                    ('"cmd.exe", ["/k"], decodeCmd' if IS_WINDOWS else
-                     '"sh", ["-c", decodeCmd]' ) + ' )' + END +                
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("writeFileFromBase64 failed.")' + END +
-                TAB + 'try' + SBLK +
-                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
-                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
-                EBLK +
-                TAB + 'catch(e){ path = "";' + EBLK +
-                TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-                (2*TAB) + 'throw new Error("writeFileFromBase64 failed. (file does not exists)")' + END +
-                TAB + _QtIfwScript.log( '"Wrote file from base64: " + path', isAutoQuote=False ) + 
-                #TAB + 'deleteFile( tempPath )' + END +
-                TAB + 'return path' + END +                                                                                                               
+            TAB + 'var path = Dir.toNativeSeparator( Dir.temp() + "/" + fileName )' + END +            
+            TAB + 'var tempPath = Dir.toNativeSeparator( Dir.temp() + "/" + fileName + ".b64" )' + END +
+            (TAB + 'b64 = "-----BEGIN CERTIFICATE-----\\n" + '
+                   'b64 + "\\n-----END CERTIFICATE-----\\n"' + END 
+            if IS_WINDOWS else "" ) +
+            TAB + 'writeFile( tempPath, b64 )' + END +                                 
+            TAB + 'var decodeCmd = "' +
+                ('echo off\\n'                     
+                 'certutil /decode \\"" + tempPath + "\\" '
+                    '\\"" + path + "\\" >nul 2>nul\\n'
+                    'echo " + path + "\\n' 
+                 if IS_WINDOWS else
+                 'echo $(cat \\"" + tempPath + "\\" | base64) > \\"" + path + "\\";'
+                 'echo \\"" + path + "\\"' ) + '"' + END +      
+            TAB + 'var result = installer.execute( ' +
+                ('"cmd.exe", ["/k"], decodeCmd' if IS_WINDOWS else
+                 '"sh", ["-c", decodeCmd]' ) + ' )' + END +                
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("writeFileFromBase64 failed.")' + END +
+            TAB + 'try' + SBLK +
+            TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
+            TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
+            EBLK +
+            TAB + 'catch(e){ path = "";' + EBLK +
+            TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+            (2*TAB) + 'throw new Error("writeFileFromBase64 failed. (file does not exists)")' + END +
+            TAB + _QtIfwScript.log( '"Wrote file from base64: " + path', isAutoQuote=False ) + 
+            #TAB + 'deleteFile( tempPath )' + END +
+            TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                
             'function replaceQtIfwVarsInFile( path, varNames ) ' + SBLK +          # TODO: Test in NIX/MAC
             (
@@ -1443,128 +1446,128 @@ class _QtIfwScript:
             (2*TAB) + 'throw new Error("Sleep operation failed.")' + END +
             EBLK + NEW +      
             'function __escapeEchoText( echo ) ' + SBLK +
-                (TAB + 'if( echo.trim()=="" ) return "."' + END if IS_WINDOWS else '' ) +
-                TAB + 'var escaped = echo' + END +                      
-                TAB + 'return " " + escaped' + END +                                                                                          
+            (TAB + 'if( echo.trim()=="" ) return "."' + END if IS_WINDOWS else '' ) +
+            TAB + 'var escaped = echo' + END +                      
+            TAB + 'return " " + escaped' + END +                                                                                          
             EBLK + NEW +      
             'function writeFile( path, content ) ' + SBLK +            
-                TAB + 'path = Dir.toNativeSeparator( path )' + END +           
-                TAB + 'var lines = content.split(\"\\n\")' + END +                                             
-                TAB + 'var redirect = " >"' + END +      
-                TAB + 'var writeCmd = ""' + END +
-                (TAB + 'writeCmd += "echo off && "' + END if IS_WINDOWS else "" ) +
-                TAB + 'for( i=0; i < lines.length; i++ )' + SBLK +                
-                (2*TAB) + 'var echo = __escapeEchoText( lines[i] )' + END +
-                (2*TAB) + 'writeCmd += "echo" + echo + redirect + ' + NEW +
-                    (3*TAB) + '" \\"" + path + "\\"' + ('\\n"' if IS_WINDOWS else ';"' ) + END +
-                (2*TAB) + 'redirect = " >>"' + END +                                               
-                TAB + EBLK + 
-                TAB + 'writeCmd += "echo " + path' + 
-                        ( '+ "\\n"' if IS_WINDOWS else '' ) + END +                                  
-                TAB + 'var result = installer.execute( ' +
-                    ('"cmd.exe", ["/k"], writeCmd' if IS_WINDOWS else
-                     '"sh", ["-c", writeCmd]' ) + ' )' + END +                
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("Write file failed.")' + END +
-                TAB + 'try' + SBLK +
-                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
-                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
-                TAB + 'catch(e){ path = "";' + EBLK +
-                TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-                (2*TAB) + 'throw new Error("Write file failed. (file does not exists)")' + END +
-                TAB + _QtIfwScript.log( '"Wrote file to: " + path', isAutoQuote=False ) +
-                TAB + 'return path' + END +
+            TAB + 'path = Dir.toNativeSeparator( path )' + END +           
+            TAB + 'var lines = content.split(\"\\n\")' + END +                                             
+            TAB + 'var redirect = " >"' + END +      
+            TAB + 'var writeCmd = ""' + END +
+            (TAB + 'writeCmd += "echo off && "' + END if IS_WINDOWS else "" ) +
+            TAB + 'for( i=0; i < lines.length; i++ )' + SBLK +                
+            (2*TAB) + 'var echo = __escapeEchoText( lines[i] )' + END +
+            (2*TAB) + 'writeCmd += "echo" + echo + redirect + ' + NEW +
+                (3*TAB) + '" \\"" + path + "\\"' + ('\\n"' if IS_WINDOWS else ';"' ) + END +
+            (2*TAB) + 'redirect = " >>"' + END +                                               
+            TAB + EBLK + 
+            TAB + 'writeCmd += "echo " + path' + 
+                    ( '+ "\\n"' if IS_WINDOWS else '' ) + END +                                  
+            TAB + 'var result = installer.execute( ' +
+                ('"cmd.exe", ["/k"], writeCmd' if IS_WINDOWS else
+                 '"sh", ["-c", writeCmd]' ) + ' )' + END +                
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("Write file failed.")' + END +
+            TAB + 'try' + SBLK +
+            TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
+            TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+            TAB + 'catch(e){ path = "";' + EBLK +
+            TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+            (2*TAB) + 'throw new Error("Write file failed. (file does not exists)")' + END +
+            TAB + _QtIfwScript.log( '"Wrote file to: " + path', isAutoQuote=False ) +
+            TAB + 'return path' + END +
             EBLK + NEW +                   
             'function deleteFile( path ) ' + SBLK +
-                TAB + 'path = Dir.toNativeSeparator( path )' + END +           
-                TAB + 'var deleteCmd = "' +                    
-                    ('echo off && del \\"" + path + "\\" /q\\necho " + path + "\\n"' 
-                     if IS_WINDOWS else
-                     'rm \\"" + path + "\\"; echo " + path' ) + END +                                                                                                
-                TAB + 'var result = installer.execute( ' +
-                    ('"cmd.exe", ["/k"], deleteCmd' if IS_WINDOWS else
-                     '"sh", ["-c", deleteCmd]' ) + ' )' + END +             
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("Delete file failed.")' + END +
-                TAB + 'try' + SBLK +
-                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
-                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
-                TAB + 'catch(e){ path = "";' + EBLK +                
-                TAB + 'if( path=="" || ' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-                (2*TAB) + 'throw new Error("Delete file failed. (file exists)")' + END +
-                TAB + _QtIfwScript.log( '"Deleted file: " + path', isAutoQuote=False ) + 
-                TAB + 'return path' + END +                                                                                                                                       
+            TAB + 'path = Dir.toNativeSeparator( path )' + END +           
+            TAB + 'var deleteCmd = "' +                    
+                ('echo off && del \\"" + path + "\\" /q\\necho " + path + "\\n"' 
+                 if IS_WINDOWS else
+                 'rm \\"" + path + "\\"; echo " + path' ) + END +                                                                                                
+            TAB + 'var result = installer.execute( ' +
+                ('"cmd.exe", ["/k"], deleteCmd' if IS_WINDOWS else
+                 '"sh", ["-c", deleteCmd]' ) + ' )' + END +             
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("Delete file failed.")' + END +
+            TAB + 'try' + SBLK +
+            TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
+            TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+            TAB + 'catch(e){ path = "";' + EBLK +                
+            TAB + 'if( path=="" || ' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+            (2*TAB) + 'throw new Error("Delete file failed. (file exists)")' + END +
+            TAB + _QtIfwScript.log( '"Deleted file: " + path', isAutoQuote=False ) + 
+            TAB + 'return path' + END +                                                                                                                                       
             EBLK + NEW +                                                                     
             'function clearErrorLog() ' + SBLK + # TODO: Call deleteFile()
-                TAB + 'var path = ' + _QtIfwScript.cmdLineArg( 
-                    _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
-                    _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END + 
-                TAB + 'var deleteCmd = "' +                    
-                    ('echo off && del \\"" + path + "\\" /q\\necho " + path + "\\n"' 
-                     if IS_WINDOWS else
-                     'rm \\"" + path + "\\"; echo " + path' ) + END +                                                                                                
-                TAB + 'var result = installer.execute( ' +
-                    ('"cmd.exe", ["/k"], deleteCmd' if IS_WINDOWS else
-                     '"sh", ["-c", deleteCmd]' ) + ' )' + END +             
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("Clear error log failed.")' + END +
-                TAB + 'try' + SBLK +
-                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
-                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
-                TAB + 'catch(e){ path = "";' + EBLK +                
-                TAB + 'if( path=="" || ' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-                (2*TAB) + 'throw new Error("Clear error log failed. (file exists)")' + END +
-                TAB + _QtIfwScript.log( '"Cleared error log: " + path', isAutoQuote=False ) +                                                                                                                                        
-            EBLK + NEW +                           
-            'function writeErrorLog( msg ) ' + SBLK +   # TODO: Call writeFile()
-                TAB + 'var path = ' + _QtIfwScript.cmdLineArg( 
-                    _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
-                    _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END +                
-                TAB + 'var writeCmd = "' +
-                    ('echo off && '
-                     'echo " + msg + " > \\"" + path + "\\"\n'
-                     'echo " + path + "\\n"' 
-                     if IS_WINDOWS else
-                     'echo " + msg + " > \\"" + path + "\\";'
-                     'echo " + path' ) + END +      
-                TAB + 'var result = installer.execute( ' +
-                    ('"cmd.exe", ["/k"], writeCmd' if IS_WINDOWS else
-                     '"sh", ["-c", writeCmd]' ) + ' )' + END +                
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("Write error log failed.")' + END +
-                TAB + 'try' + SBLK +
-                TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
-                TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
-                TAB + 'catch(e){ path = "";' + EBLK +
-                TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-                (2*TAB) + 'throw new Error("Write error log failed. (file does not exists)")' + END +
-                TAB + _QtIfwScript.log( '"Wrote error log to: " + path', isAutoQuote=False ) +                                                                                                
+            TAB + 'var path = ' + _QtIfwScript.cmdLineArg( 
+                _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
+                _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END + 
+            TAB + 'var deleteCmd = "' +                    
+                ('echo off && del \\"" + path + "\\" /q\\necho " + path + "\\n"' 
+                 if IS_WINDOWS else
+                 'rm \\"" + path + "\\"; echo " + path' ) + END +                                                                                                
+            TAB + 'var result = installer.execute( ' +
+                ('"cmd.exe", ["/k"], deleteCmd' if IS_WINDOWS else
+                 '"sh", ["-c", deleteCmd]' ) + ' )' + END +             
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("Clear error log failed.")' + END +
+            TAB + 'try' + SBLK +
+            TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
+            TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+            TAB + 'catch(e){ path = "";' + EBLK +                
+            TAB + 'if( path=="" || ' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+            (2*TAB) + 'throw new Error("Clear error log failed. (file exists)")' + END +
+            TAB + _QtIfwScript.log( '"Cleared error log: " + path', isAutoQuote=False ) +                                                                                                                                        
+        EBLK + NEW +                           
+        'function writeErrorLog( msg ) ' + SBLK +   # TODO: Call writeFile()
+            TAB + 'var path = ' + _QtIfwScript.cmdLineArg( 
+                _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
+                _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END +                
+            TAB + 'var writeCmd = "' +
+                ('echo off && '
+                 'echo " + msg + " > \\"" + path + "\\"\n'
+                 'echo " + path + "\\n"' 
+                 if IS_WINDOWS else
+                 'echo " + msg + " > \\"" + path + "\\";'
+                 'echo " + path' ) + END +      
+            TAB + 'var result = installer.execute( ' +
+                ('"cmd.exe", ["/k"], writeCmd' if IS_WINDOWS else
+                 '"sh", ["-c", writeCmd]' ) + ' )' + END +                
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("Write error log failed.")' + END +
+            TAB + 'try' + SBLK +
+            TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
+            TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+            TAB + 'catch(e){ path = "";' + EBLK +
+            TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
+            (2*TAB) + 'throw new Error("Write error log failed. (file does not exists)")' + END +
+            TAB + _QtIfwScript.log( '"Wrote error log to: " + path', isAutoQuote=False ) +                                                                                                
             EBLK + NEW +
             'function silentAbort( msg ) ' + SBLK +
-                TAB + 'writeErrorLog( msg )' + END +
-                TAB + 'throw new Error( msg )' + END +                    
+            TAB + 'console.log( msg )' + END +
+            TAB + 'writeErrorLog( msg )' + END +
+            TAB + 'throw new Error( msg )' + END +                    
             EBLK + NEW +                        
-            'function silentQuit( msg ) ' + SBLK +
-                TAB + 'writeErrorLog( msg )' + END +
-                TAB + 'gui.rejectWithoutPrompt()' + END +                    
-            EBLK + NEW +            
-            'function abort( msg ) ' + SBLK +
-                TAB + 'msg = (msg==null || msg=="" ? "Installation aborted! Closing installer..." : msg)' + END +
-                TAB + 'writeErrorLog( msg )' + END +
-                TAB + 'QMessageBox.critical("errorbox", "Error", msg, QMessageBox.Ok)' + END +
-                TAB + 'installer.autoAcceptMessageBoxes()' + END +
-                TAB + 'gui.clickButton(buttons.CancelButton)' + END +
-                TAB + 'gui.clickButton(buttons.FinishButton)' + END +                
-                TAB + '' + END +                    
+            'function abort( msg ) ' + SBLK +            
+            TAB + 'msg = (msg==null || msg=="" ? "Installation aborted! Closing installer..." : msg)' + END +
+            TAB + 'console.log( msg )' + END +
+            TAB + 'writeErrorLog( msg )' + END +
+            TAB + 'QMessageBox.critical("errorbox", "Error", msg, QMessageBox.Ok)' + END +
+            TAB + 'installer.autoAcceptMessageBoxes()' + END +
+            TAB + 'gui.clickButton(buttons.CancelButton)' + END +
+            TAB + 'gui.clickButton(buttons.FinishButton)' + END +                
+            TAB + '' + END +                    
             EBLK + NEW +
-            'function quit( msg ) ' + SBLK +
-                TAB + 'msg = (msg==null || msg=="" ? "Click \\"OK\\" to quit..." : msg)' + END +
-                TAB + 'writeErrorLog( msg )' + END +
-                TAB + 'QMessageBox.warning("warnbox", "Installation canceled", msg, QMessageBox.Ok)' + END +
-                TAB + 'installer.autoAcceptMessageBoxes()' + END +
-                TAB + 'gui.clickButton(buttons.CancelButton)' + END +
-                TAB + 'gui.clickButton(buttons.FinishButton)' + END +                
-                TAB + '' + END +                    
+            'function quit( msg, isSilent ) ' + SBLK +
+            TAB + 'msg = (msg==null || msg=="" ? "Click \\"OK\\" to quit..." : msg)' + END +
+            TAB + 'console.log( msg )' + END +
+            TAB + 'writeErrorLog( msg )' + END +
+            TAB + 'if( !isSilent ) ' +
+            (2*TAB) + 'QMessageBox.warning("warnbox", "Installation canceled", msg, QMessageBox.Ok)' + END +
+            TAB + 'installer.autoAcceptMessageBoxes()' + END +
+            TAB + 'gui.clickButton(buttons.CancelButton)' + END +
+            TAB + 'gui.clickButton(buttons.FinishButton)' + END +                
+            TAB + '' + END +                    
             EBLK + NEW +
             'function getComponent( name ) ' + SBLK +
             TAB + 'var comps=installer.components()' + END +
@@ -1652,114 +1655,114 @@ class _QtIfwScript:
             '// it is possible to have multiple installations of the product' + NEW +
             '// (with different paths to them)' + NEW +
             'function maintenanceToolPaths() ' + SBLK +
-                TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
-                (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +
-                TAB + ('var regQuery = "%s"' % (regQueryUninstallKeys,) ) + END +
-                TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("Registry query failed.")' + END +
-                TAB + '// remove the first line (which is a command echo)' + NEW +
-                TAB + '// remove blank lines & convert an empty array to null' + NEW +                
-                TAB + 'var retArr = result[0].split(\"\\n\")' + END +
-                TAB + 'try{ retArr.splice(0, 1)' + END + EBLK +
-                TAB + 'catch(e){ throw new Error("Registry query failed.")' + END + EBLK +
-                TAB + 'for( i=0; i < retArr.length; i++ )' + SBLK + 
-                (2*TAB) + 'retArr[i] = retArr[i].trim()' + END + 
-                (2*TAB) + 'if( retArr[i]==\"\" ) retArr.splice(i, 1)' + END + 
-                EBLK +
-                TAB + 'return retArr.length == 0 ? null : retArr' + END +                  
+            TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
+            (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +
+            TAB + ('var regQuery = "%s"' % (regQueryUninstallKeys,) ) + END +
+            TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("Registry query failed.")' + END +
+            TAB + '// remove the first line (which is a command echo)' + NEW +
+            TAB + '// remove blank lines & convert an empty array to null' + NEW +                
+            TAB + 'var retArr = result[0].split(\"\\n\")' + END +
+            TAB + 'try{ retArr.splice(0, 1)' + END + EBLK +
+            TAB + 'catch(e){ throw new Error("Registry query failed.")' + END + EBLK +
+            TAB + 'for( i=0; i < retArr.length; i++ )' + SBLK + 
+            (2*TAB) + 'retArr[i] = retArr[i].trim()' + END + 
+            (2*TAB) + 'if( retArr[i]==\"\" ) retArr.splice(i, 1)' + END + 
+            EBLK +
+            TAB + 'return retArr.length == 0 ? null : retArr' + END +                  
             EBLK + NEW +
             'function isOsRegisteredProgram() ' + SBLK +
-                TAB + 'return maintenanceToolPaths() != null' + END + 
+            TAB + 'return maintenanceToolPaths() != null' + END + 
             EBLK + NEW +                           
             'function executeVbScript( vbs ) ' + SBLK +
-                TAB + _QtIfwScript.log( "Executing VbScript:" ) +
-                TAB + _QtIfwScript.log( "vbs", isAutoQuote=False ) +          
-                TAB + 'var path = writeFile( __tempRootFilePath( "vbs" ), vbs )' + END +
-                TAB + 'var result = installer.execute(' + 
-                    '"cscript", ["//Nologo", path])' + END +
-                TAB + _QtIfwScript.log( 
-                    '"> Script return code: " + (result.length==2 ? result[1] : "?" )', 
-                    isAutoQuote=False ) + 
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("VBScript operation failed.")' + END +
-                TAB + 'for( i=0; i < 3; i++ )' + SBLK +
-                (2*TAB) + 'try{ deleteFile( path ); break; }' + NEW +                          
-                (2*TAB) + 'catch(e){ sleep(1); }' + NEW +
-                TAB + EBLK + NEW +
+            TAB + _QtIfwScript.log( "Executing VbScript:" ) +
+            TAB + _QtIfwScript.log( "vbs", isAutoQuote=False ) +          
+            TAB + 'var path = writeFile( __tempRootFilePath( "vbs" ), vbs )' + END +
+            TAB + 'var result = installer.execute(' + 
+                '"cscript", ["//Nologo", path])' + END +
+            TAB + _QtIfwScript.log( 
+                '"> Script return code: " + (result.length==2 ? result[1] : "?" )', 
+                isAutoQuote=False ) + 
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("VBScript operation failed.")' + END +
+            TAB + 'for( i=0; i < 3; i++ )' + SBLK +
+            (2*TAB) + 'try{ deleteFile( path ); break; }' + NEW +                          
+            (2*TAB) + 'catch(e){ sleep(1); }' + NEW +
+            TAB + EBLK + NEW +
             EBLK + NEW +
             'function executeVbScriptDetached( scriptPath, vbs ) ' + SBLK +
-                TAB + _QtIfwScript.log( "Executing Detached VbScript:" ) +
-                TAB + _QtIfwScript.log( "scriptPath", isAutoQuote=False ) +                
-                TAB + _QtIfwScript.log( "vbs", isAutoQuote=False ) +          
-                TAB + 'var path = writeFile( scriptPath, vbs )' + END +
-                TAB + 'var result = installer.executeDetached(' + 
-                    '"cscript", ["//Nologo", path])' + END +
+            TAB + _QtIfwScript.log( "Executing Detached VbScript:" ) +
+            TAB + _QtIfwScript.log( "scriptPath", isAutoQuote=False ) +                
+            TAB + _QtIfwScript.log( "vbs", isAutoQuote=False ) +          
+            TAB + 'var path = writeFile( scriptPath, vbs )' + END +
+            TAB + 'var result = installer.executeDetached(' + 
+                '"cscript", ["//Nologo", path])' + END +
             EBLK + NEW +            
             'function executePowerShell( ps ) ' + SBLK +
-                TAB + _QtIfwScript.log( "Executing PowerShell Script:" ) +
-                TAB + _QtIfwScript.log( "ps", isAutoQuote=False ) +          
-                TAB + 'var path = writeFile( __tempRootFilePath( "ps1" ), ps )' + END +
-                TAB + 'var result = installer.execute(' + 
-                    '"powershell", ["-NoLogo", "-ExecutionPolicy", "Bypass", ' +
-                                    '"-File", path])' + END +
-                TAB + _QtIfwScript.log( 
-                    '"> Script return code: " + (result.length==2 ? result[1] : "?" )', 
-                    isAutoQuote=False ) +                
-                TAB + 'if( result[1] != 0 ) ' + NEW +
-                (2*TAB) + 'throw new Error("PowerShell operation failed.")' + END +
-                TAB + 'for( i=0; i < 3; i++ )' + SBLK +
-                (2*TAB) + 'try{ deleteFile( path ); break; }' + NEW +                          
-                (2*TAB) + 'catch(e){ sleep(1); }' + NEW +
-                TAB + EBLK + NEW +
+            TAB + _QtIfwScript.log( "Executing PowerShell Script:" ) +
+            TAB + _QtIfwScript.log( "ps", isAutoQuote=False ) +          
+            TAB + 'var path = writeFile( __tempRootFilePath( "ps1" ), ps )' + END +
+            TAB + 'var result = installer.execute(' + 
+                '"powershell", ["-NoLogo", "-ExecutionPolicy", "Bypass", ' +
+                                '"-File", path])' + END +
+            TAB + _QtIfwScript.log( 
+                '"> Script return code: " + (result.length==2 ? result[1] : "?" )', 
+                isAutoQuote=False ) +                
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("PowerShell operation failed.")' + END +
+            TAB + 'for( i=0; i < 3; i++ )' + SBLK +
+            (2*TAB) + 'try{ deleteFile( path ); break; }' + NEW +                          
+            (2*TAB) + 'catch(e){ sleep(1); }' + NEW +
+            TAB + EBLK + NEW +
             EBLK + NEW +
             'function executePowerShellDetached( scriptPath, ps ) ' + SBLK +
-                TAB + _QtIfwScript.log( "Executing Detached PowerShell Script:" ) +
-                TAB + _QtIfwScript.log( "scriptPath", isAutoQuote=False ) +                
-                TAB + _QtIfwScript.log( "ps", isAutoQuote=False ) +          
-                TAB + 'var path = writeFile( scriptPath, ps )' + END +
-                TAB + 'var result = installer.executeDetached(' + 
-                    '"powershell", ["-NoLogo", "-ExecutionPolicy", "Bypass", ' +
-                                    '"-File", path])' + END +
+            TAB + _QtIfwScript.log( "Executing Detached PowerShell Script:" ) +
+            TAB + _QtIfwScript.log( "scriptPath", isAutoQuote=False ) +                
+            TAB + _QtIfwScript.log( "ps", isAutoQuote=False ) +          
+            TAB + 'var path = writeFile( scriptPath, ps )' + END +
+            TAB + 'var result = installer.executeDetached(' + 
+                '"powershell", ["-NoLogo", "-ExecutionPolicy", "Bypass", ' +
+                                '"-File", path])' + END +
             EBLK + NEW                                                          
             )
         elif IS_LINUX:
             self.qtScriptLib += (    
             'function isPackageManagerInstalled( prog ) ' + SBLK +
-                TAB + 'return installer.execute( prog, ["--help"] )[1] == 0' + END +
+            TAB + 'return installer.execute( prog, ["--help"] )[1] == 0' + END +
             EBLK + NEW +
             'function isAptInstalled() ' + SBLK +
-                TAB + 'return isPackageManagerInstalled( "apt" )' + END +             
+            TAB + 'return isPackageManagerInstalled( "apt" )' + END +             
             EBLK + NEW +
             'function isDpkgInstalled() ' + SBLK +
-                TAB + 'return isPackageManagerInstalled( "dpkg" )' + END +             
+            TAB + 'return isPackageManagerInstalled( "dpkg" )' + END +             
             EBLK + NEW +
             'function isYumInstalled() ' + SBLK +
-                TAB + 'return isPackageManagerInstalled( "yum" )' + END +             
+            TAB + 'return isPackageManagerInstalled( "yum" )' + END +             
             EBLK + NEW +
             'function isRpmInstalled() ' + SBLK +
-                TAB + 'return isPackageManagerInstalled( "rpm" )' + END +             
+            TAB + 'return isPackageManagerInstalled( "rpm" )' + END +             
             EBLK + NEW +
             'function isPackageInstalled( pkg ) ' + SBLK +
-                TAB + 'if( isDpkgInstalled() )' + NEW +             
-                (2*TAB) + 'return installer.execute( "dpkg", ["-l", pkg] )[1] == 0' + END +
-                TAB + 'else if( isRpmInstalled() )' + NEW +             
-                (2*TAB) + 'return installer.execute( "rpm", ["-q", pkg] )[1] == 0' + END +
-                TAB + 'throw new Error("No supported package manager found.")' + END +                                                     
+            TAB + 'if( isDpkgInstalled() )' + NEW +             
+            (2*TAB) + 'return installer.execute( "dpkg", ["-l", pkg] )[1] == 0' + END +
+            TAB + 'else if( isRpmInstalled() )' + NEW +             
+            (2*TAB) + 'return installer.execute( "rpm", ["-q", pkg] )[1] == 0' + END +
+            TAB + 'throw new Error("No supported package manager found.")' + END +                                                     
             EBLK + NEW +
             'function installPackage( pkg ) ' + SBLK +
-                TAB + 'if( isAptInstalled() )' + NEW +             
-                (2*TAB) + 'return installer.execute( "apt-get", ["install", "-y", pkg] )[1] == 0' + END +
-                TAB + 'else if( isYumInstalled() )' + NEW +             
-                (2*TAB) + 'return installer.execute( "yum", ["install", "-y", pkg] )[1] == 0' + END +
-                TAB + 'throw new Error("No supported package manager found.")' + END +                                                     
+            TAB + 'if( isAptInstalled() )' + NEW +             
+            (2*TAB) + 'return installer.execute( "apt-get", ["install", "-y", pkg] )[1] == 0' + END +
+            TAB + 'else if( isYumInstalled() )' + NEW +             
+            (2*TAB) + 'return installer.execute( "yum", ["install", "-y", pkg] )[1] == 0' + END +
+            TAB + 'throw new Error("No supported package manager found.")' + END +                                                     
             EBLK + NEW +
             'function unInstallPackage( pkg ) ' + SBLK +
-                TAB + 'if( isAptInstalled() )' + NEW +             
-                (2*TAB) + 'return installer.execute( "apt-get", ["remove", "-y", pkg] )[1] == 0' + END +
-                TAB + 'else if( isYumInstalled() )' + NEW +             
-                (2*TAB) + 'return installer.execute( "yum", ["remove", "-y", pkg] )[1] == 0' + END +
-                TAB + 'throw new Error("No supported package manager found.")' + END +                                                     
+            TAB + 'if( isAptInstalled() )' + NEW +             
+            (2*TAB) + 'return installer.execute( "apt-get", ["remove", "-y", pkg] )[1] == 0' + END +
+            TAB + 'else if( isYumInstalled() )' + NEW +             
+            (2*TAB) + 'return installer.execute( "yum", ["remove", "-y", pkg] )[1] == 0' + END +
+            TAB + 'throw new Error("No supported package manager found.")' + END +                                                     
             EBLK + NEW 
             )
                                                     
@@ -2268,13 +2271,20 @@ Controller.prototype.Dynamic%sCallback = function() {
            
     def __genPageChangeCallbackBody( self ):
 
-        prepend =( _QtIfwScript.ifElevated( isNegated=True ) +
-                    _QtIfwScript.silentQuit( "Elevated privileges required!" ) )                 
-        append  = ""
-
         TAB = _QtIfwScript.TAB
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK                                    
+
+        prepend =(
+            TAB + ('if( pageId == %s )' % (
+                QtIfwControlScript.toDefaultPageId( 
+                    QT_IFW_INTRO_PAGE),)) + SBLK +              
+                    _QtIfwScript.ifElevated( isNegated=True ) +
+                        _QtIfwScript.quit( "Elevated privileges required!", 
+                                           isSilent=True ) +
+            EBLK         
+            )                 
+        append  = ""
 
         preInstallPageNames=[]
         postInstallPageNames=[]                        
@@ -2450,8 +2460,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.introductionPageCallbackBody = (
             _QtIfwScript.log("IntroductionPageCallback") +            
             _QtIfwScript.ifInstalling( isMultiLine=True ) +
-                QtIfwControlScript._disableAuthErrorPrompt() +
-                _QtIfwScript.gainElevation() +                
+                _QtIfwScript.elevate() +                
             _QtIfwScript.END_BLOCK +   
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
