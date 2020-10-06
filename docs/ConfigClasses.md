@@ -359,6 +359,15 @@ Attributes & default values:
 
     onPageChangeCallbackBody = None
     isAutoPageChangeCallBack = True
+
+    onPageInsertRequestCallbackBody = None
+    isAutoPageInsertRequestCallBack = True
+
+    onPageRemoveRequestCallbackBody = None
+    isAutoPageRemoveRequestCallBack = True
+
+    onPageVisibilityRequestCallbackBody = None
+    isAutoPageVisibilityRequestCallBack = True
       
     onValueChangeCallbackBody = None
     isAutoValueChangeCallBack = True
@@ -818,19 +827,20 @@ Constructor:
         
 Attributes:   
 
-    name           = <required>
-    pageOrder      = None  
+    name             = <required>
+    pageOrder        = None  
  
-    content        = None
-    replacements   = {}        	
+    content          = None
+    replacements     = {}        	
  
-    onLoad         = None
-    onEnter        = None       
-    eventHandlers  = {}
-    supportScript  = None  
+    onLoad           = None
+    onEnter          = None       
+    eventHandlers    = {}
+    supportScript    = None  
     
-    _isOnLoadBase  = True    
-    _isOnEnterBase = True
+    isIncInAutoPilot = False
+    _isOnLoadBase    = True    
+    _isOnEnterBase   = True
         
 Functions:
 
@@ -866,6 +876,11 @@ this specified page.
 This is executed within a **controller** script, it's scope is limited to such.  Therefore,
 **package** script functions and globals are not available here.   
 
+**isIncInAutoPilot**: This attribute is only applied when the page is **not** a replacement.  Note, this is `False` by default.  Set this to `True`, to load this "additional" page
+when running in "auto pilot mode" (e.g. within a 
+[Silent Installer](LowLevel.md#silent-installers) context.  It is then on you to ensure
+that alternate installation mode functions as desired.  See `_isOnEnterBase`. 
+
 **_isOnLoadBase**: *Protected* Note, this is enabled by default. When this is set to `True`,
 an auto generated script will be added to the installer, which will execute prior to
 `onLoad`.  This "base" script will dynamically resize the page, so it fits properly on each
@@ -877,7 +892,7 @@ See [Installer Scripting](LowLevel.md#installer-scripting)
 
 **_isOnEnterBase**: *Protected* Note, this is enabled by default. When this is set to `True`, 
 an auto generated script will be added to the installer, which will execute prior to `onEnter`.  This "base" script will automatically "click" the "Next" button upon displaying the page, when running in "auto pilot mode" (e.g. within a 
-[Silent Installer](LowLevel.md#silent-installers) context).  
+[Silent Installer](LowLevel.md#silent-installers) context.  
 Having this in place will additionally create a `var page`, which refers to
 this page. The `onEnter` script may then make use of that variant to access the page widget or the child widgets on it.
 See [Installer Scripting](LowLevel.md#installer-scripting)

@@ -8,7 +8,6 @@ import six
 
 from distbuilder import util
 from distbuilder.util import *  # @UnusedWildImport
-from builtins import staticmethod
 
 QT_IFW_DEFAULT_VERSION = "3.2.2"
 QT_IFW_DOWNLOAD_URL_BASE = "https://download.qt.io/official_releases/qt-installer-framework"
@@ -1588,10 +1587,13 @@ class _QtIfwScript:
             TAB + 'throw new Error("Owner not found for page: " + pageName )' + END +
             EBLK + NEW +                                    
             'function insertCustomPage( pageName, position ) ' + SBLK +
-            TAB + 'installer.addWizardPage( getPageOwner( pageName ), pageName, position )' + END +
+            TAB + 'try{ installer.addWizardPage( ' +
+                'getPageOwner( pageName ), pageName, position ); }' + NEW +
+            TAB + 'catch(e){ console.log("Warning: Cannot insert page: " + pageName ); }' + NEW +                
             EBLK + NEW +
             'function removeCustomPage( pageName ) ' + SBLK +
-            TAB + 'installer.removeWizardPage( getPageOwner( pageName ), pageName )' + END +
+            TAB + 'try{ installer.removeWizardPage( getPageOwner( pageName ), pageName ); }' + NEW +
+            TAB + 'catch(e){ console.log("Warning: Cannot remove page: " + pageName ); }' + NEW +
             EBLK + NEW +                                    
             'function setCustomPageText( page, title, description ) {' + NEW +
             '    page.windowTitle = title;' + NEW +
@@ -1819,6 +1821,27 @@ Controller.prototype.onCurrentPageChanged = function(pageId){
     __CONTROLER_VALUE_CHANGED_CALLBACK_FUNC_TMPLT =(            
 """
 Controller.prototype.onValueChanged = function(key,value){
+    %s
+}
+""")
+
+    __CONTROLER_PAGE_INSERT_REQUESTED_CALLBACK_FUNC_TMPLT =(            
+"""
+Controller.prototype.onWizardPageInsertionRequested = function(page, pageId){
+    %s
+}
+""")
+
+    __CONTROLER_PAGE_REMOVE_REQUESTED_CALLBACK_FUNC_TMPLT =(            
+"""
+Controller.prototype.onWizardPageRemovalRequested = function(page){
+    %s
+}
+""")
+
+    __CONTROLER_PAGE_VISIBILITY_REQUESTED_CALLBACK_FUNC_TMPLT =(            
+"""
+Controller.prototype.onWizardPageVisibilityChangeRequested = function(isVisible, pageId){
     %s
 }
 """)
@@ -2083,7 +2106,16 @@ Controller.prototype.Dynamic%sCallback = function() {
         
         self.onPageChangeCallbackBody = None
         self.isAutoPageChangeCallBack = True
-                                                   
+                
+        self.onPageInsertRequestCallbackBody = None
+        self.isAutoPageInsertRequestCallBack = True
+
+        self.onPageRemoveRequestCallbackBody = None
+        self.isAutoPageRemoveRequestCallBack = True
+
+        self.onPageVisibilityRequestCallbackBody = None
+        self.isAutoPageVisibilityRequestCallBack = True
+        
         self.isIntroductionPageVisible = True                                                                    
         self.introductionPageCallbackBody = None
         self.isAutoIntroductionPageCallback = True
@@ -2194,6 +2226,24 @@ Controller.prototype.Dynamic%sCallback = function() {
             self.script += (
                 QtIfwControlScript.__CONTROLER_VALUE_CHANGED_CALLBACK_FUNC_TMPLT % (
                 self.onValueChangeCallbackBody, ) )
+
+        if self.isAutoPageInsertRequestCallBack: self.__genPageInsertRequestCallbackBody()
+        if self.onPageInsertRequestCallbackBody:        
+            self.script += (
+                QtIfwControlScript.__CONTROLER_PAGE_INSERT_REQUESTED_CALLBACK_FUNC_TMPLT % (
+                self.onPageInsertRequestCallbackBody, ) )
+
+        if self.isAutoPageRemoveRequestCallBack: self.__genPageRemoveRequestCallbackBody()
+        if self.onPageRemoveRequestCallbackBody:        
+            self.script += (
+                QtIfwControlScript.__CONTROLER_PAGE_REMOVE_REQUESTED_CALLBACK_FUNC_TMPLT % (
+                self.onPageRemoveRequestCallbackBody, ) )
+                     
+        if self.isAutoPageVisibilityRequestCallBack: self.__genPageVisibilityRequestCallbackBody()
+        if self.onPageVisibilityRequestCallbackBody:        
+            self.script += (
+                QtIfwControlScript.__CONTROLER_PAGE_VISIBILITY_REQUESTED_CALLBACK_FUNC_TMPLT % (
+                self.onPageVisibilityRequestCallbackBody, ) )
                                  
         if self.isAutoControllerConstructor:
             self.__genControllerConstructorBody()
@@ -2268,6 +2318,19 @@ Controller.prototype.Dynamic%sCallback = function() {
             self.onValueChangeCallbackBody=""                                            
         self.onValueChangeCallbackBody =( 
             prepend + self.onValueChangeCallbackBody + append )
+
+    def __genPageInsertRequestCallbackBody( self ):
+        self.onPageInsertRequestCallbackBody = _QtIfwScript.log( 
+            '"page insert request before id:" + pageId', isAutoQuote=False ) 
+        
+    def __genPageRemoveRequestCallbackBody( self ):
+        self.onPageRemoveRequestCallbackBody = _QtIfwScript.log( 
+            '"page remove request"', isAutoQuote=False )  
+    
+    def __genPageVisibilityRequestCallbackBody( self  ):
+        self.onPageVisibilityRequestCallbackBody = _QtIfwScript.log( 
+            '"page visibility request isVisible " + isVisible + " id: " + pageId', 
+            isAutoQuote=False )  
            
     def __genPageChangeCallbackBody( self ):
 
@@ -2276,6 +2339,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         EBLK =_QtIfwScript.END_BLOCK                                    
 
         prepend =(
+            TAB + _QtIfwScript.log( '"page changed to id: " + pageId', isAutoQuote=False ) +
             TAB + ('if( pageId == %s )' % (
                 QtIfwControlScript.toDefaultPageId( 
                     QT_IFW_INTRO_PAGE),)) + SBLK +              
@@ -2308,7 +2372,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         prepend +=(
             TAB + ('if( pageId == %s )' % (
                 QtIfwControlScript.toDefaultPageId( 
-                    QT_IFW_FINISHED_PAGE),)) + SBLK +
+                    QT_IFW_FINISHED_PAGE),)) + SBLK +                                    
             ((2*TAB) + QtIfwControlScript.hideDefaultPage( 
                 QT_IFW_INSTALL_PAGE ) 
                 if len(postInstallPageNames) > 0 else "")  +
@@ -2366,15 +2430,15 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + 'installer.setValue( ' +
                 ('"%s"' % (_REMOVE_TARGET_KEY,) ) + ', "" )' + END +
             TAB + 'clearErrorLog()' + END +
-            TAB + _QtIfwScript.logSwitch( _KEEP_TEMP_SWITCH ) + 
+            TAB + _QtIfwScript.logValue( _KEEP_TEMP_SWITCH ) + 
             TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.START_MENU_DIR_CMD_ARG ) +
-            TAB + _QtIfwScript.logSwitch( _QtIfwScript.ACCEPT_EULA_CMD_ARG ) +
+            TAB + _QtIfwScript.logValue( _QtIfwScript.ACCEPT_EULA_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.INSTALL_LIST_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.EXCLUDE_LIST_CMD_ARG ) +
-            TAB + _QtIfwScript.logSwitch(  _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +
+            TAB + _QtIfwScript.logValue( _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
-            TAB + _QtIfwScript.logSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +                                                 
+            TAB + _QtIfwScript.logValue( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +                                                 
             TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) +
             TAB + '__installerTempPath()' + END +
             TAB + '__maintenanceTempPath()' + END +            
@@ -2411,7 +2475,25 @@ Controller.prototype.Dynamic%sCallback = function() {
             hidePage( QT_IFW_INSTALL_PAGE )
         if not self.isFinishedPageVisible:                                                                    
             hidePage( QT_IFW_FINISHED_PAGE )
-                
+
+        if self.onPageInsertRequestCallbackBody:                
+            self.controllerConstructorBody += ( 
+                QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
+                    ("installer.wizardPageInsertionRequested", 
+                     "onWizardPageInsertionRequested") 
+                )        
+        if self.onPageRemoveRequestCallbackBody:                
+            self.controllerConstructorBody += ( 
+                QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
+                    ("installer.wizardPageRemovalRequested", 
+                     "onWizardPageRemovalRequested") 
+                )        
+        if self.onPageVisibilityRequestCallbackBody:                
+            self.controllerConstructorBody += ( 
+                QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
+                    ("installer.wizardPageVisibilityChangeRequested", 
+                     "onWizardPageVisibilityChangeRequested") 
+                )                        
         if self.onPageChangeCallbackBody:                
             self.controllerConstructorBody += ( 
                 QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
@@ -2892,8 +2974,9 @@ Component.prototype.%s = function(){
         self.componentLoadedCallbackBody = ""
         replacePage = None
         for p in self.uiPages:
-            # Replace default pages            
-            if p.name.startswith( QT_IFW_REPLACE_PAGE_PREFIX ):
+            isReplacement = p.name.startswith( QT_IFW_REPLACE_PAGE_PREFIX )
+            
+            if isReplacement:
                 replacePage = p.name[ len(QT_IFW_REPLACE_PAGE_PREFIX): ]
                 if replacePage in _DEFAULT_PAGES : 
                     self.componentLoadedCallbackBody += ( NEW + 
@@ -2901,7 +2984,10 @@ Component.prototype.%s = function(){
                             TAB + (HIDE_DEFAULT_PAGE_TMPLT % (replacePage,)) + END 
                     )         
             else :
-                # Insert custom pages
+                if p.isIncInAutoPilot:
+                    self.componentLoadedCallbackBody +=(
+                        _QtIfwScript.ifCmdLineSwitch( 
+                            _QtIfwScript.AUTO_PILOT_CMD_ARG, isMultiLine=True))
                 self.componentLoadedCallbackBody += ( NEW + TAB + 
                     (ADD_CUSTOM_PAGE_TMPLT % ( p.name, p.pageOrder )) + END )         
 
@@ -2916,6 +3002,9 @@ Component.prototype.%s = function(){
             if p.onLoad:
                 self.componentLoadedCallbackBody += p.onLoad
 
+            if not isReplacement and p.isIncInAutoPilot: 
+                self.componentLoadedCallbackBody += _QtIfwScript.END_BLOCK
+    
     def __appendUiPageCallbacks( self ):    
         if self.uiPages: 
             for p in self.uiPages:
@@ -3434,15 +3523,17 @@ class QtIfwUiPage():
     def __init__( self, name, pageOrder=None, 
                   sourcePath=None, content=None,
                   onLoad=None, onEnter=None ) :
-        self.name            = name
-        self.pageOrder       = pageOrder if pageOrder in _DEFAULT_PAGES else None        
-        self.onLoad          = onLoad
-        self.onEnter         = onEnter
-        self.eventHandlers   = {} 
-        self.supportScript   = None
-        self.replacements    = {}
-        self._isOnLoadBase   = True
-        self._isOnEnterBase  = True        
+        self.name             = name
+        self.pageOrder        =( pageOrder if pageOrder in _DEFAULT_PAGES 
+                                 else None )        
+        self.onLoad           = onLoad
+        self.onEnter          = onEnter
+        self.eventHandlers    = {} 
+        self.supportScript    = None
+        self.replacements     = {}
+        self.isIncInAutoPilot = False
+        self._isOnLoadBase    = True
+        self._isOnEnterBase   = True        
         if sourcePath:
             with open( sourcePath, 'r' ) as f: self.content = f.read()
         else: self.content = content  
@@ -4716,14 +4807,14 @@ def __postBuild( qtIfwConfig ):  # @UnusedVariable
 
 def __toSilentConfig( qtIfwConfig ):
     # Minimum visible pages required for functionality
-    qtIfwConfig.controlScript.isIntroductionPageVisible         = True  # required                                                                   
+    qtIfwConfig.controlScript.isIntroductionPageVisible         = True  # required to install                                                                   
     qtIfwConfig.controlScript.isTargetDirectoryPageVisible      = False
     qtIfwConfig.controlScript.isComponentSelectionPageVisible   = False
     qtIfwConfig.controlScript.isLicenseAgreementPageVisible     = False
     qtIfwConfig.controlScript.isStartMenuDirectoryPageVisible   = False
-    qtIfwConfig.controlScript.isReadyForInstallationPageVisible = True  # required
-    qtIfwConfig.controlScript.isPerformInstallationPageVisible  = True  # required
-    qtIfwConfig.controlScript.isFinishedPageVisible             = False 
+    qtIfwConfig.controlScript.isReadyForInstallationPageVisible = True  # required to install
+    qtIfwConfig.controlScript.isPerformInstallationPageVisible  = True  # required to install
+    qtIfwConfig.controlScript.isFinishedPageVisible             = True  # breaks auto pilot logic if missing  
     
 def __buildSilentWrapper( qtIfwConfig ) :
     print( "Building silent wrapper executable...\n" )
