@@ -24,5 +24,5 @@ f.ifwUiPages = QtIfwSimpleTextPage( "Example", QT_IFW_TARGET_DIR_PAGE,
 )
 
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
-p.isTestingInstall = True
+p.isInstallTest = True
 p.run()       

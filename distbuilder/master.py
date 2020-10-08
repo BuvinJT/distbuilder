@@ -42,6 +42,7 @@ from distbuilder.qt_installer import \
     , _SILENT_FORCED_ARGS \
     , _LOUD_FORCED_ARGS \
     
+from _ast import Is
 # -----------------------------------------------------------------------------       
 class ConfigFactory:
     
@@ -392,10 +393,10 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
         self.isZipped = isZipped
                         
         self.isPyInstDupDataPatched = None
-        self.isTestingObfuscation   = False
-        self.isTestingExe           = False
-        self.exeTestArgs            = []        
+        self.isObfuscationTest      = False
+        self.isExeTest              = False
         self.isElevatedTest         = False
+        self.exeTestArgs            = []        
         
         self._pyInstConfig = None
         
@@ -432,7 +433,7 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
         self.binDir, self.binPath = (
             buildExecutable( pyInstConfig=self._pyInstConfig, 
                              opyConfig=opyConfig ) )
-        if self.isTestingExe : 
+        if self.isExeTest : 
             run( self.binPath, self.exeTestArgs,
                  isElevated=self.isElevatedTest, isDebug=True )
         
@@ -460,10 +461,10 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
         self.isDesktopTarget     = isDesktopTarget
         self.isHomeDirTarget     = isHomeDirTarget
         
-        self.isTestingInstall         = False        
-        self.isAutoTestInstall        = False
-        self.isVerboseTestInstall     = True
-        self.isScriptDebugTestInstall = False
+        self.isInstallTest            = False        
+        self.isAutoInstallTest        = False
+        self.isVerboseInstallTest     = True
+        self.isScriptDebugInstallTest = False
         
         # Results
         self.setupPath = None
@@ -491,17 +492,16 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
             self.setupPath = moveToDesktop( self.setupPath )
         elif self.isHomeDirTarget :
             self.setupPath = moveToHomeDir( self.setupPath )    
-        if self.isTestingInstall or self.isAutoTestInstall:            
+        if self.isInstallTest or self.isAutoInstallTest:            
             verboseArgs = ( 
-                [QT_IFW_VERBOSE_SWITCH] if self.isVerboseTestInstall else [] )
-            debugArgs = _DEBUG_SCRIPTS_ARGS if self.isScriptDebugTestInstall else [] 
+                [QT_IFW_VERBOSE_SWITCH] if self.isVerboseInstallTest else [] )
+            debugArgs = _DEBUG_SCRIPTS_ARGS if self.isScriptDebugInstallTest else [] 
             autoArgs = ( 
                 ( _SILENT_FORCED_ARGS if self.configFactory.isSilentSetup else
                   _LOUD_FORCED_ARGS ) 
-                if self.isAutoTestInstall else [] )
+                if self.isAutoInstallTest else [] )
             run( self.setupPath, verboseArgs + debugArgs + autoArgs,
-                 isDebug=True,
-                 isElevated=self.isAutoTestInstall )
+                 isDebug=True, isElevated=self.isAutoInstallTest )
         
     # Override these to further customize the build process once the 
     # ConfigFactory has produced the initial config object

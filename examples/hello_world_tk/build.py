@@ -8,7 +8,7 @@ f.companyLegalName = "Some Company Inc."
 f.binaryName       = "HelloWorldTk"
 f.isGui            = True        
 f.entryPointPy     = "hello.py"  
-f.isObfuscating    = True
+f.isObfuscating    = False
 f.iconFilePath     = "demo.ico" 
 f.version          = (1,0,0,0)
 f.setupName        = "HelloWorldTkSetup"
@@ -16,7 +16,7 @@ f.setupName        = "HelloWorldTkSetup"
 class BuildProcess( PyToBinInstallerProcess ):
     def onOpyConfig( self, cfg ):    
         cfg.external_modules.extend( [ 'tkinter', 'tkinter.ttk' ] )
-    #def onPyPackageProcess( self, prc ): prc.isTestingExe = True        
+    #def onPyPackageProcess( self, prc ): prc.isExeTest = True        
 p = BuildProcess( configFactory, isDesktopTarget=True )
-p.isTestingInstall = True
+p.isInstallTest = True
 p.run()       

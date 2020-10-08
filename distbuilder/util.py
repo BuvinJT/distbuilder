@@ -255,7 +255,7 @@ def __windowsElevated( exePath, args=[], wrkDir=None ):
         binPathArg = "'%s'" % (_normEscapePath(exePath),)
         argsArg= '[ %s ]' % (','.join(
             ["'%s'" % (_normEscapePath(a),) for a in args]),)
-        wrkDirArg="'%s'" % (wrkDir,) if wrkDir else "None" 
+        wrkDirArg="'%s'" % (_normEscapePath(wrkDir),) if wrkDir else "None" 
         isElevatedArg="True"
         isDebugArg="True"        
         sharedFilePathArg = "'%s'" % (_normEscapePath(sharedFilePath),)
@@ -269,7 +269,7 @@ def __windowsElevated( exePath, args=[], wrkDir=None ):
         if PY2:
             verb = unicode(verb)      # @UndefinedVariable
             pyPath = unicode(pyPath)  # @UndefinedVariable
-            args = unicode(args)      # @UndefinedVariable   
+            args = unicode(args)      # @UndefinedVariable          
         hwd = ctypes.windll.shell32.ShellExecuteW( 
             None, verb, pyPath, args, None, __SW_HIDE )
         return int(hwd) > 32 # check if launched elevated    
@@ -277,7 +277,7 @@ def __windowsElevated( exePath, args=[], wrkDir=None ):
     def __getResults( sharedFilePath ):
         POLL_FREQ_SECONDS = 0.25
         sharedFile = _WindowsSharedFile( isProducer=False, 
-                                         filePath=sharedFilePath)
+                                         filePath=sharedFilePath)        
         retCode = None
         while retCode is None :
             sleep( POLL_FREQ_SECONDS )

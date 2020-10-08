@@ -19,7 +19,7 @@ f.version          = (1,0,0,0)
 f.productName      = "Hello UnWrapped Example"
 f.setupName        = "HelloUnWrappedSetup"
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
-p.isTestingInstall = True
+p.isInstallTest = True
 #p.run()       
 
 #------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ f.productName   = "Hello WorkDir Example"
 f.setupName     = "HelloWorkDirSetup"
 f.pkgExeWrapper = f.qtIfwExeWrapper( workingDir=QT_IFW_TARGET_DIR )  
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
-p.isTestingInstall = True
+p.isInstallTest = True
 #p.run()       
 
 #------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ f.productName   = "Hello Elevated Example"
 f.setupName     = "HelloElevatedSetup"
 f.pkgExeWrapper = f.qtIfwExeWrapper( isElevated=True )  
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
-p.isTestingInstall = True
+p.isInstallTest = True
 #p.run()       
 
 #------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ f.productName   = "Hello EnvVars Example"
 f.setupName     = "HelloEnvVarsSetup"
 f.pkgExeWrapper = f.qtIfwExeWrapper( envVars={ "TEST_ENV_VAR": "test" } )  
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
-p.isTestingInstall = True
+p.isInstallTest = True
 #p.run()       
 
 #------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ f.productName   = "Hello Args Example"
 f.setupName     = "HelloArgsSetup"
 f.pkgExeWrapper = f.qtIfwExeWrapper( args=["arg1", "arg 2 w spaces", "arg3"] )  
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
-p.isTestingInstall = True
+p.isInstallTest = True
 #p.run()       
 
 #------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ f.pkgExeWrapper = f.qtIfwExeWrapper(
     , args=["arg1", "arg 2 w spaces", "arg3"]
 )  
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
-p.isTestingInstall = True
+p.isInstallTest = True
 #p.run()       
 
 #------------------------------------------------------------------------------
@@ -129,5 +129,5 @@ f.pkgExeWrapper = f.qtIfwExeWrapper( wrapperScript=launchScript )
 #    , args=["arg1", "arg 2 w spaces", "arg3"]
 #)
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
-p.isTestingInstall = True
+p.isInstallTest = True
 #p.run()       

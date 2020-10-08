@@ -109,7 +109,7 @@ a common pattern for using some of the primary distbuilder classes.
 
 Locate the following commented out line in the Hello World Tk build script:
 
-    #def onPyPackageProcess( self, prc ): prc.isTestingExe = True
+    #def onPyPackageProcess( self, prc ): prc.isExeTest = True
 
 Uncomment that, and run the build process again.  In the 
 middle of the process, the standalone binary will be run 
@@ -123,7 +123,7 @@ object", automatically set it up for the client implementation,
 and then "pass it through" an overridable function where you may
 access such and revise it for your own needs prior to its use.  
 
-So, what's the point of setting `prc.isTestingExe = True` ?
+So, what's the point of setting `prc.isExeTest = True` ?
 If you have run this example program, the most astute observer may notice 
 (on Windows or Mac, but not Linux...) 
 that the stdout/err messages (seen by clicking the "Hello Tkinter" 

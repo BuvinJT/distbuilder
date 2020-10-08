@@ -625,7 +625,8 @@ Attributes & default values:
 
 ## QtIfwExternalOp
 
-This class is used to represent shell command / external utility invocations.    
+This class is used to represent and control the invocation of shell commands, 
+external utilities, and embedded [ExecutableScripts](LowLevel.md#executablescript).    
 It is employed by [QtIfwPackageScript](#qtifwpackagescript) to 
 add operations to the installation, and/or uninstallation,
 process of the *package* to which those operations are associated.     
@@ -652,7 +653,7 @@ Constructor:
 	QtIfwExternalOp( 
               script=None,       exePath=None,       args=[], successRetCodes=[0],  
         uninstScript=None, uninstExePath=None, uninstArgs=[],  uninstRetCodes=[0],
-        isElevated=False, workingDir=QT_IFW_TARGET_DIR, onErrorMessage=None ):
+        isElevated=False, workingDir=QT_IFW_TARGET_DIR, onErrorMessage=None )
 
 Attributes & default values:
                   

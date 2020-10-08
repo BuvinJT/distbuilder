@@ -473,10 +473,10 @@ Attributes & default values:
     name                   = "Python to Binary Package Process"
 	isZipped               = False	                
 	isPyInstDupDataPatched = None
-	isTestingObfuscation   = False
-	isTestingExe           = False
-	exeTestArgs            = []        
+	isObfuscationTest      = False
+	isExeTest              = False
 	isElevatedTest         = False      
+	exeTestArgs            = []        
         
     # Results 
     binDir  = None
@@ -529,7 +529,7 @@ You will nearly always when to leave this alone.  It is only
 made optional because it is not a "standard" part of a PyInstaller  
 process.
         
-#### isTestingObfuscation   
+#### isObfuscationTest   
 
 This option is intended to be toggled manually during a testing and 
 debugging phase of the build process definition.
@@ -546,12 +546,12 @@ This option LEAVES the obfuscated code in place for further testing and
 inspection.  This is in opposition to the normal
 deletion of such after having embedded the code in the binary.   	
 
-#### isTestingExe, exeTestArgs, isElevatedTest               
+#### isExeTest, exeTestArgs, isElevatedTest               
 
-The `isTestingExe` attribute is similar in nature to is `isTestingObfuscation`.  
+The `isExeTest` attribute is similar in nature to is `isObfuscationTest`.  
 This launches the resulting binary after building it.  
-Unlike `isTestingObfuscation`, this does NOT exit build process.  Upon exiting 
-the program, any remaining steps in the build process are continued.   	  
+Unlike `isObfuscationTest`, this does NOT exit the build process.  Upon exiting 
+the program you are testing, any remaining steps in the build process are continued.   	  
 The `exeTestArgs` and `isElevatedTest` attributes are additionally provided
 to vet the result in an automated fashion in the event such options are useful.
 
@@ -631,9 +631,10 @@ Attributes & default values:
     isDesktopTarget = False
     isHomeDirTarget = False
             
-    isTestingInstall     = False
-    isAutoTestInstall    = False
-    isVerboseTestInstall = True
+    isInstallTest            = False
+    isAutoInstallTest        = False
+    isVerboseInstallTest     = True
+    isScriptDebugInstallTest = False
         
 "Virtual" configuration functions to override:  
 (Note the order shown is that in which these functions are invoked)
@@ -667,18 +668,32 @@ moved to either of these respective locations in the end.
 If neither are `True`, the installer is simply left in the build directory.
 If both are `True`, priority is given to `isDesktopTarget`.  
          
-#### isTestingInstall, isAutoTestInstall, isVerboseTestInstall  
+#### isInstallTest, isAutoInstallTest, isVerboseInstallTest  
 
 Upon building the installer (and moving it to a target directory if so
-directed), the installer will be launched when either `isTestingInstall`,
-or `isAutoTestInstall` is enabled. The `isVerboseTestInstall` option controls
+directed), the installer will be launched when either `isInstallTest`,
+or `isAutoInstallTest` is enabled. The `isVerboseInstallTest` option controls
 the level of debugging output logged to the console during the installation.
 
-The `isTestingInstall` simply launches the installer. In contrast, `isAutoTestInstall`
+The `isInstallTest` simply launches the installer. In contrast, `isAutoInstallTest`
 runs it in "auto pilot" mode (i.e. performs the installation as well).  Note that an 
 "elevated privileges" option was NOT provided as such is to built into all silent 
 installers (i.e. they auto elevate themselves), and "loud"/gui installers have their 
 own internal controls for this. 
+
+#### isScriptDebugInstallTest
+
+This flag may be useful in the event you are embedding scripts into an installer
+via a [QtIfwExternalOp](ConfigClasses.md#qtifwexternalop) using an  
+[ExecutableScript](LowLevel.md#executablescript).  When enabled, the dynamically
+generated script (with installer driven value substitutions where applicable) 
+will be left behind in a temp folder after running the installer,
+rather than auto purging that upon completion.  If you have effectively built the 
+script via Python "helpers" using a function e.g. 
+`QtIfwExternalOp.CreateStartupEntry(...)`, this may be especially helpful to see
+what was actually produced and executed, through a series of abstraction layers
+that ultimately produce platform specific scripts, nested under the hood inside
+an installer.   
 
 #### onInitialize(), onFinalize()   
 
@@ -763,9 +778,9 @@ Attributes & default values:
     isDesktopTarget = False
     isHomeDirTarget = False
             
-    isTestingInstall     = False
-    isAutoTestInstall    = False
-    isVerboseTestInstall = True
+    isInstallTest     = False
+    isAutoInstallTest    = False
+    isVerboseInstallTest = True
         
 "Virtual" configuration functions to override:  
 (Note the order shown is that in which these functions are invoked)
@@ -821,7 +836,7 @@ is used.
 See the documentation for these attributes as provided for the 
 [PyToBinInstallerProcess](#pytobininstallerprocess) class.  
 
-#### isTestingInstall, isAutoTestInstall, isVerboseTestInstall  
+#### isInstallTest, isAutoInstallTest, isVerboseInstallTest  
 
 See the documentation for these attributes as provided for the 
 [PyToBinInstallerProcess](#pytobininstallerprocess) class.  

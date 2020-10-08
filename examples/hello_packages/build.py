@@ -43,5 +43,5 @@ class BuildProcess( RobustInstallerProcess ):
             
 p = BuildProcess( masterConfigFactory, pyPkgConfigFactoryDict=pkgFactories, 
                   isDesktopTarget=True )
-p.isTestingInstall = True
+p.isInstallTest = True
 p.run()       

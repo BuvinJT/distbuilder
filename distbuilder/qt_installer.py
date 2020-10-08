@@ -5035,7 +5035,7 @@ import glob
     if os.path.exists( keepAliveFilePath ):
         os.remove( keepAliveFilePath )
     else: 
-        time.sleep( RUN_PROG_DETACHED_DELAY_SECS  )
+        time.sleep( RUN_PROG_DETACHED_DELAY_SECS )
         process.kill()        
         retCode=0          
 """ ).format( _QtIfwScript._KEEP_ALIVE_PATH_CMD_ARG )

@@ -9,5 +9,5 @@ if IS_LINUX :
 helloQtPkg = packageFactory.qtIfwPackage()
 p = RobustInstallerProcess( masterFactory, ifwPackages=[helloQtPkg],
                             isDesktopTarget=True )
-p.isTestingInstall = True
+p.isInstallTest = True
 p.run()

@@ -30,5 +30,5 @@ class BuildProcess( PyToBinInstallerProcess ):
         addKillOps( pkg ) 
     
 p = BuildProcess( configFactory, isDesktopTarget=True )
-p.isTestingInstall = True
+p.isInstallTest = True
 p.run()       

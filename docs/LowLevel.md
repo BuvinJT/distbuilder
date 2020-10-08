@@ -299,6 +299,11 @@ truncated for the user's benefit.  So, rather than "com.company.product", the id
 simply "product".  If any of the packages do not have the same prefix as the rest, they
 will all be be listed in the long manner.
 
+**-r / --run**: Run the program automatically post installation.  This option is only made 
+available when the installer naturally provides the option to choose this at runtime (i.e. in non-silent mode).  If the option is not exposed to the user normally, it is not exposed 
+here.  When available, this is **disabled** by default.  You must explicitly opt to launch 
+the program by including this switch.
+
 ### Installer Variables
 
 The following constants have been provided, which correspond to dynamic variables

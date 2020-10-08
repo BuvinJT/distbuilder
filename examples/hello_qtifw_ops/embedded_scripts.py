@@ -115,7 +115,7 @@ end tell
         addEmbeddedScripts( pkg )
     
 p = BuildProcess( configFactory, isDesktopTarget=True )
-p.isTestingInstall = True
+p.isInstallTest = True
 # uncomment to leave scripts in temp directory, post dynamic modifications 
-# p.isScriptDebugTestInstall = True   
+# p.isScriptDebugInstallTest = True   
 p.run()       
