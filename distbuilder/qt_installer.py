@@ -415,6 +415,8 @@ class QtIfwPackage:
         self.exeWrapper  = None # class QtIfwExeWrapper
         self.qtCppConfig = None
     
+        self._isMergeProduct = False
+        
     def dirPath( self ) :
         return joinPath( BUILD_SETUP_DIR_PATH,
             normpath( QtIfwPackage.__DIR_PATH_TMPLT 
@@ -4621,13 +4623,14 @@ def __mergePackageObjects( srcPkg, destPkg, subDirName=None ):
             except: destScript.customOperations = srcPkg.pkgScript.customOperations
         if srcPkg.pkgScript.killOps:
             try: destScript.killOps.extend( srcPkg.pkgScript.killOps )
-            except: destScript.killOps = srcPkg.pkgScript.killOps
+            except: destScript.killOps = srcPkg.pkgScript.killOps        
         print( "\nRegenerating installer package script: %s...\n" 
                 % (destScript.path()) )
         destScript._generate()
         destScript.debug()
         destScript.write()    
-        
+    destPkg._isMergeProduct = True
+    
 # -----------------------------------------------------------------------------            
 def buildInstaller( qtIfwConfig, isSilent ):
     ''' returns setupExePath '''
@@ -4641,6 +4644,10 @@ def _stageInstallerPackages( qtIfwConfig, isSilent ):
     __addInstallerResources( qtIfwConfig )     
 
 def _buildInstaller( qtIfwConfig, isSilent ):    
+    for pkg in qtIfwConfig.packages:
+        if pkg._isMergeProduct:
+            __genQtIfwCntrlRes( qtIfwConfig )
+            break          
     setupExePath = __build( qtIfwConfig )    
     __postBuild( qtIfwConfig )
     if isSilent : setupExePath = __buildSilentWrapper( qtIfwConfig )
@@ -4721,7 +4728,7 @@ def __addInstallerResources( qtIfwConfig ) :
     _addQtIfwUiPages( qtIfwConfig, QtIfwOnPriorInstallationPage(), isOverWrite=False )
     _addQtIfwUiPages( qtIfwConfig, QtIfwRemovePriorInstallationPage(), isOverWrite=False )
     
-    genQtIfwCntrlRes( qtIfwConfig ) 
+    __genQtIfwCntrlRes( qtIfwConfig ) 
                                       
     for p in qtIfwConfig.packages :
         if not isinstance( p, QtIfwPackage ) : continue        
@@ -4748,7 +4755,7 @@ def __addInstallerResources( qtIfwConfig ) :
         if isinstance( p.exeWrapper, QtIfwExeWrapper ): 
             __addExeWrapper( p )
                         
-def genQtIfwCntrlRes( qtIfwConfig ) :
+def __genQtIfwCntrlRes( qtIfwConfig ) :
     
     configXml = qtIfwConfig.configXml
     ctrlScript = qtIfwConfig.controlScript

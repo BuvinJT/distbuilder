@@ -651,10 +651,10 @@ other configuration details will be "merged" as well.  Examples of such
 include combining the lists of
 [QtIfwShortcut](ConfigClasses.md#qtifwshortcut) objects, 
 [QtIfwExternalOp](ConfigClasses.md#qtifwexternalop) objects, and the 
-`customOperations` script snipets nested inside the 
+`customOperations` script snippets nested inside the 
 [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript)
 objects, followed by script regeneration to reflect such. 
-Note that all attributes of the source package, which aren't explictly 
+Note that all attributes of the source package, which aren't explicitly 
 handled by the library in this operation, are lost!  Some further 
 customizations to the result may need to be made post merge for a given use case.
 
@@ -685,10 +685,6 @@ this will *NOT* nest the content two levels deep.
 
 This function ultimately consolidates the package items in the list and returns
 the destination object.	
-
-After all package manipulation has been completed, it is recommended that you call
-`genQtIfwCntrlRes`.  This will often help to apply assorted modifications per the new
-configuration, avoiding the need to do so via additional "manual" coding.
 
 ## Code Obfuscation
 

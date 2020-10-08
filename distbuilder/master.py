@@ -40,9 +40,8 @@ from distbuilder.qt_installer import \
     , _DEBUG_SCRIPTS_ARGS \
     , QT_IFW_TARGET_DIR \
     , _SILENT_FORCED_ARGS \
-    , _LOUD_FORCED_ARGS \
+    , _LOUD_FORCED_ARGS 
     
-from _ast import Is
 # -----------------------------------------------------------------------------       
 class ConfigFactory:
     
@@ -409,7 +408,7 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
         if self.configFactory.isObfuscating :
             opyConfig = self.configFactory.opyConfig() 
             self.onOpyConfig( opyConfig )
-            if self.isTestingObfuscation:
+            if self.isObfuscationTest:
                 _, obPath = obfuscatePy( opyConfig )
                 runPy( obPath, self.exeTestArgs, self.isElevatedTest )
                 sys.exit()
