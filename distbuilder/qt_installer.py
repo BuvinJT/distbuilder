@@ -528,6 +528,7 @@ class _QtIfwScript:
     EXCLUDE_LIST_CMD_ARG      = "exclude"
     RUN_PROGRAM_CMD_ARG       = "run"
     AUTO_PILOT_CMD_ARG        = "auto"
+    _KEEP_ALIVE_PATH_CMD_ARG  = "__keepalive"
     TARGET_EXISTS_OPT_CMD_ARG = "onexist"
     TARGET_EXISTS_OPT_FAIL    = "fail"
     TARGET_EXISTS_OPT_REMOVE  = "remove"
@@ -605,11 +606,11 @@ class _QtIfwScript:
 
     __PATH_EXISTS_TMPL = "installer.fileExists( %s )"
 
-    __MAKE_DIR_TMPL   = "makeDir( resolveQtIfwPath( %s ) );"
-    __REMOVE_DIR_TMPL = "removeDir( resolveQtIfwPath( %s ) );"
+    __MAKE_DIR_TMPL   = "makeDir( resolveQtIfwPath( %s ) );\n"
+    __REMOVE_DIR_TMPL = "removeDir( resolveQtIfwPath( %s ) );\n"
     
-    __WRITE_FILE_TMPL  = "writeFile( resolveQtIfwPath( %s ), %s );"
-    __DELETE_FILE_TMPL = "deleteFile( resolveQtIfwPath( %s ), %s );"
+    __WRITE_FILE_TMPL  = "writeFile( resolveQtIfwPath( %s ), %s );\n"
+    __DELETE_FILE_TMPL = "deleteFile( resolveQtIfwPath( %s ) );\n"
 
     __EMBED_RES_TMPLT       = 'var %s = %s;\n\n'
     __EMBED_RES_CHUNK_SIZE  = 128
@@ -844,6 +845,11 @@ class _QtIfwScript:
     def cmdLineListArg( arg, default=[] ):                  
         return _QtIfwScript.lookupValueList( 
             arg, default, delimiter="," )
+
+    @staticmethod
+    def isMaintenanceTool( isNegated=False ):
+        return '( %s%s )' % ( "!" if isNegated else "", 
+                              _QtIfwScript.__IS_MAINTENANCE_TOOL )
 
     @staticmethod
     def ifMaintenanceTool( isNegated=False, isMultiLine=False ):
@@ -1608,15 +1614,19 @@ class _QtIfwScript:
             EBLK + NEW +
             'function execute( binPath, args ) ' + SBLK +
             TAB + 'var cmd = "\\"" + binPath + "\\""' + END +
-            TAB + 'for( i=0; i < args.length; i++ )' + NEW +
-            (2*TAB) + 'cmd += (" " + args[i])' + END +
+            TAB + 'if( args ) ' + SBLK +  
+            (2*TAB) + 'for( i=0; i < args.length; i++ )' + NEW +
+                (3*TAB) + 'cmd += (" " + args[i])' + END +
+            EBLK +    
             TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
             TAB + 'return installer.execute( binPath, args )' + END +
             EBLK + NEW +
             'function executeDetached( binPath, args ) ' + SBLK +
             TAB + 'var cmd = "\\"" + binPath + "\\""' + END +
-            TAB + 'for( i=0; i < args.length; i++ )' + NEW +
-            (2*TAB) + 'cmd += (" " + args[i])' + END +
+            TAB + 'if( args ) ' + SBLK +  
+            (2*TAB) + 'for( i=0; i < args.length; i++ )' + NEW +
+                (3*TAB) + 'cmd += (" " + args[i])' + END +
+            EBLK +    
             TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
             TAB + 'return installer.executeDetached( binPath, args )' + END +
             EBLK + NEW +              
@@ -1842,6 +1852,13 @@ Controller.prototype.onWizardPageRemovalRequested = function(page){
     __CONTROLER_PAGE_VISIBILITY_REQUESTED_CALLBACK_FUNC_TMPLT =(            
 """
 Controller.prototype.onWizardPageVisibilityChangeRequested = function(isVisible, pageId){
+    %s
+}
+""")
+
+    __CONTROLER_FINISHED_CLICKED_CALLBACK_FUNC_TMPLT=(            
+"""
+Controller.prototype.onFinishButtonClicked = function(){
     %s
 }
 """)
@@ -2116,6 +2133,9 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.onPageVisibilityRequestCallbackBody = None
         self.isAutoPageVisibilityRequestCallBack = True
         
+        self.onFinishedClickedCallbackBody     = None
+        self.isAutoFinishedClickedCallbackBody = True
+            
         self.isIntroductionPageVisible = True                                                                    
         self.introductionPageCallbackBody = None
         self.isAutoIntroductionPageCallback = True
@@ -2244,6 +2264,12 @@ Controller.prototype.Dynamic%sCallback = function() {
             self.script += (
                 QtIfwControlScript.__CONTROLER_PAGE_VISIBILITY_REQUESTED_CALLBACK_FUNC_TMPLT % (
                 self.onPageVisibilityRequestCallbackBody, ) )
+
+        if self.isAutoFinishedClickedCallbackBody: self.__genFinishedClickedCallbackBody()
+        if self.onFinishedClickedCallbackBody:        
+            self.script += (
+                QtIfwControlScript.__CONTROLER_FINISHED_CLICKED_CALLBACK_FUNC_TMPLT % (
+                self.onFinishedClickedCallbackBody, ) )
                                  
         if self.isAutoControllerConstructor:
             self.__genControllerConstructorBody()
@@ -2331,9 +2357,25 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.onPageVisibilityRequestCallbackBody = _QtIfwScript.log( 
             '"page visibility request isVisible " + isVisible + " id: " + pageId', 
             isAutoQuote=False )  
+
+    def __genFinishedClickedCallbackBody( self ):
+        EBLK =_QtIfwScript.END_BLOCK
+        
+        prepend = _QtIfwScript.log( "finish clicked" )
+        append =( 
+            _QtIfwScript.ifMaintenanceTool( isNegated=True, isMultiLine=True ) +            
+                _QtIfwScript.ifCmdLineArg( _QtIfwScript._KEEP_ALIVE_PATH_CMD_ARG ) +
+                        _QtIfwScript.deleteFile( 
+                            _QtIfwScript.cmdLineArg( _QtIfwScript._KEEP_ALIVE_PATH_CMD_ARG ), 
+                            isAutoQuote=False ) +
+            EBLK                
+        )        
+        if self.onFinishedClickedCallbackBody is None:
+            self.onFinishedClickedCallbackBody=""                                            
+        self.onFinishedClickedCallbackBody =( 
+            prepend + self.onFinishedClickedCallbackBody + append )
            
     def __genPageChangeCallbackBody( self ):
-
         TAB = _QtIfwScript.TAB
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK                                    
@@ -2430,16 +2472,16 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + 'installer.setValue( ' +
                 ('"%s"' % (_REMOVE_TARGET_KEY,) ) + ', "" )' + END +
             TAB + 'clearErrorLog()' + END +
-            TAB + _QtIfwScript.logValue( _KEEP_TEMP_SWITCH ) + 
+            TAB + _QtIfwScript.logValue( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +                                                 
+            TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.START_MENU_DIR_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.ACCEPT_EULA_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.INSTALL_LIST_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.EXCLUDE_LIST_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +
-            TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
-            TAB + _QtIfwScript.logValue( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +                                                 
-            TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) +
+            TAB + _QtIfwScript.logValue( _KEEP_TEMP_SWITCH ) + 
+            TAB + _QtIfwScript.logValue( _QtIfwScript._KEEP_ALIVE_PATH_CMD_ARG ) +            
             TAB + '__installerTempPath()' + END +
             TAB + '__maintenanceTempPath()' + END +            
             TAB + 'makeDir( Dir.temp() )' + END +
@@ -2504,6 +2546,11 @@ Controller.prototype.Dynamic%sCallback = function() {
                 QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
                     ("installer.valueChanged", "onValueChanged")                 
             )            
+        if self.onFinishedClickedCallbackBody:                
+            self.controllerConstructorBody += (               
+                    QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
+                        ("installer.finishButtonClicked", "onFinishButtonClicked")                 
+                )            
             
         for signalName, (slotName, _) in six.iteritems( self.__standardEventSlots ):    
             self.controllerConstructorBody += ( 
@@ -4939,6 +4986,7 @@ def __silentQtIfwScript( exeName, componentList=[],
         imports = (
 """     
 from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW
+import tempfile
 import glob
 """ )
         
@@ -4946,7 +4994,7 @@ import glob
         preProcess = ""
 
         runInstallerProcess = (
-""" 
+"""                     
     PS                  = "powershell"
     PS_START            = "Start-Process"
     PS_PATH_SWITCH      = "-FilePath"
@@ -4954,18 +5002,43 @@ import glob
     PS_WIN_STYLE_SWITCH = "-WindowStyle"
     PS_WIN_STYLE_HIDDEN = "Hidden"
     PS_ARGS_SWITCH      = "-ArgumentList"
-    argList =( [] if len(ARGS)==0 else
-        [PS_ARGS_SWITCH, ",".join( [ '"%s"' % (a,) for a in ARGS ])] )        
+
+    keepAliveFilePath = tempfile.mktemp( suffix='.keep' )
+    with open( keepAliveFilePath, 'w' ) as f: pass
+    
+    keepAliveArg  = "{0}=%s" % (keepAliveFilePath,)
+    installerArgs = (ARGS if len(ARGS) > 0 else []) + [keepAliveArg]
+    installerArgs = ",".join( [ '"%s"' % (a,) for a in installerArgs ] )         
+
+    psArgs = [PS, PS_START, PS_PATH_SWITCH, EXE_PATH, 
+              PS_WAIT_SWITCH, PS_WIN_STYLE_SWITCH, PS_WIN_STYLE_HIDDEN,
+              PS_ARGS_SWITCH, installerArgs]
+    #print( list2cmdline( psArgs ) )                                    
     processStartupInfo = STARTUPINFO()
     processStartupInfo.dwFlags |= STARTF_USESHOWWINDOW 
-    process = Popen( [PS, PS_START, PS_PATH_SWITCH, EXE_PATH, 
-                      PS_WAIT_SWITCH, PS_WIN_STYLE_SWITCH, PS_WIN_STYLE_HIDDEN] 
-                      + argList, 
-                     cwd=WORK_DIR, shell=False,
-                     startupinfo=processStartupInfo,                                                                
-                     universal_newlines=True,
-                     stdout=PIPE, stderr=PIPE )
-""" )
+    process = Popen( psArgs, cwd=WORK_DIR, 
+                     shell=False, universal_newlines=True,
+                     startupinfo=processStartupInfo )
+
+    # The PowerShell layer is used because it *actually* hides the installer.
+    # The wait switch causes it to wait until not only the installer completes,  
+    # but all of it's descendants (See https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/start-process?view=powershell-7#parameters). 
+    # That even includes *detached* processes! It does not pipe back stdout/err,
+    # despite putting it on the screen.  More complicated PS scripts can read
+    # and pipe back stdout/err, but refused to hide the QtIFW window (like every 
+    # other attempted mechanism). So, instead watch for the "keep alive file" 
+    # to be deleted by the installer, and then kill it from here. 
+    POLL_FREQ_SECS = 0.1
+    RUN_PROG_DETACHED_DELAY_SECS = 2
+    while process.poll() is None and os.path.exists( keepAliveFilePath ):
+        time.sleep( POLL_FREQ_SECS )                                    
+    if os.path.exists( keepAliveFilePath ):
+        os.remove( keepAliveFilePath )
+    else: 
+        time.sleep( RUN_PROG_DETACHED_DELAY_SECS  )
+        process.kill()        
+        retCode=0          
+""" ).format( _QtIfwScript._KEEP_ALIVE_PATH_CMD_ARG )
 
     if isQtIfwInstaller :
         cleanUp = (
@@ -5081,10 +5154,21 @@ def runAppleScript( script ):
             
         runInstallerProcess = (
 """    
-    process = Popen( [ "sudo", BIN_PATH ] + ARGS, cwd=WORK_DIR,
-                     shell=False,
-                     universal_newlines=True,
+    shArgs = [ "sudo", BIN_PATH ] + ARGS
+    #print( list2cmdline( shArgs ) )
+    process = Popen( shArgs, cwd=WORK_DIR,
+                     shell=False, universal_newlines=True,
                      stdout=PIPE, stderr=PIPE )
+                     
+    if IS_VERBOSE :
+        POLL_FREQ_SECS = 0.1        
+        while process.poll() is None:
+            sys.stdout.write( process.stdout.read() )
+            sys.stderr.write( process.stderr.read() )
+            time.sleep( POLL_FREQ_SECS )
+        sys.stdout.write( process.stdout.read() )
+        sys.stderr.write( process.stderr.read() )
+    else : process.wait()                         
 """)                                                     
 
         cleanUp = (
@@ -5173,11 +5257,21 @@ def installTempDependencies():
 
         runInstallerProcess = (
 """
-    process = Popen( [ "sudo", "xvfb-run", "./%s" % (EXE_NAME,) ] + ARGS, 
-                     cwd=WORK_DIR,
-                     shell=False,
-                     universal_newlines=True,
+    shArgs = [ "sudo", "xvfb-run", "./%s" % (EXE_NAME,) ] + ARGS
+    #print( list2cmdline( shArgs ) )
+    process = Popen( shArgs, cwd=WORK_DIR,
+                     shell=False, universal_newlines=True,
                      stdout=PIPE, stderr=PIPE )
+                     
+    if IS_VERBOSE :
+        POLL_FREQ_SECS = 0.1        
+        while process.poll() is None:
+            sys.stdout.write( process.stdout.read() )
+            sys.stderr.write( process.stderr.read() )
+            time.sleep( POLL_FREQ_SECS )
+        sys.stdout.write( process.stdout.read() )
+        sys.stderr.write( process.stderr.read() )
+    else : process.wait()                                              
 """)
 
         cleanUp = (
@@ -5192,7 +5286,7 @@ def installTempDependencies():
         return (
 """
 import os, sys, time, argparse, subprocess
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, list2cmdline
 {3}
 
 SUCCESS=0
@@ -5217,19 +5311,9 @@ def main():
     return exitCode
 
 def runInstaller():
+    retCode=None
 {7}
-                                                     
-    if IS_VERBOSE :
-        POLL_DELAY_SECS = 0.1
-        while process.poll() is None:
-            sys.stdout.write( process.stdout.read() )
-            sys.stderr.write( process.stderr.read() )
-            time.sleep( POLL_DELAY_SECS )
-        sys.stdout.write( process.stdout.read() )
-        sys.stderr.write( process.stderr.read() )
-    else : process.wait()    
-
-    return process.returncode
+    return process.returncode if retCode is None else retCode   
 
 def cleanUp():
 {8}
@@ -5254,7 +5338,7 @@ sys.exit( main() )
         return (
 """
 import os, sys, time, argparse, subprocess
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, list2cmdline
 {17}
 
 SUCCESS=0
@@ -5359,25 +5443,15 @@ def toIwfArgs( wrapperArgs ):
     return args
 
 def runInstaller():
+    retCode=None
 {20}
-                                                     
-    if IS_VERBOSE :
-        POLL_DELAY_SECS = 0.1
-        while process.poll() is None:
-            sys.stdout.write( process.stdout.read() )
-            sys.stderr.write( process.stderr.read() )
-            time.sleep( POLL_DELAY_SECS )
-        sys.stdout.write( process.stdout.read() )
-        sys.stderr.write( process.stderr.read() )
-    else : process.wait()    
-    
     # use error log existence to set an exit code, 
-    # since IFW doesn't support such currently  
+    # since IFW doesn't support such   
     if os.path.exists( IFW_ERR_LOG_PATH ):
         with open( IFW_ERR_LOG_PATH ) as f:
             sys.stderr.write( f.read() )
-        return FAILURE
-    return process.returncode
+        return FAILURE        
+    return process.returncode if retCode is None else retCode 
 
 def cleanUp():
 {21}

@@ -430,8 +430,9 @@ Static Functions:
     ifCmdLineArg( arg, isNegated=False, isMultiLine=False, )  
     ifCmdLineSwitch( arg, isNegated=False, isHardFalse=False, isMultiLine=False )
                       
-    ifInstalling( isMultiLine=False )
+    isMaintenanceTool( isNegated=False )
     ifMaintenanceTool( isNegated=False, isMultiLine=False )
+    ifInstalling( isMultiLine=False )
 
     isElevated()
     ifElevated( isNegated=False, isMultiLine=False )

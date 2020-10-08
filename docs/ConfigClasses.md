@@ -360,6 +360,9 @@ Attributes & default values:
     onPageChangeCallbackBody = None
     isAutoPageChangeCallBack = True
 
+    onFinishedClickedCallbackBody     = None
+    isAutoFinishedClickedCallbackBody = True
+
     onPageInsertRequestCallbackBody = None
     isAutoPageInsertRequestCallBack = True
 
