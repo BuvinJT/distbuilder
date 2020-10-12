@@ -22,7 +22,8 @@ from distbuilder.opy_library import \
 from distbuilder.qt_installer import \
       _stageInstallerPackages \
     , _buildInstaller \
-    , _addQtIfwResources \
+    , _addQtIfwLicense \
+    , _addQtIfwEmbeddedResources \
     , _addQtIfwUiPages \
     , joinPathQtIfw \
     , QtIfwConfig \
@@ -72,19 +73,22 @@ class ConfigFactory:
         self.specFilePath  = None
         
         self.isSilentSetup = False
+        self.licensePath   = None
         self.setupName     = DEFAULT_SETUP_NAME
         self.ifwDefDirPath = None        
         self.ifwPackages   = None
 
         self.replaceTarget = False        
         
-        self.ifwUiPages = None
+        self.ifwUiPages     = None
                     
         self.ifwCntrlScript     = None # None=Default False=Exclude                
         self.ifwCntrlScriptText = None
         self.ifwCntrlScriptPath = None
         self.ifwCntrlScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
 
+        # All these package attribute should probably be protected?  
+        # Don't they change during a multi-package process...?
         self.ifwPkgId         = None
         self.ifwPkgName       = None
         self.ifwPkgNamePrefix = "com"        
@@ -140,7 +144,8 @@ class ConfigFactory:
                             configXml=self.qtIfwConfigXml(), 
                             controlScript=self.qtIfwControlScript(),
                             setupExeName=self.setupName ) 
-        _addQtIfwResources( cfg, self.ifwPackages )        
+        _addQtIfwLicense( self.licensePath, self.ifwPackages )
+        _addQtIfwEmbeddedResources( cfg, self.ifwPackages )        
         _addQtIfwUiPages( cfg, self.ifwUiPages )
         return cfg 
 

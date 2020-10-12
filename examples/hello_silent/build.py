@@ -10,6 +10,7 @@ f.version          = (1,0,0,0)
 f.sourceDir        = "../hello_world"
 f.entryPointPy     = "hello.py"  
 f.distResources    = ["LICENSE"]
+f.licensePath      = "LICENSE"
 f.setupName        = "HelloWorldSilentSetup"
 f.isSilentSetup    = True
 

@@ -54,13 +54,14 @@ Attributes & default values:
     distResources = []       
 
     isSilentSetup    = False    		
+    licensePath      = None    
     setupName        = "setup"
     ifwDefDirPath    = None
     ifwPackages      = None
     
     replaceTarget = False
 
-    ifwUiPages	= None
+    ifwUiPages = None
        
     ifwCntrlScript     = None # None=Default False=Exclude                
     ifwCntrlScriptText = None
@@ -303,6 +304,10 @@ objects.  With that, you may fully customize the installer's UI using the
 script abstraction classes [QtIfwControlScript](ConfigClasses.md#qtifwcontrolscript) and
 [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript) can be used to provide
 dynamic features for the page. 
+
+#### licensePath 
+
+
 
 #### ifwCntrlScript, ifwCntrlScriptText, ifwCntrlScriptPath, ifwCntrlScriptName
 

@@ -10,6 +10,7 @@ f.isGui            = True
 f.entryPointPy     = "hello.py"  
 f.isObfuscating    = True
 f.iconFilePath     = "demo.ico" 
+f.licensePath      = "LICENSE"
 f.version          = (1,0,0,0)
 f.setupName        = "HelloWorldTkSetup"
 
@@ -18,5 +19,6 @@ class BuildProcess( PyToBinInstallerProcess ):
         cfg.external_modules.extend( [ 'tkinter', 'tkinter.ttk' ] )
     #def onPyPackageProcess( self, prc ): prc.isExeTest = True        
 p = BuildProcess( configFactory, isDesktopTarget=True )
-p.isAutoInstallTest = True
+p.isInstallTest = True
+#p.isAutoInstallTest = True
 p.run()       

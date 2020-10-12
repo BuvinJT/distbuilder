@@ -35,7 +35,7 @@ Attributes & default values:
     entryPointPy    = None
 
     pyInstSpec      = None
-	
+    
     isGui           = False
     iconFilePath    = None
       
@@ -57,7 +57,7 @@ Attributes & default values:
     _pngIconResPath = None
     distResources   = []
     distDirs        = [] 
-	isSpecFileRemoved = False
+    isSpecFileRemoved = False
 
 ## PyInstHook
 
@@ -98,17 +98,17 @@ Attributes & default values:
     hooksDirPath = None 
 
 Object Methods:
-	
+    
     fileName()
 
-	read()
-	write()
+    read()
+    write()
 
     debug()
 
     toLines()
     fromLines( lines )
-	injectLine( injection, lineNo )
+    injectLine( injection, lineNo )
     
 Details:
 
@@ -135,7 +135,7 @@ Attributes & default values:
         
     filePath     = None
     pyInstConfig = None 
-    content 	 = None
+    content      = None
 
 Static Method:
     
@@ -143,20 +143,20 @@ Static Method:
 
 Object Methods:
 
-	path()
+    path()
 
-	read()
-	write()
+    read()
+    write()
 
     debug()
 
     toLines()
     fromLines( lines )
-	injectLine( injection, lineNo )
+    injectLine( injection, lineNo )
     
     injectDuplicateDataPatch()
     
-	_parseAssigments() 
+    _parseAssigments() 
 
 ## WindowsExeVersionInfo
 
@@ -170,7 +170,7 @@ Constructor:
 
 Attributes & default values:        
 
-	major = 0
+    major = 0
     minor = 0
     micro = 0
     build = 0
@@ -184,9 +184,9 @@ Static Methods:
     defaultPath()
     
 Object Methods:
-	
+    
     fileName()
-	write()
+    write()
     debug()
     
 ## QtIfwConfig 
@@ -208,17 +208,17 @@ Constructor:
                                                     
 Attributes & default values:                                               
 
-	installerDefDirPath = None
+    installerDefDirPath = None
 
-	packages            = None <list of QtIfwPackages OR directory paths>
-	configXml           = None	
-	controlScript       = None
-	        
-	setupExeName        = "setup"
-	
-	<other IFW command line options>
-	isDebugMode    = True
-	otherQtIfwArgs = ""
+    packages            = None <list of QtIfwPackages OR directory paths>
+    configXml           = None    
+    controlScript       = None
+            
+    setupExeName        = "setup"
+    
+    <other IFW command line options>
+    isDebugMode    = True
+    otherQtIfwArgs = ""
 
 ## QtIfwConfigXml 
 
@@ -235,12 +235,12 @@ Attributes set to `None` values will not be written, otherwise they will be.
 Constructor:                
 
     QtIfwConfigXml( name, version, publisher,
-                  	iconFilePath=None, 
-                  	controlScriptName=None,
-                  	primaryContentExe=None,
-                  	isPrimaryExeGui=True,
-                  	primaryExeWrapper=None,
-                  	companyTradeName=None ) 
+                      iconFilePath=None, 
+                      controlScriptName=None,
+                      primaryContentExe=None,
+                      isPrimaryExeGui=True,
+                      primaryExeWrapper=None,
+                      companyTradeName=None ) 
 
 Attributes:    
 
@@ -341,9 +341,9 @@ into the installer, which are typically passed at runtime via the command line.
 
 Constructor:                
 
-	QtIfwControlScript( fileName="installscript.qs",                  
-                  		script=None, scriptPath=None,
-                  		virtualArgs={} ) :
+    QtIfwControlScript( fileName="installscript.qs",                  
+                          script=None, scriptPath=None,
+                          virtualArgs={} ) :
 
 Attributes & default values:                                               
     
@@ -375,11 +375,11 @@ Attributes & default values:
     onValueChangeCallbackBody = None
     isAutoValueChangeCallBack = True
                                         
-	isIntroductionPageVisible = True                                                                                                                                
+    isIntroductionPageVisible = True                                                                                                                                
     introductionPageCallbackBody = None
     isAutoIntroductionPageCallback = True
 
-	isTargetDirectoryPageVisible = True
+    isTargetDirectoryPageVisible = True
     targetDirectoryPageCallbackBody = None
     isAutoTargetDirectoryPageCallback = True
 
@@ -387,32 +387,32 @@ Attributes & default values:
     componentSelectionPageCallbackBody = None
     isAutoComponentSelectionPageCallback = True
 
-	isLicenseAgreementPageVisible = True
+    isLicenseAgreementPageVisible = True
     licenseAgreementPageCallbackBody = None
     isAutoLicenseAgreementPageCallback = True
 
-	isStartMenuDirectoryPageVisible = True
+    isStartMenuDirectoryPageVisible = True
     startMenuDirectoryPageCallbackBody = None
     isAutoStartMenuDirectoryPageCallback = True
 
-	isReadyForInstallationPageVisible = True
+    isReadyForInstallationPageVisible = True
     readyForInstallationPageCallbackBody = None
     isAutoReadyForInstallationPageCallback = True
 
-	isPerformInstallationPageVisible = True
+    isPerformInstallationPageVisible = True
     performInstallationPageCallbackBody = None
     isAutoPerformInstallationPageCallback = True
         
-	isFinishedPageVisible = True        
+    isFinishedPageVisible = True        
     finishedPageCallbackBody = None
     isAutoFinishedPageCallback = True        
 
-	isRunProgVisible = True
-	isRunProgInteractive = True
-	
+    isRunProgVisible = True
+    isRunProgInteractive = True
+    
 Object Methods:
     
-    registerAsyncFunc( func ) <takes QtIfwAsyncFunc>	      
+    registerAsyncFunc( func ) <takes QtIfwAsyncFunc>          
     registerStandardEventHandler( signalName, slotName, slotBody )
     registerAutoPilotEventHandler( signalName, slotName, slotBody )    
     registerGuiEventHandler( signalName, slotName, slotBody )
@@ -424,9 +424,9 @@ Object Methods:
     write()
     debug()
 
-    exists()       	 
-	path()
-	dirPath()   
+    exists()            
+    path()
+    dirPath()   
     
 ## QtIfwPackage
 
@@ -446,41 +446,43 @@ Constructor:
                   srcDirPath=None, srcExePath=None,    
                   resBasePath=None, isTempSrc=False,
                   pkgXml=None, pkgScript=None,
-                  uiPages=[] ) 
+                  licenses={}, uiPages=[] ) 
 
 Attributes:    
 
-	<internal id / type>
-	pkgId           = None       
-	pkgType	        = None
-	
-	<QtIFW definition>
-	name            = None
-	pkgXml          = None
-	pkgScript       = None
-	uiPages         = []
-	        
-	<source content>        
-	srcDirPath    = None <package ENTIRE source directory>
-	srcExePath    = None
-	resBasePath   = None
-	distResources = None	
-	isTempSrc     = False
-	                     
-	<destination content>
-	subDirName  = None
-	exeName     = None   
-	exeWrapper  = None
-	
-	<other configuration details>
-	isGui       = False
-	qtCppConfig = None
+    <internal id / type>
+    pkgId           = None       
+    pkgType            = None
+    
+    <QtIFW definition>
+    name            = None
+    pkgXml          = None
+    pkgScript       = None
+    uiPages         = []
+    licenses        = {} <in the form name:filePath>
+    isLicenseFormatPreserved = False
+            
+    <source content>        
+    srcDirPath    = None <package ENTIRE source directory>
+    srcExePath    = None
+    resBasePath   = None
+    distResources = None    
+    isTempSrc     = False
+                         
+    <destination content>
+    subDirName  = None
+    exeName     = None   
+    exeWrapper  = None
+    
+    <other configuration details>
+    isGui       = False
+    qtCppConfig = None
  
 Functions:      
 
-	dirPath()
-	metaDirPath() 
-	contentTopDirPath()
+    dirPath()
+    metaDirPath() 
+    contentTopDirPath()
     contentDirPath() 
 
 Static Functions:   
@@ -500,21 +502,22 @@ will not be written, otherwise they will be.
 
 Constructor:       
 
-	QtIfwPackageXml( pkgName, displayName, description, version, 
-				   scriptName=None, isDefault=True )
+    QtIfwPackageXml( pkgName, displayName, description, version, 
+                   scriptName=None, isDefault=True )
                   
 Attributes & default values:      
 
-	pkgName = <required>
+    pkgName = <required>
                
-	DisplayName    = <required>
-	Description    = <required>
-	Version        = <required>            
-	Script         = None 
-	Default        = True
-	ReleaseDate    = date.today()
-	UserInterfaces = []
-
+    DisplayName    = <required>
+    Description    = <required>
+    Version        = <required>            
+    Script         = None 
+    Default        = True
+    ReleaseDate    = date.today()
+    UserInterfaces = []
+    Licenses       = []
+    
 Functions:      
 
     addCustomTags( root ) 
@@ -599,7 +602,7 @@ to create shortcuts on the installation target environments.
 
 Constructor:       
 
-	QtIfwShortcut( productName=QT_IFW_PRODUCT_NAME, 
+    QtIfwShortcut( productName=QT_IFW_PRODUCT_NAME, 
                    command=None, args=[], 
                    exeDir=QT_IFW_TARGET_DIR, exeName=None, 
                    exeVersion="0.0.0.0",
@@ -607,11 +610,11 @@ Constructor:
                   
 Attributes & default values:
       
-	productName       = "@ProductName@" <QtIfw Built-in Variable>
-	command           = None	
+    productName       = "@ProductName@" <QtIfw Built-in Variable>
+    command           = None    
     exeDir            = "@TargetDir@" <QtIfw Built-in Variable>
     exeName           = None
-    args           	  = None  
+    args                 = None  
 
     isGui             = True <used in Mac / Linux>       
     
@@ -634,10 +637,10 @@ process of the *package* to which those operations are associated.
 This simple example (for *nix based systems), may serve well to clarify how 
 this class is intended to be used:  
 
-	filePath = joinPathQtIfw( QT_IFW_HOME_DIR, "test.txt" )     
+    filePath = joinPathQtIfw( QT_IFW_HOME_DIR, "test.txt" )     
     createFileOp = QtIfwExternalOp( exePath="touch",          args=[filePath],
-    							    uninstExePath="rm", uninstArgs=[filePath] )         
-	pkg.pkgScript.externalOps = [ createFileOp ]
+                                    uninstExePath="rm", uninstArgs=[filePath] )         
+    pkg.pkgScript.externalOps = [ createFileOp ]
 
 This purpose of this class should not be confused with the 
 [Installer Scripting](LowLevel.md#installer-scripting) function `execute( binPath, args )`.  
@@ -650,7 +653,7 @@ in an unrestricted manner.
 
 Constructor:
        
-	QtIfwExternalOp( 
+    QtIfwExternalOp( 
               script=None,       exePath=None,       args=[], successRetCodes=[0],  
         uninstScript=None, uninstExePath=None, uninstArgs=[],  uninstRetCodes=[0],
         isElevated=False, workingDir=QT_IFW_TARGET_DIR, onErrorMessage=None )
@@ -699,7 +702,7 @@ used to actually generate and inject [QtIfwExternalOp](#qtifwexternalop) objects
 
 Constructor:
        
-	QtIfwKillOp( processName, onInstall=True, onUninstall=True ):
+    QtIfwKillOp( processName, onInstall=True, onUninstall=True ):
 
 Attributes & default values:
                   
@@ -748,15 +751,15 @@ dynamically linked, the **standard procedure** (per Qt documentation) is to use 
 (slightly modifed) shell script to load the required libraries: 
  
     #!/bin/sh
-	appname=`basename "$0" | sed s,\.sh$,,`
-	dirname=`dirname "$0"`
-	tmp="${dirname#?}"
-	if [ "${dirname%$tmp}" != "/" ]; then
-	dirname="$PWD/$dirname"
-	fi
-	LD_LIBRARY_PATH="$dirname"
-	export LD_LIBRARY_PATH
-	"$dirname/$appname" "$@"
+    appname=`basename "$0" | sed s,\.sh$,,`
+    dirname=`dirname "$0"`
+    tmp="${dirname#?}"
+    if [ "${dirname%$tmp}" != "/" ]; then
+    dirname="$PWD/$dirname"
+    fi
+    LD_LIBRARY_PATH="$dirname"
+    export LD_LIBRARY_PATH
+    "$dirname/$appname" "$@"
 
 Other ways for using a wrapper like this include automatically detecting dependencies, and
 then downloading and installing them as needed.  Or, doing something similar for updates
@@ -798,7 +801,7 @@ Attributes & default values:
 
         _winPsStartArgs = None  <Windows only>
 
-		<Auto defined via refresh>
+        <Auto defined via refresh>
         _runProgram       
         _runProgArgs      
         _shortcutCmd      
@@ -807,7 +810,7 @@ Attributes & default values:
                             
 Functions:
       
-		refresh()
+        refresh()
              
 ## QtIfwUiPage
 
@@ -835,7 +838,7 @@ Attributes:
     pageOrder        = None  
  
     content          = None
-    replacements     = {}        	
+    replacements     = {}            
  
     onLoad           = None
     onEnter          = None       
@@ -859,14 +862,14 @@ Details:
 If you wish to *replace* a default page, set the `name` for an object of this 
 type to `QT_IFW_REPLACE_PAGE_PREFIX` *concatenated* with one of the following page name constants: 
 
-	QT_IFW_INTRO_PAGE      
-	QT_IFW_TARGET_DIR_PAGE 
-	QT_IFW_COMPONENTS_PAGE 
-	QT_IFW_LICENSE_PAGE    
-	QT_IFW_START_MENU_PAGE 
-	QT_IFW_READY_PAGE      
-	QT_IFW_INSTALL_PAGE    
-	QT_IFW_FINISHED_PAGE   
+    QT_IFW_INTRO_PAGE      
+    QT_IFW_TARGET_DIR_PAGE 
+    QT_IFW_COMPONENTS_PAGE 
+    QT_IFW_LICENSE_PAGE    
+    QT_IFW_START_MENU_PAGE 
+    QT_IFW_READY_PAGE      
+    QT_IFW_INSTALL_PAGE    
+    QT_IFW_FINISHED_PAGE   
 
 Conversely, to add a *new* page, give it some other name and specify the 
 `pageOrder`using one the constants above. 
@@ -990,7 +993,7 @@ Constructor:
 Attributes:   
 
     name        = <required>
-	args        = []
+    args        = []
     body        = ""
     delayMillis = 1
     standardPageId = None
@@ -1141,8 +1144,8 @@ Constructor:
 
 Attributes:                
 
-	name
-	entryPointPy
+    name
+    entryPointPy
     bundleLibs (list of LibToBundle objects)
     sourceDir (dynamically defined when ommited)
     patches (list of OpyPatch objects)

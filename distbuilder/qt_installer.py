@@ -393,7 +393,7 @@ class QtIfwPackage:
                   srcDirPath=None, srcExePath=None, 
                   resBasePath=None, isTempSrc=False, 
                   pkgXml=None, pkgScript=None,
-                  uiPages=[] ) :
+                  licenses={}, uiPages=[] ) :
         # internal id / type
         self.pkgId     = pkgId
         self.pkgType   = pkgType       
@@ -402,6 +402,8 @@ class QtIfwPackage:
         self.pkgXml    = pkgXml
         self.pkgScript = pkgScript        
         self.uiPages   = uiPages
+        self.licenses  = licenses
+        self.isLicenseFormatPreserved = False
         # content        
         self.srcDirPath    = srcDirPath
         self.srcExePath    = srcExePath
@@ -457,8 +459,12 @@ class QtIfwPackageXml( _QtIfwXml ):
                    , "Default"
                    , "Script"                                 
                    ]
-    __UIS_TAG    = "UserInterfaces"
-    __UI_TAG     = "UserInterface"
+    __UIS_TAG      = "UserInterfaces"
+    __UI_TAG       = "UserInterface"
+    __LICENSES_TAG = "Licenses"
+    __LICENSE_TAG  = "License"
+    __NAME_ATTRIB  = "name"
+    __FILE_ATTRIB  = "file"
         
     # QtIfwPackageXml   
     def __init__( self, pkgName, displayName, description, 
@@ -475,6 +481,7 @@ class QtIfwPackageXml( _QtIfwXml ):
         self.Default        = isDefault
         self.ReleaseDate    = date.today()
         self.UserInterfaces = []
+        self.Licenses       = {} # name:filePath
                          
     def addCustomTags( self, root ) :
         if self.UserInterfaces is not None :            
@@ -482,6 +489,13 @@ class QtIfwPackageXml( _QtIfwXml ):
                                     None, root )
             for ui in self.UserInterfaces:
                 _QtIfwXmlElement( QtIfwPackageXml.__UI_TAG, ui, uis )                
+        if self.Licenses is not None :            
+            lics = _QtIfwXmlElement( QtIfwPackageXml.__LICENSES_TAG, 
+                                    None, root )
+            for name, filePath in six.iteritems( self.Licenses ):
+                _QtIfwXmlElement( QtIfwPackageXml.__LICENSE_TAG, None, lics,
+                    attrib={ QtIfwPackageXml.__NAME_ATTRIB:name, 
+                             QtIfwPackageXml.__FILE_ATTRIB:filePath} )                
                             
     def path( self ) :   
         return joinPath( BUILD_SETUP_DIR_PATH, 
@@ -4466,9 +4480,13 @@ def __qtIfwCreatorPath( qtIfwDir ):
         joinPath( __BIN_SUB_DIR, __QT_IFW_CREATOR_EXE_NAME ) )
     return creatorPath if isFile( creatorPath ) else None
     
-# -----------------------------------------------------------------------------  
+# -----------------------------------------------------------------------------
+def _addQtIfwLicense( licensePath, packages, name="End User License Agreement" ): 
+    if not isFile( licensePath ) or len(packages) < 1: return
+    packages[0].licenses[name] = licensePath
+  
 # adds any missing resources, required by the packages, to the configuration
-def _addQtIfwResources( qtIfwConfig, packages ): 
+def _addQtIfwEmbeddedResources( qtIfwConfig, packages ): 
 
     def isScriptFound( script, resources ):        
         if not script or not resources: return
@@ -4722,8 +4740,8 @@ def __initBuild( qtIfwConfig ) :
     print( "Build directory created: %s" % (BUILD_SETUP_DIR_PATH,) )
 
 def __addInstallerResources( qtIfwConfig ) :
-    
-    _addQtIfwResources( qtIfwConfig, qtIfwConfig.packages )
+        
+    _addQtIfwEmbeddedResources( qtIfwConfig, qtIfwConfig.packages )
     _addQtIfwUiPages( qtIfwConfig, QtIfwTargetDirPage(), isOverWrite=False )
     _addQtIfwUiPages( qtIfwConfig, QtIfwOnPriorInstallationPage(), isOverWrite=False )
     _addQtIfwUiPages( qtIfwConfig, QtIfwRemovePriorInstallationPage(), isOverWrite=False )
@@ -4732,6 +4750,7 @@ def __addInstallerResources( qtIfwConfig ) :
                                       
     for p in qtIfwConfig.packages :
         if not isinstance( p, QtIfwPackage ) : continue        
+        __addLicenses( p )
         pkgXml = p.pkgXml              
         pkgScript = p.pkgScript       
         if pkgXml :            
@@ -4784,8 +4803,41 @@ def __genQtIfwCntrlRes( qtIfwConfig ) :
         if ctrlScript.script: ctrlScript._generate() 
         ctrlScript.debug()
         ctrlScript.write()        
+
+def __addLicenses( package ) :
+    if package.licenses is None or len(package.licenses)==0: return
+    print( "Adding licenses..." )
+    destDir = package.metaDirPath()
+    fixFormat = not package.isLicenseFormatPreserved
+    if not exists( destDir ): makeDir( destDir )
+    for name, filePath in six.iteritems( package.licenses ):
+        fileName = fileBaseName( filePath )
+        package.pkgXml.Licenses[name] = fileName
+        srcPath = absPath( filePath, basePath=package.resBasePath )
+        if fixFormat:
+            # Change white space to resemble web browser rendering,
+            # (e.g. left flushed), w/ natural word wrapping, but 
+            # preserve hard blanks (as single instances of such).
+            revLines=[]
+            with open( srcPath, 'r' ) as f:
+                lines = [ ln.strip() for ln in f.readlines() ]                
+                curLn=""
+                for ln in lines: 
+                    if len(curLn) > 0:
+                        if len(ln)==0:
+                            revLines += [ curLn, "" ]
+                            curLn=""
+                        else: curLn += " " + ln
+                    else: curLn += ln                    
+                if len(curLn) > 0: revLines.append( curLn )        
+                revLines = [ ln + "\n" for ln in revLines ]
+            destPath = joinPath( destDir, fileName )    
+            with open( destPath, 'w' ) as f: f.writelines( revLines )                    
+        else: copyToDir( srcPath, destDir )        
                         
 def __addUiPages( qtIfwConfig, package ) :
+    if package.uiPages is None or len(package.uiPages)==0: return
+    print( "Adding custom installer forms/pages..." )
     for ui in package.uiPages:
         if isinstance( ui, QtIfwUiPage ):
             ui.resolve( qtIfwConfig ) 
