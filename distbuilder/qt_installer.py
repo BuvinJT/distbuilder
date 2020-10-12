@@ -4482,7 +4482,7 @@ def __qtIfwCreatorPath( qtIfwDir ):
     
 # -----------------------------------------------------------------------------
 def _addQtIfwLicense( licensePath, packages, name="End User License Agreement" ): 
-    if not isFile( licensePath ) or len(packages) < 1: return
+    if licensePath is None or len(packages) < 1: return
     packages[0].licenses[name] = licensePath
   
 # adds any missing resources, required by the packages, to the configuration
@@ -4940,10 +4940,19 @@ def __buildSilentWrapper( qtIfwConfig ) :
                            package.pkgXml.pkgName, 
                            package.pkgXml.DisplayName) 
                            for package in qtIfwConfig.packages ]            
-    wrapperScript     = __silentQtIfwScript( nestedExeName, componentList,
+    licenses={}
+    for package in qtIfwConfig.packages:
+        pkgLics={}
+        for name, filePath in six.iteritems( package.licenses ):
+            srcPath = absPath( filePath, basePath=package.resBasePath )            
+            with open( srcPath, 'r' ) as f: pkgLics[name] = f.read()
+        if len(pkgLics) > 0: licenses[package.pkgXml.pkgName] = pkgLics
+
+    wrapperScript = __silentQtIfwScript( nestedExeName, componentList,
         isRunSwitch=( False if cfgXml.RunProgram is None else 
                       None if ctrlScrpt.isRunProgInteractive and 
-                              ctrlScrpt.isRunProgVisible else True ) )
+                              ctrlScrpt.isRunProgVisible else True ),
+        licenses=licenses )
                                                
     f = configFactory  = ConfigFactory()
     f.productName      = cfgXml.Name
@@ -5005,7 +5014,7 @@ def __silentQtIfwScript( exeName, componentList=[],
                          isQtIfwUnInstaller=False,
                          scriptPath=None,
                          wrkDir=None, targetDir=None,
-                         isRunSwitch=None ) :
+                         isRunSwitch=None, licenses={} ) :
     """
     Runs the IFW exe from inside the PyInstaller MEIPASS directory,
     with elevated privileges, hidden from view, gathering
@@ -5041,6 +5050,8 @@ def __silentQtIfwScript( exeName, componentList=[],
             if componentsPrefixLen : compId = compId[componentsPrefixLen:]
             componentsEpilogue += lnFormat.format( default, compId, name ) 
 
+    licensesRepr = str(licenses)   
+        
     if IS_WINDOWS: 
         imports = (
 """     
@@ -5420,13 +5431,19 @@ componentsEpilogue = (
 )
 componentsPrefix = "{16}"
 
+licenses = {23}
+
 ARGS = []
 IS_VERBOSE = False
 
 {18}
 
 def main():        
-    global ARGS, IS_VERBOSE
+    global ARGS, IS_VERBOSE    
+    ARGS = wrapperArgs() 
+    try:
+        if ARGS.license: return showLicenses()        
+    except: pass    
     ARGS = toIwfArgs( wrapperArgs() )  
     IS_VERBOSE = VERBOSE_SWITCH in ARGS
     removeIfwErrLog() 
@@ -5439,7 +5456,11 @@ def main():
 def wrapperArgs():
     parser = argparse.ArgumentParser( epilog=componentsEpilogue,
                 formatter_class=argparse.RawTextHelpFormatter )
-                
+
+    if len(licenses) > 0 : 
+        parser.add_argument( '-l', '--license', default=False,
+                             help='show license agreement(s) and exit', 
+                             action='store_true' )                                        
     parser.add_argument( '-v', '--verbose', default=False,
                          help='verbose mode', 
                          action='store_true' )
@@ -5519,6 +5540,16 @@ def removeIfwErrLog():
     if os.path.exists( IFW_ERR_LOG_PATH ):
         os.remove( IFW_ERR_LOG_PATH )
 
+def showLicenses():        
+    for compId in licenses:
+        compLics = licenses[ compId ]
+        for name in compLics:            
+            if len(licenses) > 1: 
+                print( "Component id: %s" % (id,) )
+                print( name )
+            print( "\\n%s\\n" % ( compLics[ name ],) )
+    return SUCCESS
+
 sys.exit( main() )
 """).format( 
        exeName                                              # {0}
@@ -5544,6 +5575,7 @@ sys.exit( main() )
     , runInstallerProcess                                   # {20}
     , cleanUp                                               # {21}
     , str(isRunSwitch)                                      # {22}
+    , licensesRepr                                          # {23}
 )
 
 def __generateQtIfwInstallPyScript( installerPath, ifwScriptPath, 
