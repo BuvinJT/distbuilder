@@ -38,6 +38,7 @@ from distbuilder.qt_installer import \
     , DEFAULT_SETUP_NAME \
     , DEFAULT_QT_IFW_SCRIPT_NAME \
     , QT_IFW_VERBOSE_SWITCH \
+    , QT_IFW_SILENT_DEBUG_SWITCH \
     , _DEBUG_SCRIPTS_ARGS \
     , QT_IFW_TARGET_DIR \
     , _SILENT_FORCED_ARGS \
@@ -497,8 +498,11 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
         elif self.isHomeDirTarget :
             self.setupPath = moveToHomeDir( self.setupPath )    
         if self.isInstallTest or self.isAutoInstallTest:            
-            verboseArgs = ( 
-                [QT_IFW_VERBOSE_SWITCH] if self.isVerboseInstallTest else [] )
+            if self.isVerboseInstallTest:
+                verboseArgs = ( [QT_IFW_SILENT_DEBUG_SWITCH] 
+                                if self.configFactory.isSilentSetup else
+                                [QT_IFW_VERBOSE_SWITCH] )  
+            else: verboseArgs = []                             
             debugArgs = _DEBUG_SCRIPTS_ARGS if self.isScriptDebugInstallTest else [] 
             autoArgs = ( 
                 ( _SILENT_FORCED_ARGS if self.configFactory.isSilentSetup else

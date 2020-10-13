@@ -25,6 +25,7 @@ BUILD_SETUP_DIR_PATH = absPath( "build_setup" )
 INSTALLER_DIR_PATH = "installer"
 
 QT_IFW_VERBOSE_SWITCH = '-v'
+QT_IFW_SILENT_DEBUG_SWITCH = '-d'
 _KEEP_TEMP_SWITCH = "_keeptemp"
 _SILENT_FORCED_ARGS = ["-f"]
 _LOUD_FORCED_ARGS   = ["auto=true", "onexist=remove"]
@@ -4979,7 +4980,9 @@ def __buildSilentWrapper( qtIfwConfig ) :
         isRunSwitch=( False if cfgXml.RunProgram is None else 
                       None if ctrlScrpt.isRunProgInteractive and 
                               ctrlScrpt.isRunProgVisible else True ),
-        licenses=licenses )
+        licenses=licenses,
+        productName=cfgXml.Name, version=cfgXml.Version,
+        companyLegalName=cfgXml.Publisher )
                                                
     f = configFactory  = ConfigFactory()
     f.productName      = cfgXml.Name
@@ -5041,13 +5044,26 @@ def __silentQtIfwScript( exeName, componentList=[],
                          isQtIfwUnInstaller=False,
                          scriptPath=None,
                          wrkDir=None, targetDir=None,
-                         isRunSwitch=None, licenses={} ) :
+                         isRunSwitch=None, licenses={},
+                         productName=None, version=None, 
+                         companyLegalName=None ) :
     """
     Runs the IFW exe from inside the PyInstaller MEIPASS directory,
     with elevated privileges, hidden from view, gathering
     stdout, stderr, and other logged communications.  
     Note: On Windows, the wrapper is auto-elevated via PyInstaller.
     """
+    
+    versionInfo = productName if productName else ""
+    if version:
+        if len(versionInfo) > 0 : versionInfo += "\\n"
+        versionInfo += "Version: %s" % (version,)
+    if companyLegalName:
+        if len(versionInfo) > 0 : versionInfo += "\\n"
+        versionInfo += "Copyright (c) %d, %s. All rights reserved." % ( 
+            date.today().year,
+            (companyLegalName[:-1] if companyLegalName.endswith(".") else
+             companyLegalName) )
     
     componentsRepr     = "[]"
     componentsEpilogue = "" 
@@ -5441,6 +5457,8 @@ from subprocess import Popen, PIPE, list2cmdline
 SUCCESS=0
 FAILURE=1
 
+VERSION_INFO = "{26}"
+
 IS_WINDOWS = {10}
 
 WORK_DIR         = sys._MEIPASS
@@ -5469,6 +5487,7 @@ def main():
     global ARGS, IS_VERBOSE    
     ARGS = wrapperArgs() 
     try:
+        if ARGS.version: return showVersion()
         if ARGS.license: return showLicenses()        
     except: pass    
     ARGS = toIwfArgs( wrapperArgs() )  
@@ -5482,21 +5501,22 @@ def main():
 
 def wrapperArgs():
     parser = argparse.ArgumentParser( epilog=componentsEpilogue,
-                formatter_class=argparse.RawTextHelpFormatter )
+        formatter_class=argparse.RawTextHelpFormatter )
+
+    parser.add_argument( '-v', '--version', default=False,
+                         help='show version information and exit',
+                         action='store_true' )
 
     if len(licenses) > 0 : 
         parser.add_argument( '-l', '--license', default=False,
                              help='show license agreement(s) and exit', 
                              action='store_true' )                                        
-    parser.add_argument( '-v', '--verbose', default=False,
-                         help='verbose mode', 
-                         action='store_true' )
-                         
+                        
     parser.add_argument( '-u', '--uninstall', default=False, 
-                         help='uninstall an existing installation', 
+                         help='uninstall existing installation', 
                          action='store_true' )                         
     parser.add_argument( '-f', '--force', default=False, 
-                         help='force installation (replace an existing installation)', 
+                         help='force installation (replace existing installation)', 
                          action='store_true' )                         
 
     parser.add_argument( '-t', '--target', default=None,
@@ -5515,8 +5535,12 @@ def wrapperArgs():
                          
     if IS_RUN_SWITCH is None:                     
         parser.add_argument( '-r', '--run', default=False, 
-                             help='run the program after installing it', 
+                             help='run the program post installation', 
                              action='store_true' )
+
+    parser.add_argument( '-d', '--debug', default=False,
+                         help='show debugging information', 
+                         action='store_true' )
                                                         
     return parser.parse_args()
 
@@ -5526,7 +5550,7 @@ def toIwfArgs( wrapperArgs ):
     #     client defined error log path    
     args = ["{1}", ("{2}=%s" % IFW_ERR_LOG_NAME)]
     
-    if wrapperArgs.verbose: args.append( VERBOSE_SWITCH )        
+    if wrapperArgs.debug: args.append( VERBOSE_SWITCH )        
     
     if wrapperArgs.uninstall: args.append( "{24}={25}" )        
     else: args.append( "{5}={6}" if wrapperArgs.force else "{5}={7}" )
@@ -5573,6 +5597,10 @@ def removeIfwErrLog():
     if os.path.exists( IFW_ERR_LOG_PATH ):
         os.remove( IFW_ERR_LOG_PATH )
 
+def showVersion():        
+    print( VERSION_INFO )
+    return SUCCESS
+
 def showLicenses():        
     for compId in licenses:
         compLics = licenses[ compId ]
@@ -5611,6 +5639,7 @@ sys.exit( main() )
     , licensesRepr                                          # {23}
     , _QtIfwScript.MAINTAIN_MODE_CMD_ARG                    # {24}
     , _QtIfwScript.MAINTAIN_MODE_OPT_REMOVE_ALL             # {25}
+    , versionInfo                                           # {26}
 )
 
 def __generateQtIfwInstallPyScript( installerPath, ifwScriptPath, 

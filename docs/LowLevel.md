@@ -265,10 +265,10 @@ this type of distbuilder installer. Note these differ from the
              
 **-h / --help**: Display help for these arguments.
 
+**-v / --version**: Display version information.
+
 **-l / --license**: Display license agreement(s).
              
-**-v / --verbose**: Enable verbose output. 
-
 **-u / --uninstall**: Uninstall an existing installation (if found) and exit.
 
 **-f / --force**: "Force" installation.  Uninstall an existing installation automatically,
@@ -307,6 +307,8 @@ will all be be listed in the long manner.
 available when the installer naturally provides the option to choose this at runtime (i.e. in non-silent mode).  If the option is not exposed to the user normally, it is not exposed 
 here.  When available, this is **disabled** by default.  You must explicitly opt to launch 
 the program by including this switch.
+
+**-d / --debug**: Enable debugging output. 
 
 ### Installer Variables
 
