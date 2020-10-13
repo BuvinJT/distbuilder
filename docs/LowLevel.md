@@ -264,11 +264,15 @@ this type of distbuilder installer. Note these differ from the
 [Standard Installer Arguments](#standard-installer-arguments).
              
 **-h / --help**: Display help for these arguments.
+
+**-l / --license**: Display license agreement(s).
              
 **-v / --verbose**: Enable verbose output. 
 
+**-u / --uninstall**: Uninstall an existing installation (if found) and exit.
+
 **-f / --force**: "Force" installation.  Uninstall an existing installation automatically,
-in the event that there is a conflict.  Without this, the installer would abort under such
+in the event that there is a conflict.  Without this, the installer will abort under such
 conditions by default (per the natural QtIFW design).
 
 **-t / --target [path]**: The target directory for the installation.
@@ -474,7 +478,7 @@ Static Functions:
     ifYesNoPopup( msg, title="Question", resultVar="result", 
                  isMultiLine=False )
 
-    quit( msg, isSilent=False, isAutoQuote=True )
+    quit( msg, isError=True, isSilent=False, isAutoQuote=True )
 		<It is not possible to re-enable the user prompt after using these!>
     disableQuit()		<negate with disableQuitPrompt>         
     disableQuitPrompt()         
@@ -587,7 +591,7 @@ following add-on **QT SCRIPT** functions:
 
     killAll( progName )
 
-	quit( msg )
+	quit( msg, isError, isSilent )
 	abort( msg )
 	silentAbort( msg )
 	

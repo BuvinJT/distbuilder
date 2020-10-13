@@ -560,7 +560,7 @@ class _QtIfwScript:
     
     _TEMP_DIR = "Dir.temp()"
 
-    __QUIT = "quit(%s,%s);\n"
+    __QUIT = "quit(%s,%s,%s);\n"
                 
     __IS_ELEVATED    = "isElevated();\n"        
     __GAIN_ELEVATION = "installer.gainAdminRights();\n"
@@ -797,10 +797,10 @@ class _QtIfwScript:
             defList )
         
     @staticmethod        
-    def quit( msg, isSilent=False, isAutoQuote=True ): 
+    def quit( msg, isError=True, isSilent=False, isAutoQuote=True ): 
         return _QtIfwScript.__QUIT % (
             _QtIfwScript._autoQuote( msg, isAutoQuote ),
-            _QtIfwScript.toBool( isSilent ) )
+            _QtIfwScript.toBool( isError ), _QtIfwScript.toBool( isSilent ) )
         
     @staticmethod        
     def isElevated(): return _QtIfwScript.__IS_ELEVATED
@@ -1579,12 +1579,13 @@ class _QtIfwScript:
             TAB + 'gui.clickButton(buttons.FinishButton)' + END +                
             TAB + '' + END +                    
             EBLK + NEW +
-            'function quit( msg, isSilent ) ' + SBLK +
-            TAB + 'msg = (msg==null || msg=="" ? "Click \\"OK\\" to quit..." : msg)' + END +
-            TAB + 'console.log( msg )' + END +
-            TAB + 'writeErrorLog( msg )' + END +
-            TAB + 'if( !isSilent ) ' +
+            'function quit( msg, isError, isSilent ) ' + SBLK +
+            TAB + 'if( msg ) console.log( msg )' + END +
+            TAB + 'if( msg && isError ) writeErrorLog( msg )' + END +
+            TAB + 'if( !isSilent ) ' +  SBLK +
+            (2*TAB) + 'msg = (msg==null || msg=="" ? "Click \\"OK\\" to quit..." : msg)' + END +
             (2*TAB) + 'QMessageBox.warning("warnbox", "Installation canceled", msg, QMessageBox.Ok)' + END +
+            TAB + EBLK +
             TAB + 'installer.autoAcceptMessageBoxes()' + END +
             TAB + 'gui.clickButton(buttons.CancelButton)' + END +
             TAB + 'gui.clickButton(buttons.FinishButton)' + END +                
@@ -2403,7 +2404,7 @@ Controller.prototype.Dynamic%sCallback = function() {
                     QT_IFW_INTRO_PAGE),)) + SBLK +              
                     _QtIfwScript.ifElevated( isNegated=True ) +
                         _QtIfwScript.quit( "Elevated privileges required!", 
-                                           isSilent=True ) +
+                                           isError=True, isSilent=True ) +
             EBLK         
             )                 
         append  = ""
@@ -2579,12 +2580,38 @@ Controller.prototype.Dynamic%sCallback = function() {
                 QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
                 (signalName, slotName) )            
         self.controllerConstructorBody += (        
-                _QtIfwScript.ifInstalling() + 
-                    '__autoManagePriorInstallation()' + END +
-                'else ' + SBLK +
-                    TAB + 'var mode = ' + _QtIfwScript.cmdLineArg( 
-                        _QtIfwScript.MAINTAIN_MODE_CMD_ARG ) + END + 
-                    TAB + 'switch( mode ) ' + SBLK +
+                TAB + 'var mode = ' + _QtIfwScript.cmdLineArg( 
+                    _QtIfwScript.MAINTAIN_MODE_CMD_ARG ) + END + 
+                TAB + _QtIfwScript.ifInstalling( isMultiLine=True ) + 
+                    'switch( mode ) ' + SBLK +                            
+                    (2*TAB) + 'case "' +                         
+                        _QtIfwScript.MAINTAIN_MODE_OPT_REMOVE_ALL + '":' + NEW +
+                        (3*TAB) + 'if( targetExists() ) ' + SBLK +
+                            (4*TAB) + 'removeTarget()' + END +                            
+                            (4*TAB) + _QtIfwScript.quit( "",
+                                           isError=False, isSilent=True ) +                          
+                        (3*TAB) + EBLK +                                                                  
+                        (3*TAB) + 'else ' + SBLK +
+                            (4*TAB) + _QtIfwScript.quit( 
+                                "The program is not installed.",
+                                isError=True, isSilent=True ) +                          
+                        (3*TAB) + EBLK +      
+                        (3*TAB) + 'break' + END +
+                    (2*TAB) + 'case "' + 
+                        _QtIfwScript.MAINTAIN_MODE_OPT_ADD_REMOVE + '":' + NEW +
+                    (2*TAB) + 'case "' + 
+                        _QtIfwScript.MAINTAIN_MODE_OPT_UPDATE + '":' + NEW +
+                        (3*TAB) + _QtIfwScript.quit( 
+                            "The specified mode is not currently supported "
+                            "with auto pilot enabled.",
+                            isError=True, isSilent=True ) +
+                        (3*TAB) + 'break' + END +                            
+                    (2*TAB) + 'default:' + NEW +                         
+                        (3*TAB) + '__autoManagePriorInstallation()' + END +
+                    (2*TAB) + EBLK +
+                TAB + EBLK +    
+                TAB + 'else ' + SBLK +
+                    (2*TAB) + 'switch( mode ) ' + SBLK +
                     (2*TAB) + 'case "' + 
                         _QtIfwScript.MAINTAIN_MODE_OPT_ADD_REMOVE + '":' + NEW +
                         (3*TAB) + 'installer.setPackageManager()' + END +
@@ -5464,16 +5491,16 @@ def wrapperArgs():
     parser.add_argument( '-v', '--verbose', default=False,
                          help='verbose mode', 
                          action='store_true' )
-    parser.add_argument( '-f', '--force', default=False, 
-                         help='force installation (uninstall existing installation)', 
-                         action='store_true' )
-    if IS_RUN_SWITCH is None:                     
-        parser.add_argument( '-r', '--run', default=False, 
-                             help='run the program immediately post install', 
-                             action='store_true' )
-    parser.add_argument( '-t', '--target', default=None,
-                         help='target directory' )
                          
+    parser.add_argument( '-u', '--uninstall', default=False, 
+                         help='uninstall an existing installation', 
+                         action='store_true' )                         
+    parser.add_argument( '-f', '--force', default=False, 
+                         help='force installation (replace an existing installation)', 
+                         action='store_true' )                         
+
+    parser.add_argument( '-t', '--target', default=None,
+                         help='target directory' )                         
     if IS_WINDOWS :                          
         parser.add_argument( '-m', '--startmenu', default=None,  
                              help='start menu directory' )
@@ -5485,6 +5512,11 @@ def wrapperArgs():
                              help='component ids to include (space delimited list)' )
         parser.add_argument( '-e', '--exclude', nargs='*', default=[],
                              help='component ids to exclude (space delimited list)' )  
+                         
+    if IS_RUN_SWITCH is None:                     
+        parser.add_argument( '-r', '--run', default=False, 
+                             help='run the program after installing it', 
+                             action='store_true' )
                                                         
     return parser.parse_args()
 
@@ -5494,15 +5526,13 @@ def toIwfArgs( wrapperArgs ):
     #     client defined error log path    
     args = ["{1}", ("{2}=%s" % IFW_ERR_LOG_NAME)]
     
-    # run at end option    
-    args.append( "{3}=%s" % str( wrapperArgs.run 
-            if IS_RUN_SWITCH is None else IS_RUN_SWITCH ).lower() )
-
-    if wrapperArgs.verbose : args.append( VERBOSE_SWITCH )    
-    args.append( "{5}={6}" if wrapperArgs.force else "{5}={7}" )
-    if wrapperArgs.target is not None : 
-        args.append( "{8}=%s" % (wrapperArgs.target.replace("\\\\","/"),) )
+    if wrapperArgs.verbose: args.append( VERBOSE_SWITCH )        
     
+    if wrapperArgs.uninstall: args.append( "{24}={25}" )        
+    else: args.append( "{5}={6}" if wrapperArgs.force else "{5}={7}" )
+
+    if wrapperArgs.target is not None : 
+        args.append( "{8}=%s" % (wrapperArgs.target.replace("\\\\","/"),) )    
     if IS_WINDOWS :      
         if wrapperArgs.startmenu is not None : 
             args.append( "{9}=%s" % (wrapperArgs.startmenu.replace("\\\\","/"),) )
@@ -5519,6 +5549,9 @@ def toIwfArgs( wrapperArgs ):
         appendComponentArg( wrapperArgs.components, "{11}" )
         appendComponentArg( wrapperArgs.include,    "{12}" )
         appendComponentArg( wrapperArgs.exclude,    "{13}" )
+
+    args.append( "{3}=%s" % str( wrapperArgs.run 
+            if IS_RUN_SWITCH is None else IS_RUN_SWITCH ).lower() )
 
     return args
 
@@ -5576,6 +5609,8 @@ sys.exit( main() )
     , cleanUp                                               # {21}
     , str(isRunSwitch)                                      # {22}
     , licensesRepr                                          # {23}
+    , _QtIfwScript.MAINTAIN_MODE_CMD_ARG                    # {24}
+    , _QtIfwScript.MAINTAIN_MODE_OPT_REMOVE_ALL             # {25}
 )
 
 def __generateQtIfwInstallPyScript( installerPath, ifwScriptPath, 
