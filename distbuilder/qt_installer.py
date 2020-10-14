@@ -45,16 +45,19 @@ __WRAPPER_SCRIPT_NAME = "__installer.py"
 __WRAPPER_INSTALLER_NAME = "wrapper-installer" 
 __NESTED_INSTALLER_NAME  = "hidden-installer"
 
-STARTMENU_WIN_SHORTCUT         = 0
-DESKTOP_WIN_SHORTCUT           = 1
-THIS_USER_STARTUP_WIN_SHORTCUT = 2
-ALL_USERS_STARTUP_WIN_SHORTCUT = 3
+ADJANCENT_WIN_SHORTCUT         = 0
+STARTMENU_WIN_SHORTCUT         = 1
+DESKTOP_WIN_SHORTCUT           = 2
+THIS_USER_STARTUP_WIN_SHORTCUT = 3
+ALL_USERS_STARTUP_WIN_SHORTCUT = 4
 
-APPS_MAC_SHORTCUT    = 0              
-DESKTOP_MAC_SHORTCUT = 1             
-                
-APPS_X11_SHORTCUT    = 0
-DESKTOP_X11_SHORTCUT = 1
+ADJANCENT_MAC_SHORTCUT = 0
+APPS_MAC_SHORTCUT      = 1
+DESKTOP_MAC_SHORTCUT   = 2             
+
+ADJANCENT_X11_SHORTCUT = 0                
+APPS_X11_SHORTCUT      = 1
+DESKTOP_X11_SHORTCUT   = 2
 
 SHORTCUT_WIN_MINIMIZED = 7
 
@@ -2836,21 +2839,24 @@ Component.prototype.%s = function(){
 """ )
      
     __WIN_SHORTCUT_LOCATIONS = {
-          DESKTOP_WIN_SHORTCUT          : QT_IFW_DESKTOP_DIR
-        , STARTMENU_WIN_SHORTCUT        : QT_IFW_STARTMENU_DIR
-        , THIS_USER_STARTUP_WIN_SHORTCUT: "@UserStartMenuProgramsPath@/Startup"
-        , ALL_USERS_STARTUP_WIN_SHORTCUT: "@AllUsersMenuProgramsPath@/Startup"    
+          ADJANCENT_WIN_SHORTCUT         : QT_IFW_TARGET_DIR
+        , DESKTOP_WIN_SHORTCUT           : QT_IFW_DESKTOP_DIR
+        , STARTMENU_WIN_SHORTCUT         : QT_IFW_STARTMENU_DIR
+        , THIS_USER_STARTUP_WIN_SHORTCUT : "@UserStartMenuProgramsPath@/Startup"
+        , ALL_USERS_STARTUP_WIN_SHORTCUT : "@AllUsersMenuProgramsPath@/Startup"    
     }
 
     __MAC_SHORTCUT_LOCATIONS = {
-          DESKTOP_MAC_SHORTCUT : QT_IFW_DESKTOP_DIR
-        , APPS_MAC_SHORTCUT    : "%s/%s" % (QT_IFW_HOME_DIR,"Applications") 
+          ADJANCENT_MAC_SHORTCUT : QT_IFW_TARGET_DIR
+        , DESKTOP_MAC_SHORTCUT   : QT_IFW_DESKTOP_DIR
+        , APPS_MAC_SHORTCUT      : "%s/%s" % (QT_IFW_HOME_DIR,"Applications") 
     }
 
     # these may not be correct on all distros?
     __X11_SHORTCUT_LOCATIONS = {
-          DESKTOP_X11_SHORTCUT : QT_IFW_DESKTOP_DIR
-        , APPS_X11_SHORTCUT    : "/usr/share/applications" 
+          ADJANCENT_X11_SHORTCUT : QT_IFW_TARGET_DIR
+        , DESKTOP_X11_SHORTCUT   : QT_IFW_DESKTOP_DIR
+        , APPS_X11_SHORTCUT      : "/usr/share/applications" 
     }   # ~/.local/share/applications - current user location?
 
     @staticmethod
@@ -3146,6 +3152,15 @@ Component.prototype.%s = function(){
                             wrkDir=shortcut.exeDir, # forced via command                            
                             windowStyle=shortcut.windowStyle,
                             label=shortcut.productName ) 
+                if shortcut.exeName and shortcut.isAdjancentShortcut:
+                    winOps += QtIfwPackageScript.__winAddShortcut(
+                            ADJANCENT_WIN_SHORTCUT, shortcut.exeName,
+                            command=shortcut.command,
+                            args=shortcut.args,
+                            exeDir=shortcut.exeDir,
+                            wrkDir=shortcut.exeDir, # forced via command                            
+                            windowStyle=shortcut.windowStyle,
+                            label=shortcut.productName )                     
                 if shortcut.exeName and shortcut.isUserStartUpShortcut:
                     winOps += QtIfwPackageScript.__winAddShortcut(
                             THIS_USER_STARTUP_WIN_SHORTCUT, shortcut.exeName,
@@ -3187,7 +3202,14 @@ Component.prototype.%s = function(){
                             shortcut.exeName, shortcut.isGui, 
                             command=shortcut.command,
                             exeDir=shortcut.exeDir,
-                            label=shortcut.productName )             
+                            label=shortcut.productName )        
+                if shortcut.exeName and shortcut.isAdjancentShortcut:
+                    macOps += QtIfwPackageScript.__macAddShortcut(
+                            ADJANCENT_MAC_SHORTCUT, 
+                            shortcut.exeName, shortcut.isGui, 
+                            command=shortcut.command,
+                            exeDir=shortcut.exeDir,
+                            label=shortcut.productName )                                 
                 if macOps!="" :    
                     self.componentCreateOperationsBody += (             
                         '    if( systemInfo.kernelType === "darwin" ){\n' +
@@ -3215,7 +3237,18 @@ Component.prototype.%s = function(){
                             exeDir=shortcut.exeDir,
                             wrkDir=shortcut.exeDir, # forced via command                            
                             pngPath=shortcut.pngIconResPath,
-                            isGui=shortcut.isGui )                               
+                            isGui=shortcut.isGui )                
+                if shortcut.exeName and shortcut.isAdjancentShortcut:
+                    x11Ops += QtIfwPackageScript.__linuxAddDesktopEntry(
+                            ADJANCENT_X11_SHORTCUT, 
+                            shortcut.exeName, shortcut.exeVersion,
+                            command=shortcut.command,
+                            args=shortcut.args,
+                            label=shortcut.productName,
+                            exeDir=shortcut.exeDir,
+                            wrkDir=shortcut.exeDir, # forced via command                            
+                            pngPath=shortcut.pngIconResPath,
+                            isGui=shortcut.isGui )                                                   
                 if x11Ops!="" :    
                     self.componentCreateOperationsBody += (             
                         '    if( systemInfo.kernelType === "linux" ){\n' +
@@ -3434,8 +3467,9 @@ class QtIfwShortcut:
         self.pngIconResPath = pngIconResPath        
  
         # Cross platform
-        self.isAppShortcut     = True
-        self.isDesktopShortcut = False
+        self.isAppShortcut       = True
+        self.isDesktopShortcut   = False
+        self.isAdjancentShortcut = False
 
 # -----------------------------------------------------------------------------
 class QtIfwExternalOp:
@@ -3471,9 +3505,14 @@ class QtIfwExternalOp:
                             isAllUsers=False ):
         if pkg :
             if not displayName: displayName = pkg.pkgXml.DisplayName
-            if not exePath:  
-                try:    exeName = pkg.exeWrapper.wrapperScript.fileName()
-                except: exeName = normBinaryName( pkg.exeName, pkg.isGui )
+            shortcuts = pkg.pkgScript.shortcuts
+            if IS_WINDOWS and shortcuts:
+                shortcuts[0].isAdjancentShortcut = True                                        
+                exePath = joinPath( QT_IFW_TARGET_DIR, 
+                    "%s.lnk" % shortcuts[0].productName )  
+            # TODO: Handle wrappers on other platforms    
+            elif not exePath:  
+                exeName = normBinaryName( pkg.exeName, pkg.isGui )
                 exePath = joinPath( 
                     ( joinPath( QT_IFW_TARGET_DIR, pkg.subDirName ) 
                       if pkg.subDirName else QT_IFW_TARGET_DIR ), exeName )

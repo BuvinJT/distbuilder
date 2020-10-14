@@ -614,7 +614,7 @@ Attributes & default values:
     command           = None    
     exeDir            = "@TargetDir@" <QtIfw Built-in Variable>
     exeName           = None
-    args                 = None  
+    args              = None  
 
     isGui             = True <used in Mac / Linux>       
     
@@ -623,8 +623,9 @@ Attributes & default values:
     exeVersion        = "0.0.0.0" <used in Linux>        
     pngIconResPath    = None <used in Linux>   
     
-    isAppShortcut     = True
-    isDesktopShortcut = False
+    isAppShortcut       = True
+    isDesktopShortcut   = False
+    isAdjancentShortcut = False
 
 ## QtIfwExternalOp
 
