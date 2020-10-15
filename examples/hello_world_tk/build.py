@@ -1,4 +1,4 @@
-from distbuilder import PyToBinInstallerProcess, ConfigFactory
+from distbuilder import PyToBinInstallerProcess, ConfigFactory, QtIfwInstallerTool
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello World Tk Example"
@@ -17,7 +17,11 @@ f.setupName        = "HelloWorldTkSetup"
 class BuildProcess( PyToBinInstallerProcess ):
     def onOpyConfig( self, cfg ):    
         cfg.external_modules.extend( [ 'tkinter', 'tkinter.ttk' ] )
-    #def onPyPackageProcess( self, prc ): prc.isExeTest = True        
+    #def onPyPackageProcess( self, prc ): prc.isExeTest = True
+    def onQtIfwConfig( self, cfg ):       
+        script = cfg.packages[0].pkgScript
+        script.installTools.append( QtIfwInstallerTool("rh.exe", True) )
+        
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True
 #p.isAutoInstallTest = True

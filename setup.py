@@ -1,5 +1,15 @@
 from setuptools import setup
 
+import platform
+__plat = platform.system()
+IS_WINDOWS = __plat == "Windows"
+IS_LINUX   = __plat == "Linux"
+IS_MACOS   = __plat == "Darwin"
+
+platform_resources = {}
+if IS_WINDOWS:
+    platform_resources['distbuilder'] = ['qtifw_tools/windows/*'] 
+    
 # get __version__ and readme
 exec( open('distbuilder/_version.py').read() ) 
 with open( "README.md", "r" ) as f: readme = f.read()
@@ -37,5 +47,6 @@ setup (
         , "opy_distbuilder>=0.9.1.1" # workaround, as 0.9.2.X is still in dev...
 		#, "opy_distbuilder>=0.9.2.2"  
 	],
-	include_package_data=True, # extra files defined in MANIFEST.in
+	include_package_data=True, # extra files defined in MANIFEST.in    
+    package_data = platform_resources
 )
