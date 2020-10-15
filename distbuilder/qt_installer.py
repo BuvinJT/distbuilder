@@ -32,11 +32,13 @@ _LOUD_FORCED_ARGS   = ["auto=true", "onexist=remove"]
 _DEBUG_SCRIPTS_ARGS = ["_keeptemp=true"]
 
 __BIN_SUB_DIR = "bin"
-__QT_IFW_UNINSTALL_EXE_NAME = util.normBinaryName( "Uninstaller", isGui=True )
-__QT_IFW_CREATOR_EXE_NAME = util.normBinaryName( "binarycreator" )
-
+__QT_IFW_CREATOR_EXE_NAME    = util.normBinaryName( "binarycreator" )
 __QT_IFW_CREATOR_OFFLINE_SWITCH = "--offline-only"
 
+__QT_IFW_ARCHIVEGEN_EXE_NAME = util.normBinaryName( "archivegen" )
+_QT_IFW_ARCHIVE_EXT = ".7z"
+
+__QT_IFW_UNINSTALL_EXE_NAME = util.normBinaryName( "Uninstaller", isGui=True )
 __QT_IFW_AUTO_INSTALL_PY_SCRIPT_NAME   = "__distb-install-qt-ifw.py"
 __QT_IFW_AUTO_UNINSTALL_PY_SCRIPT_NAME = "__distb-uninstall-qt-ifw.py"
 __QT_IFW_UNATTENDED_SCRIPT_NAME    = "__distb-unattended-qt-ifw.qs"
@@ -151,6 +153,11 @@ QT_IFW_DYNAMIC_PATH_VARS = [
     , "InstallerDirPath" 
     , "InstallerFilePath" 
 ]
+
+_RETAINED_TOOL_SUBDIR = 'maintenanceResources'
+_RETAINED_TOOL_DIR = '"%s/%s"' % (QT_IFW_TARGET_DIR,_RETAINED_TOOL_SUBDIR)
+_TEMP_TOOL_SUBDIR = "tools"
+_TEMP_TOOL_DIR = '__installerTempPath() + "/%s"' % (_TEMP_TOOL_SUBDIR,)
 
 # don't use back slash on Windows!
 def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
@@ -282,7 +289,7 @@ class QtIfwConfigXml( _QtIfwXml ):
             self.iconFilePath = ( None if iconFilePath is None else 
                                   normIconName( iconFilePath, 
                                                 isPathPreserved=True ) )        
-            try:    iconBaseName = splitExt( fileBaseName(iconFilePath) )[0]
+            try:    iconBaseName = splitExt( baseFileName(iconFilePath) )[0]
             except: iconBaseName = None
         self.companyTradeName = ( companyTradeName if companyTradeName 
                                   else publisher.replace(".","") )
@@ -415,11 +422,11 @@ class QtIfwPackage:
         self.distResources = None        
         self.isTempSrc     = isTempSrc                     
         # extended content detail        
-        self.subDirName  = subDirName 
-        self.exeName     = None           
-        self.isGui       = False
-        self.exeWrapper  = None # class QtIfwExeWrapper
-        self.qtCppConfig = None
+        self.subDirName   = subDirName 
+        self.exeName      = None           
+        self.isGui        = False
+        self.exeWrapper   = None # class QtIfwExeWrapper        
+        self.qtCppConfig  = None
     
         self._isMergeProduct = False
         
@@ -2935,19 +2942,23 @@ Component.prototype.%s = function(){
         return s 
                 
     # QtIfwPackageScript                              
-    def __init__( self, pkgName, 
-                  shortcuts=[], externalOps=[], uiPages=[],                    
+    def __init__( self, pkgName, pkgVersion,
+                  shortcuts=[], externalOps=[], uiPages=[],
+                  installTools=[],                    
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
         _QtIfwScript.__init__( self, fileName, script, scriptPath )
 
         self.pkgName          = pkgName
+        self.pkgVersion       = pkgVersion
         self.shortcuts        = shortcuts
         self.uiPages          = uiPages
         
         self.externalOps      = externalOps
         self.killOps          = []
         self.customOperations = None
+        
+        self.installTools     = installTools
                 
         # Linux Only
         self.isAskPassProgRequired = False
@@ -2966,6 +2977,9 @@ Component.prototype.%s = function(){
                                                               
         self.componentCreateOperationsBody = None
         self.isAutoComponentCreateOperations = True
+
+        self.componentCreateOperationsForArchiveBody = None
+        self.isAutoComponentCreateOperationsForArchive=True       
                                                         
     def _generate( self ) :        
         self.script = ""
@@ -2999,6 +3013,16 @@ Component.prototype.%s = function(){
                 "\nComponent.prototype.createOperations = function() {\n" +
                 "    component.createOperations(); // call to super class\n" +
                 "%s\n}\n" % (self.componentCreateOperationsBody,) )
+
+        if self.isAutoComponentCreateOperationsForArchive:
+            self.__genComponentCreateOperationsForArchiveBody()
+        if self.componentCreateOperationsForArchiveBody:
+            self.script += (
+            '\nComponent.prototype.createOperationsForArchive = function(archive)\n' +
+            '{\n' +
+            ('%s\n' % (self.componentCreateOperationsForArchiveBody,) ) +            
+            '    component.createOperationsForArchive(archive); // call to super class \n' +
+            '}\n' )
 
     def __genGlobals( self ):
         NEW = _QtIfwScript.NEW_LINE
@@ -3127,6 +3151,30 @@ Component.prototype.%s = function(){
                 "\n%s\n" % (self.customOperations,) )            
         if self.componentCreateOperationsBody == "" :
             self.componentCreateOperationsBody = None
+        
+    def __genComponentCreateOperationsForArchiveBody( self ):
+        TAB = _QtIfwScript.TAB
+        END = _QtIfwScript.END_LINE
+        SBLK =_QtIfwScript.START_BLOCK
+        EBLK =_QtIfwScript.END_BLOCK
+        self.componentCreateOperationsForArchiveBody = ""
+        if self.installTools is None or len(self.installTools)==0: return
+        for tool in self.installTools:
+            if isinstance( tool, QtIfwInstallerTool ): 
+                archiveName = joinExt( 
+                    versionStr( self.pkgVersion ) + rootFileName( tool.srcPath ), 
+                    _QT_IFW_ARCHIVE_EXT )
+                self.componentCreateOperationsForArchiveBody +=(
+                #TAB + _QtIfwScript.log( '"archive: " + archive', isAutoQuote=False ) +                     
+                TAB + ('if(fileName(archive)=="%s")' % (archiveName,)) + SBLK +
+                (2*TAB) + _QtIfwScript.log( 
+                    "Handling installer tool archive: %s" % (archiveName,)  ) +
+                (2*TAB) + ('component.addOperation("Extract", archive, %s)' % ( 
+                    _RETAINED_TOOL_DIR if tool.isMaintenanceNeed else 
+                    _TEMP_TOOL_DIR ) ) + END +
+                (2*TAB) + 'return' + END +
+                TAB + EBLK 
+                ) 
         
     # TODO: Clean up this lazy mess!    
     def __addShortcuts( self ):
@@ -3605,7 +3653,22 @@ class QtIfwKillOp:
         self.onInstall   = onInstall
         self.onUninstall = onUninstall
         self.isElevated  = True  
-            
+
+# -----------------------------------------------------------------------------
+class QtIfwInstallerTool:
+    
+    def __init__( self, srcPath, isMaintenanceNeed=False ):
+        self.srcPath = srcPath
+        self.isMaintenanceNeed = isMaintenanceNeed
+                    
+    def targetPath( self ):
+        toolName = baseFileName( self.srcPath )
+        return( '(%s)' %( _QtIfwScript.targetDir() +' + "/%s/%s"' % (
+                    _RETAINED_TOOL_SUBDIR, toolName ) 
+                if self.isMaintenanceNeed else
+                '__installerTempPath() + "/%s/%s"' % (
+                    _TEMP_TOOL_SUBDIR, toolName ) ), )
+
 # -----------------------------------------------------------------------------
 class QtIfwUiPage():
 
@@ -4546,6 +4609,14 @@ def __qtIfwCreatorPath( qtIfwDir ):
     creatorPath = joinPath( qtIfwDir, 
         joinPath( __BIN_SUB_DIR, __QT_IFW_CREATOR_EXE_NAME ) )
     return creatorPath if isFile( creatorPath ) else None
+
+def __defaultQtIfwArchiveGenPath( version=QT_IFW_DEFAULT_VERSION ):
+    return __qtIfwArchiveGenPath( __defaultQtIfwPath( version ) )
+
+def __qtIfwArchiveGenPath( qtIfwDir ):
+    generatorPath = joinPath( qtIfwDir, 
+        joinPath( __BIN_SUB_DIR, __QT_IFW_ARCHIVEGEN_EXE_NAME ) )
+    return generatorPath if isFile( generatorPath ) else None
     
 # -----------------------------------------------------------------------------
 def _addQtIfwLicense( licensePath, packages, name="End User License Agreement" ): 
@@ -4786,7 +4857,7 @@ def __initBuild( qtIfwConfig ) :
     # copy the source content into the build directory
     for p in qtIfwConfig.packages :
         if not isinstance( p, QtIfwPackage ) : continue
-        destDir = p.contentDirPath()                
+        destDir = p.contentDirPath()                        
         if p.srcDirPath : 
             p.srcDirPath = normpath( p.srcDirPath )
             copyDir( p.srcDirPath, destDir )                
@@ -4803,7 +4874,10 @@ def __initBuild( qtIfwConfig ) :
             if p.exeName is None: p.exeName = srcExeName 
             elif p.exeName != srcExeName :             
                 rename( joinPath( destDir, srcExeName ),
-                        joinPath( destDir, p.exeName ) )            
+                        joinPath( destDir, p.exeName ) )
+        for tool in p.pkgScript.installTools:
+            if isinstance( tool, QtIfwInstallerTool ): 
+                __addArchive( qtIfwConfig, p, tool.srcPath )        
     print( "Build directory created: %s" % (BUILD_SETUP_DIR_PATH,) )
 
 def __addInstallerResources( qtIfwConfig ) :
@@ -4859,7 +4933,7 @@ def __genQtIfwCntrlRes( qtIfwConfig ) :
             if isFile( iconFilePath ):
                 copyFile( iconFilePath,                       
                           joinPath( configXml.dirPath(), 
-                                    fileBaseName( configXml.iconFilePath ) ) )
+                                    baseFileName( configXml.iconFilePath ) ) )
     if ctrlScript :
         # Allow component selection to be explicitly disabled, but force that
         # when there are not multiple packages to begin with
@@ -4878,7 +4952,7 @@ def __addLicenses( package ) :
     fixFormat = not package.isLicenseFormatPreserved
     if not exists( destDir ): makeDir( destDir )
     for name, filePath in six.iteritems( package.licenses ):
-        fileName = fileBaseName( filePath )
+        fileName = baseFileName( filePath )
         package.pkgXml.Licenses[name] = fileName
         srcPath = absPath( filePath, basePath=package.resBasePath )
         if fixFormat:
@@ -4954,6 +5028,36 @@ def __addExeWrapper( package ) :
         if isCustom:
             if isFound: print( "REPLACING..." )                           
             exeWrapperScript.write( dirPath )           
+    
+def __addArchive( qtIfwConfig, package, srcPaths, archiveRootName=None ):        
+    if isinstance( srcPaths, list ):
+        if archiveRootName is None:
+            if len(srcPaths)==1: archiveRootName = rootFileName( srcPaths[0] ) 
+            else: raise Exception( "An archive root name must be provided" )
+    else: 
+        archiveRootName = rootFileName( srcPaths )
+        srcPaths=[srcPaths]  
+    archives=[ c for c in srcPaths 
+               if fileExt( c ).lower()==_QT_IFW_ARCHIVE_EXT ]
+    nonArchives=[ c for c in srcPaths if c not in archives ]
+    destDir = package.contentTopDirPath()
+    if not exists( destDir ): makeDir( destDir )
+    if len( archives ) > 0:
+        scrList = [ (absPath( p, basePath=package.resBasePath ),)
+                    for p in archives ]                     
+        copyToDir( scrList, destDir )    
+    if len( nonArchives ) > 0:
+        print( "Generating archive using Qt IFW...\n" )            
+        generatorPath = __qtIfwArchiveGenPath( qtIfwConfig.qtIfwDirPath )
+        destPath = joinPath( destDir, 
+                    joinExt( archiveRootName, _QT_IFW_ARCHIVE_EXT ) )
+        scrList = " ".join( 
+            [ '"%s"' % (absPath( p, basePath=package.resBasePath ),)
+              for p in nonArchives ] )                     
+        cmd = '%s "%s" %s' % ( generatorPath, destPath, scrList )
+        util._system( cmd )  
+        if not exists( destPath ) : 
+            raise Exception( 'FAILED to create "%s"' % (destPath,) )
 
 def __build( qtIfwConfig ) :
     print( "Building installer using Qt IFW...\n" )
@@ -5056,8 +5160,8 @@ def __buildSilentWrapper( qtIfwConfig ) :
             removeFromDir( wrapperPyName )            
             removeFromDir( self.__nestedZipPath 
                            if IS_MACOS else nestedExeName )
-            dirName = fileBaseName( self.binDir )
-            binName = fileBaseName( self.binPath )       
+            dirName = baseFileName( self.binDir )
+            binName = baseFileName( self.binPath )       
             tmpDir = renameInDir( (dirName, "__" + dirName) )             
             moveToDir( joinPath( tmpDir, binName ) ) 
             removeFromDir( tmpDir )

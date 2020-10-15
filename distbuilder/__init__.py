@@ -25,6 +25,7 @@ from distbuilder.qt_installer import \
     , QtIfwExternalOp \
     , QtIfwKillOp \
     , QtIfwExeWrapper \
+    , QtIfwInstallerTool \
     , QtIfwUiPage \
     , QtIfwTargetDirPage \
     , QtIfwSimpleTextPage \

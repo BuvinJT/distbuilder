@@ -470,9 +470,9 @@ Attributes:
     isTempSrc     = False
                          
     <destination content>
-    subDirName  = None
-    exeName     = None   
-    exeWrapper  = None
+    subDirName   = None
+    exeName      = None   
+    exeWrapper   = None
     
     <other configuration details>
     isGui       = False
@@ -560,14 +560,16 @@ and [QtIfwKillOp](#qtifwexternalop) objects are used for `killOps`.
 
 Constructor:       
 
-    QtIfwPackageScript( pkgName, 
+    QtIfwPackageScript( pkgName, pkgVersion,
                         shortcuts=[], externalOps=[], uiPages=[],
+                        installTools=[],
                         fileName="installscript.qs", 
                         script=None, scriptPath=None )
                   
 Attributes & default values:      
 
-    pkgName  = <required>
+    pkgName    = <required>
+    pkgVersion = <required>
     fileName = "installscript.qs"
     
     script = None <or loaded via scriptPath>
@@ -578,6 +580,8 @@ Attributes & default values:
     externalOps = []
     killOps     = []
     customOperations = None
+    
+    installTools = []
     
     embeddedResources = None    
     packageGlobals = None
@@ -591,6 +595,9 @@ Attributes & default values:
         
     componentCreateOperationsBody = None
     isAutoComponentCreateOperations = True        
+    
+    componentCreateOperationsForArchiveBody = None
+    isAutoComponentCreateOperationsForArchive = True       
     
     <Linux Only>
     isAskPassProgRequired = False
@@ -707,10 +714,10 @@ Constructor:
 
 Attributes & default values:
                   
-        processName = <required>
-        onInstall   = True
-        onUninstall = True
-        isElevated  = True 
+    processName = <required>
+    onInstall   = True
+    onUninstall = True
+    isElevated  = True 
 
 Notes:
 
@@ -719,6 +726,31 @@ Kill operations are performed prior to any others during either on install or un
 For convenience, instead of passing the explicit name the of process, you may instead pass a 
 [QtIfwPackage](#qtifwpackage).  In which case, the name of the "primary executable" will be 
 automatically extracted from that.  
+
+## QtIfwInstallerTool
+
+These objects are use by [QtIfwPackageScript](#qtifwpackagescript) objects,
+to as a means to include "tools", such as third party utility binaries,
+in the installer which are not part of the product or intended for use by an end user.
+Such tools may then be utilized by your package script operations.
+  
+By default, such a tool will be extracted into a temporary location and removed at the end of installation. If you will require it for maintenance operations (i.e. during updates or uninstallation), enabling the `isMaintenanceNeed` attribute will cause the tool to be retained on the target, so it will be available later when needed. 
+
+Constructor:
+       
+    QtIfwInstallerTool( srcPath, isMaintenanceNeed=False )
+
+Attributes & default values:
+                  
+    srcPath = <required> 
+    isMaintenanceNeed = False
+
+Methods:
+
+    targetPath() 
+    
+**targetPath()**: Use this to reference the tool path when generating QtScripts / operations
+will utilize it.     
         
 ## QtIfwExeWrapper
 

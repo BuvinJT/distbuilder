@@ -1493,13 +1493,14 @@ new download will overwrite the prior file.
         move                   shutil.move
         rename                 os.rename
         tempDirPath            tempfile.gettempdir()    
-        rootFileName			<custom> os.path.splitext of basename 
+        rootFileName		   <custom> head of os.path.splitext of os.path.basename 
         baseFileName           os.path.basename         
         dirPath                os.path.dirname
         joinPath               os.path.join
         splitPath              os.path.split
         splitExt               os.path.splitext 
-        joinExt 				<custom> inverse of splitExt   
+        joinExt 			   <custom> inverse of splitExt
+        fileExt                <note returns None, rather than "", when there is no extension>  
         
 ### General Purpose Constants
         

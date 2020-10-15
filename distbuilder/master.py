@@ -172,6 +172,8 @@ class ConfigFactory:
                 fileName=self.ifwCntrlScriptName,
                 script=self.ifwCntrlScriptText, 
                 scriptPath=self.ifwCntrlScriptPath )
+        
+        # TODO: Fix this, as it is no longer respected!
         if self.replaceTarget:
             script.virtualArgs={ _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG:
                                  _QtIfwScript.TARGET_EXISTS_OPT_REMOVE } 
@@ -270,7 +272,8 @@ class ConfigFactory:
                         pngIconResPath=pngIconPath )  
         defShortcut.windowStyle = shortcutWinStyle
         
-        script = QtIfwPackageScript( self.__ifwPkgName(), 
+        script = QtIfwPackageScript( 
+                    self.__ifwPkgName(), self.__versionStr(),
                     shortcuts=[ defShortcut ],
                     fileName=self.ifwPkgScriptName,
                     script=self.ifwPkgScriptText, 

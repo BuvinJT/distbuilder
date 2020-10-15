@@ -445,7 +445,7 @@ def buildExecutable( name=None, entryPointPy=None,
         try:
             pngPath = pyInstConfig._pngIconResPath
             if exists( pngPath ):
-                pngName = fileBaseName( pngPath )
+                pngName = baseFileName( pngPath )
                 isRes = False
                 for res in distResources :
                     isRes = res.endswith( pngName )
