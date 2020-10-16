@@ -3542,28 +3542,36 @@ class QtIfwExternalOp:
     ON_INSTALL, ON_UNINSTALL, ON_BOTH, AUTO_UNDO = range(4) 
 
     __AUTO_SCRIPT_COUNT=0
+    __SCRIPT_ROOT_NAME_TMPLT = "%s_%d"
 
-    # TODO: Expand upon registry functions
-    
-    # TODO: Deal with 64 bit vs 32 bit registry contexts
-    # Allow the use of either literal paths or implicit wow64 resolution
-    # Some thoughts:     
-    # https://stackoverflow.com/questions/630382/how-to-access-the-64-bit-registry-from-a-32-bit-powershell-instance
-    
     @staticmethod
-    def CreateRegistryEntry( event, key, valueName=None, value="", valueType="String" ):
-        if not IS_WINDOWS: util._onPlatformErr()
-        return QtIfwExternalOp.__genScriptOp( event, 
-            script=QtIfwExternalOp.CreateRegistryEntryScript( key, valueName, value, valueType ), 
-            uninstScript=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
-            isElevated=True )
-    
-    @staticmethod
-    def RemoveRegistryEntry( event, key, valueName=None ):
-        if not IS_WINDOWS: util._onPlatformErr()    
-        return QtIfwExternalOp.__genScriptOp( event, 
-            script=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
-            canAutoUndo=False, isElevated=True )
+    def __scriptRootName( prefix ):
+        QtIfwExternalOp.__AUTO_SCRIPT_COUNT+=1
+        return QtIfwExternalOp.__SCRIPT_ROOT_NAME_TMPLT % ( 
+            prefix, QtIfwExternalOp.__AUTO_SCRIPT_COUNT )
+
+    if IS_WINDOWS:
+        # TODO: Expand upon registry functions
+        
+        # TODO: Deal with 64 bit vs 32 bit registry contexts
+        # Allow the use of either literal paths or implicit wow64 resolution
+        # Some thoughts:     
+        # https://stackoverflow.com/questions/630382/how-to-access-the-64-bit-registry-from-a-32-bit-powershell-instance
+        
+        @staticmethod
+        def CreateRegistryEntry( event, key, valueName=None, value="", valueType="String" ):
+            if not IS_WINDOWS: util._onPlatformErr()
+            return QtIfwExternalOp.__genScriptOp( event, 
+                script=QtIfwExternalOp.CreateRegistryEntryScript( key, valueName, value, valueType ), 
+                uninstScript=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
+                isElevated=True )
+        
+        @staticmethod
+        def RemoveRegistryEntry( event, key, valueName=None ):
+            if not IS_WINDOWS: util._onPlatformErr()    
+            return QtIfwExternalOp.__genScriptOp( event, 
+                script=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
+                canAutoUndo=False, isElevated=True )
     
     @staticmethod
     def CreateStartupEntry( pkg=None, exePath=None, displayName=None, 
@@ -3618,28 +3626,181 @@ class QtIfwExternalOp:
         return QtIfwExternalOp( script=onInstall, uninstScript=onUninstall,
                                 isElevated=isElevated ) 
     
-    # See
-    # https://blog.netwrix.com/2018/09/11/how-to-get-edit-create-and-delete-registry-keys-with-powershell/
-    # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-itemproperty?view=powershell-7
-    @staticmethod
-    def CreateRegistryEntryScript( key, valueName=None, value="", valueType="String" ):
-        valueName = "-Name '%s' " % (valueName,) if valueName else ""
-        if value is None: value=""
-        QtIfwExternalOp.__AUTO_SCRIPT_COUNT+=1
-        return ExecutableScript( 
-            "createRegEntry_%d" % (QtIfwExternalOp.__AUTO_SCRIPT_COUNT,), 
-            extension="ps1", script=(
-            "New-ItemProperty -Path '%s' %s-Value '%s' -PropertyType '%s'" 
-            % (key, valueName, value, valueType) ) )
-    
-    @staticmethod
-    def RemoveRegistryEntryScript( key, valueName=None ):
-        valueName = "-Name '%s' " % (valueName,) if valueName else ""
-        QtIfwExternalOp.__AUTO_SCRIPT_COUNT+=1
-        return ExecutableScript( "removeRegEntry_%d" % (
-            QtIfwExternalOp.__AUTO_SCRIPT_COUNT,),
-            extension="ps1", script=(
-            "Remove-ItemProperty -Path '%s' %s" % (key, valueName) ) )
+    if IS_WINDOWS:
+        # See
+        # https://blog.netwrix.com/2018/09/11/how-to-get-edit-create-and-delete-registry-keys-with-powershell/
+        # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-itemproperty?view=powershell-7
+        @staticmethod
+        def CreateRegistryEntryScript( key, valueName=None, 
+                                       value="", valueType="String" ):
+            valueName = "-Name '%s' " % (valueName,) if valueName else ""
+            if value is None: value=""
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "createRegEntry" ), extension="ps1", script=(
+                "New-ItemProperty -Path '%s' %s-Value '%s' -PropertyType '%s'" 
+                % (key, valueName, value, valueType) ) )
+        
+        @staticmethod
+        def RemoveRegistryEntryScript( key, valueName=None ):
+            valueName = "-Name '%s' " % (valueName,) if valueName else ""            
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "removeRegEntry" ), extension="ps1", script=(
+                QtIfwExternalOp.__AUTO_SCRIPT_COUNT,),
+                extension="ps1", script=(
+                "Remove-ItemProperty -Path '%s' %s" % (key, valueName) ) )
+ 
+        @staticmethod
+        def Bat2ExeScript( srcPath, destPath ):
+            script=(
+"""
+;@echo off
+
+;set SOURCE_PATH={srcPath}
+;set TARGET_PATH={destPath}
+
+;for %%I in ("%TARGET_PATH%") do set "target.exe=%%~I"
+;for %%I in ("%SOURCE_PATH%") do set "batch_file=%%~fI"
+;for %%I in ("%SOURCE_PATH%") do set "bat_name=%%~nxI"
+;for %%I in ("%SOURCE_PATH%") do set "bat_dir=%%~dpI"
+
+;copy /y "%~f0" "%temp%\2exe.sed" >nul
+
+;(echo()>>"%temp%\2exe.sed"
+;(echo(AppLaunched=cmd.exe /c "%bat_name%")>>"%temp%\2exe.sed"
+;(echo(TargetName=%target.exe%)>>"%temp%\2exe.sed"
+;(echo(FILE0="%bat_name%")>>"%temp%\2exe.sed"
+;(echo([SourceFiles])>>"%temp%\2exe.sed"
+;(echo(SourceFiles0=%bat_dir%)>>"%temp%\2exe.sed"
+;(echo([SourceFiles0])>>"%temp%\2exe.sed"
+;(echo(%%FILE0%%=)>>"%temp%\2exe.sed"
+
+;iexpress /n /q /m %temp%\2exe.sed
+
+;del /q /f "%temp%\2exe.sed"
+;exit /b 0
+
+[Version]
+Class=IEXPRESS
+SEDVersion=3
+[Options]
+PackagePurpose=InstallApp
+ShowInstallProgramWindow=0
+HideExtractAnimation=1
+UseLongFileName=1
+InsideCompressed=0
+CAB_FixedSize=0
+CAB_ResvCodeSigning=0
+RebootMode=N
+InstallPrompt=%InstallPrompt%
+DisplayLicense=%DisplayLicense%
+FinishMessage=%FinishMessage%
+TargetName=%TargetName%
+FriendlyName=%FriendlyName%
+AppLaunched=%AppLaunched%
+PostInstallCmd=%PostInstallCmd%
+AdminQuietInstCmd=%AdminQuietInstCmd%
+UserQuietInstCmd=%UserQuietInstCmd%
+SourceFiles=SourceFiles
+
+[Strings]
+InstallPrompt=
+DisplayLicense=
+FinishMessage=
+FriendlyName=-
+PostInstallCmd=<None>
+AdminQuietInstCmd=
+UserQuietInstCmd=
+""")            
+            script = script.replace( "{srcPath}" , srcPath  ).replace( 
+                                     "{destPath}", destPath )
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "bat2exe" ), script=script )
+
+        @staticmethod
+        def EmbedExeIconFromPyInstExeSrcScript( sourcePath, targetPath ):
+            script=(
+"""
+@echo off
+
+set "SOURCE_PATH={sourcePath}"
+set "ICON_NAME=0.ico"
+
+set "TARGET_PATH={targetPath}"
+
+set "TEMP_ICON_DIR=%temp%\extracted-icons"
+set "TEMP_ICON_PATH=%TEMP_ICON_DIR%\%ICON_NAME%"
+
+rh -open "%SOURCE_PATH%" -save "%TEMP_ICON_DIR%" -action extract -mask ICONGROUP
+rh -open "%TARGET_PATH%" -save "%TARGET_PATH%" -action addoverwrite -res "%TEMP_ICON_PATH%" -mask ICONGROUP, MAINICON, 0
+
+rd /q /s "%TEMP_ICON_DIR%"
+del /q /f rh.ini
+
+ie4uinit -ClearIconCache       
+ie4uinit -show
+""")            
+            script = script.replace( "{sourcePath}", sourcePath ).replace( 
+                                     "{targetPath}", targetPath )
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "embed-icon-from-pyinst-src" ), script=script )
+
+        @staticmethod
+        def BrandExeScript( exePath ):
+            script=(
+"""
+@echo off
+
+set "EXE_PATH={exePath}"
+
+set "PRODUCT_NAME=Some Product"
+set "FILE_DESCRIPTION=Here is more info."
+set "COMPANY_NAME=Some Company"
+set "COPYRIGHT=Copyright © 2020, Some Company. All rights reserved."
+set "FILE_VERSION=1,0,0,0"
+set "PRODUCT_VERSION=1,0,0,0"
+set "FILE_VERSION_STR=1.0.0.0"
+set "PRODUCT_VERSION_STR=1.0.0.0"
+
+set "TEMP_RC_PATH=%temp%\versioninfo.rc"
+set "TEMP_RES_PATH=%temp%\versioninfo.res"
+
+for %%I in ("%EXE_PATH%") do set "TARGET_NAME=%%~nxI"
+
+(
+echo:VS_VERSION_INFO VERSIONINFO
+echo:    FILEVERSION    %FILE_VERSION%
+echo:    PRODUCTVERSION %PRODUCT_VERSION%
+echo:{
+echo:    BLOCK "StringFileInfo"
+echo:    {
+echo:        BLOCK "040904b0"
+echo:        {
+echo:            VALUE "CompanyName",        "%COMPANY_NAME%\0"
+echo:            VALUE "FileDescription",    "%FILE_DESCRIPTION%\0"
+echo:            VALUE "FileVersion",        "%FILE_VERSION_STR%\0"
+echo:            VALUE "LegalCopyright",     "%COPYRIGHT%\0"
+echo:            VALUE "OriginalFilename",   "%TARGET_NAME%\0"
+echo:            VALUE "ProductName",        "%PRODUCT_NAME%\0"
+echo:            VALUE "ProductVersion",     "%PRODUCT_VERSION_STR%\0"
+echo:        }
+echo:    }
+echo:    BLOCK "VarFileInfo"
+echo:    {
+echo:        VALUE "Translation", 0x409, 1200
+echo:    }
+echo:}
+) > "%TEMP_RC_PATH%" && echo wrote %TEMP_RC_PATH%
+
+rh -open "%TEMP_RC_PATH%" -save "%TEMP_RES_PATH%" -action compile 
+rh -open "%EXE_PATH%" -save "%EXE_PATH%" -action addoverwrite -resource "%TEMP_RES_PATH%" 
+
+del /q /f "%TEMP_RC_PATH%"
+del /q /f "%TEMP_RES_PATH%"
+del /q /f rh.ini
+""")            
+            script = script.replace( "{exePath}" , exePath )
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "brandexe" ), script=script )
  
     # QtIfwExternalOp
     def __init__( self, 
