@@ -2998,6 +2998,15 @@ Component.prototype.%s = function(){
                 if isinstance( op.script, ExecutableScript ) ]
         self.script += _QtIfwScript.embedResources( installScripts ) 
         
+        for op in self.externalOps:
+            for dependency in op.toolDependencies:
+                dependencyFound = False        
+                for tool in self.installTools:
+                    dependencyFound = tool.name == dependency.name
+                    if dependencyFound: continue
+                if dependencyFound: continue
+                self.installTools.append( dependency )
+
         if self.isAutoComponentConstructor:
             self.__genComponentConstructorBody()
         self.script += ( "function Component() {\n%s\n}\n" % 
@@ -3636,7 +3645,8 @@ class QtIfwExternalOp:
     def __init__( self, 
               script=None,       exePath=None,       args=[], successRetCodes=[0],  
         uninstScript=None, uninstExePath=None, uninstArgs=[],  uninstRetCodes=[0],
-        isElevated=False, workingDir=QT_IFW_TARGET_DIR, onErrorMessage=None ):
+        isElevated=False, workingDir=QT_IFW_TARGET_DIR, onErrorMessage=None,
+        toolDependencies=[] ):
         
         self.script          = script #ExecutableScript        
         self.exePath         = exePath
@@ -3652,6 +3662,8 @@ class QtIfwExternalOp:
         self.workingDir      = workingDir
                 
         self.onErrorMessage  = onErrorMessage # TODO: TEST!
+
+        self.toolDependencies = toolDependencies
 
 # -----------------------------------------------------------------------------
 class QtIfwKillOp:

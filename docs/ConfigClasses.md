@@ -664,24 +664,27 @@ Constructor:
     QtIfwExternalOp( 
               script=None,       exePath=None,       args=[], successRetCodes=[0],  
         uninstScript=None, uninstExePath=None, uninstArgs=[],  uninstRetCodes=[0],
-        isElevated=False, workingDir=QT_IFW_TARGET_DIR, onErrorMessage=None )
+        isElevated=False, workingDir=QT_IFW_TARGET_DIR, onErrorMessage=None,
+        toolDependencies=[] )
 
 Attributes & default values:
                   
-        script          = None
-        exePath         = None
-        args            = []
-        successRetCodes = [0]
+    script          = None
+    exePath         = None
+    args            = []
+    successRetCodes = [0]
 
-        uninstScript    = None
-        uninstExePath   = None
-        uninstArgs      = []
-        uninstRetCodes  = [0]
-        
-        isElevated      = False 
-        workingDir      = QT_IFW_TARGET_DIR
-                
-        onErrorMessage  = None
+    uninstScript    = None
+    uninstExePath   = None
+    uninstArgs      = []
+    uninstRetCodes  = [0]
+    
+    isElevated      = False 
+    workingDir      = QT_IFW_TARGET_DIR
+            
+    onErrorMessage  = None
+
+	toolDependencies = []
 
 Notes:
 
@@ -698,6 +701,11 @@ in **reverse order**.  It is possible (and common), to define operations as only
 for installation or only for uninstallation.  Having direct counterparts is not 
 required.  When defining an `externalOps` list with "pure uninstallation" actions, 
 you should especially keep the reverse order of such operations in mind.    
+
+**toolDependencies**: A list of [QtIfwInstallerTool](#qtifwinstallertool) objects.
+Tools defined this list will be rolled into the installer without explicitly
+updating the [QtIfwPackageScript](#qtifwpackagescript) owner of this operation
+object. 
 
 ## QtIfwKillOp
 
