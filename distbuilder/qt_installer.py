@@ -3010,16 +3010,16 @@ Component.prototype.%s = function(){
             self.__genComponentCreateOperationsBody()
         if self.componentCreateOperationsBody:
             self.script += (
-                "\nComponent.prototype.createOperations = function() {\n" +
-                "    component.createOperations(); // call to super class\n" +
-                "%s\n}\n" % (self.componentCreateOperationsBody,) )
+                '\nComponent.prototype.createOperations = function() {\n' +
+                ('%s\n' % (self.componentCreateOperationsBody,) ) +            
+                '    component.createOperations(); // call to super class\n' +
+                '}\n')
 
         if self.isAutoComponentCreateOperationsForArchive:
             self.__genComponentCreateOperationsForArchiveBody()
         if self.componentCreateOperationsForArchiveBody:
             self.script += (
-            '\nComponent.prototype.createOperationsForArchive = function(archive)\n' +
-            '{\n' +
+            '\nComponent.prototype.createOperationsForArchive = function(archive) {\n' +
             ('%s\n' % (self.componentCreateOperationsForArchiveBody,) ) +            
             '    component.createOperationsForArchive(archive); // call to super class \n' +
             '}\n' )
@@ -3141,6 +3141,10 @@ Component.prototype.%s = function(){
         
     def __genComponentCreateOperationsBody( self ):
         self.componentCreateOperationsBody = ""
+        for tool in self.installTools:
+            if isinstance( tool, QtIfwInstallerTool ):
+                self.componentCreateOperationsBody +=(
+                     tool._setTargetPathValues() )                         
         if IS_LINUX and self.isAskPassProgRequired:
             self.__addAskPassProgResolution()        
         self.__addShortcuts()
@@ -3170,8 +3174,7 @@ Component.prototype.%s = function(){
                 (2*TAB) + _QtIfwScript.log( 
                     "Handling installer tool archive: %s" % (archiveName,)  ) +
                 (2*TAB) + ('component.addOperation("Extract", archive, %s)' % ( 
-                    _RETAINED_TOOL_DIR if tool.isMaintenanceNeed else 
-                    _TEMP_TOOL_DIR ) ) + END +
+                            tool.targetDirPath() ) ) + END +
                 (2*TAB) + 'return' + END +
                 TAB + EBLK 
                 ) 
@@ -3656,13 +3659,15 @@ class QtIfwKillOp:
 
 # -----------------------------------------------------------------------------
 class QtIfwInstallerTool:
-    
-    if IS_WINDOWS:
-        RESOURCE_HACKER = "rh"
-    
+        
     __TOOLS_RES_DIR_NAME = joinPath( "qtifw_tools",
         "linux" if IS_LINUX else "macos" if IS_MACOS else "windows" )
+
+    __CONTENT_KEYS = {} # dict of dicts
     
+    if IS_WINDOWS:
+        RESOURCE_HACKER = "ResourceHacker"
+
     @staticmethod
     def __toArchiveName( name ): 
         return joinExt( name, _QT_IFW_ARCHIVE_EXT ).lower()  
@@ -3674,22 +3679,53 @@ class QtIfwInstallerTool:
                 QtIfwInstallerTool.__toArchiveName( name ) ) )
 
     @staticmethod
-    def BuiltInTool( name, isMaintenanceNeed=False ):    
-        return QtIfwInstallerTool( QtIfwInstallerTool._toolResPath( name ), 
-                                   isMaintenanceNeed=isMaintenanceNeed )
+    def BuiltInTool( name, isMaintenanceNeed=False ):            
+        return QtIfwInstallerTool( name, 
+            QtIfwInstallerTool._toolResPath( name ), 
+            isMaintenanceNeed=isMaintenanceNeed, 
+            contentKeys=QtIfwInstallerTool.__CONTENT_KEYS.get(name,{}) )
 
-    def __init__( self, srcPath, isMaintenanceNeed=False ):
-        self.srcPath = srcPath
-        self.isMaintenanceNeed = isMaintenanceNeed
-                    
-    def targetPath( self ):
-        toolName = baseFileName( self.srcPath )
-        return( '(%s)' %( _QtIfwScript.targetDir() +' + "/%s/%s"' % (
-                    _RETAINED_TOOL_SUBDIR, toolName ) 
-                if self.isMaintenanceNeed else
-                '__installerTempPath() + "/%s/%s"' % (
-                    _TEMP_TOOL_SUBDIR, toolName ) ), )
+    def __init__( self, name, srcPath, srcBasePath=None, 
+                  isMaintenanceNeed=False, contentKeys={} ):
+        self.name = name
+        self.srcPath = absPath( srcPath, srcBasePath )        
+        self.isMaintenanceNeed = isMaintenanceNeed        
+        if( (contentKeys is None or len(contentKeys)==0) and 
+            isFile( self.srcPath ) ):                
+            self.contentKeys[ rootFileName( self.srcPath ) ] =(
+                 baseFileName( self.srcPath ) )
+        self.contentKeys = contentKeys
 
+    def targetPath( self, key=None ):
+        if( key is None and 
+            self.contentKeys is not None and len(self.contentKeys)==1 ):
+            key=self.contentKeys.keys()[0] 
+        if self.contentKeys is None or key not in self.contentKeys:
+            raise Exception("Invalid content key")
+        return _QtIfwScript.lookupValue( key )
+
+    def targetDirPath( self ):
+        return _QtIfwScript.lookupValue( self.__targetDirPathKey() )
+
+    def _setTargetPathValues( self ):        
+        snippet=""
+        dirPath = self._targetDirPathRaw()
+        snippet += _QtIfwScript.setValue( 
+            '"%s"' % (self.__targetDirPathKey(),), dirPath, 
+            isAutoQuote=False )
+        for key, relPath in six.iteritems(self.contentKeys):        
+            snippet += _QtIfwScript.setValue( 
+                '"%s"' % (key,), '(%s + "/%s")' % ( dirPath, relPath ), 
+                isAutoQuote=False )
+        return snippet               
+
+    def _targetDirPathRaw( self ):
+        return( _QtIfwScript.targetDir() + ' + "/%s"' % (
+                _RETAINED_TOOL_SUBDIR ) if self.isMaintenanceNeed else
+                '__installerTempPath()' ) + ' + "/%s"' % (self.name,) 
+
+    def __targetDirPathKey( self ): return '%sDir' % (self.name,)
+    
 # -----------------------------------------------------------------------------
 class QtIfwUiPage():
 
@@ -5062,18 +5098,15 @@ def __addArchive( qtIfwConfig, package, srcPaths, archiveRootName=None ):
     nonArchives=[ c for c in srcPaths if c not in archives ]
     destDir = package.contentTopDirPath()
     if not exists( destDir ): makeDir( destDir )
-    if len( archives ) > 0:
-        scrList = [ absPath( p, basePath=package.resBasePath )
-                    for p in archives ]                     
-        copyToDir( scrList, destDir )    
+    if len( archives ) > 0: copyToDir( archives, destDir )    
     if len( nonArchives ) > 0:
         print( "Generating archive using Qt IFW...\n" )            
         generatorPath = __qtIfwArchiveGenPath( qtIfwConfig.qtIfwDirPath )
         destPath = joinPath( destDir, 
                     joinExt( archiveRootName, _QT_IFW_ARCHIVE_EXT ) )
-        scrList = " ".join( 
-            [ '"%s"' % (absPath( p, basePath=package.resBasePath ),)
-              for p in nonArchives ] )                     
+        nonArchives = [ joinPath( p, "*" ) 
+                        if isDir( p ) else p for p in nonArchives ]               
+        scrList = " ".join( [ '"%s"' % (p,) for p in nonArchives ] )                     
         cmd = '%s "%s" %s' % ( generatorPath, destPath, scrList )
         util._system( cmd )  
         if not exists( destPath ) : 

@@ -730,7 +730,7 @@ automatically extracted from that.
 ## QtIfwInstallerTool
 
 These objects are use by [QtIfwPackageScript](#qtifwpackagescript) objects,
-to as a means to include "tools", such as third party utility binaries,
+to as a means to include "tools" (typically third party utility programs),
 in the installer which are not part of the product or intended for use by an end user.
 Such tools may then be utilized by your package script operations.
   
@@ -738,28 +738,51 @@ By default, such a tool will be extracted into a temporary location and removed 
 
 Constructor:
        
-    QtIfwInstallerTool( srcPath, isMaintenanceNeed=False )
+    QtIfwInstallerTool( name, srcPath, srcBasePath=None, 
+                        isMaintenanceNeed=False, contentKeys={} )
 
 Object Attributes & default values:
-                  
-    srcPath = <required> 
+
+    name              = <required>               
+    srcPath           = <required> 
+    srcBasePath       = None
     isMaintenanceNeed = False
+    contentKeys       = {}
  
 Object Methods:
 
-    targetPath() 
-
+    targetPath( key=None )
+    targetDirPath()
+ 
 Static Methods:
  
 	BuiltInTool( name, isMaintenanceNeed=False )
 
-Static Constants:
+Built In Windows Tool Names:
 
-	<Windows Only>
-		RESOURCE_HACKER
+	RESOURCE_HACKER
+		http://www.angusj.com/resourcehacker/
 
-**targetPath()**: Use this to reference the tool path when generating QtScripts / operations
-will utilize it.     
+**name**:  The base id by which to reference the tool and to name a target 
+container directory.  
+
+**srcPath**: The path to the tool file or directory.  This may be absolute or relative.
+ 
+**srcBasePath**:  If using a relative `srcPath`, you may override the base path with this.
+
+**isMaintenanceNeed**: Enabling this will cause the tool to be retained on the target, so it will be available for maintenance tool / uninstaller. 
+
+**contentKeys**: A dictionary of key/value pairs to be registered in the installer, allowing 
+you to dynamically access the paths within scripts on your target.  If your tool is simply
+one executable file, a key will be automatically registered for you. 
+
+**targetPath( key )**: Use this to reference the tool paths when generating 
+scripts / operations which will utilize it.  Specify to key as registered via `contentKeys`.
+If you omit the key when calling this, and only one exists 
+(such as when bundling a single file), that default key will be implied.     
+        
+**targetDirPath()**: In the event you need to access the container directory for the tool,
+e.g. to change you working directory to it, you may employ this method.
         
 **QtIfwInstallerTool.BuiltInTool**: Convenience method to bundle tools into an installer 
 which are bundled into the library. 
