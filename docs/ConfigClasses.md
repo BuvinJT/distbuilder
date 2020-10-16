@@ -740,17 +740,29 @@ Constructor:
        
     QtIfwInstallerTool( srcPath, isMaintenanceNeed=False )
 
-Attributes & default values:
+Object Attributes & default values:
                   
     srcPath = <required> 
     isMaintenanceNeed = False
-
-Methods:
+ 
+Object Methods:
 
     targetPath() 
-    
+
+Static Methods:
+ 
+	BuiltInTool( name, isMaintenanceNeed=False )
+
+Static Constants:
+
+	<Windows Only>
+		RESOURCE_HACKER
+
 **targetPath()**: Use this to reference the tool path when generating QtScripts / operations
 will utilize it.     
+        
+**QtIfwInstallerTool.BuiltInTool**: Convenience method to bundle tools into an installer 
+which are bundled into the library. 
         
 ## QtIfwExeWrapper
 

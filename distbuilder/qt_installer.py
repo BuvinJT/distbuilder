@@ -3657,6 +3657,27 @@ class QtIfwKillOp:
 # -----------------------------------------------------------------------------
 class QtIfwInstallerTool:
     
+    if IS_WINDOWS:
+        RESOURCE_HACKER = "rh"
+    
+    __TOOLS_RES_DIR_NAME = joinPath( "qtifw_tools",
+        "linux" if IS_LINUX else "macos" if IS_MACOS else "windows" )
+    
+    @staticmethod
+    def __toArchiveName( name ): 
+        return joinExt( name, _QT_IFW_ARCHIVE_EXT ).lower()  
+
+    @staticmethod
+    def _toolResPath( name ):    
+        return util._toLibResPath( joinPath( 
+                QtIfwInstallerTool.__TOOLS_RES_DIR_NAME, 
+                QtIfwInstallerTool.__toArchiveName( name ) ) )
+
+    @staticmethod
+    def BuiltInTool( name, isMaintenanceNeed=False ):    
+        return QtIfwInstallerTool( QtIfwInstallerTool._toolResPath( name ), 
+                                   isMaintenanceNeed=isMaintenanceNeed )
+
     def __init__( self, srcPath, isMaintenanceNeed=False ):
         self.srcPath = srcPath
         self.isMaintenanceNeed = isMaintenanceNeed
@@ -3674,7 +3695,6 @@ class QtIfwUiPage():
 
     __FILE_EXTENSION  = "ui"
     __UI_RES_DIR_NAME = "qtifw_ui"
-    
 
     BASE_ON_LOAD_TMPT = (    
 """
@@ -5043,7 +5063,7 @@ def __addArchive( qtIfwConfig, package, srcPaths, archiveRootName=None ):
     destDir = package.contentTopDirPath()
     if not exists( destDir ): makeDir( destDir )
     if len( archives ) > 0:
-        scrList = [ (absPath( p, basePath=package.resBasePath ),)
+        scrList = [ absPath( p, basePath=package.resBasePath )
                     for p in archives ]                     
         copyToDir( scrList, destDir )    
     if len( nonArchives ) > 0:
