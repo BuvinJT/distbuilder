@@ -850,6 +850,7 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         if scriptPath:
             with open( scriptPath, 'r' ) as f: self.script = f.read()
         else: self.script = script  
+        self.isIfwVarEscapeBackslash = False
                                                     
     def __str__( self ) :
         if self.script is None : ""

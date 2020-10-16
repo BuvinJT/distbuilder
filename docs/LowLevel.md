@@ -584,7 +584,7 @@ following add-on **QT SCRIPT** functions:
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
 	
-    replaceQtIfwVarsInFile( path, varNames )
+    replaceQtIfwVarsInFile( path, varNames, isDoubleBackslash )
 	
 	clearErrorLog()
 	writeErrorLog( msg )
@@ -1156,6 +1156,7 @@ Attributes & default values:
     shebang=True    # i.e. automatic   
     script=None
     scriptPath=None
+    isIfwVarEscapeBackslash = False
     
 Functions:   
 
@@ -1192,6 +1193,12 @@ A user supplied string will be applied if custom provided.
 
 **scriptPath**: The content for the for script, provided as a file path
 to source for where it is to be extracted.
+
+**isIfwVarEscapeBackslash**: If employing this class within a 
+[QtIfwExternalOp](ConfigClasses.md#qtifwexternalop), enabling this
+attribute with cause dynamically resolved installer driven paths
+to be injected into the script with backslashes doubled up, thereby
+escaping them in certain scripting languages / string literal contexts.  
 
 ## Utilities
 

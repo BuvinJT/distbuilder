@@ -642,7 +642,7 @@ class _QtIfwScript:
     __EMBED_RES_TMPLT       = 'var %s = %s;\n\n'
     __EMBED_RES_CHUNK_SIZE  = 128
     __EXT_DELIM_PLACEHOLDER = "_dot_"
-    __SCRIPT_FROM_B64_TMPL  = '__writeScriptFromBase64( "%s", %s, %s )%s'
+    __SCRIPT_FROM_B64_TMPL  = '__writeScriptFromBase64( "%s", %s, %s, %s )%s'
     
     # Note, there is in fact an installer.killProcess(string absoluteFilePath)
     # this custom kill takes a process name, with no specific path
@@ -694,6 +694,7 @@ class _QtIfwScript:
             if isinstance( script, ExecutableScript ):
                 scriptName = script.fileName()
                 scriptContent = str(script)
+                isDoubleBackslash = script.isIfwVarEscapeBackslash
                 resourceVarName = scriptName.replace(
                     ".", _QtIfwScript.__EXT_DELIM_PLACEHOLDER ) 
                 dynamicVarNames = scriptContent.split( QT_IFW_DYNAMIC_SYMBOL )
@@ -704,7 +705,8 @@ class _QtIfwScript:
                 return ( _QtIfwScript.log( "script: %s" % (scriptName,) ) +
                     _QtIfwScript.log( scriptContent ) +
                     _QtIfwScript.__SCRIPT_FROM_B64_TMPL % 
-                    (scriptName, resourceVarName, dynamicVarNames, 
+                    (scriptName, resourceVarName, dynamicVarNames,
+                     _QtIfwScript.toBool(isDoubleBackslash), 
                     _QtIfwScript.END_LINE) )
             return ""        
         return "".join( [ gen( res ) for res in embeddedResources ] )
@@ -1399,9 +1401,9 @@ class _QtIfwScript:
             TAB + _QtIfwScript.log( '"removed dir: " + path', isAutoQuote=False ) + 
             TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                            
-            'function __writeScriptFromBase64( fileName, b64, varNames ) ' + SBLK +  # TODO: Test in NIX/MAC                
+            'function __writeScriptFromBase64( fileName, b64, varNames, isDoubleBackslash ) ' + SBLK +  # TODO: Test in NIX/MAC                
             TAB + 'var path = __writeFileFromBase64( fileName, b64 )' + END +
-            TAB + 'replaceQtIfwVarsInFile( path, varNames )' +  END +            
+            TAB + 'replaceQtIfwVarsInFile( path, varNames, isDoubleBackslash )' +  END +            
             EBLK + NEW +                                                                         
             'function __writeFileFromBase64( fileName, b64 ) ' + SBLK +      # TODO: Test in NIX/MAC
             TAB + 'var path = Dir.toNativeSeparator( Dir.temp() + "/" + fileName )' + END +            
@@ -1434,7 +1436,7 @@ class _QtIfwScript:
             #TAB + 'deleteFile( tempPath )' + END +
             TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                
-            'function replaceQtIfwVarsInFile( path, varNames ) ' + SBLK +          # TODO: Test in NIX/MAC
+            'function replaceQtIfwVarsInFile( path, varNames, isDoubleBackslash ) ' + SBLK + # TODO: Test in NIX/MAC
             (
             TAB + 'var vbs = ' + NEW +
             (2*TAB) + '"Const ForReading = 1\\n" + ' + NEW +
@@ -1450,6 +1452,7 @@ class _QtIfwScript:
             TAB + 'for( var i=0; i != varNames.length; ++i ) ' + SBLK +                                    
             (2*TAB) + 'var varName = varNames[i]' + END +
             (2*TAB) + 'var varVal = Dir.toNativeSeparator( installer.value( varName ) )' + END +
+            (2*TAB) + 'if( isDoubleBackslash ) varVal = varVal.replace(/\\\\/g, \'\\\\\\\\\')' + END +
             (2*TAB) + 'vbs += "sText = Replace(sText, Amp + \\"" + varName + "\\" + Amp, \\"" + varVal + "\\")\\n"' + NEW +
             TAB + EBLK +
             TAB + 'vbs += ' + NEW +                
@@ -2410,12 +2413,14 @@ Controller.prototype.Dynamic%sCallback = function() {
 
         prepend =(
             TAB + _QtIfwScript.log( '"page changed to id: " + pageId', isAutoQuote=False ) +
-            TAB + ('if( pageId == %s )' % (
+            TAB + _QtIfwScript.ifInstalling( isMultiLine=True ) +
+            (2*TAB) + ('if( pageId == %s )' % (
                 QtIfwControlScript.toDefaultPageId( 
                     QT_IFW_INTRO_PAGE),)) + SBLK +              
-                    _QtIfwScript.ifElevated( isNegated=True ) +
+                    TAB + _QtIfwScript.ifElevated( isNegated=True ) +
                         _QtIfwScript.quit( "Elevated privileges required!", 
                                            isError=True, isSilent=True ) +
+                (2*TAB) + EBLK +        
             EBLK         
             )                 
         append  = ""
