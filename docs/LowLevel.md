@@ -332,6 +332,7 @@ and attributes for many higher level functions and objects in this library.
     QT_IFW_USER_STARTMENU_DIR
     QT_IFW_ALLUSERS_STARTMENU_DIR
     
+    QT_IFW_SCRIPTS_DIR
     QT_IFW_INSTALLER_TEMP_DIR
     QT_IFW_MAINTENANCE_TEMP_DIR
     
@@ -1147,7 +1148,8 @@ Constructor:
 
 	ExecutableScript( rootName, 
 				  	  extension=True, shebang=True,                   
-                  	  script=None, scriptPath=None )
+                  	  script=None, scriptPath=None,
+                  	  replacements={} )
                   
 Attributes & default values:    
 
@@ -1156,6 +1158,7 @@ Attributes & default values:
     shebang=True    # i.e. automatic   
     script=None
     scriptPath=None
+    replacements={}  
     isIfwVarEscapeBackslash = False
     
 Functions:   
@@ -1193,6 +1196,12 @@ A user supplied string will be applied if custom provided.
 
 **scriptPath**: The content for the for script, provided as a file path
 to source for where it is to be extracted.
+
+**replacements**: A dictionary of "placeholder" keys and "substitution" values in 
+the script.  Place holders must defined in the script with the surrounding brackets,
+i.e in the form "{placeholder}". The keys in replacements dictionary should not, however,
+include the brackets.  This is similar to the built-in string format function, of course,
+but works better in scripts which use brackets for other purposes. 
 
 **isIfwVarEscapeBackslash**: If employing this class within a 
 [QtIfwExternalOp](ConfigClasses.md#qtifwexternalop), enabling this

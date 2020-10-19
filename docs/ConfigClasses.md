@@ -665,7 +665,7 @@ Constructor:
               script=None,       exePath=None,       args=[], successRetCodes=[0],  
         uninstScript=None, uninstExePath=None, uninstArgs=[],  uninstRetCodes=[0],
         isElevated=False, workingDir=QT_IFW_TARGET_DIR, onErrorMessage=None,
-        toolDependencies=[] )
+        resourceScripts=[], uninstResourceScripts=[], toolDependencies=[] )
 
 Attributes & default values:
                   
@@ -684,7 +684,9 @@ Attributes & default values:
             
     onErrorMessage  = None
 
-	toolDependencies = []
+    resourceScripts       = []
+    uninstResourceScripts = []
+	toolDependencies      = []
 
 Notes:
 
@@ -701,6 +703,11 @@ in **reverse order**.  It is possible (and common), to define operations as only
 for installation or only for uninstallation.  Having direct counterparts is not 
 required.  When defining an `externalOps` list with "pure uninstallation" actions, 
 you should especially keep the reverse order of such operations in mind.    
+
+**resourceScripts, uninstResourceScripts**: Lists of additional [ExecutableScripts](LowLevel.md#executablescript)
+to make available on the target, for this operation to draw upon.  To reference the 
+script, build a path using the python constant `QT_IFW_SCRIPTS_DIR` or from directly
+within another script use `@ScriptsDir@`.   
 
 **toolDependencies**: A list of [QtIfwInstallerTool](#qtifwinstallertool) objects.
 Tools defined this list will be rolled into the installer without explicitly

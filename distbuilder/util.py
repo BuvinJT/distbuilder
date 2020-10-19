@@ -14,7 +14,7 @@ from os.path import exists, isfile, islink, \
 from shutil import rmtree as removeDir, move, make_archive, \
     copytree as copyDir, copyfile as copyFile   # @UnusedImport
 import platform
-from tempfile import gettempdir, mkstemp, mktemp
+from tempfile import gettempdir, mkstemp, mkdtemp, mktemp
 from subprocess import Popen, list2cmdline, check_output, \
     PIPE, STDOUT, \
     check_call  # @UnusedImport
@@ -587,8 +587,10 @@ def toNativePath( path ):
     
 def tempDirPath(): return gettempdir()
 
+def _reserveTempDir( suffix="" ): return mkdtemp( suffix )
+
 # mktemp returns a temp file path, but doesn't create it.
-# Thus, it is possible in theory for second process
+# Thus, it is possible in theory for a second process
 # to create a file at that path before such can be done
 # by the first.  This mitigates that possibility...   
 def _reserveTempFile( suffix="" ):
@@ -832,11 +834,14 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
     
     __NIX_DEFAULT_SHEBANG = "#!/bin/sh"
     __SHEBANG_TEMPLATE = "%s\n%s"
-        
+
+    __PLACEHOLDER_TMPLT = "{%s}" 
+
     def __init__( self, rootName, 
                   extension=True, # True==auto assign, str==what to use, or None
                   shebang=True, # True==auto assign, str==what to use, or None                  
-                  script=None, scriptPath=None ) :
+                  script=None, scriptPath=None,
+                  replacements={} ) :
         self.rootName = rootName
         if extension==True:
             self.extension = ( ExecutableScript.__WIN_DEFAULT_EXT 
@@ -849,16 +854,23 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         else: self.shebang = shebang            
         if scriptPath:
             with open( scriptPath, 'r' ) as f: self.script = f.read()
-        else: self.script = script  
+        else: self.script = script
+        self.replacements=replacements  
         self.isIfwVarEscapeBackslash = False
                                                     
     def __str__( self ) :
         if self.script is None : ""
         if self.shebang:
             return( ExecutableScript.__SHEBANG_TEMPLATE % 
-                    (self.shebang, self.script) )
-        else: return self.script 
+                    (self.shebang, self.__formated()) )
+        else: return self.__formated() 
         
+    def __formated( self ):
+        script = self.script     
+        for k,v in iteritems( self.replacements ):
+            script = script.replace( self.__PLACEHOLDER_TMPLT % (k,), v )
+        return script    
+                
     def debug( self ): 
         if self.script: print( str(self) )
         
