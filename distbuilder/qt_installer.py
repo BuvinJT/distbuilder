@@ -669,7 +669,11 @@ class _QtIfwScript:
         def embed( res ):
             if isinstance( res, ExecutableScript ):
                 script = res
-                varName = script.fileName().replace(".","_dot_")                
+                print( "Embedding script: %s" % (script.rootName,) )
+                if "-" in script.rootName: 
+                    raise Exception( "Embedded script names may not contain dashes!"
+                        " (Auto correcting this may produce hard to find bugs)" )
+                varName = script.fileName().replace(".","_dot_")                                
                 b64 = script.toBase64( toString=True )
                 b64Literals = ""
                 for chunk in chunks(b64, _QtIfwScript.__EMBED_RES_CHUNK_SIZE):
@@ -705,8 +709,9 @@ class _QtIfwScript:
                                     if isValidVarName( v ) ]
                 dynamicVarNames = "[ %s ]" % (
                     ",".join( ['"%s"' % (v,) for v in dynamicVarNames] ), )
-                return ( _QtIfwScript.log( "script: %s" % (scriptName,) ) +
-                    _QtIfwScript.log( scriptContent ) +
+                return ( 
+                    #_QtIfwScript.log( "script: %s" % (scriptName,) ) + 
+                    #_QtIfwScript.log( scriptContent ) + # this introduces assorted escaping complications...
                     _QtIfwScript.__SCRIPT_FROM_B64_TMPL % 
                     (scriptName, resourceVarName, dynamicVarNames,
                      _QtIfwScript.toBool(isDoubleBackslash), 
@@ -3602,7 +3607,7 @@ class QtIfwExternalOp:
             iconTool = QtIfwInstallerTool( "%s-icon" % (script.rootName,), 
                                            srcIconPath )            
             ops = [ QtIfwExternalOp( resourceScripts=[script], 
-                                     toolDependencies=iconTool ) ]
+                                     toolDependencies=[iconTool] ) ]
             ops.extend( QtIfwExternalOp.Batch2Exe( 
                   batchPath = joinPath( QT_IFW_SCRIPTS_DIR, script.fileName() )
                 , exePath = joinPath( QT_IFW_TARGET_DIR, 
@@ -3626,19 +3631,21 @@ class QtIfwExternalOp:
                     script=QtIfwExternalOp.BrandExeScript( 
                         exePath, brandingInfo ), 
                     canAutoUndo=False, isElevated=True,
-                    toolDependencies=[QtIfwExternalOp.RESOURCE_HACKER] )            
+                    toolDependencies=[ QtIfwInstallerTool.BuiltInTool(
+                        QtIfwInstallerTool.RESOURCE_HACKER ) ] )            
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
                     script=QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
                         exePath, iconDirPath, iconName, 
                         isIconDirRemoved=isIconDirRemoved ), 
                     canAutoUndo=False, isElevated=True,
-                    toolDependencies=[QtIfwExternalOp.RESOURCE_HACKER] )                
+                    toolDependencies=[ QtIfwInstallerTool.BuiltInTool(
+                        QtIfwInstallerTool.RESOURCE_HACKER ) ] )            
             ]
 
         @staticmethod
         def WrapperBatch2Exe( batchPath, exePath, 
                               targetPath, brandingInfo, iconName="0.ico" ):
-            iconDirPath = "%temp%\\extracted-icons"            
+            iconDirPath = joinPath( "%temp%", "extracted-icons" )            
             isBatchRemoved = isIconDirRemoved = True
             return [
                   QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
@@ -3647,20 +3654,23 @@ class QtIfwExternalOp:
                     canAutoUndo=False, isElevated=True )
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
                     script=QtIfwExternalOp.BrandExeScript( 
-                        targetPath, brandingInfo,
-                    toolDependencies=[QtIfwExternalOp.RESOURCE_HACKER] ), 
-                    canAutoUndo=False, isElevated=True )            
+                        targetPath, brandingInfo ),                         
+                    canAutoUndo=False, isElevated=True,
+                    toolDependencies=[QtIfwInstallerTool.BuiltInTool(
+                        QtIfwInstallerTool.RESOURCE_HACKER ) ] )            
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
                     script=QtIfwExternalOp.ExtractIconsFromExeScript( 
                         exePath, iconDirPath ), 
                     canAutoUndo=False, isElevated=True,
-                    toolDependencies=[QtIfwExternalOp.RESOURCE_HACKER] )                
+                    toolDependencies=[QtIfwInstallerTool.BuiltInTool(
+                        QtIfwInstallerTool.RESOURCE_HACKER ) ] )                  
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
                     script=QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
                         exePath, iconDirPath, iconName, 
                         isIconDirRemoved=isIconDirRemoved ), 
                     canAutoUndo=False, isElevated=True,
-                    toolDependencies=[QtIfwExternalOp.RESOURCE_HACKER] )                
+                    toolDependencies=[QtIfwInstallerTool.BuiltInTool(
+                        QtIfwInstallerTool.RESOURCE_HACKER ) ] )                            
             ]
     
     @staticmethod
@@ -3697,7 +3707,9 @@ class QtIfwExternalOp:
             util._onPlatformErr()
 
     @staticmethod
-    def __genScriptOp( event, script, uninstScript, canAutoUndo=True, isElevated=False ):    
+    def __genScriptOp( event, script, uninstScript=None, 
+                       canAutoUndo=True, isElevated=False,
+                       toolDependencies=[] ):    
         if   event==QtIfwExternalOp.ON_INSTALL:
             onInstall   = script
             onUninstall = None
@@ -3714,7 +3726,7 @@ class QtIfwExternalOp:
             onInstall   = script 
             onUninstall = uninstScript                  
         return QtIfwExternalOp( script=onInstall, uninstScript=onUninstall,
-                                isElevated=isElevated ) 
+                isElevated=isElevated, toolDependencies=toolDependencies ) 
     
     if IS_WINDOWS:
         # See
@@ -3734,9 +3746,7 @@ class QtIfwExternalOp:
         def RemoveRegistryEntryScript( key, valueName=None ):
             valueName = "-Name '%s' " % (valueName,) if valueName else ""            
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "removeRegEntry" ), extension="ps1", script=(
-                QtIfwExternalOp.__AUTO_SCRIPT_COUNT,),
-                extension="ps1", script=(
+                "removeRegEntry" ), extension="ps1", script=(                
                 "Remove-ItemProperty -Path '%s' %s" % (key, valueName) ) )
  
         @staticmethod
@@ -3753,20 +3763,20 @@ class QtIfwExternalOp:
 ;for %%I in ("%SOURCE_PATH%") do set "bat_name=%%~nxI"
 ;for %%I in ("%SOURCE_PATH%") do set "bat_dir=%%~dpI"
 
-;copy /y "%~f0" "%temp%\2exe.sed" >nul
+;copy /y "%~f0" "%temp%\\2exe.sed" >nul
 
-;(echo()>>"%temp%\2exe.sed"
-;(echo(AppLaunched=cmd.exe /c "%bat_name%")>>"%temp%\2exe.sed"
-;(echo(TargetName=%target.exe%)>>"%temp%\2exe.sed"
-;(echo(FILE0="%bat_name%")>>"%temp%\2exe.sed"
-;(echo([SourceFiles])>>"%temp%\2exe.sed"
-;(echo(SourceFiles0=%bat_dir%)>>"%temp%\2exe.sed"
-;(echo([SourceFiles0])>>"%temp%\2exe.sed"
-;(echo(%%FILE0%%=)>>"%temp%\2exe.sed"
+;(echo()>>"%temp%\\2exe.sed"
+;(echo(AppLaunched=cmd.exe /c "%bat_name%")>>"%temp%\\2exe.sed"
+;(echo(TargetName=%target.exe%)>>"%temp%\\2exe.sed"
+;(echo(FILE0="%bat_name%")>>"%temp%\\2exe.sed"
+;(echo([SourceFiles])>>"%temp%\\2exe.sed"
+;(echo(SourceFiles0=%bat_dir%)>>"%temp%\\2exe.sed"
+;(echo([SourceFiles0])>>"%temp%\\2exe.sed"
+;(echo(%%FILE0%%=)>>"%temp%\\2exe.sed"
 
-;iexpress /n /q /m %temp%\2exe.sed
+;iexpress /n /q /m %temp%\\2exe.sed
 
-;del /q /f "%temp%\2exe.sed"
+;del /q /f "%temp%\\2exe.sed"
 ;{removeSrc}
 ;exit /b 0
 
@@ -3802,7 +3812,8 @@ PostInstallCmd=<None>
 AdminQuietInstCmd=
 UserQuietInstCmd=
 """)                        
-            removeSrc = 'del /q /f "%s"' % (srcPath,) if isBatchRemoved else {}
+            removeSrc =( 'del /q /f "%s"' % (srcPath,) 
+                         if isBatchRemoved else "" )
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "bat2exe" ), script=script, replacements={
                 "srcPath": srcPath, "destPath": destPath, 
@@ -3817,8 +3828,8 @@ UserQuietInstCmd=
 set "EXE_PATH={exePath}"
 for %%I in ("%EXE_PATH%") do set "ORIGINAL_NAME=%%~nxI"
 
-set "TEMP_RC_PATH=%temp%\versioninfo.rc"
-set "TEMP_RES_PATH=%temp%\versioninfo.res"
+set "TEMP_RC_PATH=%temp%\\versioninfo.rc"
+set "TEMP_RES_PATH=%temp%\\versioninfo.res"
 
 (
 echo:VS_VERSION_INFO VERSIONINFO
@@ -3829,13 +3840,13 @@ echo:    BLOCK "StringFileInfo"
 echo:    {
 echo:        BLOCK "040904b0"
 echo:        {
-echo:            VALUE "CompanyName",        "{companyName}\0"
-echo:            VALUE "FileDescription",    "{fileDescr}\0"
-echo:            VALUE "FileVersion",        "{fileVer}\0"
-echo:            VALUE "LegalCopyright",     "{copyright}\0"
-echo:            VALUE "OriginalFilename",   "%ORIGINAL_NAME%\0"
-echo:            VALUE "ProductName",        "{productName}\0"
-echo:            VALUE "ProductVersion",     "{productVer}\0"
+echo:            VALUE "CompanyName",        "{companyName}\\0"
+echo:            VALUE "FileDescription",    "{fileDescr}\\0"
+echo:            VALUE "FileVersion",        "{fileVer}\\0"
+echo:            VALUE "LegalCopyright",     "{copyright}\\0"
+echo:            VALUE "OriginalFilename",   "%ORIGINAL_NAME%\\0"
+echo:            VALUE "ProductName",        "{productName}\\0"
+echo:            VALUE "ProductVersion",     "{productVer}\\0"
 echo:        }
 echo:    }
 echo:    BLOCK "VarFileInfo"
@@ -3874,10 +3885,9 @@ del /q /f rh.ini
 "@ResourceHacker@" -open "{exePath}" -save "{targetDirPath}" -action extract -mask ICONGROUP
 del /q /f rh.ini
 """)            
-            script = script.replace( "{exePath}", exePath ).replace( 
-                                     "{targetDirPath}", targetDirPath )
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "extract-icons-from-exe" ), script=script )
+                "extractIconsFromExe" ), script=script, replacements={ 
+                    "exePath": exePath, "targetDirPath": targetDirPath } )
 
         @staticmethod
         def ReplacePrimaryIconInExeScript( exePath, iconDirPath, iconName, 
@@ -3895,7 +3905,7 @@ ie4uinit -show
             removeIconDir =( 'rd /q /s "%s"' % (iconDirPath,) 
                              if isIconDirRemoved else "" )  
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "replace-primary-icon-in-exe" ), script=script, replacements={
+                "replacePrimaryIconInExe" ), script=script, replacements={
                 "exePath":exePath, "iconPath": iconPath, 
                 "removeIconDir": removeIconDir } )
  
@@ -3967,16 +3977,16 @@ class QtIfwInstallerTool:
         self.name = name
         self.srcPath = absPath( srcPath, srcBasePath )        
         self.isMaintenanceNeed = isMaintenanceNeed        
+        self.contentKeys = contentKeys
         if( (contentKeys is None or len(contentKeys)==0) and 
             isFile( self.srcPath ) ):                
             self.contentKeys[ rootFileName( self.srcPath ) ] =(
-                 baseFileName( self.srcPath ) )
-        self.contentKeys = contentKeys
+                 baseFileName( self.srcPath ) )        
 
     def targetPath( self, key=None ):
         if( key is None and 
             self.contentKeys is not None and len(self.contentKeys)==1 ):
-            key=self.contentKeys.keys()[0] 
+            key=list(self.contentKeys.keys())[0] 
         if self.contentKeys is None or key not in self.contentKeys:
             raise Exception("Invalid content key")
         return _QtIfwScript.lookupValue( key )
@@ -5122,6 +5132,7 @@ def __mergePackageObjects( srcPkg, destPkg, subDirName=None ):
         print( "\nRegenerating installer package script: %s...\n" 
                 % (destScript.path()) )
         destScript._generate()
+        print( "script: \n" )
         destScript.debug()
         destScript.write()    
     destPkg._isMergeProduct = True
@@ -5281,6 +5292,7 @@ def __genQtIfwCntrlRes( qtIfwConfig ) :
         print( "%s installer control script..." 
                % ( "Regenerating" if ctrlScript.exists() else "Adding" ) )       
         if ctrlScript.script: ctrlScript._generate() 
+        print( "script: \n" )
         ctrlScript.debug()
         ctrlScript.write()        
 
