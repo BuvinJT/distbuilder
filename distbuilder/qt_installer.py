@@ -8,7 +8,6 @@ import six
 
 from distbuilder import util
 from distbuilder.util import *  # @UnusedWildImport
-from PIL.ImageMath import ops
 
 QT_IFW_DEFAULT_VERSION = "3.2.2"
 QT_IFW_DOWNLOAD_URL_BASE = "https://download.qt.io/official_releases/qt-installer-framework"
@@ -84,9 +83,11 @@ _QT_IFW_SCRIPTS_DIR          = "ScriptsDir"
 _QT_IFW_INSTALLER_TEMP_DIR   = "InstallerTempDir"   # CUSTOM!
 _QT_IFW_MAINTENANCE_TEMP_DIR = "MaintenanceTempDir" # CUSTOM!
 
-QT_IFW_SCRIPTS_DIR          = "@%s@" % (_QT_IFW_SCRIPTS_DIR,)   # CUSTOM! 
-QT_IFW_INSTALLER_TEMP_DIR   = "@%s@" % (_QT_IFW_INSTALLER_TEMP_DIR,)   # CUSTOM!
-QT_IFW_MAINTENANCE_TEMP_DIR = "@%s@" % (_QT_IFW_MAINTENANCE_TEMP_DIR,) # CUSTOM!
+_QT_IFW_VAR_TMPLT = "@%s@"
+
+QT_IFW_SCRIPTS_DIR          = _QT_IFW_VAR_TMPLT % (_QT_IFW_SCRIPTS_DIR,)   # CUSTOM! 
+QT_IFW_INSTALLER_TEMP_DIR   = _QT_IFW_VAR_TMPLT % (_QT_IFW_INSTALLER_TEMP_DIR,)   # CUSTOM!
+QT_IFW_MAINTENANCE_TEMP_DIR = _QT_IFW_VAR_TMPLT % (_QT_IFW_MAINTENANCE_TEMP_DIR,) # CUSTOM!
 
 QT_IFW_STARTMENU_DIR          = "@StartMenuDir@"
 QT_IFW_USER_STARTMENU_DIR     = "@UserStartMenuProgramsPath@"  
@@ -1459,7 +1460,7 @@ class _QtIfwScript:
             (2*TAB) + '"oFile.Close\\n" ' + END +
             TAB + 'for( var i=0; i != varNames.length; ++i ) ' + SBLK +                                    
             (2*TAB) + 'var varName = varNames[i]' + END +
-            (2*TAB) + 'var varVal = Dir.toNativeSeparator( installer.value( varName ) )' + END +
+            (2*TAB) + 'var varVal = Dir.toNativeSeparator( installer.value( varName, "?" ) )' + END +
             (2*TAB) + 'if( isDoubleBackslash ) varVal = varVal.replace(/\\\\/g, \'\\\\\\\\\')' + END +
             (2*TAB) + 'vbs += "sText = Replace(sText, Amp + \\"" + varName + "\\" + Amp, \\"" + varVal + "\\")\\n"' + NEW +
             TAB + EBLK +
@@ -2529,7 +2530,7 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + '__maintenanceTempPath()' + END +            
             TAB + 'makeDir( Dir.temp() )' + END +
             TAB + 'installer.setValue( ' + 
-                ('"%s"' % (_QT_IFW_INSTALLER_TEMP_DIR,)) + ', Dir.temp() )' + END + 
+                ('"%s"' % (_QT_IFW_SCRIPTS_DIR,)) + ', Dir.temp() )' + END + 
             # currently the entire point of the watchdog is purge temp files,
             # so when _keeptemp is enabled, just drop that entire mechanism!
             TAB + _QtIfwScript.ifCmdLineSwitch( _KEEP_TEMP_SWITCH, 
@@ -3450,6 +3451,10 @@ Component.prototype.%s = function(){
                     (TAB,",".join([str(c) for c in task.uninstRetCodes]),END) )
             if len(setArgs) > 0: self.componentCreateOperationsBody += setArgs
              
+            # skip creating execute operations when none are really defined 
+            # (e.g. with pure resource script "container" op objects)  
+            if not exePath and not uninstExePath: continue
+             
             args=[]                        
             if exePath :                 
                 if task.successRetCodes: args+=["retCodes"]       
@@ -3613,8 +3618,8 @@ class QtIfwExternalOp:
                 , exePath = joinPath( QT_IFW_TARGET_DIR, 
                                       normBinaryName( script.rootName ) )
                 , brandingInfo = brandingInfo
-                , iconDirPath = iconTool.targetDirPath()
-                , iconName = iconTool.targetPath() 
+                , iconDirPath = iconTool.targetDirPathVar()
+                , iconName = baseFileName( srcIconPath )
             ))
             return ops
         
@@ -3755,8 +3760,8 @@ class QtIfwExternalOp:
 """
 ;@echo off
 
-;set SOURCE_PATH={srcPath}
-;set TARGET_PATH={destPath}
+;set "SOURCE_PATH={srcPath}"
+;set "TARGET_PATH={destPath}"
 
 ;for %%I in ("%TARGET_PATH%") do set "target.exe=%%~I"
 ;for %%I in ("%SOURCE_PATH%") do set "batch_file=%%~fI"
@@ -3767,7 +3772,7 @@ class QtIfwExternalOp:
 
 ;(echo()>>"%temp%\\2exe.sed"
 ;(echo(AppLaunched=cmd.exe /c "%bat_name%")>>"%temp%\\2exe.sed"
-;(echo(TargetName=%target.exe%)>>"%temp%\\2exe.sed"
+;(echo(TargetName="%target.exe%")>>"%temp%\\2exe.sed"
 ;(echo(FILE0="%bat_name%")>>"%temp%\\2exe.sed"
 ;(echo([SourceFiles])>>"%temp%\\2exe.sed"
 ;(echo(SourceFiles0=%bat_dir%)>>"%temp%\\2exe.sed"
@@ -3954,10 +3959,12 @@ class QtIfwInstallerTool:
     
     if IS_WINDOWS:
         RESOURCE_HACKER = "ResourceHacker"
+        __CONTENT_KEYS[ RESOURCE_HACKER ] = {
+            RESOURCE_HACKER: "ResourceHacker.exe" }
 
     @staticmethod
     def __toArchiveName( name ): 
-        return joinExt( name, _QT_IFW_ARCHIVE_EXT ).lower()  
+        return joinExt( name, _QT_IFW_ARCHIVE_EXT )
 
     @staticmethod
     def _toolResPath( name ):    
@@ -3979,17 +3986,19 @@ class QtIfwInstallerTool:
         self.isMaintenanceNeed = isMaintenanceNeed        
         self.contentKeys = contentKeys
         if( (contentKeys is None or len(contentKeys)==0) and 
-            isFile( self.srcPath ) ):                
+            isFile( self.srcPath ) and 
+            fileExt(self.srcPath) != _QT_IFW_ARCHIVE_EXT ):                
             self.contentKeys[ rootFileName( self.srcPath ) ] =(
                  baseFileName( self.srcPath ) )        
 
+    def targetPathVar( self, key=None ):
+        return _QT_IFW_VAR_TMPLT % (self.__targetPathKey( key ),)
+
+    def targetDirPathVar( self ):
+        return _QT_IFW_VAR_TMPLT % self.__targetDirPathKey()
+
     def targetPath( self, key=None ):
-        if( key is None and 
-            self.contentKeys is not None and len(self.contentKeys)==1 ):
-            key=list(self.contentKeys.keys())[0] 
-        if self.contentKeys is None or key not in self.contentKeys:
-            raise Exception("Invalid content key")
-        return _QtIfwScript.lookupValue( key )
+        return _QtIfwScript.lookupValue( self.__targetPathKey( key ) )
 
     def targetDirPath( self ):
         return _QtIfwScript.lookupValue( self.__targetDirPathKey() )
@@ -4011,6 +4020,14 @@ class QtIfwInstallerTool:
                 _RETAINED_TOOL_SUBDIR ) if self.isMaintenanceNeed else
                 '__installerTempPath()' ) + ' + "/%s"' % (self.name,) 
 
+    def __targetPathKey( self, key=None ):
+        if( key is None and 
+            self.contentKeys is not None and len(self.contentKeys)==1 ):
+            key=list(self.contentKeys.keys())[0] 
+        if self.contentKeys is None or key not in self.contentKeys:
+            raise Exception("Invalid content key")
+        return key
+    
     def __targetDirPathKey( self ): return '%sDir' % (self.name,)
     
 # -----------------------------------------------------------------------------

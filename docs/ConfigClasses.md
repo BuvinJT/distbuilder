@@ -769,6 +769,9 @@ Object Methods:
     targetPath( key=None )
     targetDirPath()
  
+    targetPathVar( key=None )
+    targetDirPathVar()
+ 
 Static Methods:
  
 	BuiltInTool( name, isMaintenanceNeed=False )
@@ -792,12 +795,16 @@ you to dynamically access the paths within scripts on your target.  If your tool
 one executable file, a key will be automatically registered for you. 
 
 **targetPath( key )**: Use this to reference the tool paths when generating 
-scripts / operations which will utilize it.  Specify to key as registered via `contentKeys`.
-If you omit the key when calling this, and only one exists 
+QtScripts / operations which will utilize it.  Specify the key as registered via 
+`contentKeys`. If you omit the key when calling this, and only one key exists 
 (such as when bundling a single file), that default key will be implied.     
         
 **targetDirPath()**: In the event you need to access the container directory for the tool,
-e.g. to change you working directory to it, you may employ this method.
+e.g. to change your working directory to it, you may employ this method.
+        
+**targetPathVar( key=None ), targetDirPathVar()**: The place holders / variable names
+to use inside an [ExecutableScript](LowLevel.md#executablescript) to refer to these paths.
+Assuming a key is valid, you could also just hardcode it like `@key@` rather than call `targetPathVar( key=None )` to get that back! 
         
 **QtIfwInstallerTool.BuiltInTool**: Convenience method to bundle tools into an installer 
 which are bundled into the library. 
