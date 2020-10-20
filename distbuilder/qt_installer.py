@@ -158,10 +158,10 @@ QT_IFW_DYNAMIC_PATH_VARS = [
     , "InstallerFilePath" 
 ]
 
-_RETAINED_TOOL_SUBDIR = 'maintenanceResources'
-_RETAINED_TOOL_DIR = '"%s/%s"' % (QT_IFW_TARGET_DIR,_RETAINED_TOOL_SUBDIR)
-_TEMP_TOOL_SUBDIR = "tools"
-_TEMP_TOOL_DIR = '__installerTempPath() + "/%s"' % (_TEMP_TOOL_SUBDIR,)
+_RETAINED_RESOURCE_SUBDIR = 'maintenanceResources'
+_RETAINED_RESOURCE_DIR = '"%s/%s"' % (QT_IFW_TARGET_DIR,_RETAINED_RESOURCE_SUBDIR)
+_TEMP_RESOURCE_SUBDIR = "resources"
+_TEMP_RESOURCE_DIR = '__installerTempPath() + "/%s"' % (_TEMP_RESOURCE_SUBDIR,)
 
 # don't use back slash on Windows!
 def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
@@ -2971,7 +2971,7 @@ Component.prototype.%s = function(){
     # QtIfwPackageScript                              
     def __init__( self, pkgName, pkgVersion,
                   shortcuts=[], externalOps=[], uiPages=[],
-                  installTools=[],                    
+                  installResources=[],                    
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
         _QtIfwScript.__init__( self, fileName, script, scriptPath )
@@ -2985,7 +2985,7 @@ Component.prototype.%s = function(){
         self.killOps          = []
         self.customOperations = None
         
-        self.installTools     = installTools
+        self.installResources     = installResources
                 
         # Linux Only
         self.isAskPassProgRequired = False
@@ -3018,13 +3018,13 @@ Component.prototype.%s = function(){
         
         # add op tool dependencies into the package install tool list 
         for op in self.externalOps:
-            for dependency in op.toolDependencies:
+            for dependency in op.externalRes:
                 dependencyFound = False        
-                for tool in self.installTools:
+                for tool in self.installResources:
                     dependencyFound = tool.name == dependency.name
                     if dependencyFound: continue
                 if dependencyFound: continue
-                self.installTools.append( dependency )
+                self.installResources.append( dependency )
                                                         
     def _generate( self ) :        
         self.script = ""
@@ -3194,8 +3194,8 @@ Component.prototype.%s = function(){
         self.componentCreateOperationsBody = ""
         
         # pre payload extractions
-        for tool in self.installTools:
-            if isinstance( tool, QtIfwInstallerTool ):
+        for tool in self.installResources:
+            if isinstance( tool, QtIfwExternalResource ):
                 self.componentCreateOperationsBody +=(
                      tool._setTargetPathValues() )                         
         if IS_LINUX and self.isAskPassProgRequired:
@@ -3222,8 +3222,8 @@ Component.prototype.%s = function(){
         self.componentCreateOperationsForArchiveBody = ""
         
         # override tool archive extractions
-        for tool in self.installTools:
-            if isinstance( tool, QtIfwInstallerTool ): 
+        for tool in self.installResources:
+            if isinstance( tool, QtIfwExternalResource ): 
                 archiveName = joinExt( 
                     versionStr( self.pkgVersion ) + tool.name, 
                     _QT_IFW_ARCHIVE_EXT )
@@ -3594,947 +3594,6 @@ class QtIfwShortcut:
         self.isDesktopShortcut   = False
         self.isAdjancentShortcut = False
 
-# -----------------------------------------------------------------------------
-class QtIfwExternalOp:
-
-    ON_INSTALL, ON_UNINSTALL, ON_BOTH, AUTO_UNDO = range(4) 
-
-    __AUTO_SCRIPT_COUNT=0
-    __SCRIPT_ROOT_NAME_TMPLT = "%s_%d"
-
-    @staticmethod
-    def __scriptRootName( prefix ):
-        QtIfwExternalOp.__AUTO_SCRIPT_COUNT+=1
-        return QtIfwExternalOp.__SCRIPT_ROOT_NAME_TMPLT % ( 
-            prefix, QtIfwExternalOp.__AUTO_SCRIPT_COUNT )
-
-    if IS_WINDOWS:
-        # TODO: Expand upon registry functions
-        
-        # TODO: Deal with 64 bit vs 32 bit registry contexts
-        # Allow the use of either literal paths or implicit wow64 resolution
-        # Some thoughts:     
-        # https://stackoverflow.com/questions/630382/how-to-access-the-64-bit-registry-from-a-32-bit-powershell-instance
-        
-        @staticmethod
-        def CreateRegistryEntry( event, key, valueName=None, value="", valueType="String" ):
-            return QtIfwExternalOp.__genScriptOp( event, 
-                script=QtIfwExternalOp.CreateRegistryEntryScript( key, valueName, value, valueType ), 
-                uninstScript=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
-                isElevated=True )
-        
-        @staticmethod
-        def RemoveRegistryEntry( event, key, valueName=None ):
-            return QtIfwExternalOp.__genScriptOp( event, 
-                script=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
-                canAutoUndo=False, isElevated=True )
-
-        @staticmethod
-        def CreateExeFromBatch( script, brandingInfo, srcIconPath ):            
-            iconTool = QtIfwInstallerTool( "%sIcon" % (script.rootName,), 
-                                           srcIconPath )            
-            ops = [ QtIfwExternalOp( resourceScripts=[script], 
-                                     toolDependencies=[iconTool] ) ]
-            ops.extend( QtIfwExternalOp.Batch2Exe( 
-                  batchPath = joinPath( QT_IFW_SCRIPTS_DIR, script.fileName() )
-                , exePath = joinPath( QT_IFW_TARGET_DIR, 
-                                      normBinaryName( script.rootName ) )
-                , brandingInfo = brandingInfo
-                , iconDirPath = iconTool.targetDirPathVar()
-                , iconName = baseFileName( srcIconPath )
-            ))
-            return ops
-        
-        @staticmethod
-        def Batch2Exe( batchPath, exePath, brandingInfo,
-                       iconDirPath, iconName, 
-                       isBatchRemoved=False, isIconDirRemoved=False ):
-            return [
-                  QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.Bat2ExeScript( 
-                        batchPath, exePath, isBatchRemoved ),                     
-                    canAutoUndo=False, isElevated=True )
-                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.BrandExeScript( 
-                        exePath, brandingInfo ), 
-                    canAutoUndo=False, isElevated=True,
-                    toolDependencies=[ QtIfwInstallerTool.BuiltInTool(
-                        QtIfwInstallerTool.RESOURCE_HACKER ) ] )            
-                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
-                        exePath, iconDirPath, iconName, 
-                        isIconDirRemoved=isIconDirRemoved ), 
-                    canAutoUndo=False, isElevated=True,
-                    toolDependencies=[ QtIfwInstallerTool.BuiltInTool(
-                        QtIfwInstallerTool.RESOURCE_HACKER ) ] )            
-            ]
-
-        @staticmethod
-        def WrapperBatch2Exe( batchPath, exePath, 
-                              targetPath, brandingInfo, iconName="0.ico" ):
-            iconDirPath = joinPath( "%temp%", "extracted-icons" )            
-            isBatchRemoved = isIconDirRemoved = True
-            return [
-                  QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.Bat2ExeScript( 
-                        batchPath, exePath, isBatchRemoved ), 
-                    canAutoUndo=False, isElevated=True )
-                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.BrandExeScript( 
-                        targetPath, brandingInfo ),                         
-                    canAutoUndo=False, isElevated=True,
-                    toolDependencies=[QtIfwInstallerTool.BuiltInTool(
-                        QtIfwInstallerTool.RESOURCE_HACKER ) ] )            
-                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.ExtractIconsFromExeScript( 
-                        exePath, iconDirPath ), 
-                    canAutoUndo=False, isElevated=True,
-                    toolDependencies=[QtIfwInstallerTool.BuiltInTool(
-                        QtIfwInstallerTool.RESOURCE_HACKER ) ] )                  
-                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
-                        exePath, iconDirPath, iconName, 
-                        isIconDirRemoved=isIconDirRemoved ), 
-                    canAutoUndo=False, isElevated=True,
-                    toolDependencies=[QtIfwInstallerTool.BuiltInTool(
-                        QtIfwInstallerTool.RESOURCE_HACKER ) ] )                            
-            ]
-    
-    @staticmethod
-    def CreateStartupEntry( pkg=None, exePath=None, displayName=None, 
-                            isAllUsers=False ):
-        if pkg :
-            if not displayName: displayName = pkg.pkgXml.DisplayName
-            shortcuts = pkg.pkgScript.shortcuts
-            if IS_WINDOWS and shortcuts:
-                shortcuts[0].isAdjancentShortcut = True                                        
-                exePath = joinPath( QT_IFW_TARGET_DIR, 
-                    "%s.lnk" % shortcuts[0].productName )  
-            # TODO: Handle wrappers on other platforms    
-            elif not exePath:  
-                exeName = normBinaryName( pkg.exeName, pkg.isGui )
-                exePath = joinPath( 
-                    ( joinPath( QT_IFW_TARGET_DIR, pkg.subDirName ) 
-                      if pkg.subDirName else QT_IFW_TARGET_DIR ), exeName )
-        if exePath is None or displayName is None:
-            raise Exception( "Missing required arguments" )    
-        if IS_WINDOWS:
-            # TODO: IS THIS SUPPORTED IN LEGACY WINDOWS VERSIONS?
-            #     If not, just fall back to shortcuts in startup folders... 
-            # See: https://devblogs.microsoft.com/powershell/how-to-access-or-modify-startup-items-in-the-window-registry/
-            return QtIfwExternalOp.CreateRegistryEntry( QtIfwExternalOp.AUTO_UNDO, 
-                key = "%s:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run" % (
-                    "HKLM" if isAllUsers else "HKCU" ),
-                valueName=displayName, value=exePath )
-        elif IS_LINUX: 
-            # TODO: Fill in
-            util._onPlatformErr()
-        elif IS_MACOS: 
-            # TODO: Fill in
-            util._onPlatformErr()
-
-    @staticmethod
-    def __genScriptOp( event, script, uninstScript=None, 
-                       canAutoUndo=True, isElevated=False,
-                       toolDependencies=[] ):    
-        if   event==QtIfwExternalOp.ON_INSTALL:
-            onInstall   = script
-            onUninstall = None
-        elif event==QtIfwExternalOp.ON_UNINSTALL:
-            onInstall   = None 
-            onUninstall = script if uninstScript is None else uninstScript
-        elif event==QtIfwExternalOp.ON_BOTH:
-            onInstall   = script 
-            onUninstall = script        
-        elif event==QtIfwExternalOp.AUTO_UNDO:
-            if not canAutoUndo: 
-                raise Exception( 
-                    "Installer operation cannot be automatically undone." )
-            onInstall   = script 
-            onUninstall = uninstScript                  
-        return QtIfwExternalOp( script=onInstall, uninstScript=onUninstall,
-                isElevated=isElevated, toolDependencies=toolDependencies ) 
-    
-    if IS_WINDOWS:
-        # See
-        # https://blog.netwrix.com/2018/09/11/how-to-get-edit-create-and-delete-registry-keys-with-powershell/
-        # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-itemproperty?view=powershell-7
-        @staticmethod
-        def CreateRegistryEntryScript( key, valueName=None, 
-                                       value="", valueType="String" ):
-            valueName = "-Name '%s' " % (valueName,) if valueName else ""
-            if value is None: value=""
-            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "createRegEntry" ), extension="ps1", script=(
-                "New-ItemProperty -Path '%s' %s-Value '%s' -PropertyType '%s'" 
-                % (key, valueName, value, valueType) ) )
-        
-        @staticmethod
-        def RemoveRegistryEntryScript( key, valueName=None ):
-            valueName = "-Name '%s' " % (valueName,) if valueName else ""            
-            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "removeRegEntry" ), extension="ps1", script=(                
-                "Remove-ItemProperty -Path '%s' %s" % (key, valueName) ) )
- 
-        @staticmethod
-        def Bat2ExeScript( srcPath, destPath, isBatchRemoved=False ):
-            script=(
-"""
-;@echo off
-
-;set "SOURCE_PATH={srcPath}"
-;set "TARGET_PATH={destPath}"
-
-;for %%I in ("%TARGET_PATH%") do set "target.exe=%%~I"
-;for %%I in ("%SOURCE_PATH%") do set "batch_file=%%~fI"
-;for %%I in ("%SOURCE_PATH%") do set "bat_name=%%~nxI"
-;for %%I in ("%SOURCE_PATH%") do set "bat_dir=%%~dpI"
-
-;copy /y "%~f0" "%temp%\\2exe.sed" >nul
-
-;(echo()>>"%temp%\\2exe.sed"
-;(echo(AppLaunched=cmd.exe /c "%bat_name%")>>"%temp%\\2exe.sed"
-;(echo(TargetName="%target.exe%")>>"%temp%\\2exe.sed"
-;(echo(FILE0="%bat_name%")>>"%temp%\\2exe.sed"
-;(echo([SourceFiles])>>"%temp%\\2exe.sed"
-;(echo(SourceFiles0=%bat_dir%)>>"%temp%\\2exe.sed"
-;(echo([SourceFiles0])>>"%temp%\\2exe.sed"
-;(echo(%%FILE0%%=)>>"%temp%\\2exe.sed"
-
-;iexpress /n /q /m %temp%\\2exe.sed
-
-;del /q /f "%temp%\\2exe.sed"
-;{removeSrc}
-;exit /b 0
-
-[Version]
-Class=IEXPRESS
-SEDVersion=3
-[Options]
-PackagePurpose=InstallApp
-ShowInstallProgramWindow=0
-HideExtractAnimation=1
-UseLongFileName=1
-InsideCompressed=0
-CAB_FixedSize=0
-CAB_ResvCodeSigning=0
-RebootMode=N
-InstallPrompt=%InstallPrompt%
-DisplayLicense=%DisplayLicense%
-FinishMessage=%FinishMessage%
-TargetName=%TargetName%
-FriendlyName=%FriendlyName%
-AppLaunched=%AppLaunched%
-PostInstallCmd=%PostInstallCmd%
-AdminQuietInstCmd=%AdminQuietInstCmd%
-UserQuietInstCmd=%UserQuietInstCmd%
-SourceFiles=SourceFiles
-
-[Strings]
-InstallPrompt=
-DisplayLicense=
-FinishMessage=
-FriendlyName=-
-PostInstallCmd=<None>
-AdminQuietInstCmd=
-UserQuietInstCmd=
-""")                        
-            removeSrc =( 'del /q /f "%s"' % (srcPath,) 
-                         if isBatchRemoved else "" )
-            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "bat2exe" ), script=script, replacements={
-                "srcPath": srcPath, "destPath": destPath, 
-                "removeSrc": removeSrc } )
-
-        @staticmethod
-        def BrandExeScript( exePath, brandingInfo ):
-            script=(
-"""
-@echo off
-
-set "EXE_PATH={exePath}"
-for %%I in ("%EXE_PATH%") do set "ORIGINAL_NAME=%%~nxI"
-
-set "TEMP_RC_PATH=%temp%\\versioninfo.rc"
-set "TEMP_RES_PATH=%temp%\\versioninfo.res"
-
-(
-echo:VS_VERSION_INFO VERSIONINFO
-echo:    FILEVERSION    %{fileVerCommaDelim}%
-echo:    PRODUCTVERSION %{productVerCommaDelim}%
-echo:{
-echo:    BLOCK "StringFileInfo"
-echo:    {
-echo:        BLOCK "040904b0"
-echo:        {
-echo:            VALUE "CompanyName",        "{companyName}\\0"
-echo:            VALUE "FileDescription",    "{fileDescr}\\0"
-echo:            VALUE "FileVersion",        "{fileVer}\\0"
-echo:            VALUE "LegalCopyright",     "{copyright}\\0"
-echo:            VALUE "OriginalFilename",   "%ORIGINAL_NAME%\\0"
-echo:            VALUE "ProductName",        "{productName}\\0"
-echo:            VALUE "ProductVersion",     "{productVer}\\0"
-echo:        }
-echo:    }
-echo:    BLOCK "VarFileInfo"
-echo:    {
-echo:        VALUE "Translation", 0x409, 1200
-echo:    }
-echo:}
-) > "%TEMP_RC_PATH%" && echo wrote %TEMP_RC_PATH%
-
-"@ResourceHacker@" -open "%TEMP_RC_PATH%" -save "%TEMP_RES_PATH%" -action compile 
-"@ResourceHacker@" -open "%EXE_PATH%" -save "%EXE_PATH%" -action addoverwrite -resource "%TEMP_RES_PATH%" 
-
-del /q /f "%TEMP_RC_PATH%"
-del /q /f "%TEMP_RES_PATH%"
-""")            
-            # TODO: apply brandingInfo 
-            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "brandexe" ), script=script, replacements={
-                      "exePath": exePath            
-                    , "companyName": ""
-                    , "copyright": ""
-                    , "productName": ""
-                    , "productVerCommaDelim": ""
-                    , "productVer": ""
-                    , "fileDescr": ""
-                    , "fileVerCommaDelim": ""
-                    , "fileVer": ""
-                })
-
-        @staticmethod
-        def ExtractIconsFromExeScript( exePath, targetDirPath ):
-            script=(
-"""
-@echo off
-"@ResourceHacker@" -open "{exePath}" -save "{targetDirPath}" -action extract -mask ICONGROUP
-""")            
-            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "extractIconsFromExe" ), script=script, replacements={ 
-                    "exePath": exePath, "targetDirPath": targetDirPath } )
-
-        @staticmethod
-        def ReplacePrimaryIconInExeScript( exePath, iconDirPath, iconName, 
-                                           isIconDirRemoved=False ):
-            script=(
-"""
-@echo off
-"@ResourceHacker@" -open "{exePath}" -save "{exePath}" -action addoverwrite -res "{iconPath}" -mask ICONGROUP, MAINICON, 0
-{removeIconDir}
-set "REFRESH_ICONS=ie4uinit -ClearIconCache & ie4uinit -show"
-if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%" ) else ( %REFRESH_ICONS% )
-""")        
-            iconPath = joinPath( iconDirPath, iconName )  
-            removeIconDir =( 'rd /q /s "%s"' % (iconDirPath,) 
-                             if isIconDirRemoved else "" )  
-            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "replacePrimaryIconInExe" ), script=script, replacements={
-                "exePath":exePath, "iconPath": iconPath, 
-                "removeIconDir": removeIconDir } )
- 
-    # QtIfwExternalOp
-    def __init__( self, 
-              script=None,       exePath=None,       args=[], successRetCodes=[0],  
-        uninstScript=None, uninstExePath=None, uninstArgs=[],  uninstRetCodes=[0],
-        isElevated=False, workingDir=QT_IFW_TARGET_DIR, onErrorMessage=None,
-        resourceScripts=[], uninstResourceScripts=[], toolDependencies=[] ):
-        
-        self.script          = script #ExecutableScript        
-        self.exePath         = exePath
-        self.args            = args
-        self.successRetCodes = successRetCodes
-
-        self.uninstScript    = uninstScript #ExecutableScript
-        self.uninstExePath   = uninstExePath
-        self.uninstArgs      = uninstArgs
-        self.uninstRetCodes  = uninstRetCodes
-        
-        self.isElevated      = isElevated 
-        self.workingDir      = workingDir
-                
-        self.onErrorMessage  = onErrorMessage # TODO: TEST!
-
-        self.resourceScripts       = resourceScripts
-        self.uninstResourceScripts = uninstResourceScripts
-        self.toolDependencies      = toolDependencies
-
-# -----------------------------------------------------------------------------
-class QtIfwKillOp:
-    def __init__( self, processName, onInstall=True, onUninstall=True ):        
-        self.processName = ( normBinaryName( processName.exeName ) 
-            if isinstance( processName, QtIfwPackage ) else processName )         
-        self.onInstall   = onInstall
-        self.onUninstall = onUninstall
-        self.isElevated  = True  
-
-# -----------------------------------------------------------------------------
-class QtIfwInstallerTool:
-        
-    __TOOLS_RES_DIR_NAME = joinPath( "qtifw_tools",
-        "linux" if IS_LINUX else "macos" if IS_MACOS else "windows" )
-
-    __CONTENT_KEYS = {} # dict of dicts
-    
-    if IS_WINDOWS:
-        RESOURCE_HACKER = "ResourceHacker"
-        __CONTENT_KEYS[ RESOURCE_HACKER ] = {
-            RESOURCE_HACKER: "ResourceHacker.exe" }
-
-    @staticmethod
-    def __toArchiveName( name ): 
-        return joinExt( name, _QT_IFW_ARCHIVE_EXT )
-
-    @staticmethod
-    def _toolResPath( name ):    
-        return util._toLibResPath( joinPath( 
-                QtIfwInstallerTool.__TOOLS_RES_DIR_NAME, 
-                QtIfwInstallerTool.__toArchiveName( name ) ) )
-
-    @staticmethod
-    def BuiltInTool( name, isMaintenanceNeed=False ):            
-        return QtIfwInstallerTool( name, 
-            QtIfwInstallerTool._toolResPath( name ), 
-            isMaintenanceNeed=isMaintenanceNeed, 
-            contentKeys=QtIfwInstallerTool.__CONTENT_KEYS.get(name,{}) )
-
-    def __init__( self, name, srcPath, srcBasePath=None, 
-                  isMaintenanceNeed=False, contentKeys={} ):
-        if "-" in name:
-            raise Exception( "Resource names may not contain dashes!"
-                " (Auto correcting this may produce hard to find bugs)" )
-        self.name = name
-        self.srcPath = absPath( srcPath, srcBasePath )        
-        self.isMaintenanceNeed = isMaintenanceNeed        
-        self.contentKeys = contentKeys
-        if( (contentKeys is None or len(contentKeys)==0) and 
-            isFile( self.srcPath ) and 
-            fileExt(self.srcPath) != _QT_IFW_ARCHIVE_EXT ):                
-            self.contentKeys[ name ] = baseFileName( self.srcPath )         
-
-    def targetPathVar( self, key=None ):
-        return _QT_IFW_VAR_TMPLT % (self.__targetPathKey( key ),)
-
-    def targetDirPathVar( self ):
-        return _QT_IFW_VAR_TMPLT % self.__targetDirPathKey()
-
-    def targetPath( self, key=None ):
-        return _QtIfwScript.lookupValue( self.__targetPathKey( key ) )
-
-    def targetDirPath( self ):
-        return _QtIfwScript.lookupValue( self.__targetDirPathKey() )
-
-    def _setTargetPathValues( self ):        
-        snippet=""
-        dirPath = self._targetDirPathRaw()
-        snippet += _QtIfwScript.setValue( 
-            '"%s"' % (self.__targetDirPathKey(),), dirPath, 
-            isAutoQuote=False )
-        for key, relPath in six.iteritems(self.contentKeys):        
-            snippet += _QtIfwScript.setValue( 
-                '"%s"' % (key,), '(%s + "/%s")' % ( dirPath, relPath ), 
-                isAutoQuote=False )
-        return snippet               
-
-    def _targetDirPathRaw( self ):
-        return( _QtIfwScript.targetDir() + ' + "/%s"' % (
-                _RETAINED_TOOL_SUBDIR ) if self.isMaintenanceNeed else
-                '__installerTempPath()' ) + ' + "/%s"' % (self.name,) 
-
-    def __targetPathKey( self, key=None ):
-        if( key is None and 
-            self.contentKeys is not None and len(self.contentKeys)==1 ):
-            key=list(self.contentKeys.keys())[0] 
-        if self.contentKeys is None or key not in self.contentKeys:
-            raise Exception("Invalid content key")
-        return key
-    
-    def __targetDirPathKey( self ): return '%sDir' % (self.name,)
-    
-# -----------------------------------------------------------------------------
-class QtIfwUiPage():
-
-    __FILE_EXTENSION  = "ui"
-    __UI_RES_DIR_NAME = "qtifw_ui"
-
-    BASE_ON_LOAD_TMPT = (    
-"""
-    var page = gui.pageWidgetByObjectName("Dynamic%s");
-    switch( systemInfo.kernelType ){
-    case "darwin": // macOS
-        page.minimumSize.width=300;
-        break;
-    case "linux": 
-        page.minimumSize.width=480;
-        break;
-    default: // "windows"
-        // This is the hard coded width of "standard" QtIfw .ui's
-        page.minimumSize.width=491;   
-    }    
-""")
-
-    BASE_ON_ENTER_TMPT = (    
-"""
-    var page = gui.pageWidgetByObjectName("Dynamic%s");
-    if( installer.value( "auto", "" )=="true" )
-        gui.clickButton(buttons.NextButton);
-    else {
-    %s                        
-    }
-""")
-    
-    @staticmethod
-    def __toFileName( name ): 
-        return joinExt( name, QtIfwUiPage.__FILE_EXTENSION ).lower()  
-    
-    @staticmethod
-    def _pageResPath( name ):    
-        return util._toLibResPath( joinPath( 
-                QtIfwUiPage.__UI_RES_DIR_NAME, 
-                QtIfwUiPage.__toFileName( name ) ) )
-    
-    # QtIfwUiPage    
-    def __init__( self, name, pageOrder=None, 
-                  sourcePath=None, content=None,
-                  onLoad=None, onEnter=None ) :
-        self.name             = name
-        self.pageOrder        =( pageOrder if pageOrder in _DEFAULT_PAGES 
-                                 else None )        
-        self.onLoad           = onLoad
-        self.onEnter          = onEnter
-        self.eventHandlers    = {} 
-        self.supportScript    = None
-        self.replacements     = {}
-        self.isIncInAutoPilot = False
-        self._isOnLoadBase    = True
-        self._isOnEnterBase   = True        
-        if sourcePath:
-            with open( sourcePath, 'r' ) as f: self.content = f.read()
-        else: self.content = content  
-               
-    def fileName( self ): return QtIfwUiPage.__toFileName( self.name )  
-
-    # resolve static substitutions
-    def resolve( self, qtIfwConfig ):
-        self.replacements.update({ 
-             QT_IFW_TITLE           : qtIfwConfig.configXml.Title 
-        ,    QT_IFW_PRODUCT_NAME    : qtIfwConfig.configXml.Name 
-        ,    QT_IFW_PRODUCT_VERSION : qtIfwConfig.configXml.Version 
-        ,    QT_IFW_PUBLISHER       : qtIfwConfig.configXml.Publisher 
-        })
-        
-    def write( self, dirPath ):
-        if self.content is None : 
-            raise Exception( "No content found for QtIfwUiPage: %s" % 
-                             (self.name,) )
-        if not isDir( dirPath ): makeDir( dirPath )
-        filePath = joinPath( dirPath, self.fileName() )
-        content = self.__resolveContent()
-        print( "Adding installer page definition: %s\n\n%s\n" % ( 
-                filePath, content ) )                               
-        with open( filePath, 'w' ) as f: f.write( content ) 
-
-    def __resolveContent( self ):
-        self.replacements[ _PAGE_NAME_PLACHOLDER ] = self.name
-        ret = self.content
-        for placeholder, value in six.iteritems( self.replacements ):
-            ret = ret.replace( placeholder, value )
-        return ret    
-
-# -----------------------------------------------------------------------------    
-class QtIfwSimpleTextPage( QtIfwUiPage ):
-    
-    __SRC  = QtIfwUiPage._pageResPath( "simpletext" )
-    __TITLE_PLACEHOLDER = "[TITLE]"
-    __TEXT_PLACEHOLDER = "[TEXT]"
-
-    def __init__( self, name, pageOrder=None, title="", text="", 
-                  onLoad=None, onEnter=None ) :
-        QtIfwUiPage.__init__( self, name, pageOrder=pageOrder, 
-                              onLoad=onLoad, onEnter=onEnter, 
-                              sourcePath=QtIfwSimpleTextPage.__SRC  )
-        self.replacements.update({ 
-            QtIfwSimpleTextPage.__TITLE_PLACEHOLDER : title,
-            QtIfwSimpleTextPage.__TEXT_PLACEHOLDER : text 
-        })
-                    
-# -----------------------------------------------------------------------------    
-class QtIfwDynamicOperationsPage( QtIfwUiPage ):
-    
-    __SRC = QtIfwUiPage._pageResPath( "performoperation" )
-     
-    _TIMER_BUTTON = "timerKludgeButton"
-     
-    @staticmethod
-    def __performOpName( name ): return "_performOp%s" % (name,) 
-
-    @staticmethod
-    def __onCompletedName( name ): 
-        return "%sCompleted" % ( 
-            QtIfwDynamicOperationsPage.__performOpName( name ), )  
-
-    @staticmethod
-    def onCompleted( name ):
-        return "%s();\n" % ( 
-            QtIfwDynamicOperationsPage.__onCompletedName( name ), )  
-
-    def __init__( self, name, operation="", asyncFuncs=[],
-                  order=QT_IFW_PRE_INSTALL, 
-                  onCompletedDelayMillis=None ) :
-
-        TAB  = _QtIfwScript.TAB
-        NEW  = _QtIfwScript.NEW_LINE
-        END  = _QtIfwScript.END_LINE
-        SBLK = _QtIfwScript.START_BLOCK
-        EBLK = _QtIfwScript.END_BLOCK
-
-        isPreInstall = order != QT_IFW_POST_INSTALL
-                        
-        PERFORM_OP_DONE_VALUE = "_isPerformOp%sDone" % (name,)
-
-        ON_TIMEOUT_NAME = "onPerformOp%sTimeOut" % (name,)
-
-        ON_LOAD='page.%s.released.connect(this, this.%s);\n' % ( 
-            self._TIMER_BUTTON, ON_TIMEOUT_NAME )                                
-        ON_ENTER =( 
-            (2*TAB) + _QtIfwScript.ifBoolValue( PERFORM_OP_DONE_VALUE ) +
-                (2*TAB) + QtIfwControlScript.clickButton(
-                                QtIfwControlScript.NEXT_BUTTON ) +
-            (2*TAB) + 'else ' + SBLK +
-                (2*TAB) + QtIfwControlScript.enableNextButton( False )  +     
-                (2*TAB) + ('if( %s( page ) )' % self.__performOpName( name )) + NEW +
-                    (3*TAB) + self.onCompleted( name ) +            
-            (2*TAB) + EBLK                     
-        )
-        OP_FUNC =(
-            'function ' + self.__performOpName( name ) + '( page )' + SBLK +
-                operation +
-            EBLK
-        )
-        ON_COMPLETED =(
-            'function ' + self.__onCompletedName( name ) + '()' + SBLK +
-            QtIfwControlScript.assignCustomPageWidgetVar( name ) +     
-            _QtIfwScript.setBoolValue( PERFORM_OP_DONE_VALUE, True ) +
-            (2*TAB) + QtIfwControlScript.enableNextButton()  +                         
-            (QtIfwControlScript.clickButton(
-                QtIfwControlScript.NEXT_BUTTON, onCompletedDelayMillis ) 
-            if onCompletedDelayMillis is None or onCompletedDelayMillis > 0 
-            else "") +             
-            EBLK            
-        )                
-        ON_TIMEOUT =( 
-            "var func = " + _QtIfwScript.lookupValue( 
-            self.AsyncFunc._TIMEOUT_FUNC_KEY ) + END + 
-            "var argsRaw = " + _QtIfwScript.lookupValue( 
-                "func", default='""', isAutoQuote=False ) + END +            
-            _QtIfwScript.log( '"Async func requested:" + func' , isAutoQuote=False )
-        )
-        for func in asyncFuncs:
-            if isinstance( func, self.AsyncFunc ):                 
-                ON_TIMEOUT +=(
-                    ('if( func==="%s" )' % (func._realName(),)) + SBLK +                    
-                    func._execute() +
-                    "return" + END +
-                    EBLK )
-                        
-        QtIfwUiPage.__init__( self, name,   
-            pageOrder=(QT_IFW_INSTALL_PAGE if isPreInstall else 
-                       QT_IFW_FINISHED_PAGE),
-            sourcePath=QtIfwDynamicOperationsPage.__SRC,
-            onLoad=ON_LOAD, onEnter=ON_ENTER )
-                
-        self.supportScript = OP_FUNC + NEW + ON_COMPLETED + NEW  
-        self.eventHandlers.update({ 
-              ON_TIMEOUT_NAME: ON_TIMEOUT
-        })        
-
-        self._asyncFuncs      = asyncFuncs
-        self._operationFunc   = OP_FUNC 
-        self._onCompletedFunc = ON_COMPLETED
-
-    class AsyncFunc:
-        
-        _TIMEOUT_FUNC_KEY  = "__timeoutFunc"       
-        __KEY_PREFIX       = "__async"
-        __ARG_DELIMITER    = '__delim__'    
-        __DEFINITION_TMPLT =(
-    """
-    function %s( %s ){
-    %s
-    }    
-    """)
-        
-        def __init__( self, name, args=[], body="", delayMillis=1,
-                      standardPageId=None, customPageName=None ):
-            self.name           = name
-            self.args           = args
-            self.body           = body
-            self.delayMillis    = delayMillis
-            self.standardPageId = standardPageId
-            self.customPageName = customPageName
-    
-        def invoke( self, args=[], isAutoQuote=True ):        
-            if isAutoQuote:
-                args = ['"%s"' % (a,) for a in args]        
-            if self.standardPageId: 
-                args = ['"%s"' % (self.standardPageId,)] + args
-            elif self.customPageName: 
-                args = ['"%s"' % (self.customPageName,)] + args            
-            concat = ' + "%s" + ' % (self.__ARG_DELIMITER,)                    
-            return (                                 
-                ('installer.setValue( "%s", "%s" );\n' % ( 
-                self._TIMEOUT_FUNC_KEY, self._realName() )) +                
-                ('installer.setValue( "%s", %s );\n' % ( 
-                self._realName(), concat.join( args ) )) +
-                ('page.%s.animateClick( %d );\n' % ( 
-                 QtIfwDynamicOperationsPage._TIMER_BUTTON, 
-                 1 if self.delayMillis < 1 else self.delayMillis )) 
-            )
-    
-        def _define( self ):
-            args =( ["page"] + self.args
-                if self.standardPageId or self.customPageName else self.args )
-            return self.__DEFINITION_TMPLT % ( 
-                self._realName(), ", ".join( args ), self.body )       
-    
-        def _execute( self ):
-            snippet = ""
-            argOffset=0
-            if self.standardPageId: 
-                snippet += QtIfwControlScript.assignPageWidgetVar(
-                    self.standardPageId )                        
-                argOffset+=1
-            elif self.customPageName: 
-                snippet +=QtIfwControlScript.assignCustomPageWidgetVar(
-                    self.customPageName )
-                argOffset+=1
-            if len(self.args) > 0:
-                snippet = 'var args = argsRaw.split( "%s" );\n' % (self.__ARG_DELIMITER,)                                
-                for i, p in enumerate( self.args ):
-                    snippet +=( "var {0} = args.length > {1} ? args[{1}] : null;\n"
-                                .format(p, i+argOffset) )                    
-            parms =( ["page"] + self.args
-                if self.standardPageId or self.customPageName else self.args )    
-            snippet += "%s( %s );\n" % (self._realName(), ", ".join( parms ))
-            return snippet   
-    
-        def _realName( self ): return "%s%s" % (self.__KEY_PREFIX, self.name)    
-            
-            
-# -----------------------------------------------------------------------------    
-class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
-    
-    NAME  = "PriorInstallation"
-
-    __SRC = QtIfwUiPage._pageResPath( "priorinstallation" )
-    __PAGE_ORDER = QT_IFW_READY_PAGE
-
-    __TITLE = "Prior Installation Detected"
-    
-    __TEXT_LABEL      = "description"
-    __CONTINUE_BUTTON = "continueButton"
-    __STOP_BUTTON     = "stopButton"
-    __NOTE_LABEL      = "note"
-                
-    def __init__( self ) :
-        TAB  = _QtIfwScript.TAB
-        END  = _QtIfwScript.END_LINE
-        NEW  = _QtIfwScript.NEW_LINE
-        SBLK = _QtIfwScript.START_BLOCK
-        EBLK = _QtIfwScript.END_BLOCK
-
-        # TODO: Test for, and resolve this problem: Add/remvoe page could screw up 
-        # the page order if multiple custom pages are intended to live before the same  
-        # default wizard pages.   
-        IS_PAGE_SHOWN_NAME = "isPriorInstallationPageShown"
-        IS_PAGE_SHOWN =(
-            'function ' + IS_PAGE_SHOWN_NAME + '() ' + SBLK +
-                TAB + _QtIfwScript.ifInstalling( isMultiLine=True ) +
-                    (2*TAB) + "if( targetExists() ) " + SBLK +
-                        # check for the "hard false" to know the page was removed
-                        (3*TAB) + _QtIfwScript.ifBoolValue( _REMOVE_TARGET_KEY, 
-                                    isHardFalse=True ) +                           
-                            (4*TAB) + QtIfwControlScript.insertCustomPage( 
-                                QtIfwRemovePriorInstallationPage.NAME,
-                                QT_IFW_INSTALL_PAGE ) +
-                        (3*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, True ) +
-                        (3*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
-                            _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
-                        (3*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_REMOVE + '":' + NEW + 
-                            (4*TAB) + 'return false' + END +
-                        (3*TAB) + 'default:' + NEW +                
-                            (4*TAB) + 'return true' + END +
-                        (3*TAB) + EBLK +                                 
-                    (2*TAB) + EBLK +      
-                    (2*TAB) + "else " + SBLK +
-                        # set a "hard false"  when the page is removed
-                        (3*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, False ) +
-                        (3*TAB) + QtIfwControlScript.removeCustomPage( 
-                            QtIfwRemovePriorInstallationPage.NAME ) +
-                    (2*TAB) + EBLK +  
-                TAB + EBLK +     
-                TAB + 'return false' + END +                
-            EBLK + NEW 
-        )
-
-        ON_CONTINUE_CLICKED_NAME = "onPriorInstallContinueClicked"
-        ON_CONTINUE_CLICKED = QtIfwControlScript.enableNextButton() 
-
-        ON_STOP_CLICKED_NAME = "onPriorInstallStopClicked"     
-        ON_STOP_CLICKED = QtIfwControlScript.enableNextButton( False ) 
-
-        ON_LOAD =( 
-"""
-    page.%s.released.connect(this, this.%s);
-    page.%s.released.connect(this, this.%s);
-""" ) % ( QtIfwOnPriorInstallationPage.__CONTINUE_BUTTON, 
-            ON_CONTINUE_CLICKED_NAME,
-          QtIfwOnPriorInstallationPage.__STOP_BUTTON,     
-            ON_STOP_CLICKED_NAME )     
-   
-        ON_ENTER = ( 
-            (2*TAB) + 'if( ' + IS_PAGE_SHOWN_NAME + '() )' + SBLK +            
-                (3*TAB) + QtIfwControlScript.enableNextButton(                     
-                    QtIfwControlScript.isCustomChecked( 
-                        QtIfwOnPriorInstallationPage.__CONTINUE_BUTTON ) ) +                
-                (3*TAB) + QtIfwControlScript.setCustomPageTitle( 
-                     QtIfwOnPriorInstallationPage.__TITLE ) +
-                (3*TAB) + QtIfwControlScript.setCustomVisible( 
-                    QtIfwOnPriorInstallationPage.__TEXT_LABEL ) +
-                (3*TAB) + QtIfwControlScript.setCustomVisible( 
-                    QtIfwOnPriorInstallationPage.__CONTINUE_BUTTON ) +
-                (3*TAB) + QtIfwControlScript.setCustomVisible( 
-                    QtIfwOnPriorInstallationPage.__STOP_BUTTON ) +
-                (3*TAB) + QtIfwControlScript.setCustomVisible( 
-                    QtIfwOnPriorInstallationPage.__NOTE_LABEL ) +                            
-            (2*TAB) + EBLK + 
-            (2*TAB) +  'else '  + SBLK +
-                (3*TAB) + QtIfwControlScript.enableNextButton() +
-                (3*TAB) + QtIfwControlScript.setCustomPageTitle( "" ) +
-                (3*TAB) + QtIfwControlScript.setCustomVisible( 
-                    QtIfwOnPriorInstallationPage.__TEXT_LABEL, False ) +
-                (3*TAB) + QtIfwControlScript.setCustomVisible( 
-                    QtIfwOnPriorInstallationPage.__CONTINUE_BUTTON, False ) +
-                (3*TAB) + QtIfwControlScript.setCustomVisible( 
-                    QtIfwOnPriorInstallationPage.__STOP_BUTTON, False ) +
-                (3*TAB) + QtIfwControlScript.setCustomVisible( 
-                    QtIfwOnPriorInstallationPage.__NOTE_LABEL, False ) +                                             
-                (3*TAB) + QtIfwControlScript.clickButton(
-                    QtIfwControlScript.NEXT_BUTTON ) +                
-            (2*TAB) + EBLK            
-        )
-
-        QtIfwUiPage.__init__( self, QtIfwOnPriorInstallationPage.NAME,
-            pageOrder=QtIfwOnPriorInstallationPage.__PAGE_ORDER, 
-            sourcePath=QtIfwOnPriorInstallationPage.__SRC,
-            onLoad=ON_LOAD, onEnter=ON_ENTER  )
-        
-        self.supportScript = IS_PAGE_SHOWN
-        self.eventHandlers.update({ 
-              ON_CONTINUE_CLICKED_NAME: ON_CONTINUE_CLICKED
-            , ON_STOP_CLICKED_NAME: ON_STOP_CLICKED
-        })
-                                                      
-# -----------------------------------------------------------------------------    
-class QtIfwRemovePriorInstallationPage( QtIfwDynamicOperationsPage ):
-  
-    NAME = "RemovePriorInstallation"
-    
-    __TITLE = "Removing Prior Installation"
-    
-    def __init__( self ):
-
-        TAB  = _QtIfwScript.TAB
-        END  = _QtIfwScript.END_LINE
-        SBLK = _QtIfwScript.START_BLOCK
-        EBLK = _QtIfwScript.END_BLOCK
-
-        removeTargetFunc = self.AsyncFunc( "RemoveTarget", 
-            customPageName=self.NAME, body=(
-           TAB + _QtIfwScript.log( "Removing prior installation..." ) +       
-           TAB + 'if( removeTarget() ) ' + SBLK +
-               (2*TAB) + QtIfwControlScript.setCustomPageText(
-                   self.__TITLE, "The program was successfully removed!" ) +
-               (2*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, False ) +
-               (2*TAB) + self.onCompleted( self.NAME ) +
-           TAB + EBLK +
-           TAB + 'else ' + SBLK +
-               (2*TAB) + QtIfwControlScript.setCustomPageText(
-                   "ERROR", "Program removal failed!" ) +
-           TAB + EBLK 
-        ))
-        
-        OPERATION=(
-            TAB + _QtIfwScript.ifBoolValue( _REMOVE_TARGET_KEY, isMultiLine=True ) +                         
-                QtIfwControlScript.setCustomPageText(
-                    self.__TITLE, "Removal in progress..." ) +
-                removeTargetFunc.invoke() +
-                TAB + 'return false' + END +
-            TAB + EBLK +    
-            TAB + 'return true' + END 
-        )
-
-        QtIfwDynamicOperationsPage.__init__( self, 
-            QtIfwRemovePriorInstallationPage.NAME, 
-            operation=OPERATION, asyncFuncs=[ removeTargetFunc ], 
-            order=QT_IFW_PRE_INSTALL, 
-            onCompletedDelayMillis=2500 )
-        
-# -----------------------------------------------------------------------------    
-class QtIfwTargetDirPage( QtIfwUiPage ):
-    
-    NAME = QT_IFW_REPLACE_PAGE_PREFIX + QT_IFW_TARGET_DIR_PAGE
-    __SRC  = QtIfwUiPage._pageResPath( QT_IFW_TARGET_DIR_PAGE )
-
-    def __init__( self ):
-            
-        ON_TARGET_CHANGED_NAME = "targetDirectoryChanged"
-        ON_TARGET_CHANGED = (
-"""
-    var page = gui.pageWidgetByObjectName("Dynamic%s");
-    var dir = page.targetDirectory.text;
-    dir = Dir.toNativeSeparator(dir);
-    page.warning.setText( !installer.fileExists(dir) ? "" :
-        "<p style=\\"color: red\\">" +
-            "WARNING: The path specified already exists. " +
-            "All prior content will be erased!" + 
-        "</p>" );        
-    installer.setValue("TargetDir", dir);
-""") % ( QtIfwTargetDirPage.NAME, )
-        
-        ON_TARGET_BROWSE_CLICKED_NAME = "targetChooserClicked"
-        ON_TARGET_BROWSE_CLICKED = (
-"""
-    var page = gui.pageWidgetByObjectName("Dynamic%s");
-    page.targetDirectory.setText( Dir.toNativeSeparator(
-        QFileDialog.getExistingDirectory("", page.targetDirectory.text) ) );
-""") % ( QtIfwTargetDirPage.NAME, )
-    
-        ON_LOAD = (    
-"""
-    // patch seems to be needed due to use of RichText?
-    switch( systemInfo.kernelType ){
-    case "darwin": // macOS
-        page.warning.minimumSize.width=300;
-        break;
-    case "linux": 
-        page.warning.minimumSize.width=480;
-        break;
-    }    
-    page.targetDirectory.setText(
-        Dir.toNativeSeparator(installer.value("TargetDir")));
-    page.targetDirectory.textChanged.connect(this, this.%s);    
-    page.targetChooser.released.connect(this, this.%s);
-""") % ( ON_TARGET_CHANGED_NAME, ON_TARGET_BROWSE_CLICKED_NAME )
-        
-        QtIfwUiPage.__init__( self, QtIfwTargetDirPage.NAME,
-            sourcePath=QtIfwTargetDirPage.__SRC, onLoad=ON_LOAD )
-        
-        self.eventHandlers.update({ 
-              ON_TARGET_CHANGED_NAME: ON_TARGET_CHANGED
-            , ON_TARGET_BROWSE_CLICKED_NAME: ON_TARGET_BROWSE_CLICKED
-        })
-            
 # -----------------------------------------------------------------------------    
 class QtIfwExeWrapper:
     
@@ -4914,6 +3973,946 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                 self._args = [self._runProgram]
                 self._runProgram = util._LAUNCH_MACOS_APP_CMD
 
+# -----------------------------------------------------------------------------
+class QtIfwExternalOp:
+
+    ON_INSTALL, ON_UNINSTALL, ON_BOTH, AUTO_UNDO = range(4) 
+
+    __AUTO_SCRIPT_COUNT=0
+    __SCRIPT_ROOT_NAME_TMPLT = "%s_%d"
+
+    @staticmethod
+    def __scriptRootName( prefix ):
+        QtIfwExternalOp.__AUTO_SCRIPT_COUNT+=1
+        return QtIfwExternalOp.__SCRIPT_ROOT_NAME_TMPLT % ( 
+            prefix, QtIfwExternalOp.__AUTO_SCRIPT_COUNT )
+
+    if IS_WINDOWS:
+        # TODO: Expand upon registry functions
+        
+        # TODO: Deal with 64 bit vs 32 bit registry contexts
+        # Allow the use of either literal paths or implicit wow64 resolution
+        # Some thoughts:     
+        # https://stackoverflow.com/questions/630382/how-to-access-the-64-bit-registry-from-a-32-bit-powershell-instance
+        
+        @staticmethod
+        def CreateRegistryEntry( event, key, valueName=None, value="", valueType="String" ):
+            return QtIfwExternalOp.__genScriptOp( event, 
+                script=QtIfwExternalOp.CreateRegistryEntryScript( key, valueName, value, valueType ), 
+                uninstScript=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
+                isElevated=True )
+        
+        @staticmethod
+        def RemoveRegistryEntry( event, key, valueName=None ):
+            return QtIfwExternalOp.__genScriptOp( event, 
+                script=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
+                canAutoUndo=False, isElevated=True )
+
+        @staticmethod
+        def CreateExeFromBatch( script, brandingInfo, srcIconPath ):            
+            iconTool = QtIfwExternalResource( "%sIcon" % (script.rootName,), 
+                                           srcIconPath )            
+            ops = [ QtIfwExternalOp( resourceScripts=[script], 
+                                     externalRes=[iconTool] ) ]
+            ops.extend( QtIfwExternalOp.Batch2Exe( 
+                  batchPath = joinPath( QT_IFW_SCRIPTS_DIR, script.fileName() )
+                , exePath = joinPath( QT_IFW_TARGET_DIR, 
+                                      normBinaryName( script.rootName ) )
+                , brandingInfo = brandingInfo
+                , iconDirPath = iconTool.targetDirPathVar()
+                , iconName = baseFileName( srcIconPath )
+            ))
+            return ops
+        
+        @staticmethod
+        def Batch2Exe( batchPath, exePath, brandingInfo,
+                       iconDirPath, iconName, 
+                       isBatchRemoved=False, isIconDirRemoved=False ):
+            return [
+                  QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                    script=QtIfwExternalOp.Bat2ExeScript( 
+                        batchPath, exePath, isBatchRemoved ),                     
+                    canAutoUndo=False, isElevated=True )
+                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                    script=QtIfwExternalOp.BrandExeScript( 
+                        exePath, brandingInfo ), 
+                    canAutoUndo=False, isElevated=True,
+                    externalRes=[ QtIfwExternalResource.BuiltIn(
+                        QtIfwExternalResource.RESOURCE_HACKER ) ] )            
+                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                    script=QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
+                        exePath, iconDirPath, iconName, 
+                        isIconDirRemoved=isIconDirRemoved ), 
+                    canAutoUndo=False, isElevated=True,
+                    externalRes=[ QtIfwExternalResource.BuiltIn(
+                        QtIfwExternalResource.RESOURCE_HACKER ) ] )            
+            ]
+
+        @staticmethod
+        def WrapperBatch2Exe( batchPath, exePath, 
+                              targetPath, brandingInfo, iconName="0.ico" ):
+            iconDirPath = joinPath( "%temp%", "extracted-icons" )            
+            isBatchRemoved = isIconDirRemoved = True
+            return [
+                  QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                    script=QtIfwExternalOp.Bat2ExeScript( 
+                        batchPath, exePath, isBatchRemoved ), 
+                    canAutoUndo=False, isElevated=True )
+                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                    script=QtIfwExternalOp.BrandExeScript( 
+                        targetPath, brandingInfo ),                         
+                    canAutoUndo=False, isElevated=True,
+                    externalRes=[QtIfwExternalResource.BuiltIn(
+                        QtIfwExternalResource.RESOURCE_HACKER ) ] )            
+                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                    script=QtIfwExternalOp.ExtractIconsFromExeScript( 
+                        exePath, iconDirPath ), 
+                    canAutoUndo=False, isElevated=True,
+                    externalRes=[QtIfwExternalResource.BuiltIn(
+                        QtIfwExternalResource.RESOURCE_HACKER ) ] )                  
+                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                    script=QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
+                        exePath, iconDirPath, iconName, 
+                        isIconDirRemoved=isIconDirRemoved ), 
+                    canAutoUndo=False, isElevated=True,
+                    externalRes=[QtIfwExternalResource.BuiltIn(
+                        QtIfwExternalResource.RESOURCE_HACKER ) ] )                            
+            ]
+    
+    @staticmethod
+    def CreateStartupEntry( pkg=None, exePath=None, displayName=None, 
+                            isAllUsers=False ):
+        if pkg :
+            if not displayName: displayName = pkg.pkgXml.DisplayName
+            shortcuts = pkg.pkgScript.shortcuts
+            if IS_WINDOWS and shortcuts:
+                shortcuts[0].isAdjancentShortcut = True                                        
+                exePath = joinPath( QT_IFW_TARGET_DIR, 
+                    "%s.lnk" % shortcuts[0].productName )  
+            # TODO: Handle wrappers on other platforms    
+            elif not exePath:  
+                exeName = normBinaryName( pkg.exeName, pkg.isGui )
+                exePath = joinPath( 
+                    ( joinPath( QT_IFW_TARGET_DIR, pkg.subDirName ) 
+                      if pkg.subDirName else QT_IFW_TARGET_DIR ), exeName )
+        if exePath is None or displayName is None:
+            raise Exception( "Missing required arguments" )    
+        if IS_WINDOWS:
+            # TODO: IS THIS SUPPORTED IN LEGACY WINDOWS VERSIONS?
+            #     If not, just fall back to shortcuts in startup folders... 
+            # See: https://devblogs.microsoft.com/powershell/how-to-access-or-modify-startup-items-in-the-window-registry/
+            return QtIfwExternalOp.CreateRegistryEntry( QtIfwExternalOp.AUTO_UNDO, 
+                key = "%s:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run" % (
+                    "HKLM" if isAllUsers else "HKCU" ),
+                valueName=displayName, value=exePath )
+        elif IS_LINUX: 
+            # TODO: Fill in
+            util._onPlatformErr()
+        elif IS_MACOS: 
+            # TODO: Fill in
+            util._onPlatformErr()
+
+    @staticmethod
+    def __genScriptOp( event, script, uninstScript=None, 
+                       canAutoUndo=True, isElevated=False,
+                       externalRes=[] ):    
+        if   event==QtIfwExternalOp.ON_INSTALL:
+            onInstall   = script
+            onUninstall = None
+        elif event==QtIfwExternalOp.ON_UNINSTALL:
+            onInstall   = None 
+            onUninstall = script if uninstScript is None else uninstScript
+        elif event==QtIfwExternalOp.ON_BOTH:
+            onInstall   = script 
+            onUninstall = script        
+        elif event==QtIfwExternalOp.AUTO_UNDO:
+            if not canAutoUndo: 
+                raise Exception( 
+                    "Installer operation cannot be automatically undone." )
+            onInstall   = script 
+            onUninstall = uninstScript                  
+        return QtIfwExternalOp( script=onInstall, uninstScript=onUninstall,
+                isElevated=isElevated, externalRes=externalRes ) 
+    
+    if IS_WINDOWS:
+        # See
+        # https://blog.netwrix.com/2018/09/11/how-to-get-edit-create-and-delete-registry-keys-with-powershell/
+        # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-itemproperty?view=powershell-7
+        @staticmethod
+        def CreateRegistryEntryScript( key, valueName=None, 
+                                       value="", valueType="String" ):
+            valueName = "-Name '%s' " % (valueName,) if valueName else ""
+            if value is None: value=""
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "createRegEntry" ), extension="ps1", script=(
+                "New-ItemProperty -Path '%s' %s-Value '%s' -PropertyType '%s'" 
+                % (key, valueName, value, valueType) ) )
+        
+        @staticmethod
+        def RemoveRegistryEntryScript( key, valueName=None ):
+            valueName = "-Name '%s' " % (valueName,) if valueName else ""            
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "removeRegEntry" ), extension="ps1", script=(                
+                "Remove-ItemProperty -Path '%s' %s" % (key, valueName) ) )
+ 
+        @staticmethod
+        def Bat2ExeScript( srcPath, destPath, isBatchRemoved=False ):
+            script=(
+"""
+;@echo off
+
+;set "SOURCE_PATH={srcPath}"
+;set "TARGET_PATH={destPath}"
+
+;for %%I in ("%TARGET_PATH%") do set "target.exe=%%~I"
+;for %%I in ("%SOURCE_PATH%") do set "batch_file=%%~fI"
+;for %%I in ("%SOURCE_PATH%") do set "bat_name=%%~nxI"
+;for %%I in ("%SOURCE_PATH%") do set "bat_dir=%%~dpI"
+
+;copy /y "%~f0" "%temp%\\2exe.sed" >nul
+
+;(echo()>>"%temp%\\2exe.sed"
+;(echo(AppLaunched=cmd.exe /c "%bat_name%")>>"%temp%\\2exe.sed"
+;(echo(TargetName="%target.exe%")>>"%temp%\\2exe.sed"
+;(echo(FILE0="%bat_name%")>>"%temp%\\2exe.sed"
+;(echo([SourceFiles])>>"%temp%\\2exe.sed"
+;(echo(SourceFiles0=%bat_dir%)>>"%temp%\\2exe.sed"
+;(echo([SourceFiles0])>>"%temp%\\2exe.sed"
+;(echo(%%FILE0%%=)>>"%temp%\\2exe.sed"
+
+;iexpress /n /q /m %temp%\\2exe.sed
+
+;del /q /f "%temp%\\2exe.sed"
+;{removeSrc}
+;exit /b 0
+
+[Version]
+Class=IEXPRESS
+SEDVersion=3
+[Options]
+PackagePurpose=InstallApp
+ShowInstallProgramWindow=0
+HideExtractAnimation=1
+UseLongFileName=1
+InsideCompressed=0
+CAB_FixedSize=0
+CAB_ResvCodeSigning=0
+RebootMode=N
+InstallPrompt=%InstallPrompt%
+DisplayLicense=%DisplayLicense%
+FinishMessage=%FinishMessage%
+TargetName=%TargetName%
+FriendlyName=%FriendlyName%
+AppLaunched=%AppLaunched%
+PostInstallCmd=%PostInstallCmd%
+AdminQuietInstCmd=%AdminQuietInstCmd%
+UserQuietInstCmd=%UserQuietInstCmd%
+SourceFiles=SourceFiles
+
+[Strings]
+InstallPrompt=
+DisplayLicense=
+FinishMessage=
+FriendlyName=-
+PostInstallCmd=<None>
+AdminQuietInstCmd=
+UserQuietInstCmd=
+""")                        
+            removeSrc =( 'del /q /f "%s"' % (srcPath,) 
+                         if isBatchRemoved else "" )
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "bat2exe" ), script=script, replacements={
+                "srcPath": srcPath, "destPath": destPath, 
+                "removeSrc": removeSrc } )
+
+        @staticmethod
+        def BrandExeScript( exePath, brandingInfo ):
+            script=(
+"""
+@echo off
+
+set "EXE_PATH={exePath}"
+for %%I in ("%EXE_PATH%") do set "ORIGINAL_NAME=%%~nxI"
+
+set "TEMP_RC_PATH=%temp%\\versioninfo.rc"
+set "TEMP_RES_PATH=%temp%\\versioninfo.res"
+
+(
+echo:VS_VERSION_INFO VERSIONINFO
+echo:    FILEVERSION    %{fileVerCommaDelim}%
+echo:    PRODUCTVERSION %{productVerCommaDelim}%
+echo:{
+echo:    BLOCK "StringFileInfo"
+echo:    {
+echo:        BLOCK "040904b0"
+echo:        {
+echo:            VALUE "CompanyName",        "{companyName}\\0"
+echo:            VALUE "FileDescription",    "{fileDescr}\\0"
+echo:            VALUE "FileVersion",        "{fileVer}\\0"
+echo:            VALUE "LegalCopyright",     "{copyright}\\0"
+echo:            VALUE "OriginalFilename",   "%ORIGINAL_NAME%\\0"
+echo:            VALUE "ProductName",        "{productName}\\0"
+echo:            VALUE "ProductVersion",     "{productVer}\\0"
+echo:        }
+echo:    }
+echo:    BLOCK "VarFileInfo"
+echo:    {
+echo:        VALUE "Translation", 0x409, 1200
+echo:    }
+echo:}
+) > "%TEMP_RC_PATH%" && echo wrote %TEMP_RC_PATH%
+
+"@ResourceHacker@" -open "%TEMP_RC_PATH%" -save "%TEMP_RES_PATH%" -action compile 
+"@ResourceHacker@" -open "%EXE_PATH%" -save "%EXE_PATH%" -action addoverwrite -resource "%TEMP_RES_PATH%" 
+
+del /q /f "%TEMP_RC_PATH%"
+del /q /f "%TEMP_RES_PATH%"
+""")            
+            # TODO: apply brandingInfo 
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "brandexe" ), script=script, replacements={
+                      "exePath": exePath            
+                    , "companyName": ""
+                    , "copyright": ""
+                    , "productName": ""
+                    , "productVerCommaDelim": ""
+                    , "productVer": ""
+                    , "fileDescr": ""
+                    , "fileVerCommaDelim": ""
+                    , "fileVer": ""
+                })
+
+        @staticmethod
+        def ExtractIconsFromExeScript( exePath, targetDirPath ):
+            script=(
+"""
+@echo off
+"@ResourceHacker@" -open "{exePath}" -save "{targetDirPath}" -action extract -mask ICONGROUP
+""")            
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "extractIconsFromExe" ), script=script, replacements={ 
+                    "exePath": exePath, "targetDirPath": targetDirPath } )
+
+        @staticmethod
+        def ReplacePrimaryIconInExeScript( exePath, iconDirPath, iconName, 
+                                           isIconDirRemoved=False ):
+            script=(
+"""
+@echo off
+"@ResourceHacker@" -open "{exePath}" -save "{exePath}" -action addoverwrite -res "{iconPath}" -mask ICONGROUP, MAINICON, 0
+{removeIconDir}
+set "REFRESH_ICONS=ie4uinit -ClearIconCache & ie4uinit -show"
+if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%" ) else ( %REFRESH_ICONS% )
+""")        
+            iconPath = joinPath( iconDirPath, iconName )  
+            removeIconDir =( 'rd /q /s "%s"' % (iconDirPath,) 
+                             if isIconDirRemoved else "" )  
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "replacePrimaryIconInExe" ), script=script, replacements={
+                "exePath":exePath, "iconPath": iconPath, 
+                "removeIconDir": removeIconDir } )
+ 
+    # QtIfwExternalOp
+    def __init__( self, 
+              script=None,       exePath=None,       args=[], successRetCodes=[0],  
+        uninstScript=None, uninstExePath=None, uninstArgs=[],  uninstRetCodes=[0],
+        isElevated=False, workingDir=QT_IFW_TARGET_DIR, onErrorMessage=None,
+        resourceScripts=[], uninstResourceScripts=[], externalRes=[] ):
+        
+        self.script          = script #ExecutableScript        
+        self.exePath         = exePath
+        self.args            = args
+        self.successRetCodes = successRetCodes
+
+        self.uninstScript    = uninstScript #ExecutableScript
+        self.uninstExePath   = uninstExePath
+        self.uninstArgs      = uninstArgs
+        self.uninstRetCodes  = uninstRetCodes
+        
+        self.isElevated      = isElevated 
+        self.workingDir      = workingDir
+                
+        self.onErrorMessage  = onErrorMessage # TODO: TEST!
+
+        self.resourceScripts       = resourceScripts
+        self.uninstResourceScripts = uninstResourceScripts
+        self.externalRes           = externalRes
+
+# -----------------------------------------------------------------------------
+class QtIfwExternalResource:
+        
+    __TOOLS_RES_DIR_NAME = "qtifw_res"
+    
+    __CONTENT_KEYS = {} # dict of dicts
+    
+    if IS_WINDOWS:
+        RESOURCE_HACKER = "ResourceHacker"
+        __CONTENT_KEYS[ RESOURCE_HACKER ] = {
+            RESOURCE_HACKER: "ResourceHacker.exe" }
+
+    @staticmethod
+    def __toArchiveName( name ): return joinExt( name, _QT_IFW_ARCHIVE_EXT )
+
+    @staticmethod
+    def _builtInResPath( name ):    
+        return util._toLibResPath( joinPath( 
+            QtIfwExternalResource.__TOOLS_RES_DIR_NAME,
+            ("linux" if IS_LINUX else "macos" if IS_MACOS else "windows" ),
+            QtIfwExternalResource.__toArchiveName( name ) ) )
+
+    @staticmethod
+    def BuiltIn( name, isMaintenanceNeed=False ):            
+        return QtIfwExternalResource( name, 
+            QtIfwExternalResource._builtInResPath( name ), 
+            isMaintenanceNeed=isMaintenanceNeed, 
+            contentKeys=QtIfwExternalResource.__CONTENT_KEYS.get(name,{}) )
+
+    def __init__( self, name, srcPath, srcBasePath=None, 
+                  isMaintenanceNeed=False, contentKeys={} ):
+        if "-" in name:
+            raise Exception( "Resource names may not contain dashes!"
+                " (Auto correcting this may produce hard to find bugs)" )
+        self.name = name
+        self.srcPath = absPath( srcPath, srcBasePath )        
+        self.isMaintenanceNeed = isMaintenanceNeed        
+        self.contentKeys = contentKeys
+        if( (contentKeys is None or len(contentKeys)==0) and 
+            isFile( self.srcPath ) and 
+            fileExt(self.srcPath) != _QT_IFW_ARCHIVE_EXT ):                
+            self.contentKeys[ name ] = baseFileName( self.srcPath )         
+
+    def targetPathVar( self, key=None ):
+        return _QT_IFW_VAR_TMPLT % (self.__targetPathKey( key ),)
+
+    def targetDirPathVar( self ):
+        return _QT_IFW_VAR_TMPLT % self.__targetDirPathKey()
+
+    def targetPath( self, key=None ):
+        return _QtIfwScript.lookupValue( self.__targetPathKey( key ) )
+
+    def targetDirPath( self ):
+        return _QtIfwScript.lookupValue( self.__targetDirPathKey() )
+
+    def _setTargetPathValues( self ):        
+        snippet=""
+        dirPath = self._targetDirPathRaw()
+        snippet += _QtIfwScript.setValue( 
+            '"%s"' % (self.__targetDirPathKey(),), dirPath, 
+            isAutoQuote=False )
+        for key, relPath in six.iteritems(self.contentKeys):        
+            snippet += _QtIfwScript.setValue( 
+                '"%s"' % (key,), '(%s + "/%s")' % ( dirPath, relPath ), 
+                isAutoQuote=False )
+        return snippet               
+
+    def _targetDirPathRaw( self ):
+        return( _QtIfwScript.targetDir() + ' + "/%s"' % (
+                _RETAINED_RESOURCE_SUBDIR ) if self.isMaintenanceNeed else
+                '__installerTempPath()' ) + ' + "/%s"' % (self.name,) 
+
+    def __targetPathKey( self, key=None ):
+        if( key is None and 
+            self.contentKeys is not None and len(self.contentKeys)==1 ):
+            key=list(self.contentKeys.keys())[0] 
+        if self.contentKeys is None or key not in self.contentKeys:
+            raise Exception("Invalid content key")
+        return key
+    
+    def __targetDirPathKey( self ): return '%sDir' % (self.name,)
+
+# -----------------------------------------------------------------------------
+class QtIfwKillOp:
+    def __init__( self, processName, onInstall=True, onUninstall=True ):        
+        self.processName = ( normBinaryName( processName.exeName ) 
+            if isinstance( processName, QtIfwPackage ) else processName )         
+        self.onInstall   = onInstall
+        self.onUninstall = onUninstall
+        self.isElevated  = True  
+    
+# -----------------------------------------------------------------------------
+class QtIfwUiPage():
+
+    __FILE_EXTENSION  = "ui"
+    __UI_RES_DIR_NAME = "qtifw_ui"
+
+    BASE_ON_LOAD_TMPT = (    
+"""
+    var page = gui.pageWidgetByObjectName("Dynamic%s");
+    switch( systemInfo.kernelType ){
+    case "darwin": // macOS
+        page.minimumSize.width=300;
+        break;
+    case "linux": 
+        page.minimumSize.width=480;
+        break;
+    default: // "windows"
+        // This is the hard coded width of "standard" QtIfw .ui's
+        page.minimumSize.width=491;   
+    }    
+""")
+
+    BASE_ON_ENTER_TMPT = (    
+"""
+    var page = gui.pageWidgetByObjectName("Dynamic%s");
+    if( installer.value( "auto", "" )=="true" )
+        gui.clickButton(buttons.NextButton);
+    else {
+    %s                        
+    }
+""")
+    
+    @staticmethod
+    def __toFileName( name ): 
+        return joinExt( name, QtIfwUiPage.__FILE_EXTENSION ).lower()  
+    
+    @staticmethod
+    def _pageResPath( name ):    
+        return util._toLibResPath( joinPath( 
+                QtIfwUiPage.__UI_RES_DIR_NAME, 
+                QtIfwUiPage.__toFileName( name ) ) )
+    
+    # QtIfwUiPage    
+    def __init__( self, name, pageOrder=None, 
+                  sourcePath=None, content=None,
+                  onLoad=None, onEnter=None ) :
+        self.name             = name
+        self.pageOrder        =( pageOrder if pageOrder in _DEFAULT_PAGES 
+                                 else None )        
+        self.onLoad           = onLoad
+        self.onEnter          = onEnter
+        self.eventHandlers    = {} 
+        self.supportScript    = None
+        self.replacements     = {}
+        self.isIncInAutoPilot = False
+        self._isOnLoadBase    = True
+        self._isOnEnterBase   = True        
+        if sourcePath:
+            with open( sourcePath, 'r' ) as f: self.content = f.read()
+        else: self.content = content  
+               
+    def fileName( self ): return QtIfwUiPage.__toFileName( self.name )  
+
+    # resolve static substitutions
+    def resolve( self, qtIfwConfig ):
+        self.replacements.update({ 
+             QT_IFW_TITLE           : qtIfwConfig.configXml.Title 
+        ,    QT_IFW_PRODUCT_NAME    : qtIfwConfig.configXml.Name 
+        ,    QT_IFW_PRODUCT_VERSION : qtIfwConfig.configXml.Version 
+        ,    QT_IFW_PUBLISHER       : qtIfwConfig.configXml.Publisher 
+        })
+        
+    def write( self, dirPath ):
+        if self.content is None : 
+            raise Exception( "No content found for QtIfwUiPage: %s" % 
+                             (self.name,) )
+        if not isDir( dirPath ): makeDir( dirPath )
+        filePath = joinPath( dirPath, self.fileName() )
+        content = self.__resolveContent()
+        print( "Adding installer page definition: %s\n\n%s\n" % ( 
+                filePath, content ) )                               
+        with open( filePath, 'w' ) as f: f.write( content ) 
+
+    def __resolveContent( self ):
+        self.replacements[ _PAGE_NAME_PLACHOLDER ] = self.name
+        ret = self.content
+        for placeholder, value in six.iteritems( self.replacements ):
+            ret = ret.replace( placeholder, value )
+        return ret    
+
+# -----------------------------------------------------------------------------    
+class QtIfwSimpleTextPage( QtIfwUiPage ):
+    
+    __SRC  = QtIfwUiPage._pageResPath( "simpletext" )
+    __TITLE_PLACEHOLDER = "[TITLE]"
+    __TEXT_PLACEHOLDER = "[TEXT]"
+
+    def __init__( self, name, pageOrder=None, title="", text="", 
+                  onLoad=None, onEnter=None ) :
+        QtIfwUiPage.__init__( self, name, pageOrder=pageOrder, 
+                              onLoad=onLoad, onEnter=onEnter, 
+                              sourcePath=QtIfwSimpleTextPage.__SRC  )
+        self.replacements.update({ 
+            QtIfwSimpleTextPage.__TITLE_PLACEHOLDER : title,
+            QtIfwSimpleTextPage.__TEXT_PLACEHOLDER : text 
+        })
+                    
+# -----------------------------------------------------------------------------    
+class QtIfwDynamicOperationsPage( QtIfwUiPage ):
+    
+    __SRC = QtIfwUiPage._pageResPath( "performoperation" )
+     
+    _TIMER_BUTTON = "timerKludgeButton"
+     
+    @staticmethod
+    def __performOpName( name ): return "_performOp%s" % (name,) 
+
+    @staticmethod
+    def __onCompletedName( name ): 
+        return "%sCompleted" % ( 
+            QtIfwDynamicOperationsPage.__performOpName( name ), )  
+
+    @staticmethod
+    def onCompleted( name ):
+        return "%s();\n" % ( 
+            QtIfwDynamicOperationsPage.__onCompletedName( name ), )  
+
+    def __init__( self, name, operation="", asyncFuncs=[],
+                  order=QT_IFW_PRE_INSTALL, 
+                  onCompletedDelayMillis=None ) :
+
+        TAB  = _QtIfwScript.TAB
+        NEW  = _QtIfwScript.NEW_LINE
+        END  = _QtIfwScript.END_LINE
+        SBLK = _QtIfwScript.START_BLOCK
+        EBLK = _QtIfwScript.END_BLOCK
+
+        isPreInstall = order != QT_IFW_POST_INSTALL
+                        
+        PERFORM_OP_DONE_VALUE = "_isPerformOp%sDone" % (name,)
+
+        ON_TIMEOUT_NAME = "onPerformOp%sTimeOut" % (name,)
+
+        ON_LOAD='page.%s.released.connect(this, this.%s);\n' % ( 
+            self._TIMER_BUTTON, ON_TIMEOUT_NAME )                                
+        ON_ENTER =( 
+            (2*TAB) + _QtIfwScript.ifBoolValue( PERFORM_OP_DONE_VALUE ) +
+                (2*TAB) + QtIfwControlScript.clickButton(
+                                QtIfwControlScript.NEXT_BUTTON ) +
+            (2*TAB) + 'else ' + SBLK +
+                (2*TAB) + QtIfwControlScript.enableNextButton( False )  +     
+                (2*TAB) + ('if( %s( page ) )' % self.__performOpName( name )) + NEW +
+                    (3*TAB) + self.onCompleted( name ) +            
+            (2*TAB) + EBLK                     
+        )
+        OP_FUNC =(
+            'function ' + self.__performOpName( name ) + '( page )' + SBLK +
+                operation +
+            EBLK
+        )
+        ON_COMPLETED =(
+            'function ' + self.__onCompletedName( name ) + '()' + SBLK +
+            QtIfwControlScript.assignCustomPageWidgetVar( name ) +     
+            _QtIfwScript.setBoolValue( PERFORM_OP_DONE_VALUE, True ) +
+            (2*TAB) + QtIfwControlScript.enableNextButton()  +                         
+            (QtIfwControlScript.clickButton(
+                QtIfwControlScript.NEXT_BUTTON, onCompletedDelayMillis ) 
+            if onCompletedDelayMillis is None or onCompletedDelayMillis > 0 
+            else "") +             
+            EBLK            
+        )                
+        ON_TIMEOUT =( 
+            "var func = " + _QtIfwScript.lookupValue( 
+            self.AsyncFunc._TIMEOUT_FUNC_KEY ) + END + 
+            "var argsRaw = " + _QtIfwScript.lookupValue( 
+                "func", default='""', isAutoQuote=False ) + END +            
+            _QtIfwScript.log( '"Async func requested:" + func' , isAutoQuote=False )
+        )
+        for func in asyncFuncs:
+            if isinstance( func, self.AsyncFunc ):                 
+                ON_TIMEOUT +=(
+                    ('if( func==="%s" )' % (func._realName(),)) + SBLK +                    
+                    func._execute() +
+                    "return" + END +
+                    EBLK )
+                        
+        QtIfwUiPage.__init__( self, name,   
+            pageOrder=(QT_IFW_INSTALL_PAGE if isPreInstall else 
+                       QT_IFW_FINISHED_PAGE),
+            sourcePath=QtIfwDynamicOperationsPage.__SRC,
+            onLoad=ON_LOAD, onEnter=ON_ENTER )
+                
+        self.supportScript = OP_FUNC + NEW + ON_COMPLETED + NEW  
+        self.eventHandlers.update({ 
+              ON_TIMEOUT_NAME: ON_TIMEOUT
+        })        
+
+        self._asyncFuncs      = asyncFuncs
+        self._operationFunc   = OP_FUNC 
+        self._onCompletedFunc = ON_COMPLETED
+
+    class AsyncFunc:
+        
+        _TIMEOUT_FUNC_KEY  = "__timeoutFunc"       
+        __KEY_PREFIX       = "__async"
+        __ARG_DELIMITER    = '__delim__'    
+        __DEFINITION_TMPLT =(
+    """
+    function %s( %s ){
+    %s
+    }    
+    """)
+        
+        def __init__( self, name, args=[], body="", delayMillis=1,
+                      standardPageId=None, customPageName=None ):
+            self.name           = name
+            self.args           = args
+            self.body           = body
+            self.delayMillis    = delayMillis
+            self.standardPageId = standardPageId
+            self.customPageName = customPageName
+    
+        def invoke( self, args=[], isAutoQuote=True ):        
+            if isAutoQuote:
+                args = ['"%s"' % (a,) for a in args]        
+            if self.standardPageId: 
+                args = ['"%s"' % (self.standardPageId,)] + args
+            elif self.customPageName: 
+                args = ['"%s"' % (self.customPageName,)] + args            
+            concat = ' + "%s" + ' % (self.__ARG_DELIMITER,)                    
+            return (                                 
+                ('installer.setValue( "%s", "%s" );\n' % ( 
+                self._TIMEOUT_FUNC_KEY, self._realName() )) +                
+                ('installer.setValue( "%s", %s );\n' % ( 
+                self._realName(), concat.join( args ) )) +
+                ('page.%s.animateClick( %d );\n' % ( 
+                 QtIfwDynamicOperationsPage._TIMER_BUTTON, 
+                 1 if self.delayMillis < 1 else self.delayMillis )) 
+            )
+    
+        def _define( self ):
+            args =( ["page"] + self.args
+                if self.standardPageId or self.customPageName else self.args )
+            return self.__DEFINITION_TMPLT % ( 
+                self._realName(), ", ".join( args ), self.body )       
+    
+        def _execute( self ):
+            snippet = ""
+            argOffset=0
+            if self.standardPageId: 
+                snippet += QtIfwControlScript.assignPageWidgetVar(
+                    self.standardPageId )                        
+                argOffset+=1
+            elif self.customPageName: 
+                snippet +=QtIfwControlScript.assignCustomPageWidgetVar(
+                    self.customPageName )
+                argOffset+=1
+            if len(self.args) > 0:
+                snippet = 'var args = argsRaw.split( "%s" );\n' % (self.__ARG_DELIMITER,)                                
+                for i, p in enumerate( self.args ):
+                    snippet +=( "var {0} = args.length > {1} ? args[{1}] : null;\n"
+                                .format(p, i+argOffset) )                    
+            parms =( ["page"] + self.args
+                if self.standardPageId or self.customPageName else self.args )    
+            snippet += "%s( %s );\n" % (self._realName(), ", ".join( parms ))
+            return snippet   
+    
+        def _realName( self ): return "%s%s" % (self.__KEY_PREFIX, self.name)    
+            
+            
+# -----------------------------------------------------------------------------    
+class QtIfwTargetDirPage( QtIfwUiPage ):
+    
+    NAME = QT_IFW_REPLACE_PAGE_PREFIX + QT_IFW_TARGET_DIR_PAGE
+    __SRC  = QtIfwUiPage._pageResPath( QT_IFW_TARGET_DIR_PAGE )
+
+    def __init__( self ):
+            
+        ON_TARGET_CHANGED_NAME = "targetDirectoryChanged"
+        ON_TARGET_CHANGED = (
+"""
+    var page = gui.pageWidgetByObjectName("Dynamic%s");
+    var dir = page.targetDirectory.text;
+    dir = Dir.toNativeSeparator(dir);
+    page.warning.setText( !installer.fileExists(dir) ? "" :
+        "<p style=\\"color: red\\">" +
+            "WARNING: The path specified already exists. " +
+            "All prior content will be erased!" + 
+        "</p>" );        
+    installer.setValue("TargetDir", dir);
+""") % ( QtIfwTargetDirPage.NAME, )
+        
+        ON_TARGET_BROWSE_CLICKED_NAME = "targetChooserClicked"
+        ON_TARGET_BROWSE_CLICKED = (
+"""
+    var page = gui.pageWidgetByObjectName("Dynamic%s");
+    page.targetDirectory.setText( Dir.toNativeSeparator(
+        QFileDialog.getExistingDirectory("", page.targetDirectory.text) ) );
+""") % ( QtIfwTargetDirPage.NAME, )
+    
+        ON_LOAD = (    
+"""
+    // patch seems to be needed due to use of RichText?
+    switch( systemInfo.kernelType ){
+    case "darwin": // macOS
+        page.warning.minimumSize.width=300;
+        break;
+    case "linux": 
+        page.warning.minimumSize.width=480;
+        break;
+    }    
+    page.targetDirectory.setText(
+        Dir.toNativeSeparator(installer.value("TargetDir")));
+    page.targetDirectory.textChanged.connect(this, this.%s);    
+    page.targetChooser.released.connect(this, this.%s);
+""") % ( ON_TARGET_CHANGED_NAME, ON_TARGET_BROWSE_CLICKED_NAME )
+        
+        QtIfwUiPage.__init__( self, QtIfwTargetDirPage.NAME,
+            sourcePath=QtIfwTargetDirPage.__SRC, onLoad=ON_LOAD )
+        
+        self.eventHandlers.update({ 
+              ON_TARGET_CHANGED_NAME: ON_TARGET_CHANGED
+            , ON_TARGET_BROWSE_CLICKED_NAME: ON_TARGET_BROWSE_CLICKED
+        })
+
+# -----------------------------------------------------------------------------    
+class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
+    
+    NAME  = "PriorInstallation"
+
+    __SRC = QtIfwUiPage._pageResPath( "priorinstallation" )
+    __PAGE_ORDER = QT_IFW_READY_PAGE
+
+    __TITLE = "Prior Installation Detected"
+    
+    __TEXT_LABEL      = "description"
+    __CONTINUE_BUTTON = "continueButton"
+    __STOP_BUTTON     = "stopButton"
+    __NOTE_LABEL      = "note"
+                
+    def __init__( self ) :
+        TAB  = _QtIfwScript.TAB
+        END  = _QtIfwScript.END_LINE
+        NEW  = _QtIfwScript.NEW_LINE
+        SBLK = _QtIfwScript.START_BLOCK
+        EBLK = _QtIfwScript.END_BLOCK
+
+        # TODO: Test for, and resolve this problem: Add/remvoe page could screw up 
+        # the page order if multiple custom pages are intended to live before the same  
+        # default wizard pages.   
+        IS_PAGE_SHOWN_NAME = "isPriorInstallationPageShown"
+        IS_PAGE_SHOWN =(
+            'function ' + IS_PAGE_SHOWN_NAME + '() ' + SBLK +
+                TAB + _QtIfwScript.ifInstalling( isMultiLine=True ) +
+                    (2*TAB) + "if( targetExists() ) " + SBLK +
+                        # check for the "hard false" to know the page was removed
+                        (3*TAB) + _QtIfwScript.ifBoolValue( _REMOVE_TARGET_KEY, 
+                                    isHardFalse=True ) +                           
+                            (4*TAB) + QtIfwControlScript.insertCustomPage( 
+                                QtIfwRemovePriorInstallationPage.NAME,
+                                QT_IFW_INSTALL_PAGE ) +
+                        (3*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, True ) +
+                        (3*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
+                            _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
+                        (3*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_REMOVE + '":' + NEW + 
+                            (4*TAB) + 'return false' + END +
+                        (3*TAB) + 'default:' + NEW +                
+                            (4*TAB) + 'return true' + END +
+                        (3*TAB) + EBLK +                                 
+                    (2*TAB) + EBLK +      
+                    (2*TAB) + "else " + SBLK +
+                        # set a "hard false"  when the page is removed
+                        (3*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, False ) +
+                        (3*TAB) + QtIfwControlScript.removeCustomPage( 
+                            QtIfwRemovePriorInstallationPage.NAME ) +
+                    (2*TAB) + EBLK +  
+                TAB + EBLK +     
+                TAB + 'return false' + END +                
+            EBLK + NEW 
+        )
+
+        ON_CONTINUE_CLICKED_NAME = "onPriorInstallContinueClicked"
+        ON_CONTINUE_CLICKED = QtIfwControlScript.enableNextButton() 
+
+        ON_STOP_CLICKED_NAME = "onPriorInstallStopClicked"     
+        ON_STOP_CLICKED = QtIfwControlScript.enableNextButton( False ) 
+
+        ON_LOAD =( 
+"""
+    page.%s.released.connect(this, this.%s);
+    page.%s.released.connect(this, this.%s);
+""" ) % ( QtIfwOnPriorInstallationPage.__CONTINUE_BUTTON, 
+            ON_CONTINUE_CLICKED_NAME,
+          QtIfwOnPriorInstallationPage.__STOP_BUTTON,     
+            ON_STOP_CLICKED_NAME )     
+   
+        ON_ENTER = ( 
+            (2*TAB) + 'if( ' + IS_PAGE_SHOWN_NAME + '() )' + SBLK +            
+                (3*TAB) + QtIfwControlScript.enableNextButton(                     
+                    QtIfwControlScript.isCustomChecked( 
+                        QtIfwOnPriorInstallationPage.__CONTINUE_BUTTON ) ) +                
+                (3*TAB) + QtIfwControlScript.setCustomPageTitle( 
+                     QtIfwOnPriorInstallationPage.__TITLE ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwOnPriorInstallationPage.__TEXT_LABEL ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwOnPriorInstallationPage.__CONTINUE_BUTTON ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwOnPriorInstallationPage.__STOP_BUTTON ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwOnPriorInstallationPage.__NOTE_LABEL ) +                            
+            (2*TAB) + EBLK + 
+            (2*TAB) +  'else '  + SBLK +
+                (3*TAB) + QtIfwControlScript.enableNextButton() +
+                (3*TAB) + QtIfwControlScript.setCustomPageTitle( "" ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwOnPriorInstallationPage.__TEXT_LABEL, False ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwOnPriorInstallationPage.__CONTINUE_BUTTON, False ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwOnPriorInstallationPage.__STOP_BUTTON, False ) +
+                (3*TAB) + QtIfwControlScript.setCustomVisible( 
+                    QtIfwOnPriorInstallationPage.__NOTE_LABEL, False ) +                                             
+                (3*TAB) + QtIfwControlScript.clickButton(
+                    QtIfwControlScript.NEXT_BUTTON ) +                
+            (2*TAB) + EBLK            
+        )
+
+        QtIfwUiPage.__init__( self, QtIfwOnPriorInstallationPage.NAME,
+            pageOrder=QtIfwOnPriorInstallationPage.__PAGE_ORDER, 
+            sourcePath=QtIfwOnPriorInstallationPage.__SRC,
+            onLoad=ON_LOAD, onEnter=ON_ENTER  )
+        
+        self.supportScript = IS_PAGE_SHOWN
+        self.eventHandlers.update({ 
+              ON_CONTINUE_CLICKED_NAME: ON_CONTINUE_CLICKED
+            , ON_STOP_CLICKED_NAME: ON_STOP_CLICKED
+        })
+                                                      
+# -----------------------------------------------------------------------------    
+class QtIfwRemovePriorInstallationPage( QtIfwDynamicOperationsPage ):
+  
+    NAME = "RemovePriorInstallation"
+    
+    __TITLE = "Removing Prior Installation"
+    
+    def __init__( self ):
+
+        TAB  = _QtIfwScript.TAB
+        END  = _QtIfwScript.END_LINE
+        SBLK = _QtIfwScript.START_BLOCK
+        EBLK = _QtIfwScript.END_BLOCK
+
+        removeTargetFunc = self.AsyncFunc( "RemoveTarget", 
+            customPageName=self.NAME, body=(
+           TAB + _QtIfwScript.log( "Removing prior installation..." ) +       
+           TAB + 'if( removeTarget() ) ' + SBLK +
+               (2*TAB) + QtIfwControlScript.setCustomPageText(
+                   self.__TITLE, "The program was successfully removed!" ) +
+               (2*TAB) + _QtIfwScript.setBoolValue( _REMOVE_TARGET_KEY, False ) +
+               (2*TAB) + self.onCompleted( self.NAME ) +
+           TAB + EBLK +
+           TAB + 'else ' + SBLK +
+               (2*TAB) + QtIfwControlScript.setCustomPageText(
+                   "ERROR", "Program removal failed!" ) +
+           TAB + EBLK 
+        ))
+        
+        OPERATION=(
+            TAB + _QtIfwScript.ifBoolValue( _REMOVE_TARGET_KEY, isMultiLine=True ) +                         
+                QtIfwControlScript.setCustomPageText(
+                    self.__TITLE, "Removal in progress..." ) +
+                removeTargetFunc.invoke() +
+                TAB + 'return false' + END +
+            TAB + EBLK +    
+            TAB + 'return true' + END 
+        )
+
+        QtIfwDynamicOperationsPage.__init__( self, 
+            QtIfwRemovePriorInstallationPage.NAME, 
+            operation=OPERATION, asyncFuncs=[ removeTargetFunc ], 
+            order=QT_IFW_PRE_INSTALL, 
+            onCompletedDelayMillis=2500 )
+                    
 # -----------------------------------------------------------------------------    
 def installQtIfw( installerPath=None, version=None, targetPath=None ):    
     if installerPath is None :        
@@ -5265,9 +5264,9 @@ def __initBuild( qtIfwConfig ) :
                         joinPath( destDir, p.exeName ) )
         # generate / copy additional archives        
         p.pkgScript._flatten()        
-        for tool in p.pkgScript.installTools:
-            if isinstance( tool, QtIfwInstallerTool ): 
-                __addArchive( qtIfwConfig, p, tool.srcPath, tool.name )
+        for res in p.pkgScript.installResources:
+            if isinstance( res, QtIfwExternalResource ): 
+                __addArchive( qtIfwConfig, p, res.srcPath, res.name )
                         
     print( "Build directory created: %s" % (BUILD_SETUP_DIR_PATH,) )
 

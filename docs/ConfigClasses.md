@@ -562,7 +562,7 @@ Constructor:
 
     QtIfwPackageScript( pkgName, pkgVersion,
                         shortcuts=[], externalOps=[], uiPages=[],
-                        installTools=[],
+                        installResources=[],
                         fileName="installscript.qs", 
                         script=None, scriptPath=None )
                   
@@ -581,7 +581,7 @@ Attributes & default values:
     killOps     = []
     customOperations = None
     
-    installTools = []
+    installResources = []
     
     embeddedResources = None    
     packageGlobals = None
@@ -665,7 +665,7 @@ Constructor:
               script=None,       exePath=None,       args=[], successRetCodes=[0],  
         uninstScript=None, uninstExePath=None, uninstArgs=[],  uninstRetCodes=[0],
         isElevated=False, workingDir=QT_IFW_TARGET_DIR, onErrorMessage=None,
-        resourceScripts=[], uninstResourceScripts=[], toolDependencies=[] )
+        resourceScripts=[], uninstResourceScripts=[], externalRes=[] )
 
 Attributes & default values:
                   
@@ -686,7 +686,7 @@ Attributes & default values:
 
     resourceScripts       = []
     uninstResourceScripts = []
-	toolDependencies      = []
+	externalRes      = []
 
 Notes:
 
@@ -709,7 +709,7 @@ to make available on the target, for this operation to draw upon.  To reference 
 script, build a path using the python constant `QT_IFW_SCRIPTS_DIR` or from directly
 within another script use `@ScriptsDir@`.   
 
-**toolDependencies**: A list of [QtIfwInstallerTool](#qtifwinstallertool) objects.
+**externalRes**: A list of [QtIfwExternalResource](#qtifwexternalresource) objects.
 Tools defined this list will be rolled into the installer without explicitly
 updating the [QtIfwPackageScript](#qtifwpackagescript) owner of this operation
 object. 
@@ -742,19 +742,24 @@ For convenience, instead of passing the explicit name the of process, you may in
 [QtIfwPackage](#qtifwpackage).  In which case, the name of the "primary executable" will be 
 automatically extracted from that.  
 
-## QtIfwInstallerTool
+## QtIfwExternalResource
 
-These objects are use by [QtIfwPackageScript](#qtifwpackagescript) objects,
-to as a means to include "tools" (typically third party utility programs),
-in the installer which are not part of the product or intended for use by an end user.
-Such tools may then be utilized by your package script operations.
+This class provides as a means to include "resources" (e.g. third party utility programs),
+in the installer which are not part of the product or intended for direct use 
+by an end user. Such resources may then be utilized by your package script operations.
+These objects are typically added to in the `externalRes` attribute of 
+[QtIfwExternalOp](#qtifwexternalop) objects, which in turn are utilized by  
+[QtIfwPackageScript](#qtifwpackagescript) objects.
   
-By default, such a tool will be extracted into a temporary location and removed at the end of installation. If you will require it for maintenance operations (i.e. during updates or uninstallation), enabling the `isMaintenanceNeed` attribute will cause the tool to be retained on the target, so it will be available later when needed. 
+By default, such resources will be extracted into a temporary location on the target and 
+removed at the end of installation. If you will require any for maintenance operations (i.e. 
+during updates or uninstallation), enabling the `isMaintenanceNeed` attribute will cause the 
+resource to be retained on the target, so it will be available later when needed. 
 
 Constructor:
        
-    QtIfwInstallerTool( name, srcPath, srcBasePath=None, 
-                        isMaintenanceNeed=False, contentKeys={} )
+    QtIfwExternalResource( name, srcPath, srcBasePath=None, 
+                           isMaintenanceNeed=False, contentKeys={} )
 
 Object Attributes & default values:
 
@@ -774,28 +779,28 @@ Object Methods:
  
 Static Methods:
  
-	BuiltInTool( name, isMaintenanceNeed=False )
+	BuiltIn( name, isMaintenanceNeed=False )
 
-Built In Windows Tool Names:
+Built In Windows Resource Names:
 
 	RESOURCE_HACKER
 		http://www.angusj.com/resourcehacker/
 
-**name**:  The base id by which to reference the tool and to name a target 
+**name**:  The base id by which to reference the resources and to name a target 
 container directory.  
 
-**srcPath**: The path to the tool file or directory.  This may be absolute or relative.
+**srcPath**: The path to the resources **file** or **directory**.  This may be absolute or relative.
  
 **srcBasePath**:  If using a relative `srcPath`, you may override the base path with this.
 
-**isMaintenanceNeed**: Enabling this will cause the tool to be retained on the target, so it will be available for maintenance tool / uninstaller. 
+**isMaintenanceNeed**: Enabling this will cause the resource to be retained on the target, so it will be available for the maintenance tool / uninstaller. 
 
 **contentKeys**: A dictionary of key/value pairs to be registered in the installer, allowing 
 you to dynamically access the paths within scripts on your target.  If this detail is 
-omitted during construction, and your tool contains only one file, a key will be 
-automatically registered for you as the name of the tool. 
+omitted during construction, and your QtIfwExternalResource contains only one file, 
+a key will be automatically registered for you as the name of the object. 
 
-**targetPath( key )**: Use this to reference the tool paths when generating 
+**targetPath( key )**: Use this to reference the resource paths when generating 
 QtScripts / operations which will utilize it.  Specify the key as registered via 
 `contentKeys`. If you omit the key when calling this, and only one key exists 
 (such as when bundling a single file), that default key will be implied.     
@@ -807,8 +812,8 @@ e.g. to change your working directory to it, you may employ this method.
 to use inside an [ExecutableScript](LowLevel.md#executablescript) to refer to these paths.
 Assuming a key is valid, you could also just hardcode it like `@key@` rather than call `targetPathVar( key=None )` to get that back! 
         
-**QtIfwInstallerTool.BuiltInTool**: Convenience method to bundle tools into an installer 
-which are bundled into the library. 
+**QtIfwExternalResource.BuiltIn**: Convenience method to bundle tools into an installer 
+which are included with the library. 
         
 ## QtIfwExeWrapper
 
