@@ -595,6 +595,7 @@ class _QtIfwScript:
 
     QUIT_MSGBOX_ID       = "cancelInstallation"
     AUTH_ERROR_MSGBOX_ID = "AuthorizationError"
+    INTERUPTED_KEY       = "isInterupted"
 
     OK      = "QMessageBox.Yes"
     YES     = "QMessageBox.Yes" 
@@ -2230,10 +2231,12 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.registerStandardEventHandler( 
             'installationInterrupted', 'onInstallationInterrupted',
             _QtIfwScript.log("installationInterrupted") +
+            _QtIfwScript.setBoolValue(_QtIfwScript.INTERUPTED_KEY, True) +
             QtIfwControlScript._purgeTempFiles() );                                                                 
         self.registerGuiEventHandler( 
             'interrupted', 'onGuiInterrupted',
             _QtIfwScript.log("interrupted") +
+            _QtIfwScript.setBoolValue(_QtIfwScript.INTERUPTED_KEY, True) +
             QtIfwControlScript._purgeTempFiles() );          
                                                                                    
         self.registerAutoPilotEventHandler( 
@@ -2775,23 +2778,29 @@ Controller.prototype.Dynamic%sCallback = function() {
         TAB  = _QtIfwScript.TAB
         EBLK = _QtIfwScript.END_BLOCK
         self.finishedPageCallbackBody = (                
-            _QtIfwScript.log("FinishedPageCallback") +
-            _QtIfwScript.ifInstalling( isMultiLine=True ) +
-            TAB + QtIfwControlScript.enable( 
-                    QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
-                    self.isRunProgInteractive ) +                              
-            TAB + QtIfwControlScript.setVisible( 
-                    QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
-                    self.isRunProgVisible ) +                  
-            TAB + _QtIfwScript.ifCmdLineArg( 
-                    _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +               
-                    _QtIfwScript.TAB + QtIfwControlScript.setCheckBox( 
+            TAB + _QtIfwScript.log("FinishedPageCallback") +
+            TAB + _QtIfwScript.ifBoolValue( _QtIfwScript.INTERUPTED_KEY, isMultiLine=True ) +
+                    QtIfwControlScript.enable( 
+                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False ) +            
+                (2*TAB) + QtIfwControlScript.setVisible( 
+                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False ) +
+            EBLK +                           
+            TAB + "else " + _QtIfwScript.ifInstalling( isMultiLine=True ) +
+                TAB + QtIfwControlScript.enable( 
                         QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
-                            _QtIfwScript.cmdLineSwitchArg(
-                                _QtIfwScript.RUN_PROGRAM_CMD_ARG ) ) +
-            EBLK +         
-            _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
-                QtIfwControlScript.clickButton( 
+                        self.isRunProgInteractive ) +                              
+                TAB + QtIfwControlScript.setVisible( 
+                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
+                        self.isRunProgVisible ) +                  
+                TAB + _QtIfwScript.ifCmdLineArg( 
+                        _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +               
+                        _QtIfwScript.TAB + QtIfwControlScript.setCheckBox( 
+                            QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
+                                _QtIfwScript.cmdLineSwitchArg(
+                                    _QtIfwScript.RUN_PROGRAM_CMD_ARG ) ) +
+            TAB + EBLK +                 
+            TAB + _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
+                TAB + QtIfwControlScript.clickButton( 
                     QtIfwControlScript.FINISH_BUTTON ) 
         )            
             
