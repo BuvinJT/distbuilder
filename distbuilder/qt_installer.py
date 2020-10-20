@@ -3007,15 +3007,8 @@ Component.prototype.%s = function(){
 
         self.componentCreateOperationsForArchiveBody = None
         self.isAutoComponentCreateOperationsForArchive=True       
-                                                        
-    def _generate( self ) :        
-        self.script = ""
-        
-        if self.isAutoLib: _QtIfwScript._genLib( self )        
-        if self.qtScriptLib: self.script += self.qtScriptLib        
-        if self.isAutoGlobals: self.__genGlobals()
-        if self.packageGlobals: self.script += self.packageGlobals
 
+    def _flatten( self ) :
         # merge grouped together lists of ops into one flat list  
         ops=[]
         for op in self.externalOps:
@@ -3032,7 +3025,17 @@ Component.prototype.%s = function(){
                     if dependencyFound: continue
                 if dependencyFound: continue
                 self.installTools.append( dependency )
+                                                        
+    def _generate( self ) :        
+        self.script = ""
+        
+        if self.isAutoLib: _QtIfwScript._genLib( self )        
+        if self.qtScriptLib: self.script += self.qtScriptLib        
+        if self.isAutoGlobals: self.__genGlobals()
+        if self.packageGlobals: self.script += self.packageGlobals
 
+        self._flatten()
+         
         # embedded external op scripts (in base64) into the QtScript 
         installScripts = []
         for op in self.externalOps: 
@@ -3061,8 +3064,7 @@ Component.prototype.%s = function(){
         if self.componentCreateOperationsBody:
             self.script += (
                 '\nComponent.prototype.createOperations = function() {\n' +
-                ('%s\n' % (self.componentCreateOperationsBody,) ) +            
-                '    component.createOperations(); // call to super class\n' +
+                ('%s\n' % (self.componentCreateOperationsBody,) ) +                            
                 '}\n')
 
         if self.isAutoComponentCreateOperationsForArchive:
@@ -3070,8 +3072,7 @@ Component.prototype.%s = function(){
         if self.componentCreateOperationsForArchiveBody:
             self.script += (
             '\nComponent.prototype.createOperationsForArchive = function(archive) {\n' +
-            ('%s\n' % (self.componentCreateOperationsForArchiveBody,) ) +            
-            '    component.createOperationsForArchive(archive); // call to super class \n' +
+            ('%s\n' % (self.componentCreateOperationsForArchiveBody,) ) +                        
             '}\n' )
 
     def __genGlobals( self ):
@@ -3191,20 +3192,27 @@ Component.prototype.%s = function(){
         
     def __genComponentCreateOperationsBody( self ):
         self.componentCreateOperationsBody = ""
+        
+        # pre payload extractions
         for tool in self.installTools:
             if isinstance( tool, QtIfwInstallerTool ):
                 self.componentCreateOperationsBody +=(
                      tool._setTargetPathValues() )                         
         if IS_LINUX and self.isAskPassProgRequired:
-            self.__addAskPassProgResolution()        
+            self.__addAskPassProgResolution()
+        
+        # Call to super class - perform payload extractions 
+        self.componentCreateOperationsBody += (
+            '    component.createOperations(); // call to super class\n' )
+                            
+        # post payload extractions
         self.__addShortcuts()
         self.__addKillOperations()
-        self.__addExecuteOperations() 
+        self.__addExecuteOperations()
+         
         if self.customOperations:
             self.componentCreateOperationsBody += (
                 "\n%s\n" % (self.customOperations,) )            
-        if self.componentCreateOperationsBody == "" :
-            self.componentCreateOperationsBody = None
         
     def __genComponentCreateOperationsForArchiveBody( self ):
         TAB = _QtIfwScript.TAB
@@ -3212,11 +3220,12 @@ Component.prototype.%s = function(){
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK
         self.componentCreateOperationsForArchiveBody = ""
-        if self.installTools is None or len(self.installTools)==0: return
+        
+        # override tool archive extractions
         for tool in self.installTools:
             if isinstance( tool, QtIfwInstallerTool ): 
                 archiveName = joinExt( 
-                    versionStr( self.pkgVersion ) + rootFileName( tool.srcPath ), 
+                    versionStr( self.pkgVersion ) + tool.name, 
                     _QT_IFW_ARCHIVE_EXT )
                 self.componentCreateOperationsForArchiveBody +=(
                 #TAB + _QtIfwScript.log( '"archive: " + archive', isAutoQuote=False ) +                     
@@ -3227,7 +3236,11 @@ Component.prototype.%s = function(){
                             tool.targetDirPath() ) ) + END +
                 (2*TAB) + 'return' + END +
                 TAB + EBLK 
-                ) 
+                )
+                                
+        # if not overridden, perform default pay load extraction         
+        self.componentCreateOperationsForArchiveBody +=(        
+            '    component.createOperationsForArchive(archive); // call to super class \n' )
         
     # TODO: Clean up this ever growing, hideous mess!    
     def __addShortcuts( self ):
@@ -3618,7 +3631,7 @@ class QtIfwExternalOp:
 
         @staticmethod
         def CreateExeFromBatch( script, brandingInfo, srcIconPath ):            
-            iconTool = QtIfwInstallerTool( "%s-icon" % (script.rootName,), 
+            iconTool = QtIfwInstallerTool( "%sIcon" % (script.rootName,), 
                                            srcIconPath )            
             ops = [ QtIfwExternalOp( resourceScripts=[script], 
                                      toolDependencies=[iconTool] ) ]
@@ -3875,7 +3888,6 @@ echo:}
 
 del /q /f "%TEMP_RC_PATH%"
 del /q /f "%TEMP_RES_PATH%"
-del /q /f rh.ini
 """)            
             # TODO: apply brandingInfo 
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
@@ -3897,7 +3909,6 @@ del /q /f rh.ini
 """
 @echo off
 "@ResourceHacker@" -open "{exePath}" -save "{targetDirPath}" -action extract -mask ICONGROUP
-del /q /f rh.ini
 """)            
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "extractIconsFromExe" ), script=script, replacements={ 
@@ -3911,9 +3922,8 @@ del /q /f rh.ini
 @echo off
 "@ResourceHacker@" -open "{exePath}" -save "{exePath}" -action addoverwrite -res "{iconPath}" -mask ICONGROUP, MAINICON, 0
 {removeIconDir}
-del /q /f rh.ini
-ie4uinit -ClearIconCache       
-ie4uinit -show
+set "REFRESH_ICONS=ie4uinit -ClearIconCache & ie4uinit -show"
+if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%" ) else ( %REFRESH_ICONS% )
 """)        
             iconPath = joinPath( iconDirPath, iconName )  
             removeIconDir =( 'rd /q /s "%s"' % (iconDirPath,) 
@@ -3990,6 +4000,9 @@ class QtIfwInstallerTool:
 
     def __init__( self, name, srcPath, srcBasePath=None, 
                   isMaintenanceNeed=False, contentKeys={} ):
+        if "-" in name:
+            raise Exception( "Resource names may not contain dashes!"
+                " (Auto correcting this may produce hard to find bugs)" )
         self.name = name
         self.srcPath = absPath( srcPath, srcBasePath )        
         self.isMaintenanceNeed = isMaintenanceNeed        
@@ -3997,8 +4010,7 @@ class QtIfwInstallerTool:
         if( (contentKeys is None or len(contentKeys)==0) and 
             isFile( self.srcPath ) and 
             fileExt(self.srcPath) != _QT_IFW_ARCHIVE_EXT ):                
-            self.contentKeys[ rootFileName( self.srcPath ) ] =(
-                 baseFileName( self.srcPath ) )        
+            self.contentKeys[ name ] = baseFileName( self.srcPath )         
 
     def targetPathVar( self, key=None ):
         return _QT_IFW_VAR_TMPLT % (self.__targetPathKey( key ),)
@@ -5251,9 +5263,12 @@ def __initBuild( qtIfwConfig ) :
             elif p.exeName != srcExeName :             
                 rename( joinPath( destDir, srcExeName ),
                         joinPath( destDir, p.exeName ) )
+        # generate / copy additional archives        
+        p.pkgScript._flatten()        
         for tool in p.pkgScript.installTools:
             if isinstance( tool, QtIfwInstallerTool ): 
-                __addArchive( qtIfwConfig, p, tool.srcPath )        
+                __addArchive( qtIfwConfig, p, tool.srcPath, tool.name )
+                        
     print( "Build directory created: %s" % (BUILD_SETUP_DIR_PATH,) )
 
 def __addInstallerResources( qtIfwConfig ) :
@@ -5407,21 +5422,23 @@ def __addExeWrapper( package ) :
             exeWrapperScript.write( dirPath )           
     
 def __addArchive( qtIfwConfig, package, srcPaths, archiveRootName=None ):        
-    if isinstance( srcPaths, list ):
-        if archiveRootName is None:
+    if archiveRootName is None:
+        if isinstance( srcPaths, list ):            
             if len(srcPaths)==1: archiveRootName = rootFileName( srcPaths[0] ) 
             else: raise Exception( "An archive root name must be provided" )
-    else: 
-        archiveRootName = rootFileName( srcPaths )
-        srcPaths=[srcPaths]  
+        else: 
+            archiveRootName = rootFileName( srcPaths )        
+    if not isinstance( srcPaths, list ): srcPaths=[srcPaths]  
     archives=[ c for c in srcPaths 
                if fileExt( c ).lower()==_QT_IFW_ARCHIVE_EXT ]
     nonArchives=[ c for c in srcPaths if c not in archives ]
     destDir = package.contentTopDirPath()
     if not exists( destDir ): makeDir( destDir )
-    if len( archives ) > 0: copyToDir( archives, destDir )    
+    if len( archives ) > 0:
+        print( "Copying pre-compressed archives to QT IFW package...\n" ) 
+        copyToDir( archives, destDir )    
     if len( nonArchives ) > 0:
-        print( "Generating archive using Qt IFW...\n" )            
+        print( "Generating archive for QT IFW package...\n" )            
         generatorPath = __qtIfwArchiveGenPath( qtIfwConfig.qtIfwDirPath )
         destPath = joinPath( destDir, 
                     joinExt( archiveRootName, _QT_IFW_ARCHIVE_EXT ) )

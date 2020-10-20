@@ -791,8 +791,9 @@ container directory.
 **isMaintenanceNeed**: Enabling this will cause the tool to be retained on the target, so it will be available for maintenance tool / uninstaller. 
 
 **contentKeys**: A dictionary of key/value pairs to be registered in the installer, allowing 
-you to dynamically access the paths within scripts on your target.  If your tool is simply
-one executable file, a key will be automatically registered for you. 
+you to dynamically access the paths within scripts on your target.  If this detail is 
+omitted during construction, and your tool contains only one file, a key will be 
+automatically registered for you as the name of the tool. 
 
 **targetPath( key )**: Use this to reference the tool paths when generating 
 QtScripts / operations which will utilize it.  Specify the key as registered via 
