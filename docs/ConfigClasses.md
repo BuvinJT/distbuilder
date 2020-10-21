@@ -602,6 +602,19 @@ Attributes & default values:
     <Linux Only>
     isAskPassProgRequired = False
                                                    
+Methods
+                                                   
+	addSimpleOperation( name, parms=[], isElevated=False, isAutoQuote=True )
+                                                                                                    
+**addSimpleOperation**:  Appends a QScript snippet to be appended to the `customOperations`
+attribute.  The available operations are documented on https://doc.qt.io/qtinstallerframework/operations.html.  Note that these operations 
+implicitly occur during installation, have implicit "undo" operations (where possible), 
+and **cannot** be made to occur specifically during an install vs update vs uninstall.  
+They are, however, *cross platform* and relatively painless to implement. For more 
+flexibility, use [QtIfwExternalOp](#qtifwexternalop) objects. (The draw back to such is you 
+will need to call upon / include utilities or add 
+[ExecutableScripts](LowLevel.md#executablescript) containing platform specific code. 
+                                                   
 ## QtIfwShortcut
 
 These shortcut objects are use by [QtIfwPackageScript](#qtifwpackagescript) objects,
@@ -658,6 +671,15 @@ often conditional and/or dynamic needs.  More to the point, `QtIfwExternalOp`
 objects are bound directly to packages and to install/uninstall events, where the
 QtScript `execute` function can be dropped into installation scripts anywhere, 
 in an unrestricted manner.   
+
+Note the intended design by Qt for creating sophisticated, cross platform, custom 
+operations is to modify to the **installer engine** itself, writing in Qt C++, and 
+recompile it yourself for a specific platform. See: https://doc.qt.io/qtinstallerframework/scripting.html#registering-custom-operations
+If you *really* want to do that, here's the source you'll require:
+https://github.com/qtproject/installer-framework
+It is the opinion of the distbuilder developers that this typically going to be an 
+absurdly complicated and time consuming endeavor for most use cases.  This "external
+operation" mechanism, while having draw backs is likely a good deal more practical!
 
 Constructor:
        

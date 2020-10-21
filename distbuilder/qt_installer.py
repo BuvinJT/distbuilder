@@ -2830,6 +2830,9 @@ Component.prototype.%s = function(){
         
     __COMPONENT_LOADED_HNDLR_NAME = "componentLoaded"
             
+    __ADD_OPERATION_TMPLT =( "    add%sOperation( %s, %s );\n")            
+    __ELEVATED = "Elevated"
+            
     __WIN_ADD_SHORTCUT_TMPLT = ( 
 """
         component.addOperation( "CreateShortcut",
@@ -3007,6 +3010,13 @@ Component.prototype.%s = function(){
 
         self.componentCreateOperationsForArchiveBody = None
         self.isAutoComponentCreateOperationsForArchive=True       
+
+    # WIP...
+    def addSimpleOperation( self, name, parms=[], isElevated=False, isAutoQuote=True ):        
+        self.customOperations += QtIfwPackageScript.__ADD_OPERATION_TMPLT % (
+            (QtIfwPackageScript.__ELEVATED if isElevated else ""), name, 
+            str( [ _QtIfwScript._autoQuote(p, isAutoQuote) for p in parms ]
+                 if isAutoQuote else parms ) ) 
 
     def _flatten( self ) :
         # merge grouped together lists of ops into one flat list  
@@ -3976,7 +3986,7 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
 # -----------------------------------------------------------------------------
 class QtIfwExternalOp:
 
-    ON_INSTALL, ON_UNINSTALL, ON_BOTH, AUTO_UNDO = range(4) 
+    AUTO_UNDO, ON_INSTALL, ON_UNINSTALL, ON_BOTH = range(4) 
 
     __AUTO_SCRIPT_COUNT=0
     __SCRIPT_ROOT_NAME_TMPLT = "%s_%d"
@@ -4063,11 +4073,11 @@ class QtIfwExternalOp:
                         iconDirPath, iconName, 
                         isScriptRemoved=False, isIconDirRemoved=False ):
             return [
-                  QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                  QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.AUTO_UNDO, 
                     script=QtIfwExternalOp.Script2ExeScript( 
                         scriptPath, exePath, isScriptRemoved ),
                     uninstScript=QtIfwExternalOp.RemoveFileScript( exePath ),                     
-                    canAutoUndo=False, isElevated=True )
+                    canAutoUndo=True, isElevated=True )
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
                     script=QtIfwExternalOp.BrandExeScript( 
                         exePath, brandingInfo ), 
@@ -4089,11 +4099,11 @@ class QtIfwExternalOp:
             iconDirPath = joinPath( "%temp%", "extracted-icons" )            
             isScriptRemoved = isIconDirRemoved = True
             return [
-                  QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                  QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.AUTO_UND, 
                     script=QtIfwExternalOp.Script2ExeScript( 
                         scriptPath, exePath, isScriptRemoved ),
                     uninstScript=QtIfwExternalOp.RemoveFileScript( exePath ), 
-                    canAutoUndo=False, isElevated=True )
+                    canAutoUndo=True, isElevated=True )
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
                     script=QtIfwExternalOp.BrandExeScript( 
                         targetPath, brandingInfo ),                         
@@ -4318,6 +4328,16 @@ del /q /f "%TEMP_RES_PATH%"
         @staticmethod
         def ReplacePrimaryIconInExeScript( exePath, iconDirPath, iconName, 
                                            isIconDirRemoved=False ):
+            """
+            Note the use of if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" ...
+            That is **extremely important** here, as "ie4uinit" is a 64 bit program, 
+            and the installer runs in 32 bit context. The use %windir%\sysnative\cmd 
+            allows this 32 bit program to "see" and execute a 64 bit sub process.
+            Without that, you get mind blowing errors thrown back at you saying the  
+            the file does not even exist (including when you specify an absolute path 
+            to the file you know for a fact is found there)!
+            """
+            
             script=(
 """
 @echo off
