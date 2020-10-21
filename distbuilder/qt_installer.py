@@ -3986,98 +3986,6 @@ class QtIfwExternalOp:
         QtIfwExternalOp.__AUTO_SCRIPT_COUNT+=1
         return QtIfwExternalOp.__SCRIPT_ROOT_NAME_TMPLT % ( 
             prefix, QtIfwExternalOp.__AUTO_SCRIPT_COUNT )
-
-    if IS_WINDOWS:
-        # TODO: Expand upon registry functions
-        
-        # TODO: Deal with 64 bit vs 32 bit registry contexts
-        # Allow the use of either literal paths or implicit wow64 resolution
-        # Some thoughts:     
-        # https://stackoverflow.com/questions/630382/how-to-access-the-64-bit-registry-from-a-32-bit-powershell-instance
-        
-        @staticmethod
-        def CreateRegistryEntry( event, key, valueName=None, value="", valueType="String" ):
-            return QtIfwExternalOp.__genScriptOp( event, 
-                script=QtIfwExternalOp.CreateRegistryEntryScript( key, valueName, value, valueType ), 
-                uninstScript=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
-                isElevated=True )
-        
-        @staticmethod
-        def RemoveRegistryEntry( event, key, valueName=None ):
-            return QtIfwExternalOp.__genScriptOp( event, 
-                script=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
-                canAutoUndo=False, isElevated=True )
-
-        @staticmethod
-        def CreateExeFromBatch( script, brandingInfo, srcIconPath ):            
-            iconTool = QtIfwExternalResource( "%sIcon" % (script.rootName,), 
-                                           srcIconPath )            
-            ops = [ QtIfwExternalOp( resourceScripts=[script], 
-                                     externalRes=[iconTool] ) ]
-            ops.extend( QtIfwExternalOp.Batch2Exe( 
-                  batchPath = joinPath( QT_IFW_SCRIPTS_DIR, script.fileName() )
-                , exePath = joinPath( QT_IFW_TARGET_DIR, 
-                                      normBinaryName( script.rootName ) )
-                , brandingInfo = brandingInfo
-                , iconDirPath = iconTool.targetDirPathVar()
-                , iconName = baseFileName( srcIconPath )
-            ))
-            return ops
-        
-        @staticmethod
-        def Batch2Exe( batchPath, exePath, brandingInfo,
-                       iconDirPath, iconName, 
-                       isBatchRemoved=False, isIconDirRemoved=False ):
-            return [
-                  QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.Bat2ExeScript( 
-                        batchPath, exePath, isBatchRemoved ),                     
-                    canAutoUndo=False, isElevated=True )
-                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.BrandExeScript( 
-                        exePath, brandingInfo ), 
-                    canAutoUndo=False, isElevated=True,
-                    externalRes=[ QtIfwExternalResource.BuiltIn(
-                        QtIfwExternalResource.RESOURCE_HACKER ) ] )            
-                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
-                        exePath, iconDirPath, iconName, 
-                        isIconDirRemoved=isIconDirRemoved ), 
-                    canAutoUndo=False, isElevated=True,
-                    externalRes=[ QtIfwExternalResource.BuiltIn(
-                        QtIfwExternalResource.RESOURCE_HACKER ) ] )            
-            ]
-
-        @staticmethod
-        def WrapperBatch2Exe( batchPath, exePath, 
-                              targetPath, brandingInfo, iconName="0.ico" ):
-            iconDirPath = joinPath( "%temp%", "extracted-icons" )            
-            isBatchRemoved = isIconDirRemoved = True
-            return [
-                  QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.Bat2ExeScript( 
-                        batchPath, exePath, isBatchRemoved ), 
-                    canAutoUndo=False, isElevated=True )
-                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.BrandExeScript( 
-                        targetPath, brandingInfo ),                         
-                    canAutoUndo=False, isElevated=True,
-                    externalRes=[QtIfwExternalResource.BuiltIn(
-                        QtIfwExternalResource.RESOURCE_HACKER ) ] )            
-                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.ExtractIconsFromExeScript( 
-                        exePath, iconDirPath ), 
-                    canAutoUndo=False, isElevated=True,
-                    externalRes=[QtIfwExternalResource.BuiltIn(
-                        QtIfwExternalResource.RESOURCE_HACKER ) ] )                  
-                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
-                        exePath, iconDirPath, iconName, 
-                        isIconDirRemoved=isIconDirRemoved ), 
-                    canAutoUndo=False, isElevated=True,
-                    externalRes=[QtIfwExternalResource.BuiltIn(
-                        QtIfwExternalResource.RESOURCE_HACKER ) ] )                            
-            ]
     
     @staticmethod
     def CreateStartupEntry( pkg=None, exePath=None, displayName=None, 
@@ -4111,6 +4019,101 @@ class QtIfwExternalOp:
         elif IS_MACOS: 
             # TODO: Fill in
             util._onPlatformErr()
+
+    if IS_WINDOWS:
+        # TODO: Expand upon registry functions
+        
+        # TODO: Deal with 64 bit vs 32 bit registry contexts
+        # Allow the use of either literal paths or implicit wow64 resolution
+        # Some thoughts:     
+        # https://stackoverflow.com/questions/630382/how-to-access-the-64-bit-registry-from-a-32-bit-powershell-instance
+        
+        @staticmethod
+        def CreateRegistryEntry( event, key, valueName=None, value="", valueType="String" ):
+            return QtIfwExternalOp.__genScriptOp( event, 
+                script=QtIfwExternalOp.CreateRegistryEntryScript( key, valueName, value, valueType ), 
+                uninstScript=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
+                isElevated=True )
+        
+        @staticmethod
+        def RemoveRegistryEntry( event, key, valueName=None ):
+            return QtIfwExternalOp.__genScriptOp( event, 
+                script=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
+                canAutoUndo=False, isElevated=True )
+
+        @staticmethod
+        def CreateExeFromScript( script, brandingInfo, srcIconPath,
+                                 targetDir = QT_IFW_TARGET_DIR ):            
+            iconTool = QtIfwExternalResource( "%sIcon" % (script.rootName,), 
+                                           srcIconPath )            
+            ops = [ QtIfwExternalOp( resourceScripts=[script], 
+                                     externalRes=[iconTool] ) ]
+            ops.extend( QtIfwExternalOp.Script2Exe( 
+                scriptPath = joinPath( QT_IFW_SCRIPTS_DIR, script.fileName() )
+                , exePath = joinPath( targetDir, 
+                                      normBinaryName( script.rootName ) )
+                , brandingInfo = brandingInfo
+                , iconDirPath = iconTool.targetDirPathVar()
+                , iconName = baseFileName( srcIconPath )
+            ))
+            return ops
+        
+        @staticmethod
+        def Script2Exe( scriptPath, exePath, brandingInfo,
+                        iconDirPath, iconName, 
+                        isScriptRemoved=False, isIconDirRemoved=False ):
+            return [
+                  QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                    script=QtIfwExternalOp.Script2ExeScript( 
+                        scriptPath, exePath, isScriptRemoved ),
+                    uninstScript=QtIfwExternalOp.RemoveFileScript( exePath ),                     
+                    canAutoUndo=False, isElevated=True )
+                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                    script=QtIfwExternalOp.BrandExeScript( 
+                        exePath, brandingInfo ), 
+                    canAutoUndo=False, isElevated=True,
+                    externalRes=[ QtIfwExternalResource.BuiltIn(
+                        QtIfwExternalResource.RESOURCE_HACKER ) ] )            
+                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                    script=QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
+                        exePath, iconDirPath, iconName, 
+                        isIconDirRemoved=isIconDirRemoved ), 
+                    canAutoUndo=False, isElevated=True,
+                    externalRes=[ QtIfwExternalResource.BuiltIn(
+                        QtIfwExternalResource.RESOURCE_HACKER ) ] )            
+            ]
+
+        @staticmethod
+        def WrapperScript2Exe( scriptPath, exePath, 
+                               targetPath, brandingInfo, iconName="0.ico" ):
+            iconDirPath = joinPath( "%temp%", "extracted-icons" )            
+            isScriptRemoved = isIconDirRemoved = True
+            return [
+                  QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                    script=QtIfwExternalOp.Script2ExeScript( 
+                        scriptPath, exePath, isScriptRemoved ),
+                    uninstScript=QtIfwExternalOp.RemoveFileScript( exePath ), 
+                    canAutoUndo=False, isElevated=True )
+                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                    script=QtIfwExternalOp.BrandExeScript( 
+                        targetPath, brandingInfo ),                         
+                    canAutoUndo=False, isElevated=True,
+                    externalRes=[QtIfwExternalResource.BuiltIn(
+                        QtIfwExternalResource.RESOURCE_HACKER ) ] )            
+                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                    script=QtIfwExternalOp.ExtractIconsFromExeScript( 
+                        exePath, iconDirPath ), 
+                    canAutoUndo=False, isElevated=True,
+                    externalRes=[QtIfwExternalResource.BuiltIn(
+                        QtIfwExternalResource.RESOURCE_HACKER ) ] )                  
+                , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
+                    script=QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
+                        exePath, iconDirPath, iconName, 
+                        isIconDirRemoved=isIconDirRemoved ), 
+                    canAutoUndo=False, isElevated=True,
+                    externalRes=[QtIfwExternalResource.BuiltIn(
+                        QtIfwExternalResource.RESOURCE_HACKER ) ] )                            
+            ]
 
     @staticmethod
     def __genScriptOp( event, script, uninstScript=None, 
@@ -4154,9 +4157,21 @@ class QtIfwExternalOp:
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "removeRegEntry" ), extension="ps1", script=(                
                 "Remove-ItemProperty -Path '%s' %s" % (key, valueName) ) )
+
+        @staticmethod
+        def RemoveFileScript( filePath ):            
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "removeFile" ), script='del /q /f "{filePath}"', replacements={
+                "filePath": filePath } )
  
         @staticmethod
-        def Bat2ExeScript( srcPath, destPath, isBatchRemoved=False ):
+        def RemoveDirScript( dirPath ):            
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "removeDir" ), script='rd /q /s "{dirPath}"', replacements={
+                "dirPath": dirPath } )
+ 
+        @staticmethod
+        def Script2ExeScript( srcPath, destPath, isSrcRemoved=False ):            
             script=(
 """
 ;@echo off
@@ -4165,18 +4180,18 @@ class QtIfwExternalOp:
 ;set "TARGET_PATH={destPath}"
 
 ;for %%I in ("%TARGET_PATH%") do set "target.exe=%%~I"
-;for %%I in ("%SOURCE_PATH%") do set "batch_file=%%~fI"
-;for %%I in ("%SOURCE_PATH%") do set "bat_name=%%~nxI"
-;for %%I in ("%SOURCE_PATH%") do set "bat_dir=%%~dpI"
+;for %%I in ("%SOURCE_PATH%") do set "script_file=%%~fI"
+;for %%I in ("%SOURCE_PATH%") do set "script_name=%%~nxI"
+;for %%I in ("%SOURCE_PATH%") do set "script_dir=%%~dpI"
 
 ;copy /y "%~f0" "%temp%\\2exe.sed" >nul
 
 ;(echo()>>"%temp%\\2exe.sed"
-;(echo(AppLaunched=cmd.exe /c "%bat_name%")>>"%temp%\\2exe.sed"
+;(echo(AppLaunched={command})>>"%temp%\\2exe.sed"
 ;(echo(TargetName="%target.exe%")>>"%temp%\\2exe.sed"
-;(echo(FILE0="%bat_name%")>>"%temp%\\2exe.sed"
+;(echo(FILE0="%script_name%")>>"%temp%\\2exe.sed"
 ;(echo([SourceFiles])>>"%temp%\\2exe.sed"
-;(echo(SourceFiles0=%bat_dir%)>>"%temp%\\2exe.sed"
+;(echo(SourceFiles0=%script_dir%)>>"%temp%\\2exe.sed"
 ;(echo([SourceFiles0])>>"%temp%\\2exe.sed"
 ;(echo(%%FILE0%%=)>>"%temp%\\2exe.sed"
 
@@ -4217,13 +4232,20 @@ FriendlyName=-
 PostInstallCmd=<None>
 AdminQuietInstCmd=
 UserQuietInstCmd=
-""")                        
+""")
+            ext = fileExt( srcPath ).lower()                        
+            if   ext==".vbs":
+                command = 'cscript.exe "%script_name%"'
+            elif ext==".ps1":
+                command = 'powershell.exe -ExecutionPolicy Bypass -File "%script_name%"'
+            else:    
+                command = 'cmd.exe /c "%script_name%"'
             removeSrc =( 'del /q /f "%s"' % (srcPath,) 
-                         if isBatchRemoved else "" )
+                         if isSrcRemoved else "" )
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "bat2exe" ), script=script, replacements={
-                "srcPath": srcPath, "destPath": destPath, 
-                "removeSrc": removeSrc } )
+                "script2exe" ), script=script, replacements={
+                "srcPath": srcPath, "destPath": destPath,
+                "command": command, "removeSrc": removeSrc } )
 
         @staticmethod
         def BrandExeScript( exePath, brandingInfo ):

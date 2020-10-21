@@ -714,6 +714,53 @@ Tools defined this list will be rolled into the installer without explicitly
 updating the [QtIfwPackageScript](#qtifwpackagescript) owner of this operation
 object. 
 
+### ON_INSTALL, ON_UNINSTALL, ON_BOTH, AUTO_UNDO
+
+Event constants for convenience methods.
+
+### QtIfwExternalOp.CreateStartupEntry
+
+    CreateStartupEntry( pkg=None, exePath=None, displayName=None, 
+                        isAllUsers=False )
+
+	TODO: Add Linux & macOS implementations
+
+### QtIfwExternalOp.CreateRegistryEntry
+	
+	**WINDOWS ONLY**
+
+    CreateRegistryEntry( event, key, valueName=None, value="", valueType="String" )
+
+### QtIfwExternalOp.RemoveRegistryEntry
+	
+	**WINDOWS ONLY**
+ 
+    RemoveRegistryEntry( event, key, valueName=None )          
+          
+### QtIfwExternalOp.CreateExeFromScript
+	
+	**WINDOWS ONLY**
+
+    CreateExeFromScript( script, brandingInfo, srcIconPath,
+                         targetDir=QT_IFW_TARGET_DIR )
+
+**script**: [ExecutableScripts](LowLevel.md#executablescript)
+                                 
+### QtIfwExternalOp.WrapperScript2Exe
+	
+	**WINDOWS ONLY**
+
+    Script2Exe( scriptPath, exePath, brandingInfo,
+                iconDirPath, iconName, 
+                isScriptRemoved=False, isIconDirRemoved=False )
+                        
+### QtIfwExternalOp.WrapperScript2Exe
+	
+	**WINDOWS ONLY**
+
+    WrapperScript2Exe( scriptPath, exePath, 
+                       targetPath, brandingInfo, iconName="0.ico" )
+                                                           
 ## QtIfwKillOp
 
 This class is used to drive process killing operations. Such actions are frequently 
