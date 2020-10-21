@@ -119,18 +119,22 @@ class ConfigFactory:
         cfg.distResources = self.distResources 
         if self.specFilePath :
             cfg.pyInstSpec = PyInstSpec( self.specFilePath )
-        if IS_WINDOWS :
-            cfg.versionInfo = WindowsExeVersionInfo()
-            ( cfg.versionInfo.major,
-              cfg.versionInfo.minor,
-              cfg.versionInfo.micro,
-              cfg.versionInfo.build
-            ) = self.__versionTuple()
-            cfg.versionInfo.companyName = self.companyLegalName
-            cfg.versionInfo.productName = self.productName
-            cfg.versionInfo.description = self.description
-            cfg.versionInfo.exeName     = self.binaryName
+        if IS_WINDOWS: cfg.versionInfo = self .exeVersionInfo()
         return cfg
+
+    if IS_WINDOWS :
+        def exeVersionInfo( self ):
+            verInfo = WindowsExeVersionInfo()
+            ( verInfo.major,
+              verInfo.minor,
+              verInfo.micro,
+              verInfo.build
+            ) = self.__versionTuple()
+            verInfo.companyName = self.companyLegalName
+            verInfo.productName = self.productName
+            verInfo.description = self.description
+            verInfo.exeName     = self.binaryName
+            return verInfo 
     
     def opyConfig( self ):
         return OpyConfig( self.binaryName, self.entryPointPy,

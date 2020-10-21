@@ -1192,7 +1192,8 @@ on the file.  A user supplied string will be applied if custom provided.
 On Windows, this attribute is not used.  Else, if `True`, `#!/bin/sh` will be used. 
 A user supplied string will be applied if custom provided.
 
-**script**: The content for the for script, provided as a string.
+**script**: The content for the for script, provided as a string, or a list 
+(representing lines).
 
 **scriptPath**: The content for the for script, provided as a file path
 to source for where it is to be extracted.

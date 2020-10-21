@@ -184,6 +184,10 @@ Static Methods:
     defaultPath()
     
 Object Methods:
+
+    version( isCommaDelim=False )    
+    copyright() 
+    internalName() 
     
     fileName()
     write()

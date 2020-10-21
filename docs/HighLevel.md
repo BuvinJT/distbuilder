@@ -98,6 +98,10 @@ Object creation functions:
     qtIfwExeWrapper( wrapperScript=None,
                      workingDir=None, isElevated=False, 
                      envVars=None, args=None )
+                     
+	<Windows Only>
+		exeVersionInfo()
+		                     
 Cloning:
 
     newFactory = ConfigFactory.copy( instance )
@@ -307,7 +311,8 @@ dynamic features for the page.
 
 #### licensePath 
 
-
+Relative or absolute path to a license file to be included in an installer, which the 
+end user will be required to agree to.
 
 #### ifwCntrlScript, ifwCntrlScriptText, ifwCntrlScriptPath, ifwCntrlScriptName
 

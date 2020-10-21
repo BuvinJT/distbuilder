@@ -29,39 +29,30 @@ class BuildProcess( PyToBinInstallerProcess ):
                 QtIfwExternalOp.CreateStartupEntry( pkg ) ] 
 
         if IS_WINDOWS:
+            
+            def addCreateExeFromScript( pkg, name, ext, script ):
+                pkg.pkgScript.externalOps += [
+                    QtIfwExternalOp.CreateExeFromScript( 
+                        ExecutableScript( name, extension=ext, script=script ), 
+                        configFactory.exeVersionInfo(), 
+                        configFactory.iconFilePath,
+                        targetDir=QT_IFW_DESKTOP_DIR ) ]
+                            
             def addCreateExeFromBatch( pkg ):
-                pkg.pkgScript.externalOps += [
-                    QtIfwExternalOp.CreateExeFromScript( 
-                        ExecutableScript( "InstallLogViewer_BAT", script=(
-                            'start "" notepad '
-                            '"@TargetDir@\InstallationLog.txt"' )), 
-                        {"companyName":configFactory.companyLegalName}, 
-                        configFactory.iconFilePath,
-                        targetDir=QT_IFW_DESKTOP_DIR ) ]
-
+                addCreateExeFromScript( pkg, "InstallLogViewer_BAT", "bat", 
+                    'start "" notepad "@TargetDir@\InstallationLog.txt"' )
+                
             def addCreateExeFromPowerShell( pkg ):
-                pkg.pkgScript.externalOps += [
-                    QtIfwExternalOp.CreateExeFromScript( 
-                        ExecutableScript( "InstallLogViewer_PS",  extension="ps1", 
-                            script=('Start-Process -FilePath "notepad" '
-                                    '-ArgumentList "@TargetDir@\InstallationLog.txt"') ), 
-                        {"companyName":configFactory.companyLegalName}, 
-                        configFactory.iconFilePath,
-                        targetDir=QT_IFW_DESKTOP_DIR ) ]
+                addCreateExeFromScript( pkg, "InstallLogViewer_PS", "ps1", 
+                    'Start-Process -FilePath "notepad" '
+                        '-ArgumentList "@TargetDir@\InstallationLog.txt"' ) 
 
             def addCreateExeFromVbs( pkg ):
-                pkg.pkgScript.externalOps += [
-                    QtIfwExternalOp.CreateExeFromScript( 
-                        ExecutableScript( "InstallLogViewer_VBS",  extension="vbs", 
-                            script=(
-"""
-Set oShell = WScript.CreateObject("WScript.Shell")
-oShell.Run "notepad ""@TargetDir@\InstallationLog.txt"" "
-Set oShell = Nothing
-""" )), 
-                        {"companyName":configFactory.companyLegalName}, 
-                        configFactory.iconFilePath,
-                        targetDir=QT_IFW_DESKTOP_DIR ) ]
+                addCreateExeFromScript( pkg, "InstallLogViewer_VBS", "vbs", [ 
+                    'Set oShell = WScript.CreateObject("WScript.Shell")',
+                    'oShell.Run "notepad ""@TargetDir@\InstallationLog.txt"""',
+                    'Set oShell = Nothing'
+                ])  
         
         pkg = cfg.packages[0]
         addKillOps( pkg ) 

@@ -1,5 +1,3 @@
-import string
-from datetime import date
 from abc import ABCMeta, abstractmethod
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -4062,7 +4060,7 @@ class QtIfwExternalOp:
                 isReversible=False, isElevated=True )
 
         @staticmethod
-        def CreateExeFromScript( script, brandingInfo, srcIconPath,
+        def CreateExeFromScript( script, exeVerInfo, srcIconPath,
                                  targetDir = QT_IFW_TARGET_DIR ):            
             iconTool = QtIfwExternalResource( "%sIcon" % (script.rootName,), 
                                            srcIconPath )            
@@ -4072,14 +4070,14 @@ class QtIfwExternalOp:
                 scriptPath = joinPath( QT_IFW_SCRIPTS_DIR, script.fileName() )
                 , exePath = joinPath( targetDir, 
                                       normBinaryName( script.rootName ) )
-                , brandingInfo = brandingInfo
+                , exeVerInfo = exeVerInfo
                 , iconDirPath = iconTool.targetDirPathVar()
                 , iconName = baseFileName( srcIconPath )
             ))
             return ops
         
         @staticmethod
-        def Script2Exe( scriptPath, exePath, brandingInfo,
+        def Script2Exe( scriptPath, exePath, exeVerInfo,
                         iconDirPath, iconName, 
                         isScriptRemoved=False, isIconDirRemoved=False ):
             return [
@@ -4090,7 +4088,7 @@ class QtIfwExternalOp:
                     isReversible=True, isElevated=True )
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
                     script=QtIfwExternalOp.BrandExeScript( 
-                        exePath, brandingInfo ), 
+                        exePath, exeVerInfo ), 
                     isReversible=False, isElevated=True,
                     externalRes=[ QtIfwExternalResource.BuiltIn(
                         QtIfwExternalResource.RESOURCE_HACKER ) ] )            
@@ -4105,7 +4103,7 @@ class QtIfwExternalOp:
 
         @staticmethod
         def WrapperScript2Exe( scriptPath, exePath, 
-                               targetPath, brandingInfo, iconName="0.ico" ):
+                               targetPath, exeVerInfo, iconName="0.ico" ):
             iconDirPath = joinPath( "%temp%", "extracted-icons" )            
             isScriptRemoved = isIconDirRemoved = True
             return [
@@ -4116,7 +4114,7 @@ class QtIfwExternalOp:
                     isReversible=True, isElevated=True )
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
                     script=QtIfwExternalOp.BrandExeScript( 
-                        targetPath, brandingInfo ),                         
+                        targetPath, exeVerInfo ),                         
                     isReversible=False, isElevated=True,
                     externalRes=[QtIfwExternalResource.BuiltIn(
                         QtIfwExternalResource.RESOURCE_HACKER ) ] )            
@@ -4279,7 +4277,7 @@ UserQuietInstCmd=
                 "command": command, "removeSrc": removeSrc } )
 
         @staticmethod
-        def BrandExeScript( exePath, brandingInfo ):
+        def BrandExeScript( exePath, exeVerInfo ):
             script=(
 """
 @echo off
@@ -4292,8 +4290,8 @@ set "TEMP_RES_PATH=%temp%\\versioninfo.res"
 
 (
 echo:VS_VERSION_INFO VERSIONINFO
-echo:    FILEVERSION    %{fileVerCommaDelim}%
-echo:    PRODUCTVERSION %{productVerCommaDelim}%
+echo:    FILEVERSION    {fileVerCommaDelim}
+echo:    PRODUCTVERSION {productVerCommaDelim}
 echo:{
 echo:    BLOCK "StringFileInfo"
 echo:    {
@@ -4313,7 +4311,7 @@ echo:    {
 echo:        VALUE "Translation", 0x409, 1200
 echo:    }
 echo:}
-) > "%TEMP_RC_PATH%" && echo wrote %TEMP_RC_PATH%
+) > "%TEMP_RC_PATH%" 
 
 "@ResourceHacker@" -open "%TEMP_RC_PATH%" -save "%TEMP_RES_PATH%" -action compile 
 "@ResourceHacker@" -open "%EXE_PATH%" -save "%EXE_PATH%" -action addoverwrite -resource "%TEMP_RES_PATH%" 
@@ -4321,18 +4319,17 @@ echo:}
 del /q /f "%TEMP_RC_PATH%"
 del /q /f "%TEMP_RES_PATH%"
 """)            
-            # TODO: apply brandingInfo 
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "brandexe" ), script=script, replacements={
-                      "exePath": exePath            
-                    , "companyName": ""
-                    , "copyright": ""
-                    , "productName": ""
-                    , "productVerCommaDelim": ""
-                    , "productVer": ""
-                    , "fileDescr": ""
-                    , "fileVerCommaDelim": ""
-                    , "fileVer": ""
+                  "exePath": exePath            
+                , "companyName": exeVerInfo.companyName
+                , "copyright": exeVerInfo.copyright()
+                , "productName": exeVerInfo.productName
+                , "productVerCommaDelim": exeVerInfo.version( isCommaDelim=True )
+                , "productVer": exeVerInfo.version()
+                , "fileDescr": exeVerInfo.description
+                , "fileVerCommaDelim": exeVerInfo.version( isCommaDelim=True )
+                , "fileVer":exeVerInfo.version()
                 })
 
         @staticmethod

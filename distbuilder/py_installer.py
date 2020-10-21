@@ -245,82 +245,7 @@ class PyInstSpec( util.PlasticFile ):
                         if isinstance( target, ast.Name ) :
                             assigments.append( ( target.id, child.lineno ) )
         return assigments
-        
-class WindowsExeVersionInfo( util.PlasticFile ):
-
-    __TEMP_FILE_NAME = "win_exe_ver_info.tmp"
-    
-    __FILE_TEMPLT = ( 
-"""
-VSVersionInfo(
-  ffi=FixedFileInfo(
-    filevers=(VER_MAJOR, VER_MINOR, VER_PATCH, VER_BUILD),
-    prodvers=(VER_MAJOR, VER_MINOR, VER_PATCH, VER_BUILD),
-    mask=0x3f,
-    flags=0x0,
-    OS=0x40004,
-    fileType=0x1,
-    subtype=0x0,
-    date=(0, 0)
-    ),
-  kids=[
-    StringFileInfo(
-      [
-      StringTable(
-        u'040904B0',
-        [StringStruct(u'CompanyName', u'COMPANY_NAME'),
-        StringStruct(u'FileDescription', u'PRODUCT_DESCR'),
-        StringStruct(u'FileVersion', u'VER_MAJOR.VER_MINOR.VER_PATCH.VER_BUILD'),
-        StringStruct(u'InternalName', u'PRODUCT_NAME_INTERNAL'),
-        StringStruct(u'LegalCopyright', u'\\xa9 COMPANY_NAME_COPYRIGHT. All rights reserved.'),
-        StringStruct(u'OriginalFilename', u'EXE_NAME'),
-        StringStruct(u'ProductName', u'PRODUCT_NAME'),
-        StringStruct(u'ProductVersion', u'VER_MAJOR, VER_MINOR, VER_PATCH, VER_BUILD')])
-      ]), 
-    VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
-  ]
-)
-"""
-)
-    
-    @staticmethod
-    def defaultPath(): return absPath( WindowsExeVersionInfo.__TEMP_FILE_NAME )
-
-    def __init__( self ) :
-        self.major = 0
-        self.minor = 0
-        self.micro = 0
-        self.build = 0
-        self.companyName = ""
-        self.productName = ""
-        self.description = ""
-        self.exeName     = ""
-
-    def __str__( self ):
-        s = WindowsExeVersionInfo.__FILE_TEMPLT
-        s = s.replace( "VER_MAJOR", str(self.major) )
-        s = s.replace( "VER_MINOR", str(self.minor) )
-        s = s.replace( "VER_PATCH", str(self.micro) )
-        s = s.replace( "VER_BUILD", str(self.build) )                
-        s = s.replace( "COMPANY_NAME_COPYRIGHT", 
-            self.companyName[:-1] if self.companyName.endswith(".") 
-            else self.companyName ) # (handle "Company Inc.")
-        s = s.replace( "PRODUCT_NAME_INTERNAL", 
-            self.productName.lower().replace( " ", "_" ) )                
-        s = s.replace( "COMPANY_NAME",  self.companyName )        
-        s = s.replace( "PRODUCT_NAME",  self.productName )
-        s = s.replace( "PRODUCT_DESCR", self.description )
-        s = s.replace( "EXE_NAME", util.normBinaryName( self.exeName ) )                
-        return s 
-
-    def path( self ): return WindowsExeVersionInfo.defaultPath()  
-    
-    # block these on this derivative of PlaticFile
-    def read( self ): pass
-    def toLines( self ): pass      
-    def fromLines( self, lines ): pass
-    def injectLine( self, injection, lineNo ): pass   
-                            
+                                    
 class PyInstHook( ExecutableScript ) :
     
     FILE_NAME_PREFIX = "hook-"
@@ -391,7 +316,7 @@ def buildExecutable( name=None, entryPointPy=None,
     distDirPath = joinPath( THIS_DIR, pyInstConfig.name ) 
     pyInstConfig.distDirPath = distDirPath
     if IS_WINDOWS and pyInstConfig.versionInfo is not None: 
-        pyInstConfig.versionFilePath = WindowsExeVersionInfo.defaultPath()
+        pyInstConfig.versionFilePath = util.WindowsExeVersionInfo.defaultPath()
     else : pyInstConfig.versionInfo = None
         
     # Prepare to build (discard old build files)       

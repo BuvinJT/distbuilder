@@ -1,3 +1,5 @@
+import string
+from datetime import date
 from six import PY2, PY3, string_types, iteritems  # @UnusedImport
 from six.moves import urllib
 from sys import argv, stdout, stderr, exit, \
@@ -14,7 +16,8 @@ from os.path import exists, isfile, islink, \
 from shutil import rmtree as removeDir, move, make_archive, \
     copytree as copyDir, copyfile as copyFile   # @UnusedImport
 import platform
-from tempfile import gettempdir, mkstemp, mkdtemp, mktemp
+from tempfile import gettempdir, mkstemp, mkdtemp, \
+    mktemp  # @UnusedImport
 from subprocess import Popen, list2cmdline, check_output, \
     PIPE, STDOUT, \
     check_call  # @UnusedImport
@@ -25,7 +28,7 @@ from distutils.sysconfig import get_python_lib
 import inspect  # @UnusedImport
 from time import sleep
 from struct import calcsize
-import base64
+import base64  # @UnusedImport
 
 # -----------------------------------------------------------------------------   
 __plat = platform.system()
@@ -85,7 +88,7 @@ __SCRUB_CMD_TMPL = "{0}{1}"
 __DBL_QUOTE      = '"'
 __SPACE          = ' '
 __ESC_SPACE      = '\\ '
-__NEWLINE        = '\n'
+_NEWLINE         = '\n'
 if IS_WINDOWS :
     import ctypes        
     from ctypes import wintypes
@@ -827,6 +830,93 @@ class PlasticFile:
         self.fromLines( lines )
 
 # -----------------------------------------------------------------------------            
+class WindowsExeVersionInfo( PlasticFile ):
+
+    __TEMP_FILE_NAME = "win_exe_ver_info.tmp"
+    
+    __FILE_TEMPLT = ( 
+"""
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(VER_MAJOR, VER_MINOR, VER_PATCH, VER_BUILD),
+    prodvers=(VER_MAJOR, VER_MINOR, VER_PATCH, VER_BUILD),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+    ),
+  kids=[
+    StringFileInfo(
+      [
+      StringTable(
+        u'040904B0',
+        [StringStruct(u'CompanyName', u'COMPANY_NAME'),
+        StringStruct(u'FileDescription', u'PRODUCT_DESCR'),
+        StringStruct(u'FileVersion', u'VER_MAJOR.VER_MINOR.VER_PATCH.VER_BUILD'),
+        StringStruct(u'InternalName', u'PRODUCT_NAME_INTERNAL'),
+        StringStruct(u'LegalCopyright', u'COPYRIGHT'),
+        StringStruct(u'OriginalFilename', u'EXE_NAME'),
+        StringStruct(u'ProductName', u'PRODUCT_NAME'),
+        StringStruct(u'ProductVersion', u'VER_MAJOR, VER_MINOR, VER_PATCH, VER_BUILD')])
+      ]), 
+    VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
+  ]
+)
+"""
+)
+    
+    @staticmethod
+    def defaultPath(): return absPath( WindowsExeVersionInfo.__TEMP_FILE_NAME )
+
+    def __init__( self ) :
+        self.major = 0
+        self.minor = 0
+        self.micro = 0
+        self.build = 0
+        self.companyName = ""
+        self.productName = ""
+        self.description = ""
+        self.exeName     = ""
+
+    def __str__( self ):
+        s = WindowsExeVersionInfo.__FILE_TEMPLT
+        s = s.replace( "VER_MAJOR", str(self.major) )
+        s = s.replace( "VER_MINOR", str(self.minor) )
+        s = s.replace( "VER_PATCH", str(self.micro) )
+        s = s.replace( "VER_BUILD", str(self.build) )                
+        s = s.replace( "COPYRIGHT", self.copyright() )
+        s = s.replace( "PRODUCT_NAME_INTERNAL", self.internalName() )                
+        s = s.replace( "COMPANY_NAME",  self.companyName )        
+        s = s.replace( "PRODUCT_NAME",  self.productName )
+        s = s.replace( "PRODUCT_DESCR", self.description )
+        s = s.replace( "EXE_NAME", normBinaryName( self.exeName ) )                
+        return s 
+
+    def path( self ): return WindowsExeVersionInfo.defaultPath()  
+    
+    # block these on this derivative of PlaticFile
+    def read( self ): pass
+    def toLines( self ): pass      
+    def fromLines( self, lines ): pass
+    def injectLine( self, injection, lineNo ): pass   
+
+    def copyright( self ): 
+        return "Copyright \\xa9 %d, %s. All rights reserved." % ( 
+            date.today().year,
+            (self.companyName[:-1] if self.companyName.endswith(".") else
+             self.companyName) )
+    
+    def internalName( self ): 
+        return self.productName.lower().replace( " ", "_" )                 
+
+    def version( self, isCommaDelim=False ): 
+        ver = versionStr(
+            [self.major, self.minor, self.micro, self.build] )
+        return ver.replace( ".", "," ) if isCommaDelim else ver
+    
+# -----------------------------------------------------------------------------            
 class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all of it   
     
     __WIN_DEFAULT_EXT = "bat" 
@@ -854,6 +944,7 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         else: self.shebang = shebang            
         if scriptPath:
             with open( scriptPath, 'r' ) as f: self.script = f.read()
+        elif isinstance( script, list ): self.fromLines( script )
         else: self.script = script
         self.replacements=replacements  
         self.isIfwVarEscapeBackslash = False
@@ -891,9 +982,9 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         with open( filePath, 'r' ) as f : self.script = f.read() 
                 
     def toLines( self ):        
-        return self.script.split( __NEWLINE  ) if self.script else []
+        return self.script.split( _NEWLINE  ) if self.script else []
     
-    def fromLines( self, lines ): self.script = __NEWLINE.join( lines )
+    def fromLines( self, lines ): self.script = _NEWLINE.join( lines )
 
     def injectLine( self, injection, lineNo ):               
         lines = self.toLines()            
