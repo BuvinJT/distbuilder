@@ -3986,16 +3986,22 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
 # -----------------------------------------------------------------------------
 class QtIfwExternalOp:
 
-    AUTO_UNDO, ON_INSTALL, ON_UNINSTALL, ON_BOTH = range(4) 
+    ON_INSTALL, ON_UNINSTALL, ON_BOTH, AUTO_UNDO = range(4) 
 
     __AUTO_SCRIPT_COUNT=0
     __SCRIPT_ROOT_NAME_TMPLT = "%s_%d"
-
+    
     @staticmethod
-    def __scriptRootName( prefix ):
-        QtIfwExternalOp.__AUTO_SCRIPT_COUNT+=1
-        return QtIfwExternalOp.__SCRIPT_ROOT_NAME_TMPLT % ( 
-            prefix, QtIfwExternalOp.__AUTO_SCRIPT_COUNT )
+    def RemoveFile( event, filePath, isElevated=True ): # TODO: Test in NIX/MAC            
+        return QtIfwExternalOp.__genScriptOp( event, 
+                script=QtIfwExternalOp.RemoveFileScript( filePath ), 
+                isElevated=isElevated )
+    
+    @staticmethod
+    def RemoveDir( event, dirPath, isElevated=True ): # TODO: Test in NIX/MAC           
+        return QtIfwExternalOp.__genScriptOp( event, 
+                script=QtIfwExternalOp.RemoveDirScript( dirPath ), 
+                isElevated=isElevated )
     
     @staticmethod
     def CreateStartupEntry( pkg=None, exePath=None, displayName=None, 
@@ -4039,17 +4045,21 @@ class QtIfwExternalOp:
         # https://stackoverflow.com/questions/630382/how-to-access-the-64-bit-registry-from-a-32-bit-powershell-instance
         
         @staticmethod
-        def CreateRegistryEntry( event, key, valueName=None, value="", valueType="String" ):
+        def CreateRegistryEntry( event, key, valueName=None, 
+                                 value="", valueType="String" ):
             return QtIfwExternalOp.__genScriptOp( event, 
-                script=QtIfwExternalOp.CreateRegistryEntryScript( key, valueName, value, valueType ), 
-                uninstScript=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
+                script=QtIfwExternalOp.CreateRegistryEntryScript( 
+                    key, valueName, value, valueType ), 
+                uninstScript=QtIfwExternalOp.RemoveRegistryEntryScript( 
+                    key, valueName ), 
                 isElevated=True )
         
         @staticmethod
         def RemoveRegistryEntry( event, key, valueName=None ):
             return QtIfwExternalOp.__genScriptOp( event, 
-                script=QtIfwExternalOp.RemoveRegistryEntryScript( key, valueName ), 
-                canAutoUndo=False, isElevated=True )
+                script=QtIfwExternalOp.RemoveRegistryEntryScript( 
+                    key, valueName ), 
+                isReversible=False, isElevated=True )
 
         @staticmethod
         def CreateExeFromScript( script, brandingInfo, srcIconPath,
@@ -4077,18 +4087,18 @@ class QtIfwExternalOp:
                     script=QtIfwExternalOp.Script2ExeScript( 
                         scriptPath, exePath, isScriptRemoved ),
                     uninstScript=QtIfwExternalOp.RemoveFileScript( exePath ),                     
-                    canAutoUndo=True, isElevated=True )
+                    isReversible=True, isElevated=True )
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
                     script=QtIfwExternalOp.BrandExeScript( 
                         exePath, brandingInfo ), 
-                    canAutoUndo=False, isElevated=True,
+                    isReversible=False, isElevated=True,
                     externalRes=[ QtIfwExternalResource.BuiltIn(
                         QtIfwExternalResource.RESOURCE_HACKER ) ] )            
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
                     script=QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
                         exePath, iconDirPath, iconName, 
                         isIconDirRemoved=isIconDirRemoved ), 
-                    canAutoUndo=False, isElevated=True,
+                    isReversible=False, isElevated=True,
                     externalRes=[ QtIfwExternalResource.BuiltIn(
                         QtIfwExternalResource.RESOURCE_HACKER ) ] )            
             ]
@@ -4103,31 +4113,37 @@ class QtIfwExternalOp:
                     script=QtIfwExternalOp.Script2ExeScript( 
                         scriptPath, exePath, isScriptRemoved ),
                     uninstScript=QtIfwExternalOp.RemoveFileScript( exePath ), 
-                    canAutoUndo=True, isElevated=True )
+                    isReversible=True, isElevated=True )
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
                     script=QtIfwExternalOp.BrandExeScript( 
                         targetPath, brandingInfo ),                         
-                    canAutoUndo=False, isElevated=True,
+                    isReversible=False, isElevated=True,
                     externalRes=[QtIfwExternalResource.BuiltIn(
                         QtIfwExternalResource.RESOURCE_HACKER ) ] )            
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
                     script=QtIfwExternalOp.ExtractIconsFromExeScript( 
                         exePath, iconDirPath ), 
-                    canAutoUndo=False, isElevated=True,
+                    isReversible=False, isElevated=True,
                     externalRes=[QtIfwExternalResource.BuiltIn(
                         QtIfwExternalResource.RESOURCE_HACKER ) ] )                  
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
                     script=QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
                         exePath, iconDirPath, iconName, 
                         isIconDirRemoved=isIconDirRemoved ), 
-                    canAutoUndo=False, isElevated=True,
+                    isReversible=False, isElevated=True,
                     externalRes=[QtIfwExternalResource.BuiltIn(
                         QtIfwExternalResource.RESOURCE_HACKER ) ] )                            
             ]
 
     @staticmethod
+    def __scriptRootName( prefix ):
+        QtIfwExternalOp.__AUTO_SCRIPT_COUNT+=1
+        return QtIfwExternalOp.__SCRIPT_ROOT_NAME_TMPLT % ( 
+            prefix, QtIfwExternalOp.__AUTO_SCRIPT_COUNT )
+    
+    @staticmethod
     def __genScriptOp( event, script, uninstScript=None, 
-                       canAutoUndo=True, isElevated=False,
+                       isReversible=True, isElevated=False,
                        externalRes=[] ):    
         if   event==QtIfwExternalOp.ON_INSTALL:
             onInstall   = script
@@ -4139,13 +4155,30 @@ class QtIfwExternalOp:
             onInstall   = script 
             onUninstall = script        
         elif event==QtIfwExternalOp.AUTO_UNDO:
-            if not canAutoUndo: 
+            # While seemingly redundant, this flag/check is in place
+            # for building operations for clients that may pass AUTO_UNDO
+            # events where such is not supported 
+            if not isReversible: 
                 raise Exception( 
                     "Installer operation cannot be automatically undone." )
             onInstall   = script 
             onUninstall = uninstScript                  
         return QtIfwExternalOp( script=onInstall, uninstScript=onUninstall,
                 isElevated=isElevated, externalRes=externalRes ) 
+
+    @staticmethod
+    def RemoveFileScript( filePath ): # TODO: Test in NIX/MAC            
+        return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+            "removeFile" ), script=(
+            'del /q /f "{filePath}"' if IS_WINDOWS else 'rm "{filePath}"' ), 
+            replacements={ "filePath": filePath } )
+    
+    @staticmethod
+    def RemoveDirScript( dirPath ): # TODO: Test in NIX/MAC           
+        return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+            "removeDir" ), script=(
+            'rd /q /s "{dirPath}"' if IS_WINDOWS else 'rm -r "{dirPath}"'  ), 
+            replacements={ "dirPath": dirPath } )
     
     if IS_WINDOWS:
         # See
@@ -4167,18 +4200,6 @@ class QtIfwExternalOp:
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "removeRegEntry" ), extension="ps1", script=(                
                 "Remove-ItemProperty -Path '%s' %s" % (key, valueName) ) )
-
-        @staticmethod
-        def RemoveFileScript( filePath ):            
-            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "removeFile" ), script='del /q /f "{filePath}"', replacements={
-                "filePath": filePath } )
- 
-        @staticmethod
-        def RemoveDirScript( dirPath ):            
-            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "removeDir" ), script='rd /q /s "{dirPath}"', replacements={
-                "dirPath": dirPath } )
  
         @staticmethod
         def Script2ExeScript( srcPath, destPath, isSrcRemoved=False ):            

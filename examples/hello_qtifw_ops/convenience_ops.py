@@ -17,19 +17,22 @@ f.setupName        = "HelloIfwConveniencesSetup"
 class BuildProcess( PyToBinInstallerProcess ):
     def onQtIfwConfig( self, cfg ):            
 
+        # TO TEST KILL OPS, THE TARGET PROGRAM MUST BE 
+        # RUNNING WHEN INSTALL/UNINSTALL PROCESS IS BEGUN            
         def addKillOps( pkg ):
             pkg.pkgScript.killOps += [ QtIfwKillOp( pkg ) ]
 
+        # TO TEST / CONFIRM FUNCTIONALITY, REBOOT POST INSTALL  
         def addLaunchOnStartupOp( pkg ):
-            pkg.pkgScript.externalOps += [ 
-                                # Notable option: isAllUsers=True
+            # Notable CreateStartupEntry option to try: isAllUsers=True
+            pkg.pkgScript.externalOps += [                                 
                 QtIfwExternalOp.CreateStartupEntry( pkg ) ] 
 
         if IS_WINDOWS:
             def addCreateExeFromBatch( pkg ):
                 pkg.pkgScript.externalOps += [
                     QtIfwExternalOp.CreateExeFromScript( 
-                        ExecutableScript( "NotepadLauncherBat", script=(
+                        ExecutableScript( "InstallLogViewer_BAT", script=(
                             'start "" notepad '
                             '"@TargetDir@\InstallationLog.txt"' )), 
                         {"companyName":configFactory.companyLegalName}, 
@@ -39,7 +42,7 @@ class BuildProcess( PyToBinInstallerProcess ):
             def addCreateExeFromPowerShell( pkg ):
                 pkg.pkgScript.externalOps += [
                     QtIfwExternalOp.CreateExeFromScript( 
-                        ExecutableScript( "NotepadLauncherPs",  extension="ps1", 
+                        ExecutableScript( "InstallLogViewer_PS",  extension="ps1", 
                             script=('Start-Process -FilePath "notepad" '
                                     '-ArgumentList "@TargetDir@\InstallationLog.txt"') ), 
                         {"companyName":configFactory.companyLegalName}, 
@@ -49,7 +52,7 @@ class BuildProcess( PyToBinInstallerProcess ):
             def addCreateExeFromVbs( pkg ):
                 pkg.pkgScript.externalOps += [
                     QtIfwExternalOp.CreateExeFromScript( 
-                        ExecutableScript( "NotepadLauncherVbs",  extension="vbs", 
+                        ExecutableScript( "InstallLogViewer_VBS",  extension="vbs", 
                             script=(
 """
 Set oShell = WScript.CreateObject("WScript.Shell")
@@ -59,17 +62,10 @@ Set oShell = Nothing
                         {"companyName":configFactory.companyLegalName}, 
                         configFactory.iconFilePath,
                         targetDir=QT_IFW_DESKTOP_DIR ) ]
-
         
         pkg = cfg.packages[0]
-
-        # TO TEST KILL OPS, THE TARGET PROGRAM MUST BE 
-        # RUNNING WHEN INSTALL/UNINSTALL PROCESS IS BEGUN            
         addKillOps( pkg ) 
-
-        # TO TEST / CONFIRM FUNCTIONALITY, REBOOT POST INSTALL  
-        addLaunchOnStartupOp( pkg )        
-                
+        addLaunchOnStartupOp( pkg )                        
         if IS_WINDOWS: 
             addCreateExeFromBatch( pkg )
             addCreateExeFromPowerShell( pkg )

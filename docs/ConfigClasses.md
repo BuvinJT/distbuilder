@@ -736,30 +736,40 @@ Tools defined this list will be rolled into the installer without explicitly
 updating the [QtIfwPackageScript](#qtifwpackagescript) owner of this operation
 object. 
 
-### ON_INSTALL, ON_UNINSTALL, ON_BOTH, AUTO_UNDO
+### QtIfwExternalOp Convenience Methods
+
+#### ON_INSTALL, ON_UNINSTALL, ON_BOTH, AUTO_UNDO
 
 Event constants for convenience methods.
 
-### QtIfwExternalOp.CreateStartupEntry
+#### QtIfwExternalOp.RemoveFile
+
+    RemoveFile( event, filePath, isElevated=True )
+
+#### QtIfwExternalOp.RemoveDir
+    
+    RemoveDir( event, dirPath, isElevated=True )
+
+#### QtIfwExternalOp.CreateStartupEntry
 
     CreateStartupEntry( pkg=None, exePath=None, displayName=None, 
                         isAllUsers=False )
 
 	TODO: Add Linux & macOS implementations
 
-### QtIfwExternalOp.CreateRegistryEntry
+#### QtIfwExternalOp.CreateRegistryEntry
 	
 	**WINDOWS ONLY**
 
     CreateRegistryEntry( event, key, valueName=None, value="", valueType="String" )
 
-### QtIfwExternalOp.RemoveRegistryEntry
+#### QtIfwExternalOp.RemoveRegistryEntry
 	
 	**WINDOWS ONLY**
  
     RemoveRegistryEntry( event, key, valueName=None )          
           
-### QtIfwExternalOp.CreateExeFromScript
+#### QtIfwExternalOp.CreateExeFromScript
 	
 	**WINDOWS ONLY**
 
@@ -768,7 +778,7 @@ Event constants for convenience methods.
 
 **script**: [ExecutableScripts](LowLevel.md#executablescript)
                                  
-### QtIfwExternalOp.WrapperScript2Exe
+#### QtIfwExternalOp.WrapperScript2Exe
 	
 	**WINDOWS ONLY**
 
@@ -776,7 +786,7 @@ Event constants for convenience methods.
                 iconDirPath, iconName, 
                 isScriptRemoved=False, isIconDirRemoved=False )
                         
-### QtIfwExternalOp.WrapperScript2Exe
+#### QtIfwExternalOp.WrapperScript2Exe
 	
 	**WINDOWS ONLY**
 
