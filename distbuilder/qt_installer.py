@@ -645,7 +645,8 @@ class _QtIfwScript:
     __EMBED_RES_TMPLT       = 'var %s = %s;\n\n'
     __EMBED_RES_CHUNK_SIZE  = 128
     __EXT_DELIM_PLACEHOLDER = "_dot_"
-    __SCRIPT_FROM_B64_TMPL  = '__writeScriptFromBase64( "%s", %s, %s, %s )%s'
+    __SCRIPT_FROM_B64_TMPL  = '__writeScriptFromBase64( "%s", %s, %s, %s );\n'
+    __REPLACE_VARS_FILE_TMPL = 'replaceDynamicVarsInFile( %s, %s, %s );\n' 
     
     # Note, there is in fact an installer.killProcess(string absoluteFilePath)
     # this custom kill takes a process name, with no specific path
@@ -684,9 +685,21 @@ class _QtIfwScript:
         raw = ""
         for res in embeddedResources: raw += embed( res )
         return raw
-    
+
     @staticmethod
     def genResources( embeddedResources ):
+        return _QtIfwScript.__writeScripts( embeddedResources )
+    
+    @staticmethod
+    def resolveScriptVars( scripts, subDir ):
+        return _QtIfwScript.__writeScripts( scripts, True, False, subDir )
+
+    @staticmethod
+    def resolveScriptVarsOperations( scripts, subDir ):
+        return _QtIfwScript.__writeScripts( scripts, True, True, subDir )
+
+    @staticmethod
+    def __writeScripts( scripts, isUpdate=False, isOp=False, subDir=None ):
         
         MAX_VAR_LENGTH = 64 # Not a true limit to the language, just a sanity check for this context
         VAR_NAME_CHARS = string.digits + string.ascii_letters + "_"
@@ -697,28 +710,56 @@ class _QtIfwScript:
                 if c not in VAR_NAME_CHARS: return False
             return True
         
-        def gen( script ):
+        def dynamicParms( script, subDir=None ):
             if isinstance( script, ExecutableScript ):
                 scriptName = script.fileName()
+                scriptPath = ( _QtIfwScript.targetDir() + ' + "/' +  
+                    ( joinPathQtIfw( subDir, scriptName ) 
+                      if subDir else scriptName ) + '"' )
                 scriptContent = str(script)
                 isDoubleBackslash = script.isIfwVarEscapeBackslash
                 resourceVarName = scriptName.replace(
                     ".", _QtIfwScript.__EXT_DELIM_PLACEHOLDER ) 
-                dynamicVarNames = scriptContent.split( QT_IFW_DYNAMIC_SYMBOL )
+                dynamicVarNames = set( scriptContent.split( QT_IFW_DYNAMIC_SYMBOL ) )
                 dynamicVarNames = [ v for v in dynamicVarNames 
                                     if isValidVarName( v ) ]
                 dynamicVarNames = "[ %s ]" % (
                     ",".join( ['"%s"' % (v,) for v in dynamicVarNames] ), )
+                return ( scriptPath, scriptName, resourceVarName,
+                         dynamicVarNames, isDoubleBackslash )
+            return None
+        
+        def gen( script ):
+            parms = dynamicParms( script )  
+            if parms:
+                ( _, scriptName, resourceVarName, 
+                  dynamicVarNames, isDoubleBackslash ) = parms
                 return ( 
                     #_QtIfwScript.log( "script: %s" % (scriptName,) ) + 
                     #_QtIfwScript.log( scriptContent ) + # this introduces assorted escaping complications...
                     _QtIfwScript.__SCRIPT_FROM_B64_TMPL % 
                     (scriptName, resourceVarName, dynamicVarNames,
-                     _QtIfwScript.toBool(isDoubleBackslash), 
-                    _QtIfwScript.END_LINE) )
+                     _QtIfwScript.toBool(isDoubleBackslash) ) )                
             return ""        
-        return "".join( [ gen( res ) for res in embeddedResources ] )
-
+        
+        def update( script, isOp, subDir ):
+            parms = dynamicParms( script, subDir )  
+            if parms:
+                scriptPath, _, _, dynamicVarNames, isDoubleBackslash = parms
+                if isOp:
+                    return QtIfwPackageScript._addReplaceVarsInFileOperation( 
+                        scriptPath, dynamicVarNames, 
+                        _QtIfwScript.toBool(isDoubleBackslash), 
+                        isElevated=True ) 
+                else:
+                    return _QtIfwScript.__REPLACE_VARS_FILE_TMPL % ( 
+                        scriptPath, dynamicVarNames,
+                        _QtIfwScript.toBool(isDoubleBackslash) ) 
+            return ""
+        
+        return "".join( [ update( s, isOp, subDir ) if isUpdate else gen( s )
+                          for s in scripts ] )
+        
     @staticmethod        
     def log( msg, isAutoQuote=True ):                  
         return _QtIfwScript.__LOG_TMPL % (
@@ -1411,7 +1452,7 @@ class _QtIfwScript:
             EBLK + NEW +                            
             'function __writeScriptFromBase64( fileName, b64, varNames, isDoubleBackslash ) ' + SBLK +  # TODO: Test in NIX/MAC                
             TAB + 'var path = __writeFileFromBase64( fileName, b64 )' + END +
-            TAB + 'replaceQtIfwVarsInFile( path, varNames, isDoubleBackslash )' +  END +            
+            TAB + 'replaceDynamicVarsInFile( path, varNames, isDoubleBackslash )' +  END +            
             EBLK + NEW +                                                                         
             'function __writeFileFromBase64( fileName, b64 ) ' + SBLK +      # TODO: Test in NIX/MAC
             TAB + 'var path = Dir.toNativeSeparator( Dir.temp() + "/" + fileName )' + END +            
@@ -1443,9 +1484,10 @@ class _QtIfwScript:
             TAB + _QtIfwScript.log( '"Wrote file from base64: " + path', isAutoQuote=False ) + 
             #TAB + 'deleteFile( tempPath )' + END +
             TAB + 'return path' + END +                                                                                                               
-            EBLK + NEW +                
-            'function replaceQtIfwVarsInFile( path, varNames, isDoubleBackslash ) ' + SBLK + # TODO: Test in NIX/MAC
+            EBLK + NEW + # TODO: Test in NIX/MAC                
+            'function __replaceDynamicVarsInFileScript( path, varNames, isDoubleBackslash ) ' + SBLK + 
             (
+            TAB + 'var path = Dir.toNativeSeparator( path )' + END +                
             TAB + 'var vbs = ' + NEW +
             (2*TAB) + '"Const ForReading = 1\\n" + ' + NEW +
             (2*TAB) + '"Const ForWriting = 2\\n" + ' + NEW +
@@ -1466,10 +1508,17 @@ class _QtIfwScript:
             TAB + 'vbs += ' + NEW +                
             (2*TAB) + '"Set oFile = oFSO.OpenTextFile(sFileName, ForWriting)\\n" + ' + NEW +
             (2*TAB) + '"oFile.Write sText\\n" + ' + NEW + #vbs WriteLine adds extra CR/LF
-            (2*TAB) + '"oFile.Close\\n"' + END +            
-            TAB + 'executeVbScript( vbs )' + END 
+            (2*TAB) + '"oFile.Close\\n"' + END +
+            TAB + 'return vbs' + END 
             if IS_WINDOWS else 
-            TAB + '' + END) + # TODO: FILLIN!!
+            TAB + '' + END) + # TODO: FILLIN in NIX/MAC
+            EBLK + NEW +                                                                         
+            'function replaceDynamicVarsInFile( path, varNames, isDoubleBackslash ) ' + SBLK + # TODO: Test in NIX/MAC
+            TAB + 'var script = __replaceDynamicVarsInFileScript( path, varNames, isDoubleBackslash )' + END +
+            (
+            TAB + 'executeVbScript( script )' + END 
+            if IS_WINDOWS else 
+            TAB + '' + END) + # TODO: FILLIN in NIX/MAC
             EBLK + NEW +                                                             
             'function killAll( progName ) ' + SBLK + # TODO: Test in NIX/MAC
             TAB + 'var killCmd = "' + _QtIfwScript._KILLALL_CMD_PREFIX + 
@@ -2842,6 +2891,8 @@ Component.prototype.%s = function(){
             "iconId=[ICON_ID]"        
         );    
 """ )
+
+    __ADD_VBS_OPERATION_TMPLT = "   addVbsOperation( component, %s, %s );\n"
     
     __WIN_SET_SHORTCUT_STYLE_TMPLT = ( 
 """
@@ -2894,6 +2945,21 @@ Component.prototype.%s = function(){
         , APPS_X11_SHORTCUT      : "/usr/share/applications" 
     }   # ~/.local/share/applications - current user location?
 
+    @staticmethod
+    def _addVbsOperation( vbs, isElevated ): 
+        return QtIfwPackageScript.__ADD_VBS_OPERATION_TMPLT % (
+            _QtIfwScript.toBool( isElevated ), vbs )
+
+    @staticmethod
+    def _addReplaceVarsInFileOperation( path, varNames, isDoubleBackslash, 
+                                        isElevated ):
+        if IS_WINDOWS:
+            vbs = '__replaceDynamicVarsInFileScript( %s, %s, %s )' % (
+                path, varNames, _QtIfwScript.toBool( isDoubleBackslash ) )
+            return QtIfwPackageScript._addVbsOperation( vbs, isElevated )                   
+        else:
+            return "" # TODO: FILLIN FOR NIX/MAc    
+        
     @staticmethod
     def __winAddShortcut( location, exeName, command=None, args=[], 
                           windowStyle=None,
@@ -2970,26 +3036,29 @@ Component.prototype.%s = function(){
         return s 
                 
     # QtIfwPackageScript                              
-    def __init__( self, pkgName, pkgVersion,
-                  shortcuts=[], externalOps=[], uiPages=[],
-                  installResources=[],                    
+    def __init__( self, pkgName, pkgVersion, pkgSubDirName=None,
+                  shortcuts=[], bundledScripts=[],
+                  externalOps=[], installResources=[],
+                  uiPages=[],                    
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
         _QtIfwScript.__init__( self, fileName, script, scriptPath )
 
         self.pkgName          = pkgName
         self.pkgVersion       = pkgVersion
-        self.shortcuts        = shortcuts
-        self.uiPages          = uiPages
+        self.pkgSubDirName    = pkgSubDirName
         
+        self.shortcuts        = shortcuts
         self.externalOps      = externalOps
         self.killOps          = []
-        self.customOperations = None
-        
-        self.installResources     = installResources
+        self.customOperations = None        
+        self.bundledScripts   = bundledScripts
+        self.installResources = installResources
+
+        self.uiPages          = uiPages
                 
         # Linux Only
-        self.isAskPassProgRequired = False
+        if IS_LINUX: self.isAskPassProgRequired = False
 
         self.packageGlobals = None
         self.isAutoGlobals = True
@@ -3009,7 +3078,7 @@ Component.prototype.%s = function(){
         self.componentCreateOperationsForArchiveBody = None
         self.isAutoComponentCreateOperationsForArchive=True       
 
-    # WIP...
+    # UNTESTED, WIP...
     def addSimpleOperation( self, name, parms=[], isElevated=False, isAutoQuote=True ):        
         self.customOperations += QtIfwPackageScript.__ADD_OPERATION_TMPLT % (
             (QtIfwPackageScript.__ELEVATED if isElevated else ""), name, 
@@ -3099,9 +3168,12 @@ Component.prototype.%s = function(){
                     TAB + '    vbs += "oShortcut.Save\\n"' + END +
                     TAB + 'return vbs' + END +
                 EBLK + NEW + #TODO: Add UNDO operation
+                NEW +
+                'var __vbsOpCounter=0' + END +
                 'function addVbsOperation( component, isElevated, vbs ) ' + SBLK +
-                    TAB + 'var vbsPath = getEnv("temp")' + 
-                            '+ "/__qtIfwInstaller.vbs"' + END +
+                    TAB + '__vbsOpCounter++' + END +
+                    TAB + 'var vbsPath = __installerTempPath()' + 
+                            '+ "/__temp_" + __vbsOpCounter + ".vbs"' + END +
                     TAB + 'var cmd = ["cscript", vbsPath]' + END +
                     TAB + 'component.addOperation( "Delete", vbsPath )' + END +
                     TAB + 'component.addOperation( "AppendFile", vbsPath , vbs )' + END +
@@ -3214,9 +3286,10 @@ Component.prototype.%s = function(){
             '    component.createOperations(); // call to super class\n' )
                             
         # post payload extractions
+        self.__addScriptUpdates()
         self.__addShortcuts()
         self.__addKillOperations()
-        self.__addExecuteOperations()
+        self.__addExternalOperations()
          
         if self.customOperations:
             self.componentCreateOperationsBody += (
@@ -3249,6 +3322,13 @@ Component.prototype.%s = function(){
         # if not overridden, perform default pay load extraction         
         self.componentCreateOperationsForArchiveBody +=(        
             '    component.createOperationsForArchive(archive); // call to super class \n' )
+
+    def __addScriptUpdates( self ):
+        if self.bundledScripts and len(self.bundledScripts) > 0:
+            self.componentCreateOperationsBody +=(
+                _QtIfwScript.resolveScriptVarsOperations( 
+                    self.bundledScripts, self.pkgSubDirName ) 
+            )
         
     # TODO: Clean up this ever growing, hideous mess!    
     def __addShortcuts( self ):
@@ -3399,7 +3479,7 @@ Component.prototype.%s = function(){
         self.externalOps = firstOps + self.externalOps + lastOps
 
     # TODO: Clean up this ugly mess!            
-    def __addExecuteOperations( self ):
+    def __addExternalOperations( self ):
         if not self.externalOps: return        
         
         TAB  = _QtIfwScript.TAB
@@ -3712,7 +3792,8 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                   wrapperScript=None,
                   exeDir=QT_IFW_TARGET_DIR, 
                   workingDir=None, # None=don't impose here, use QT_IFW_TARGET_DIR via other means
-                  args=None, envVars=None, isElevated=False ) :
+                  args=None, envVars=None, isElevated=False,
+                  isExe=False ) : # Windows Only
                
         self.exeName       = exeName
         self.isGui         = isGui
@@ -3727,9 +3808,14 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
         
         self.isElevated    = isElevated
         
-        self._winPsStartArgs  = None
-        #self._winCmdStartArgs = None
+        self.isExe = isExe if IS_WINDOWS else False
+        self.wrapperExeName =( normBinaryName( "%sLauncher" % (exeName,) ) 
+                               if IS_WINDOWS else None )
+        self.wrapperIconName = normIconName("0") if IS_WINDOWS else None
         
+        if IS_WINDOWS:
+            self._winPsStartArgs  = None
+                    
         self.refresh()
             
     def refresh( self ):
@@ -3753,15 +3839,19 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
         if not isScript:
             if IS_WINDOWS :
                 # we must use a script to set envVars when auto elevating,
-                # else they are lost when the non-admin to admin context is changed 
-                isScript = isAutoScript = self.isElevated and self.envVars
+                # else they are lost when the non-admin to admin context is changed
+                isScript = isAutoScript =(
+                    self.isExe or (self.isElevated and self.envVars) )
             elif IS_LINUX :
+                # GUIs desktop entries can do all this, but without a gui a script
+                # is required 
                 isScript = isAutoScript = (not self.isGui and
                     (self.isElevated or self.workingDir or
                      self.args or self.envVars) )
             elif IS_MACOS : 
                 # there are no "light weight" shortcut wrappers employed on macOS, 
-                # so force the use of a script to apply built-in wrapper features
+                # so always use a script to apply wrapper features (but we hide it
+                # inside the natural .app wrapper for gui programs)
                 isScript = isAutoScript = (self.isElevated or self.workingDir
                                            or self.args or self.envVars)                
             if isAutoScript :
@@ -3777,7 +3867,7 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
         # If applicable, point the run target at the script rather than the binary.        
         if isScript:
             self._runProgram = joinPathQtIfw( self.exeDir, 
-                                              self.wrapperScript.fileName() )            
+                self.wrapperExeName if self.isExe else self.wrapperScript.fileName() )            
             self._shortcutCmd = self._runProgram
             if IS_MACOS and self.isGui :        
                 appPath = normBinaryName( self._runProgram, 
@@ -3854,26 +3944,6 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                 # the psCmd is one long argument for PS
                 self._shortcutArgs = [ psCmd ] 
                 self._shortcutWinStyle = SHORTCUT_WIN_MINIMIZED
-            """
-            # CMD Start    
-            # START "title" [/D path] [options] "command" [parameters]
-            elif self.workingDir or self._winCmdStartArgs:
-                self._runProgram  = QtIfwExeWrapper.__WIN_CMD
-                self._shortcutCmd = QtIfwExeWrapper.__WIN_CMD
-                title = normBinaryName(self.exeName)
-                cmd = QtIfwExeWrapper.__WIN_CMD_START_TMPLT % (title,)
-                if self.workingDir :
-                    cmd += QtIfwExeWrapper.__WIN_CMD_START_PWD_TMPLT % (
-                        self.workingDir,)
-                # Custom additions to Start                     
-                if self._winCmdStartArgs: 
-                    cmd += (" " + " ".join(self._winCmdStartArgs))
-                cmd +=  ' "%s"' % (targetPath,)
-                if self._shortcutArgs : # use in both context, these are already wrapped in quotes 
-                    cmd += (" " + " ".join(self._shortcutArgs))
-                self._runProgArgs = [ cmd ]
-                self._shortcutArgs = [ cmd ]
-            """    
         elif IS_LINUX :
             if isAutoScript:
                 script=QtIfwExeWrapper.__SCRIPT_HDR                 
@@ -4101,15 +4171,17 @@ class QtIfwExternalOp:
                         QtIfwExternalResource.RESOURCE_HACKER ) ] )            
             ]
 
+        #TODO: copy the branding directly rather than applying directly, in order to 
+        # make this work with non PyInstaller binaries] 
         @staticmethod
         def WrapperScript2Exe( scriptPath, exePath, 
-                               targetPath, exeVerInfo, iconName="0.ico" ):
+                               targetPath, exeVerInfo, iconName ):
             iconDirPath = joinPath( "%temp%", "extracted-icons" )            
             isScriptRemoved = isIconDirRemoved = True
             return [
-                  QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.AUTO_UND, 
+                  QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.AUTO_UNDO, 
                     script=QtIfwExternalOp.Script2ExeScript( 
-                        scriptPath, exePath, isScriptRemoved ),
+                        scriptPath, targetPath, isScriptRemoved ),
                     uninstScript=QtIfwExternalOp.RemoveFileScript( exePath ), 
                     isReversible=True, isElevated=True )
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
@@ -4126,7 +4198,7 @@ class QtIfwExternalOp:
                         QtIfwExternalResource.RESOURCE_HACKER ) ] )                  
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
                     script=QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
-                        exePath, iconDirPath, iconName, 
+                        targetPath, iconDirPath, iconName, 
                         isIconDirRemoved=isIconDirRemoved ), 
                     isReversible=False, isElevated=True,
                     externalRes=[QtIfwExternalResource.BuiltIn(
@@ -4220,7 +4292,7 @@ class QtIfwExternalOp:
 ;(echo(TargetName="%target.exe%")>>"%temp%\\2exe.sed"
 ;(echo(FILE0="%script_name%")>>"%temp%\\2exe.sed"
 ;(echo([SourceFiles])>>"%temp%\\2exe.sed"
-;(echo(SourceFiles0=%script_dir%)>>"%temp%\\2exe.sed"
+;(echo(SourceFiles0="%script_dir%")>>"%temp%\\2exe.sed"
 ;(echo([SourceFiles0])>>"%temp%\\2exe.sed"
 ;(echo(%%FILE0%%=)>>"%temp%\\2exe.sed"
 
@@ -5340,7 +5412,7 @@ def __addInstallerResources( qtIfwConfig ) :
     __genQtIfwCntrlRes( qtIfwConfig ) 
                                       
     for p in qtIfwConfig.packages :
-        if not isinstance( p, QtIfwPackage ) : continue        
+        if not isinstance( p, QtIfwPackage ) : continue
         __addLicenses( p )
         pkgXml = p.pkgXml              
         pkgScript = p.pkgScript       

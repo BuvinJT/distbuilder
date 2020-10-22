@@ -1,4 +1,5 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
+    ExecutableScript, normBinaryName, rootFileName, \
     IS_WINDOWS, IS_MACOS, IS_LINUX, QT_IFW_TARGET_DIR, \
     DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE
 
@@ -81,7 +82,7 @@ start "" "%dirname%\%appname%" %*
 start "" {0} "%dirname%\{1}"
 """)
 elif IS_MACOS :
-    # Note: this script is specific for use with a GUI app (on several points)
+    # Note: this script is specific for use with a macOS *GUI* app
     textViewer = "TextEdit"
     launchScript = ( 
 """
@@ -114,15 +115,16 @@ screen -d -m {0} "$dirname/{1}"
 # Using explicit string replace because standard string 
 # formatting functions took issue with some of the characters
 # in the scripts 
-launchScript = launchScript.replace( "{0}", textViewer )
-launchScript = launchScript.replace( "{1}", licenseName )
-launchScript = launchScript.replace( "{2}", DEBUG_ENV_VAR_NAME )
-launchScript = launchScript.replace( "{3}", DEBUG_ENV_VAR_VALUE )
+launchScript = launchScript.replace( 
+    "{0}", textViewer ).replace( 
+    "{1}", licenseName ).replace( 
+    "{2}", DEBUG_ENV_VAR_NAME ).replace( 
+    "{3}", DEBUG_ENV_VAR_VALUE )
         
 f.productName   = "Hello WrapperScript Example"
 f.setupName     = "HelloWrapperScriptSetup"
 f.distResources = ["../hello_world/{0}".format( licenseName ) ]
-f.pkgExeWrapper = f.qtIfwExeWrapper( wrapperScript=launchScript ) 
+f.pkgExeWrapper = f.qtIfwExeWrapper( wrapperScript=launchScript )  
 #    , isElevated = True 
 #    , workingDir = QT_IFW_TARGET_DIR 
 #    , envVars={ "TEST_ENV_VAR": "test" }
@@ -131,3 +133,26 @@ f.pkgExeWrapper = f.qtIfwExeWrapper( wrapperScript=launchScript )
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True
 #p.run()       
+
+#------------------------------------------------------------------------------
+if IS_WINDOWS :    
+    # Generating a binary "wrapper" over another (well "proxy" for), is only  
+    # currently supported on the Windows implementation of the library
+    licenseName = "LICENSE"
+    textViewer  = "notepad"
+    # Note this alternate, more robust, style for defining a script
+    # which includes dynamic variables supplied by the installer
+    launchScript = ExecutableScript( rootFileName( f.binaryName ), script=([
+        'start "" "{dirName}\{appName}"',
+        'start "" {textViewer} "{dirName}\{licenseName}"']), 
+        replacements={
+        "dirName": QT_IFW_TARGET_DIR, "appName": normBinaryName( f.binaryName ), 
+        "textViewer": textViewer, "licenseName": licenseName }
+    )        
+    f.productName   = "Hello WrapperExe Example"
+    f.setupName     = "HelloWrapperExeSetup"
+    f.distResources = ["../hello_world/{0}".format( licenseName ) ]
+    f.pkgExeWrapper = f.qtIfwExeWrapper( wrapperScript=launchScript, isExe=True )
+    p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
+    p.isInstallTest = True
+    p.run()       

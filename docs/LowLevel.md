@@ -585,7 +585,7 @@ following add-on **QT SCRIPT** functions:
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
 	
-    replaceQtIfwVarsInFile( path, varNames, isDoubleBackslash )
+    replaceDynamicVarsInFile( path, varNames, isDoubleBackslash )
 	
 	clearErrorLog()
 	writeErrorLog( msg )

@@ -564,30 +564,31 @@ and [QtIfwKillOp](#qtifwexternalop) objects are used for `killOps`.
 
 Constructor:       
 
-    QtIfwPackageScript( pkgName, pkgVersion,
-                        shortcuts=[], externalOps=[], uiPages=[],
-                        installResources=[],
+    QtIfwPackageScript( pkgName, pkgVersion, pkgSubDirName=None,
+                        shortcuts=[], bundledScripts=[], 
+                        externalOps=[], installResources=[],
+                        uiPages=[],
                         fileName="installscript.qs", 
                         script=None, scriptPath=None )
                   
 Attributes & default values:      
 
-    pkgName    = <required>
-    pkgVersion = <required>
-    fileName = "installscript.qs"
-    
-    script = None <or loaded via scriptPath>
-    
-    shortcuts   = []
-    uiPages     = []
+    pkgName       = <required>
+    pkgVersion    = <required>
+    pkgSubDirName = None
 
-    externalOps = []
-    killOps     = []
+    fileName = "installscript.qs"    
+    script   = None <or loaded via scriptPath>
+    
+    shortcuts        = []    
+    bundledScripts   = []    
+    externalOps      = []
+    installResources = []
+    killOps          = []
     customOperations = None
     
-    installResources = []
-    
-    embeddedResources = None    
+    uiPages     = []
+           
     packageGlobals = None
     isAutoGlobals = True
             
@@ -604,7 +605,7 @@ Attributes & default values:
     isAutoComponentCreateOperationsForArchive = True       
     
     <Linux Only>
-    isAskPassProgRequired = False
+        isAskPassProgRequired = False
                                                    
 Methods
                                                    
@@ -927,7 +928,7 @@ else the same design used on Linux is employed for non-gui programs.
 The application of a wrapper script of this nature is not entirely uncommon - especially on Linux. 
 As an example, when deploying Qt C++ applications on Linux which are 
 dynamically linked, the **standard procedure** (per Qt documentation) is to use this 
-(slightly modifed) shell script to load the required libraries: 
+(slightly modified) shell script to load the required libraries: 
  
     #!/bin/sh
     appname=`basename "$0" | sed s,\.sh$,,`
@@ -946,23 +947,29 @@ to your software. Using a wrapper, you could launch a "companion application" al
 primary target. You could start a background service, or open help documentation... The
 possibilities are really boundless.  
 
-Note: On Windows and Linux desktops (e.g. Ubuntu) for a gui application with shortcuts,  
+Note: On Windows and Linux desktops (e.g. Ubuntu) for a gui application with **shortcuts**,  
 the "built-in wrapper" features (`workingDir`, `isElevated`, `envVars`, `args`) maybe 
-used in combination with a custom `wrapperScript`, as those options are applied via the shortcut
-launching the script OR the executable.  On **macOS**, however, if using a custom script, you will have 
-to **manually** include these other features in that script, as the way they are applied 
-automatically by distibuilder is through the generation of one. If doing this, the easiest approach
-maybe to first use the built-ins without the custom script, and then duplicate the pertinent parts
-in your own.  Alternately, you could programmatically manipulate the `wrapperScript` attribute referencing an
-[ExecutableScript](LowLevel.md#executablescript) generated for you by this class upon it's construction
-or upon a call to `refresh()`. 
+used **in combination** with a custom `wrapperScript`. I.e. those options will be applied via 
+the shortcut launching the script OR the executable.  If you need the wrapper to work without 
+a shortcut involved, you will have to **manually** include these other features in the script.
+On **macOS**, this will **always** be applicable because there is no "shortcut" involved.
+To add these details yourself, you may wish to first use the built-in attributes without the 
+custom script, then copy what is written to the auto generated script into your own.  
+Alternately, you could programmatically manipulate the `wrapperScript` attribute referencing 
+an [ExecutableScript](LowLevel.md#executablescript) generated for you by this class upon it's 
+construction (or upon a call to `refresh()`). 
+
+On **WINDOWS ONLY**: You may optionally enable the `isExe` flag. Rather than a batch file, 
+this will produce a proxy exe, which will live adjacent to the target it wraps.  
+The icon and version / branding info from the original will be injected into it.
 
 Constructor:
 
     QtIfwExeWrapper( exeName, isGui=False, 
                      wrapperScript=None, 
                      exeDir=QT_IFW_TARGET_DIR, workingDir=None, 
-                     args=None, envVars=None, isElevated=False )    
+                     args=None, envVars=None, isElevated=False,
+                     isExe=False )    
 
 Attributes & default values:
         
@@ -978,7 +985,12 @@ Attributes & default values:
         envVars       = None         
         isElevated    = False
 
-        _winPsStartArgs = None  <Windows only>
+		<Windows only>
+			isExe           = False
+			wrapperExeName  = "<exeName>Launcher" 
+        	wrapperIconName = "0.ico"
+        				
+	        _winPsStartArgs = None  
 
         <Auto defined via refresh>
         _runProgram       

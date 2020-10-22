@@ -97,7 +97,8 @@ Object creation functions:
     qtIfwPackageScript( pyInstConfig=None )
     qtIfwExeWrapper( wrapperScript=None,
                      workingDir=None, isElevated=False, 
-                     envVars=None, args=None )
+                     envVars=None, args=None,
+                     isExe=False ) <Windows Only>
                      
 	<Windows Only>
 		exeVersionInfo()

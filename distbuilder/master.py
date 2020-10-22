@@ -12,8 +12,7 @@ from distbuilder.py_installer import \
       buildExecutable \
     , makePyInstSpec \
     , PyInstallerConfig \
-    , PyInstSpec \
-    , WindowsExeVersionInfo
+    , PyInstSpec 
 
 from distbuilder.opy_library import \
       obfuscatePy \
@@ -34,6 +33,7 @@ from distbuilder.qt_installer import \
     , QtIfwPackageScript \
     , QtIfwShortcut \
     , QtIfwExeWrapper \
+    , QtIfwExternalOp \
     , _QtIfwScript \
     , DEFAULT_SETUP_NAME \
     , DEFAULT_QT_IFW_SCRIPT_NAME \
@@ -201,7 +201,20 @@ class ConfigFactory:
         
         pkg.exeName    = self.__pkgExeName()
         pkg.isGui      = self.isGui
+        
         pkg.exeWrapper = self.pkgExeWrapper
+        if( IS_WINDOWS and 
+            isinstance( pkg.exeWrapper, QtIfwExeWrapper ) and 
+            pkg.exeWrapper.isExe ):
+            w = pkg.exeWrapper
+            pkg.pkgScript.externalOps += [
+                QtIfwExternalOp.WrapperScript2Exe(
+                    scriptPath = joinPath( w.exeDir, 
+                        w.wrapperScript.fileName() ), 
+                    exePath = joinPath( w.exeDir, normBinaryName( w.exeName ) ),
+                    targetPath = joinPath( w.exeDir, normBinaryName( w.wrapperExeName ) ), 
+                    exeVerInfo=self.exeVersionInfo(),
+                    iconName=normIconName( w.wrapperIconName ) ) ]                                    
          
         # Add additional distribution resources 
         # (note PyInst process adds these resource itself)
@@ -276,9 +289,15 @@ class ConfigFactory:
                         pngIconResPath=pngIconPath )  
         defShortcut.windowStyle = shortcutWinStyle
         
+        bundledScripts=[]
+        if self.pkgExeWrapper and self.pkgExeWrapper.wrapperScript:
+            bundledScripts.append( self.pkgExeWrapper.wrapperScript )
+                    
         script = QtIfwPackageScript( 
                     self.__ifwPkgName(), self.__versionStr(),
+                    pkgSubDirName=self.pkgSubDirName,
                     shortcuts=[ defShortcut ],
+                    bundledScripts=bundledScripts,
                     fileName=self.ifwPkgScriptName,
                     script=self.ifwPkgScriptText, 
                     scriptPath=self.ifwPkgScriptPath )
@@ -290,11 +309,12 @@ class ConfigFactory:
 
     def qtIfwExeWrapper( self, wrapperScript=None,
                          workingDir=None, isElevated=False, 
-                         envVars=None, args=None ) :
+                         envVars=None, args=None, 
+                         isExe=False ) : # Windows only option!
         return QtIfwExeWrapper( self.__pkgExeName(), isGui=self.isGui, 
                 wrapperScript=wrapperScript,
                 workingDir=workingDir, isElevated=isElevated, 
-                envVars=envVars, args=args )
+                envVars=envVars, args=args, isExe=isExe )        
 
     def __versionTuple( self ): return versionTuple( self.version )
                     
