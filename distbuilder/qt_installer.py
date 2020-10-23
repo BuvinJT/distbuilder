@@ -4074,43 +4074,13 @@ class QtIfwExternalOp:
     @staticmethod
     def CreateStartupEntry( pkg=None, exePath=None, displayName=None, 
                             isAllUsers=False ):
-        if pkg :
-            if not displayName: displayName = pkg.pkgXml.DisplayName
-
-            """
-            if IS_WINDOWS and pkg:                                
-                w = pkg.pkgExeWrapper = QtIfwExeWrapper( 
-                    pkg.exeName, isGui=pkg.isGui, 
-                    wrapperScript=ExecutableScript( rootFileName( pkg.exeName ), 
-                        script=( ['cd "@TargetDir@"', 
-                                  'start "" %s' % (normBinaryName(pkg.exeName),) ] ) ),
-                    isExe=True )        
-                wrapperExePath = joinPath( w.exeDir, normBinaryName( w.wrapperExeName ) )
-                pkg.pkgScript.externalOps += [
-                    QtIfwExternalOp.WrapperScript2Exe(
-                        scriptPath = joinPath( w.exeDir, 
-                            w.wrapperScript.fileName() ), 
-                        exePath = joinPath( w.exeDir, normBinaryName( w.exeName ) ),
-                        targetPath = wrapperExePath ) ]         
-                exePath = wrapperExePath
-            """    
-            # sledge hammer
-            shortcuts = pkg.pkgScript.shortcuts
-            if IS_WINDOWS and shortcuts:
-                shortcuts[0].isAdjancentShortcut = True            
-                shortcuts[0].command = None
-                shortcuts[0].args    = []
-                shortcuts[0].exeDir  = QT_IFW_TARGET_DIR       
-                shortcuts[0].exeName = pkg.exeName                                               
-                exePath = joinPath( QT_IFW_TARGET_DIR, 
-                    "%s.lnk" % shortcuts[0].productName )  
-                            
-            elif not exePath:  
-                exeName = normBinaryName( pkg.exeName, pkg.isGui )
+        if pkg:
+            if not displayName: displayName = pkg.pkgXml.DisplayName                            
+            if not exePath:  
                 exePath = joinPath( 
                     ( joinPath( QT_IFW_TARGET_DIR, pkg.subDirName ) 
-                      if pkg.subDirName else QT_IFW_TARGET_DIR ), exeName )
-                                  
+                      if pkg.subDirName else QT_IFW_TARGET_DIR ), 
+                    normBinaryName( pkg.exeName, pkg.isGui ) )                                  
         if exePath is None or displayName is None:
             raise Exception( "Missing required arguments" )    
         if IS_WINDOWS:
@@ -4155,17 +4125,17 @@ class QtIfwExternalOp:
 
         @staticmethod
         def CreateExeFromScript( script, exeVerInfo, srcIconPath,
-                                 targetDir = QT_IFW_TARGET_DIR ):            
-            iconTool = QtIfwExternalResource( "%sIcon" % (script.rootName,), 
-                                           srcIconPath )            
+                                 targetDir=QT_IFW_TARGET_DIR ):            
+            iconRes = QtIfwExternalResource( "%sIcon" % (script.rootName,), 
+                                             srcIconPath )            
             ops = [ QtIfwExternalOp( resourceScripts=[script], 
-                                     externalRes=[iconTool] ) ]
+                                     externalRes=[iconRes] ) ]
             ops.extend( QtIfwExternalOp.Script2Exe( 
                 scriptPath = joinPath( QT_IFW_SCRIPTS_DIR, script.fileName() )
                 , exePath = joinPath( targetDir, 
                                       normBinaryName( script.rootName ) )
                 , exeVerInfo = exeVerInfo
-                , iconDirPath = iconTool.targetDirPathVar()
+                , iconDirPath = iconRes.targetDirPathVar()
                 , iconName = baseFileName( srcIconPath )
             ))
             return ops
@@ -4181,7 +4151,7 @@ class QtIfwExternalOp:
                     uninstScript=QtIfwExternalOp.RemoveFileScript( exePath ),                     
                     isReversible=True, isElevated=True )
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.BrandExeScript( 
+                    script=QtIfwExternalOp.EmbedExeVerInfoScript( 
                         exePath, exeVerInfo ), 
                     isReversible=False, isElevated=True,
                     externalRes=[ QtIfwExternalResource.BuiltIn(
@@ -4209,7 +4179,7 @@ class QtIfwExternalOp:
                     uninstScript=QtIfwExternalOp.RemoveFileScript( exePath ), 
                     isReversible=True, isElevated=True )
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.CopyExeBrandingScript( 
+                    script=QtIfwExternalOp.CopyExeVerInfoScript( 
                         exePath, targetPath ),                         
                     isReversible=False, isElevated=True,
                     externalRes=[QtIfwExternalResource.BuiltIn(
@@ -4373,7 +4343,7 @@ UserQuietInstCmd=
                 "command": command, "removeSrc": removeSrc } )
 
         @staticmethod
-        def BrandExeScript( exePath, exeVerInfo ):
+        def EmbedExeVerInfoScript( exePath, exeVerInfo ):
             script=(
 """
 @echo off
@@ -4416,7 +4386,7 @@ del /q /f "%TEMP_RC_PATH%"
 del /q /f "%TEMP_RES_PATH%"
 """)            
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "brandexe" ), script=script, replacements={
+                "embedExeVerInfo" ), script=script, replacements={
                   "exePath": exePath            
                 , "companyName": exeVerInfo.companyName
                 , "copyright": exeVerInfo.copyright()
@@ -4429,7 +4399,7 @@ del /q /f "%TEMP_RES_PATH%"
                 })
 
         @staticmethod
-        def CopyExeBrandingScript( srcExePath, destExePath ):
+        def CopyExeVerInfoScript( srcExePath, destExePath ):
             script=(
 """
 @echo off
@@ -4445,7 +4415,7 @@ set "TEMP_RES_PATH=%temp%\\versioninfo.res"
 del /q /f "%TEMP_RES_PATH%"
 """)            
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "copyexebrand" ), script=script, replacements={
+                "copyExeVerInfo" ), script=script, replacements={
                   "srcExePath": srcExePath, "destExePath": destExePath } )
 
         @staticmethod

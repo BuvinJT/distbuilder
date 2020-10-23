@@ -99,11 +99,14 @@ class ConfigFactory:
         self.ifwPkgScriptPath = None        
         self.ifwPkgScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
         
-        self.pkgType       = None
-        self.pkgSubDirName = None
-        self.pkgSrcDirPath = None
-        self.pkgSrcExePath = None
-        self.pkgExeWrapper = None 
+        self.pkgType         = None
+        self.pkgSubDirName   = None
+        self.pkgSrcDirPath   = None
+        self.pkgSrcExePath   = None
+        self.pkgExeWrapper   = None 
+        
+        self.pkgIsStartUpApp         = False
+        self.pkgIsStartUpAppAllUsers = False
                
         self.qtCppConfig = None
        
@@ -144,6 +147,7 @@ class ConfigFactory:
     
     def qtIfwConfig( self, packages=None ):
         if packages is not None: self.ifwPackages = packages        
+        
         cfg = QtIfwConfig( installerDefDirPath=self.ifwDefDirPath,
                             packages=self.ifwPackages,
                             configXml=self.qtIfwConfigXml(), 
@@ -186,7 +190,13 @@ class ConfigFactory:
     def qtIfwPackage( self, pyInstConfig=None, isTempSrc=False ):
         self.__pkgPyInstConfig = pyInstConfig
         pkgType=self.__ifwPkgType()
-        
+
+        if IS_WINDOWS and self.pkgIsStartUpApp:
+            if self.pkgExeWrapper and not self.pkgExeWrapper.isExe:
+                self.pkgExeWrapper.isExe = True
+                self.pkgExeWrapper.refresh()
+            else: self.pkgExeWrapper = self.qtIfwExeWrapper( isExe=True )        
+                
         pkg = QtIfwPackage(
                 pkgId=self.__ifwPkgId(),
                 pkgType=pkgType, 
@@ -202,7 +212,7 @@ class ConfigFactory:
         pkg.exeName    = self.__pkgExeName()
         pkg.isGui      = self.isGui
         
-        pkg.exeWrapper = self.pkgExeWrapper
+        pkg.exeWrapper = self.pkgExeWrapper        
         if( IS_WINDOWS and 
             isinstance( pkg.exeWrapper, QtIfwExeWrapper ) and 
             pkg.exeWrapper.isExe ):
@@ -213,7 +223,11 @@ class ConfigFactory:
                         w.wrapperScript.fileName() ), 
                     exePath = joinPath( w.exeDir, normBinaryName( w.exeName ) ),
                     targetPath = joinPath( w.exeDir, normBinaryName( w.wrapperExeName ) ), 
-                    iconName=normIconName( w.wrapperIconName ) ) ]                                    
+                    iconName=normIconName( w.wrapperIconName ) ) ]       
+            if self.pkgIsStartUpApp:
+                pkg.pkgScript.externalOps += [
+                    QtIfwExternalOp.CreateStartupEntry( pkg, 
+                        isAllUsers=self.pkgIsStartUpAppAllUsers ) ]
          
         # Add additional distribution resources 
         # (note PyInst process adds these resource itself)

@@ -22,13 +22,10 @@ class BuildProcess( PyToBinInstallerProcess ):
         def addKillOps( pkg ):
             pkg.pkgScript.killOps += [ QtIfwKillOp( pkg ) ]
 
-        # TO TEST / CONFIRM FUNCTIONALITY, REBOOT POST INSTALL  
-        def addLaunchOnStartupOp( pkg ):
-            # Notable CreateStartupEntry option to try: isAllUsers=True
-            pkg.pkgScript.externalOps += [                                 
-                QtIfwExternalOp.CreateStartupEntry( pkg ) ] 
-
         if IS_WINDOWS:
+            # These exes are created on the fly, by the installer!  
+            # This feature is currently only supported on the Windows 
+            # implementation of the library.
             
             def addCreateExeFromScript( pkg, name, ext, script ):
                 pkg.pkgScript.externalOps += [
@@ -56,8 +53,7 @@ class BuildProcess( PyToBinInstallerProcess ):
         
         pkg = cfg.packages[0]
         addKillOps( pkg ) 
-        addLaunchOnStartupOp( pkg )                        
-        if IS_WINDOWS: 
+        if IS_WINDOWS:            
             addCreateExeFromBatch( pkg )
             addCreateExeFromPowerShell( pkg )
             addCreateExeFromVbs( pkg )               
