@@ -1,4 +1,4 @@
-import string
+import string  # @UnusedImport
 from datetime import date
 from six import PY2, PY3, string_types, iteritems  # @UnusedImport
 from six.moves import urllib

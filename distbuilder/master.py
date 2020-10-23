@@ -213,7 +213,6 @@ class ConfigFactory:
                         w.wrapperScript.fileName() ), 
                     exePath = joinPath( w.exeDir, normBinaryName( w.exeName ) ),
                     targetPath = joinPath( w.exeDir, normBinaryName( w.wrapperExeName ) ), 
-                    exeVerInfo=self.exeVersionInfo(),
                     iconName=normIconName( w.wrapperIconName ) ) ]                                    
          
         # Add additional distribution resources 

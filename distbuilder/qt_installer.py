@@ -3811,7 +3811,7 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
         self.isExe = isExe if IS_WINDOWS else False
         self.wrapperExeName =( normBinaryName( "%sLauncher" % (exeName,) ) 
                                if IS_WINDOWS else None )
-        self.wrapperIconName = normIconName("0") if IS_WINDOWS else None
+        self.wrapperIconName = None
         
         if IS_WINDOWS:
             self._winPsStartArgs  = None
@@ -4076,17 +4076,35 @@ class QtIfwExternalOp:
                             isAllUsers=False ):
         if pkg :
             if not displayName: displayName = pkg.pkgXml.DisplayName
-            shortcuts = pkg.pkgScript.shortcuts
-            if IS_WINDOWS and shortcuts:
-                shortcuts[0].isAdjancentShortcut = True                                        
-                exePath = joinPath( QT_IFW_TARGET_DIR, 
-                    "%s.lnk" % shortcuts[0].productName )  
-            # TODO: Handle wrappers on other platforms    
+            
+            #shortcuts = pkg.pkgScript.shortcuts
+            #if IS_WINDOWS and shortcuts:
+            #    shortcuts[0].isAdjancentShortcut = True                                        
+            #    exePath = joinPath( QT_IFW_TARGET_DIR, 
+            #        "%s.lnk" % shortcuts[0].productName )  
+            # TODO: Handle wrappers on other platforms
+            if IS_WINDOWS and pkg:
+                
+                # CUTTING CORNERS, QUICK SOLUTION...
+                
+                w = pkg.pkgExeWrapper = QtIfwExeWrapper( 
+                    pkg.exeName, isGui=pkg.isGui, 
+                    workingDir=QT_IFW_TARGET_DIR, isElevated=False, 
+                    isExe=True )        
+                exePath = joinPath( w.exeDir, normBinaryName( w.wrapperExeName ) )
+                pkg.pkgScript.externalOps += [
+                    QtIfwExternalOp.WrapperScript2Exe(
+                        scriptPath = joinPath( w.exeDir, 
+                            w.wrapperScript.fileName() ), 
+                        exePath = joinPath( w.exeDir, normBinaryName( w.exeName ) ),
+                        targetPath = exePath ) ]         
+
             elif not exePath:  
                 exeName = normBinaryName( pkg.exeName, pkg.isGui )
                 exePath = joinPath( 
                     ( joinPath( QT_IFW_TARGET_DIR, pkg.subDirName ) 
                       if pkg.subDirName else QT_IFW_TARGET_DIR ), exeName )
+                                  
         if exePath is None or displayName is None:
             raise Exception( "Missing required arguments" )    
         if IS_WINDOWS:
@@ -4174,8 +4192,8 @@ class QtIfwExternalOp:
         #TODO: copy the branding directly rather than applying directly, in order to 
         # make this work with non PyInstaller binaries] 
         @staticmethod
-        def WrapperScript2Exe( scriptPath, exePath, 
-                               targetPath, exeVerInfo, iconName ):
+        def WrapperScript2Exe( scriptPath, exePath, targetPath, 
+                               iconName=None ):
             iconDirPath = joinPath( "%temp%", "extracted-icons" )            
             isScriptRemoved = isIconDirRemoved = True
             return [
@@ -4185,8 +4203,8 @@ class QtIfwExternalOp:
                     uninstScript=QtIfwExternalOp.RemoveFileScript( exePath ), 
                     isReversible=True, isElevated=True )
                 , QtIfwExternalOp.__genScriptOp( QtIfwExternalOp.ON_INSTALL, 
-                    script=QtIfwExternalOp.BrandExeScript( 
-                        targetPath, exeVerInfo ),                         
+                    script=QtIfwExternalOp.CopyExeBrandingScript( 
+                        exePath, targetPath ),                         
                     isReversible=False, isElevated=True,
                     externalRes=[QtIfwExternalResource.BuiltIn(
                         QtIfwExternalResource.RESOURCE_HACKER ) ] )            
@@ -4405,6 +4423,26 @@ del /q /f "%TEMP_RES_PATH%"
                 })
 
         @staticmethod
+        def CopyExeBrandingScript( srcExePath, destExePath ):
+            script=(
+"""
+@echo off
+
+set "SRC_EXE_PATH={srcExePath}"
+set "DEST_EXE_PATH={destExePath}"
+
+set "TEMP_RES_PATH=%temp%\\versioninfo.res"
+
+"@ResourceHacker@" -open "%SRC_EXE_PATH%" -save "%TEMP_RES_PATH%" -action extract -mask VERSIONINFO 
+"@ResourceHacker@" -open "%DEST_EXE_PATH%" -save "%DEST_EXE_PATH%" -action addoverwrite -resource "%TEMP_RES_PATH%" 
+
+del /q /f "%TEMP_RES_PATH%"
+""")            
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "copyexebrand" ), script=script, replacements={
+                  "srcExePath": srcExePath, "destExePath": destExePath } )
+
+        @staticmethod
         def ExtractIconsFromExeScript( exePath, targetDirPath ):
             script=(
 """
@@ -4416,8 +4454,8 @@ del /q /f "%TEMP_RES_PATH%"
                     "exePath": exePath, "targetDirPath": targetDirPath } )
 
         @staticmethod
-        def ReplacePrimaryIconInExeScript( exePath, iconDirPath, iconName, 
-                                           isIconDirRemoved=False ):
+        def ReplacePrimaryIconInExeScript( exePath, iconDirPath, 
+                                           iconName=None, isIconDirRemoved=False ):            
             """
             Note the use of if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" ...
             That is **extremely important** here, as "ie4uinit" is a 64 bit program, 
@@ -4426,22 +4464,28 @@ del /q /f "%TEMP_RES_PATH%"
             Without that, you get mind blowing errors thrown back at you saying the  
             the file does not even exist (including when you specify an absolute path 
             to the file you know for a fact is found there)!
-            """
-            
+            """            
             script=(
 """
 @echo off
-"@ResourceHacker@" -open "{exePath}" -save "{exePath}" -action addoverwrite -res "{iconPath}" -mask ICONGROUP, MAINICON, 0
+{setIconName}
+"@ResourceHacker@" -open "{exePath}" -save "{exePath}" -action addoverwrite -res "{iconDir}\%iconName%" -mask ICONGROUP, MAINICON, 0
 {removeIconDir}
 set "REFRESH_ICONS=ie4uinit -ClearIconCache & ie4uinit -show"
 if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%" ) else ( %REFRESH_ICONS% )
-""")        
-            iconPath = joinPath( iconDirPath, iconName )  
+""")
+            if iconName is None:
+                setIconName =( 'for /f "delims=" %%F in '
+                    '(\'dir ' + iconDirPath + '\*.ico /b /o-n\') '
+                    'do set iconName=%%F' )
+            else:            
+                setIconName = 'set "iconName=%s"' % (joinPath( iconDirPath, iconName ),)                  
             removeIconDir =( 'rd /q /s "%s"' % (iconDirPath,) 
                              if isIconDirRemoved else "" )  
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "replacePrimaryIconInExe" ), script=script, replacements={
-                "exePath":exePath, "iconPath": iconPath, 
+                "exePath":exePath, 
+                "iconDir": iconDirPath, "setIconName": setIconName, 
                 "removeIconDir": removeIconDir } )
  
     # QtIfwExternalOp
