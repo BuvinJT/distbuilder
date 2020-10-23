@@ -326,6 +326,8 @@ class ConfigFactory:
                          isExe=False ) : # Windows only option!
         return QtIfwExeWrapper( self.__pkgExeName(), isGui=self.isGui, 
                 wrapperScript=wrapperScript,
+                exeDir=( joinPathQtIfw( QT_IFW_TARGET_DIR, self.pkgSubDirName )
+                         if self.pkgSubDirName else QT_IFW_TARGET_DIR ),                 
                 workingDir=workingDir, isElevated=isElevated, 
                 envVars=envVars, args=args, isExe=isExe )        
 

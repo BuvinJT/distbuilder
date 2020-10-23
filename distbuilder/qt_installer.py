@@ -3703,6 +3703,13 @@ class QtIfwExeWrapper:
 set appname=%~n0
 set dirname=%~dp0
 """)
+        __EXE_SCRIPT_HDR = (
+"""
+@echo off
+set "appname={0}"
+set "dirname={1}"
+""")
+
         __TARGET_DIR = '%dirname%'
          
         __EXECUTE_PROG_TMPLT = (
@@ -3888,7 +3895,9 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                   
         if IS_WINDOWS :
             if isAutoScript :
-                script=QtIfwExeWrapper.__SCRIPT_HDR                
+                script =( QtIfwExeWrapper.__EXE_SCRIPT_HDR.format( 
+                            self.exeName, self.exeDir )  
+                          if self.isExe else QtIfwExeWrapper.__SCRIPT_HDR )                
                 if isinstance( self.envVars, dict ):
                     for k,v in six.iteritems( self.envVars ):
                         script += ( '\n' + 
@@ -3898,9 +3907,12 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                           if self.isGui 
                           else QtIfwExeWrapper.__EXECUTE_PROG_TMPLT )
                 cdCmd = ""
-                if self.workingDir :
+                # for a hard exe wrapper, force the working directory, 
+                # (as it will always be a funky temp path otherwise) 
+                if self.workingDir or self.isExe:
                     if self.workingDir==QT_IFW_TARGET_DIR :
-                        pwdPath = QtIfwExeWrapper.__TARGET_DIR  
+                        pwdPath = QtIfwExeWrapper.__TARGET_DIR                    
+                    elif self.isExe and not self.workingDir: pwdPath = self.exeDir                               
                     else : pwdPath = self.workingDir  
                     cdCmd += QtIfwExeWrapper.__PWD_PREFIX_CMD_TMPLT % (pwdPath,)      
                 args=""
@@ -4072,15 +4084,24 @@ class QtIfwExternalOp:
                 isElevated=isElevated )
     
     @staticmethod
-    def CreateStartupEntry( pkg=None, exePath=None, displayName=None, 
+    def CreateStartupEntry( pkg=None, 
+                            exePath=None, displayName=None, 
                             isAllUsers=False ):
         if pkg:
             if not displayName: displayName = pkg.pkgXml.DisplayName                            
-            if not exePath:  
-                exePath = joinPath( 
-                    ( joinPath( QT_IFW_TARGET_DIR, pkg.subDirName ) 
-                      if pkg.subDirName else QT_IFW_TARGET_DIR ), 
-                    normBinaryName( pkg.exeName, pkg.isGui ) )                                  
+            if not exePath:
+                if pkg.exeWrapper:                  
+                    exeDir = pkg.exeWrapper.exeDir 
+                    exeName = ( normBinaryName( pkg.exeWrapper.wrapperExeName ) 
+                                if pkg.exeWrapper.isExe else
+                                pkg.exeWrapper.wrapperScript.fileName() 
+                                if pkg.exeWrapper.wrapperScript else 
+                                normBinaryName( pkg.exeName, pkg.isGui ) )
+                else :
+                    exeDir = ( joinPath( QT_IFW_TARGET_DIR, pkg.subDirName ) 
+                               if pkg.subDirName else QT_IFW_TARGET_DIR ) 
+                    exeName = normBinaryName( pkg.exeName, pkg.isGui )                        
+                exePath = joinPath( exeDir, exeName ) 
         if exePath is None or displayName is None:
             raise Exception( "Missing required arguments" )    
         if IS_WINDOWS:
