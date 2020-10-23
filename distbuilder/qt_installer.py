@@ -4076,29 +4076,35 @@ class QtIfwExternalOp:
                             isAllUsers=False ):
         if pkg :
             if not displayName: displayName = pkg.pkgXml.DisplayName
-            
-            #shortcuts = pkg.pkgScript.shortcuts
-            #if IS_WINDOWS and shortcuts:
-            #    shortcuts[0].isAdjancentShortcut = True                                        
-            #    exePath = joinPath( QT_IFW_TARGET_DIR, 
-            #        "%s.lnk" % shortcuts[0].productName )  
-            # TODO: Handle wrappers on other platforms
-            if IS_WINDOWS and pkg:
-                
-                # CUTTING CORNERS, QUICK SOLUTION...
-                
+
+            """
+            if IS_WINDOWS and pkg:                                
                 w = pkg.pkgExeWrapper = QtIfwExeWrapper( 
                     pkg.exeName, isGui=pkg.isGui, 
-                    workingDir=QT_IFW_TARGET_DIR, isElevated=False, 
+                    wrapperScript=ExecutableScript( rootFileName( pkg.exeName ), 
+                        script=( ['cd "@TargetDir@"', 
+                                  'start "" %s' % (normBinaryName(pkg.exeName),) ] ) ),
                     isExe=True )        
-                exePath = joinPath( w.exeDir, normBinaryName( w.wrapperExeName ) )
+                wrapperExePath = joinPath( w.exeDir, normBinaryName( w.wrapperExeName ) )
                 pkg.pkgScript.externalOps += [
                     QtIfwExternalOp.WrapperScript2Exe(
                         scriptPath = joinPath( w.exeDir, 
                             w.wrapperScript.fileName() ), 
                         exePath = joinPath( w.exeDir, normBinaryName( w.exeName ) ),
-                        targetPath = exePath ) ]         
-
+                        targetPath = wrapperExePath ) ]         
+                exePath = wrapperExePath
+            """    
+            # sledge hammer
+            shortcuts = pkg.pkgScript.shortcuts
+            if IS_WINDOWS and shortcuts:
+                shortcuts[0].isAdjancentShortcut = True            
+                shortcuts[0].command = None
+                shortcuts[0].args    = []
+                shortcuts[0].exeDir  = QT_IFW_TARGET_DIR       
+                shortcuts[0].exeName = pkg.exeName                                               
+                exePath = joinPath( QT_IFW_TARGET_DIR, 
+                    "%s.lnk" % shortcuts[0].productName )  
+                            
             elif not exePath:  
                 exeName = normBinaryName( pkg.exeName, pkg.isGui )
                 exePath = joinPath( 
