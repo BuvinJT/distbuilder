@@ -82,7 +82,9 @@ Attributes & default values:
     pkgSrcDirPath = None
     pkgSrcExePath = None
     pkgExeWrapper = None
-
+	pkgIsStartUpApp         = False
+    pkgIsStartUpAppAllUsers = False
+        
     qtCppConfig      = None
  
 Object creation functions:
@@ -434,6 +436,18 @@ Such a wrapper can super impose environmental conditions on the context
 within which the binary is run.  Notably, this may include an 
 [ExecutableScript](LowLevel.md#executablescript) for maximum flexibility.
 Follow the links to learn to more.
+
+#### pkgIsStartUpApp, pkgIsStartUpAppAllUsers
+
+Enable `pkgIsStartUpApp` to have the installer register the "primary" exe 
+within a package as a program to launch upon booting the system.
+
+In Windows, this will lead to an auto implementation of a [QtIfwExeWrapper](ConfigClasses.md#qtifwexewrapper), which employs the special `isExe` feature,
+producing a "wrapper/proxy/launcher" exe adjacent to the actual one.  That 
+launcher is what will actually be registered in the OS.  
+
+Enable `pkgIsStartUpAppAllUsers` to have this applied for all system users,
+else it applies only for the current user by default.
 
 #### qtCppConfig
 
