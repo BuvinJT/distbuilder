@@ -657,16 +657,17 @@ into the target via [mergeDirs](#mergedirs).  In addition, a number of
 other configuration details will be "merged" as well.  Examples of such
 include combining the lists of
 [QtIfwShortcut](ConfigClasses.md#qtifwshortcut) objects, 
-[QtIfwExternalOp](ConfigClasses.md#qtifwexternalop) objects, and the 
-`customOperations` script snippets nested inside the 
-[QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript)
-objects, followed by script regeneration to reflect such. 
-Note that all attributes of the source package, which aren't explicitly 
-handled by the library in this operation, are lost!  Some further 
-customizations to the result may need to be made post merge for a given use case.
+[QtIfwExternalOp](ConfigClasses.md#qtifwexternalop) objects,  
+[QtIfwExternalResource](ConfigClasses.md#qtifwexternalresource) objects,
+etc., drilling down in to the [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript)
+contained within the packages.  The package scripts are regenerated during a 
+subsequent build process to reflect these changes. 
+Note that any attributes of the source package, which aren't explicitly 
+handled by the library in this operation, will likely be lost!  Some detailed inspection, 
+and further customizations to the result, may need to be made post merge for a given 
+use case, if the desired effect fails.
 
-If the source package has a `subDirName` attribute, that detail will be preserved
-by this nesting.  I.e. the merge will retain the sub directory encapsulation.   
+Note that if the source package has a `subDirName` attribute, that detail will be preserved.  I.e. the merge will retain the sub directory encapsulation.   
 
 This function ultimately consolidates the package items in the list and returns
 the destination object.	

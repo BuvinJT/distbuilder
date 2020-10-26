@@ -8,7 +8,7 @@ IS_MACOS   = __plat == "Darwin"
 
 platform_resources = {}
 if IS_WINDOWS:
-    platform_resources['distbuilder'] = ['qtifw_tools/windows/*'] 
+    platform_resources['distbuilder'] = ['qtifw_res/windows/*'] 
     
 # get __version__ and readme
 exec( open('distbuilder/_version.py').read() ) 

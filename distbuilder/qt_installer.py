@@ -3086,22 +3086,29 @@ Component.prototype.%s = function(){
                  if isAutoQuote else parms ) ) 
 
     def _flatten( self ) :
-        # merge grouped together lists of ops into one flat list  
-        ops=[]
-        for op in self.externalOps:
-            if isinstance(op, list): ops.extend( op )
-            else:                    ops.append( op )
-        self.externalOps = ops
         
-        # add op tool dependencies into the package install tool list 
-        for op in self.externalOps:
-            for dependency in op.externalRes:
-                dependencyFound = False        
-                for tool in self.installResources:
-                    dependencyFound = tool.name == dependency.name
-                    if dependencyFound: continue
-                if dependencyFound: continue
-                self.installResources.append( dependency )
+        def flattenExOps():
+            # merge grouped together lists of ops into one flat list
+            listFound=False  
+            ops=[]
+            for op in self.externalOps:
+                if isinstance(op, list): 
+                    ops.extend( op )
+                    listFound=True
+                else: ops.append( op )
+            self.externalOps = [op for op in ops if op]
+            if listFound: flattenExOps()
+        
+        def collectDependencies():
+            # add unique dependencies in ops to the higher level list in the pkg  
+            for op in self.externalOps:
+                for res in op.externalRes:
+                    if res: self.installResources.append( res )
+            if self.installResources:
+                self.installResources = list(set( self.installResources ))
+                
+        flattenExOps()
+        collectDependencies()
                                                         
     def _generate( self ) :        
         self.script = ""
@@ -3174,7 +3181,7 @@ Component.prototype.%s = function(){
                     TAB + '__vbsOpCounter++' + END +
                     TAB + 'var vbsPath = __installerTempPath()' + 
                             '+ "/__temp_" + __vbsOpCounter + ".vbs"' + END +
-                    TAB + 'var cmd = ["cscript", vbsPath]' + END +
+                    TAB + 'var cmd = ["cscript", "/Nologo", vbsPath]' + END +
                     TAB + 'component.addOperation( "Delete", vbsPath )' + END +
                     TAB + 'component.addOperation( "AppendFile", vbsPath , vbs )' + END +
                     TAB + 'if( isElevated )' + NEW +
@@ -3274,10 +3281,10 @@ Component.prototype.%s = function(){
         self.componentCreateOperationsBody = ""
         
         # pre payload extractions
-        for tool in self.installResources:
-            if isinstance( tool, QtIfwExternalResource ):
+        for res in self.installResources:
+            if isinstance( res, QtIfwExternalResource ):
                 self.componentCreateOperationsBody +=(
-                     tool._setTargetPathValues() )                         
+                     res._setTargetPathValues() )                         
         if IS_LINUX and self.isAskPassProgRequired:
             self.__addAskPassProgResolution()
         
@@ -4547,6 +4554,7 @@ class QtIfwExternalResource:
                 " (Auto correcting this may produce hard to find bugs)" )
         self.name = name
         self.srcPath = absPath( srcPath, srcBasePath )        
+        print("self.srcPath", self.srcPath)
         self.isMaintenanceNeed = isMaintenanceNeed        
         self.contentKeys = contentKeys
         if( (contentKeys is None or len(contentKeys)==0) and 
@@ -4554,6 +4562,11 @@ class QtIfwExternalResource:
             fileExt(self.srcPath) != _QT_IFW_ARCHIVE_EXT ):                
             self.contentKeys[ name ] = baseFileName( self.srcPath )         
 
+    def __hash__( self ): return hash( self.name )
+    
+    def __eq__( self, other ):
+        return self.__class__ == other.__class__ and self.name==other.name
+           
     def targetPathVar( self, key=None ):
         return _QT_IFW_VAR_TMPLT % (self.__targetPathKey( key ),)
 
@@ -4662,6 +4675,11 @@ class QtIfwUiPage():
         if sourcePath:
             with open( sourcePath, 'r' ) as f: self.content = f.read()
         else: self.content = content  
+
+    def __hash__( self ): return hash( self.name )
+    
+    def __eq__( self, other ):
+        return self.__class__ == other.__class__ and self.name==other.name
                
     def fileName( self ): return QtIfwUiPage.__toFileName( self.name )  
 
@@ -5290,7 +5308,7 @@ def mergeQtIfwPackages( pkgs, srcId, destId ):
     srcPkg  = findQtIfwPackage( pkgs, srcId )
     destPkg = findQtIfwPackage( pkgs, destId )
     if not srcPkg or not destPkg:
-        raise Exception( "Cannot merge QtIfw packages. " +
+        raise Exception( "Cannot merge QtIfw packages. " 
                          "Invalid id(s) provided." )     
     mergeDirs( srcPkg.contentTopDirPath(), destPkg.contentDirPath() )    
     __mergePackageObjects( srcPkg, destPkg )    
@@ -5301,7 +5319,7 @@ def nestQtIfwPackage( pkgs, childId, parentId, subDirName=None ):
     childPkg  = findQtIfwPackage( pkgs, childId )
     parentPkg = findQtIfwPackage( pkgs, parentId )
     if not childPkg or not parentPkg:
-        raise Exception( "Cannot nest QtIfw package. " +
+        raise Exception( "Cannot nest QtIfw package. " 
                          "Invalid id(s) provided." ) 
     if subDirName is None:        
         def prefix( name ): return ".".join( name.split(".")[:-1] ) + "." 
@@ -5318,33 +5336,52 @@ def nestQtIfwPackage( pkgs, childId, parentId, subDirName=None ):
     return parentPkg
 
 def __mergePackageObjects( srcPkg, destPkg, subDirName=None ):
+    if srcPkg.uiPages:
+        try: destPkg.uiPages.extend( srcPkg.uiPages )
+        except: destPkg.uiPages = srcPkg.uiPages
+        destPkg.uiPages = list(set( destPkg.uiPages ))
+    if srcPkg.licenses:
+        try: destPkg.licenses.extend( srcPkg.licenses )
+        except: destPkg.licenses = srcPkg.licenses
+        destPkg.licenses = list(set( destPkg.licenses ))
+    if srcPkg.isLicenseFormatPreserved:
+        destPkg.isLicenseFormatPreserved = True      
     try: 
         srcShortcuts = srcPkg.pkgScript.shortcuts
         if subDirName:
             for i, _ in enumerate( srcShortcuts ): 
                 srcShortcuts[i].exeDir = joinPathQtIfw( 
                     QT_IFW_TARGET_DIR, subDirName )                
-    except: srcShortcuts = []            
-    destScript = destPkg.pkgScript
-    if destScript:    
+    except: srcShortcuts = []                
+    if destPkg.pkgScript:    
         if srcShortcuts:
-            try: destScript.shortcuts.extend( srcShortcuts )
-            except: destScript.shortcuts = srcShortcuts
+            try: destPkg.pkgScript.shortcuts.extend( srcShortcuts )
+            except: destPkg.pkgScript.shortcuts = srcShortcuts
         if srcPkg.pkgScript.externalOps: 
-            try: destScript.externalOps.extend( srcPkg.pkgScript.externalOps )
-            except: destScript.externalOps = srcPkg.pkgScript.externalOps
+            try: destPkg.pkgScript.externalOps.extend( srcPkg.pkgScript.externalOps )
+            except: destPkg.pkgScript.externalOps = srcPkg.pkgScript.externalOps
         if srcPkg.pkgScript.customOperations:
-            try: destScript.customOperations.extend( srcPkg.pkgScript.customOperations )
-            except: destScript.customOperations = srcPkg.pkgScript.customOperations
+            try: destPkg.pkgScript.customOperations.extend( srcPkg.pkgScript.customOperations )
+            except: destPkg.pkgScript.customOperations = srcPkg.pkgScript.customOperations
         if srcPkg.pkgScript.killOps:
-            try: destScript.killOps.extend( srcPkg.pkgScript.killOps )
-            except: destScript.killOps = srcPkg.pkgScript.killOps        
+            try: destPkg.pkgScript.killOps.extend( srcPkg.pkgScript.killOps )
+            except: destPkg.pkgScript.killOps = srcPkg.pkgScript.killOps
+        if srcPkg.pkgScript.bundledScripts:
+            try: destPkg.pkgScript.bundledScripts.extend( srcPkg.pkgScript.bundledScripts )
+            except: destPkg.pkgScript.bundledScripts = srcPkg.pkgScript.bundledScripts
+        if srcPkg.pkgScript.installResources:
+            try: destPkg.pkgScript.installResources.extend( srcPkg.pkgScript.installResources )
+            except: destPkg.pkgScript.installResources = srcPkg.pkgScript.installResources
+            destPkg.pkgScript.installResources = list(set( destPkg.pkgScript.installResources ))                        
+        if IS_LINUX: 
+            if srcPkg.pkgScript.isAskPassProgRequired:
+                destPkg.pkgScript.pkgScript.isAskPassProgRequired=True                    
         print( "\nRegenerating installer package script: %s...\n" 
-                % (destScript.path()) )
-        destScript._generate()
+                % (destPkg.pkgScript.path()) )
+        destPkg.pkgScript._generate()
         print( "script: \n" )
-        destScript.debug()
-        destScript.write()    
+        destPkg.pkgScript.debug()
+        destPkg.pkgScript.write()    
     destPkg._isMergeProduct = True
     
 # -----------------------------------------------------------------------------            
@@ -5438,8 +5475,9 @@ def __initBuild( qtIfwConfig ) :
         # generate / copy additional archives        
         p.pkgScript._flatten()        
         for res in p.pkgScript.installResources:
-            if isinstance( res, QtIfwExternalResource ): 
-                __addArchive( qtIfwConfig, p, res.srcPath, res.name )
+            if isinstance( res, QtIfwExternalResource ) and res.srcPath: 
+                __addArchive( res.srcPath, p, qtIfwConfig, 
+                              archiveRootName=res.name )
                         
     print( "Build directory created: %s" % (BUILD_SETUP_DIR_PATH,) )
 
@@ -5593,7 +5631,7 @@ def __addExeWrapper( package ) :
             if isFound: print( "REPLACING..." )                           
             exeWrapperScript.write( dirPath )           
     
-def __addArchive( qtIfwConfig, package, srcPaths, archiveRootName=None ):        
+def __addArchive( srcPaths, package, qtIfwConfig, archiveRootName=None ):
     if archiveRootName is None:
         if isinstance( srcPaths, list ):            
             if len(srcPaths)==1: archiveRootName = rootFileName( srcPaths[0] ) 
