@@ -153,7 +153,7 @@ class ConfigFactory:
                             configXml=self.qtIfwConfigXml(), 
                             controlScript=self.qtIfwControlScript(),
                             setupExeName=self.setupName ) 
-        _addQtIfwLicense( self.licensePath, self.ifwPackages )
+        _addQtIfwLicense( self.licensePath, self.ifwPackages, cfg )
         _addQtIfwEmbeddedResources( cfg, self.ifwPackages )        
         _addQtIfwUiPages( cfg, self.ifwUiPages )
         return cfg 

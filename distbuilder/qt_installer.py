@@ -470,7 +470,7 @@ class QtIfwPackageXml( _QtIfwXml ):
                    , "Version"
                    , "ReleaseDate"    
                    , "Default"
-                   , "Script"                                 
+                   , "Script" 
                    ]
     __UIS_TAG      = "UserInterfaces"
     __UI_TAG       = "UserInterface"
@@ -2197,6 +2197,7 @@ Controller.prototype.Dynamic%sCallback = function() {
 
         self.uiPages = []
 
+        self._isLicenseRequired = False
         self._installerResources = []
         self._maintenanceToolResources = []
 
@@ -2466,9 +2467,10 @@ Controller.prototype.Dynamic%sCallback = function() {
             prepend + self.onFinishedClickedCallbackBody + append )
            
     def __genPageChangeCallbackBody( self ):
-        TAB = _QtIfwScript.TAB
-        SBLK =_QtIfwScript.START_BLOCK
-        EBLK =_QtIfwScript.END_BLOCK                                    
+        TAB  = _QtIfwScript.TAB
+        NEW  = _QtIfwScript.NEW_LINE 
+        SBLK = _QtIfwScript.START_BLOCK
+        EBLK = _QtIfwScript.END_BLOCK                                    
 
         prepend =(
             TAB + _QtIfwScript.log( '"page changed to id: " + pageId', isAutoQuote=False ) +
@@ -2479,7 +2481,16 @@ Controller.prototype.Dynamic%sCallback = function() {
                     TAB + _QtIfwScript.ifElevated( isNegated=True ) +
                         _QtIfwScript.quit( "Elevated privileges required!", 
                                            isError=True, isSilent=True ) +
-                (2*TAB) + EBLK +        
+                (2*TAB) + EBLK +
+            (      
+            (2*TAB) + ('else if( pageId == %s )' % (
+                QtIfwControlScript.toDefaultPageId( 
+                    QT_IFW_INSTALL_PAGE),)) + SBLK +
+                    (3*TAB) + "// Kludge to fix license installation permissions error " + NEW +              
+                    (3*TAB) + QtIfwControlScript.makeDir( QT_IFW_TARGET_DIR ) +
+                (2*TAB) + EBLK
+            if self._isLicenseRequired else ""      
+            ) +                                   
             EBLK         
             )                 
         append  = ""
@@ -2877,7 +2888,7 @@ Component.prototype.%s = function(){
         
     __COMPONENT_LOADED_HNDLR_NAME = "componentLoaded"
             
-    __ADD_OPERATION_TMPLT =( "    add%sOperation( %s, %s );\n")            
+    __ADD_OPERATION_TMPLT =( '    component.add%sOperation( "%s"%s%s );\n')            
     __ELEVATED = "Elevated"
             
     __WIN_ADD_SHORTCUT_TMPLT = ( 
@@ -3078,12 +3089,20 @@ Component.prototype.%s = function(){
         self.componentCreateOperationsForArchiveBody = None
         self.isAutoComponentCreateOperationsForArchive=True       
 
-    # UNTESTED, WIP...
-    def addSimpleOperation( self, name, parms=[], isElevated=False, isAutoQuote=True ):        
+    # TODO: Provide more control over the order - relative to external ops, etc.
+    #        (search for current use)
+    def addSimpleOperation( self, name, parms=[], isElevated=False, isAutoQuote=True ):
+        if self.customOperations is None: self.customOperations= ""        
+        if parms is not None:
+            if len(parms)==0: parms=None        
+            elif not isinstance(parms, list): parms = [parms]
         self.customOperations += QtIfwPackageScript.__ADD_OPERATION_TMPLT % (
             (QtIfwPackageScript.__ELEVATED if isElevated else ""), name, 
-            str( [ _QtIfwScript._autoQuote(p, isAutoQuote) for p in parms ]
-                 if isAutoQuote else parms ) ) 
+            "" if parms is None else ", ",
+            "" if parms is None else
+            "[%s]" % (", ".join( ['"%s"' % (p,) for p in parms] 
+                                 if isAutoQuote else parms ) ) 
+        ) 
 
     def _flatten( self ) :
         
@@ -3278,8 +3297,18 @@ Component.prototype.%s = function(){
                             self.script += func._define()
         
     def __genComponentCreateOperationsBody( self ):
-        self.componentCreateOperationsBody = ""
+        END = _QtIfwScript.END_LINE
+        TAB = _QtIfwScript.TAB
+        NEW = _QtIfwScript.NEW_LINE        
+        SBLK = _QtIfwScript.START_BLOCK
+        EBLK = _QtIfwScript.END_BLOCK
         
+        self.componentCreateOperationsBody = "try " + SBLK
+
+        if self.customOperations:
+            self.componentCreateOperationsBody += (
+                "\n%s\n" % (self.customOperations,) )            
+                
         # pre payload extractions
         for res in self.installResources:
             if isinstance( res, QtIfwExternalResource ):
@@ -3290,18 +3319,21 @@ Component.prototype.%s = function(){
         
         # Call to super class - perform payload extractions 
         self.componentCreateOperationsBody += (
-            '    component.createOperations(); // call to super class\n' )
-                            
+            TAB + 'component.createOperations(); // call to super class\n' )
+        
         # post payload extractions
         self.__addScriptUpdates()
         self.__addShortcuts()
         self.__addKillOperations()
         self.__addExternalOperations()
-         
-        if self.customOperations:
-            self.componentCreateOperationsBody += (
-                "\n%s\n" % (self.customOperations,) )            
-        
+                 
+        self.componentCreateOperationsBody += (
+            NEW + EBLK + 
+            'catch(e)' + SBLK + 
+                _QtIfwScript.setBoolValue( _QtIfwScript.INTERUPTED_KEY, True) +
+                'throw e' + END +  
+            EBLK + NEW )
+
     def __genComponentCreateOperationsForArchiveBody( self ):
         TAB = _QtIfwScript.TAB
         END = _QtIfwScript.END_LINE
@@ -5190,10 +5222,18 @@ def __qtIfwArchiveGenPath( qtIfwDir ):
     return generatorPath if isFile( generatorPath ) else None
     
 # -----------------------------------------------------------------------------
-def _addQtIfwLicense( licensePath, packages, name="End User License Agreement" ): 
-    if licensePath is None or len(packages) < 1: return
-    packages[0].licenses[name] = licensePath
-  
+def _addQtIfwLicense( licensePath, packages, qtIfwConfig, 
+                      name="End User License Agreement" ): 
+    try:
+        if licensePath is not None: packages[0].licenses[name] = licensePath
+    except: pass
+    try:        
+        for p in packages:
+            if len( p.licenses ) > 0:
+                qtIfwConfig.controlScript._isLicenseRequired = True
+                break        
+    except: pass
+    
 # adds any missing resources, required by the packages, to the configuration
 def _addQtIfwEmbeddedResources( qtIfwConfig, packages ): 
 
@@ -5577,7 +5617,7 @@ def __addLicenses( package ) :
             destPath = joinPath( destDir, fileName )    
             with open( destPath, 'w' ) as f: f.writelines( revLines )                    
         else: copyToDir( srcPath, destDir )        
-                        
+                            
 def __addUiPages( qtIfwConfig, package ) :
     if package.uiPages is None or len(package.uiPages)==0: return
     print( "Adding custom installer forms/pages..." )
