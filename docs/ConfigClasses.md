@@ -463,7 +463,7 @@ Attributes:
 
     <internal id / type>
     pkgId           = None       
-    pkgType            = None
+    pkgType         = None
     
     <QtIFW definition>
     name            = None

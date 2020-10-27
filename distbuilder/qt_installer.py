@@ -416,7 +416,7 @@ class QtIfwPackage:
         self.pkgScript = pkgScript        
         self.uiPages   = uiPages
         self.licenses  = licenses
-        self.isLicenseFormatPreserved = False
+        self.isLicenseFormatPreserved = False        
         # content        
         self.srcDirPath    = srcDirPath
         self.srcExePath    = srcExePath
@@ -5606,6 +5606,10 @@ def __addLicenses( package ) :
                 lines = [ ln.strip() for ln in f.readlines() ]                
                 curLn=""
                 for ln in lines: 
+                    ln = ln.replace( u'\u201c', u'"' ).replace( 
+                                     u'\u201D', u'"' ).replace(
+                                     u'\u2018', u"'" ).replace(
+                                     u'\u2019', u"'" )
                     if len(curLn) > 0:
                         if len(ln)==0:
                             revLines += [ curLn, "" ]
@@ -5613,7 +5617,7 @@ def __addLicenses( package ) :
                         else: curLn += " " + ln
                     else: curLn += ln                    
                 if len(curLn) > 0: revLines.append( curLn )        
-                revLines = [ ln + "\n" for ln in revLines ]
+                revLines = [ ln + util._NEWLINE for ln in revLines ]
             destPath = joinPath( destDir, fileName )    
             with open( destPath, 'w' ) as f: f.writelines( revLines )                    
         else: copyToDir( srcPath, destDir )        
