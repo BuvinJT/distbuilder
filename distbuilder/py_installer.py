@@ -190,8 +190,12 @@ class PyInstallerConfig:
 
 class PyInstSpec( util.PlasticFile ):
 
+    WARN_IGNORE, WARN_ONCE, WARN_ERROR = range(3) 
+    
     __DUPLICATE_DATA_FILE_PATCH = (
         "a.datas = list({tuple(map(str.upper, t)) for t in a.datas})" )
+
+    __EXE_SCRIPTS_PARM_LINE = "a.scripts,"
 
     @staticmethod
     def cfgToPath( pyInstConfig ): return absPath( pyInstConfig.name+SPEC_EXT )
@@ -201,10 +205,38 @@ class PyInstSpec( util.PlasticFile ):
         self.pyInstConfig = pyInstConfig 
         if content: self.content = content
         elif filePath and isFile(filePath): self.read()
+        
+        self.warningBehavior   = None
+        self.isUnBufferedStdIo = False
+        self.isModInitDebug    = False        
     
     def path( self ):
         return ( PyInstSpec.cfgToPath( self.pyInstConfig )
                  if self.pyInstConfig else absPath(self.filePath) )
+
+    def injectInterpreterOptions( self ):       
+        if not self.content: return 
+        if( self.warningBehavior is None and
+            not self.isUnBufferedStdIo and  
+            not self.isModInitDebug ): return                    
+        opt = [] 
+        if self.warningBehavior==PyInstSpec.WARN_IGNORE: 
+            opt.append( "('W ignore', None, 'OPTION')" )                      
+        elif self.warningBehavior== PyInstSpec.WARN_ONCE:
+            opt.append( "('W once', None, 'OPTION')" )
+        elif self.warningBehavior== PyInstSpec.WARN_ERROR:
+            opt.append( "('W error', None, 'OPTION')" )        
+        if self.isUnBufferedStdIo:
+            opt.append( "('u', None, 'OPTION')" )
+        if self.isModInitDebug:
+            opt.append( "('v', None, 'OPTION')" )
+        opt = "[ %s ]" % (", ".join(opt),)                
+        lines = self.toLines()
+        for idx, ln in enumerate(lines):
+            if ln.strip()==PyInstSpec.__EXE_SCRIPTS_PARM_LINE:
+                self.injectLine( "          %s," % (opt,), idx+2 )
+                print("Interpreter options injected into .spec file...")
+                break
         
     def injectDuplicateDataPatch( self ):
         """
@@ -229,8 +261,8 @@ class PyInstSpec( util.PlasticFile ):
         if aAssignFound:
             self.injectLine( 
                 PyInstSpec.__DUPLICATE_DATA_FILE_PATCH, injectLineNo )
-            print("Duplicate data patch injected into .spec file...")
-                
+            print("Duplicate data patch injected into .spec file...")        
+                            
     def _parseAssigments( self ):
         """
         Returns a list of tuples in the form of 

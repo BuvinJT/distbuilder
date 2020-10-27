@@ -136,6 +136,13 @@ Attributes & default values:
     filePath     = None
     pyInstConfig = None 
     content      = None
+    
+    warningBehavior   = None 
+    	<options: PyInstSpec.WARN_IGNORE, PyInstSpec.WARN_ONCE, PyInstSpec.WARN_ERROR>    
+    isUnBufferedStdIo = False
+    isModInitDebug    = False        
+    
+	isInjected   = False
 
 Static Method:
     

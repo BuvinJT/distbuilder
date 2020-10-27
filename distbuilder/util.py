@@ -804,6 +804,7 @@ class PlasticFile:
         self.filePath = filePath
         if content: self.content = content
         elif filePath and isFile(filePath): self.read()
+        self.isInjected = False
     
     def __str__( self ): return self.content if self.content else ""  
 
@@ -828,6 +829,7 @@ class PlasticFile:
         if lineNo : lines.insert( lineNo-1, injection )
         else : lines.append( injection )
         self.fromLines( lines )
+        self.isInjected = True
 
 # -----------------------------------------------------------------------------            
 class WindowsExeVersionInfo( PlasticFile ):

@@ -496,7 +496,8 @@ Attributes & default values:
 
     configFactory          = <required>                              
     name                   = "Python to Binary Package Process"
-	isZipped               = False	                
+	isZipped               = False
+	isWarningSuppression   = True	                
 	isPyInstDupDataPatched = None
 	isObfuscationTest      = False
 	isExeTest              = False
@@ -537,6 +538,22 @@ may be useful to distinguish between multiple processes.
 #### isZipped               	                
 
 Setting this to `True` bundles the results into a zip file.
+
+### isWarningSuppression  
+
+By default, this is enabled, and as such will prevent Python **warning** messages
+from being output to the terminal.  They will be "ignored" instead.
+
+This does not suppress or expose *exception* messages / stderr output.  That is
+an entirely distinct matter.
+
+Note that the inclusion of warning suppression directly in your Python source 
+code will not actually be respected by PyInstaller binaries naturally!  This
+mechanism via the .spec file is the means to control such.  
+
+For more on Python warnings in general, refer to: 
+https://docs.python.org/3/library/warnings.html
+
 
 #### isPyInstDupDataPatched 
 
