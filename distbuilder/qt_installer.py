@@ -5386,10 +5386,10 @@ def __mergePackageObjects( srcPkg, destPkg, subDirName=None ):
         try: destPkg.uiPages.extend( srcPkg.uiPages )
         except: destPkg.uiPages = srcPkg.uiPages
         destPkg.uiPages = list(set( destPkg.uiPages ))
-    if srcPkg.licenses:
+    if srcPkg.licenses:       
+        # (licenses is a dictionary, not a list)
         try: destPkg.licenses.extend( srcPkg.licenses )
-        except: destPkg.licenses = srcPkg.licenses
-        destPkg.licenses = list(set( destPkg.licenses ))
+        except: destPkg.licenses = srcPkg.licenses                
     if srcPkg.isLicenseFormatPreserved:
         destPkg.isLicenseFormatPreserved = True      
     try: 
@@ -5593,6 +5593,22 @@ def __genQtIfwCntrlRes( qtIfwConfig ) :
         ctrlScript.debug()
         ctrlScript.write()        
 
+__CHAR_SWAP = { u'\u201c': u'"'
+            , u'\u201D': u'"' 
+            , u'\u2018': u"'" 
+            , u'\u2019': u"'" 
+}
+
+def __scrubLicenseText( text ):    
+    try:
+        for k,v in iteritems( __CHAR_SWAP ): 
+            text = text.replace(k,v)
+    except: pass     
+    try: return str( text ) if PY2 else bytes( text, 'ascii' ).decode('ascii')
+    except UnicodeEncodeError:
+        return text.encode('ascii', 'replace').decode('ascii')
+    except: return ""
+    
 def __addLicenses( package ) :
     if package.licenses is None or len(package.licenses)==0: return
     print( "Adding licenses..." )
@@ -5612,10 +5628,7 @@ def __addLicenses( package ) :
                 lines = [ ln.strip() for ln in f.readlines() ]                
                 curLn=""
                 for ln in lines: 
-                    ln = ln.replace( u'\u201c', u'"' ).replace( 
-                                     u'\u201D', u'"' ).replace(
-                                     u'\u2018', u"'" ).replace(
-                                     u'\u2019', u"'" )
+                    ln = __scrubLicenseText( ln )
                     if len(curLn) > 0:
                         if len(ln)==0:
                             revLines += [ curLn, "" ]
@@ -5767,7 +5780,8 @@ def __buildSilentWrapper( qtIfwConfig ) :
         pkgLics={}
         for name, filePath in six.iteritems( package.licenses ):
             srcPath = absPath( filePath, basePath=package.resBasePath )            
-            with open( srcPath, 'r' ) as f: pkgLics[name] = f.read()
+            with open( srcPath, 'r' ) as f: 
+                pkgLics[name] = __scrubLicenseText( f.read() )
         if len(pkgLics) > 0: licenses[package.pkgXml.pkgName] = pkgLics
 
     wrapperScript = __silentQtIfwScript( nestedExeName, componentList,
