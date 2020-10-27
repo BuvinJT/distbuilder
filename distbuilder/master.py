@@ -79,6 +79,7 @@ class ConfigFactory:
         self.ifwDefDirPath = None        
         self.ifwPackages   = None
 
+        self.startOnBoot   = False
         self.replaceTarget = False        
         
         self.ifwUiPages     = None
@@ -104,9 +105,6 @@ class ConfigFactory:
         self.pkgSrcDirPath   = None
         self.pkgSrcExePath   = None
         self.pkgExeWrapper   = None 
-        
-        self.pkgIsStartUpApp         = False
-        self.pkgIsStartUpAppAllUsers = False
                
         self.qtCppConfig = None
        
@@ -191,7 +189,7 @@ class ConfigFactory:
         self.__pkgPyInstConfig = pyInstConfig
         pkgType=self.__ifwPkgType()
 
-        if IS_WINDOWS and self.pkgIsStartUpApp:
+        if IS_WINDOWS and self.startOnBoot in [True, CURRENT_USER, ALL_USERS]:
             if self.pkgExeWrapper and not self.pkgExeWrapper.isExe:
                 self.pkgExeWrapper.isExe = True
                 self.pkgExeWrapper.refresh()
@@ -224,10 +222,10 @@ class ConfigFactory:
                     exePath = joinPath( w.exeDir, normBinaryName( w.exeName ) ),
                     targetPath = joinPath( w.exeDir, normBinaryName( w.wrapperExeName ) ), 
                     iconName=normIconName( w.wrapperIconName ) ) ]       
-            if self.pkgIsStartUpApp:
+            if self.startOnBoot in [True, CURRENT_USER, ALL_USERS]:
                 pkg.pkgScript.externalOps += [
                     QtIfwExternalOp.CreateStartupEntry( pkg, 
-                        isAllUsers=self.pkgIsStartUpAppAllUsers ) ]
+                        isAllUsers=self.startOnBoot==ALL_USERS ) ]
          
         # Add additional distribution resources 
         # (note PyInst process adds these resource itself)

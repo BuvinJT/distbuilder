@@ -1034,25 +1034,22 @@ an environmental variable named `DEBUG_MODE` to `1`.  Some contexts
 require this in order to allow this mode to work correctly.
 You may wish to include your own custom logic within your
 program to pivot on this environmental condition as well.
-In case you wish to avoid hard-coded references for these checks, 
-the library includes the following constants:
 
-    DEBUG_ENV_VAR_NAME
-    DEBUG_ENV_VAR_VALUE
+While distbuilder provides convenience constants/methods to determine if you 
+running in this context, to avoid any "tight coupling" to the build system within 
+your program's source (which may cause build failures in addition to being a 
+questionable design choice), you may wish to employ the following code: 
 
-You may also wish to include and employ this function in your
-program, which checks for this condition. 
-
-    from os import environ    
     def isDebug(): 
         try: return isDebug.__CACHE
         except:
+        	from os import environ
             isDebug.__CACHE = environ.get("DEBUG_MODE")=="1"
             return isDebug.__CACHE
             
 Note: In some contexts, **you will NOT see the debugging output
 until the executable has terminated.**
-On Windows, this will occur when using debug mode in combination
+On Windows, this may occur when using debug mode in combination
 with `isElevated` enabled, if you are NOT already running 
 as an admin. On macOS, this will occur whenever using a "wrapper script" 
 (see [QtIfwExeWrapper](ConfigClasses.md#qtifwexewrapper)) over the binary.
@@ -1534,7 +1531,10 @@ new download will overwrite the prior file.
     IS_64_BIT_CONTEXT
     
     THIS_DIR 
+
+    CURRENT_USER
+    ALL_USERS
     
     DEBUG_ENV_VAR_NAME
     DEBUG_ENV_VAR_VALUE
-        
+            

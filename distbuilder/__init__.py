@@ -100,6 +100,7 @@ from distbuilder.util import \
     , IS_32_BIT_CONTEXT \
     , IS_64_BIT_CONTEXT \
     , THIS_DIR \
+    , CURRENT_USER, ALL_USERS \
     , DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE \
     , absPath \
     , toNativePath \
@@ -136,6 +137,7 @@ from distbuilder.util import \
     , getEnv \
     , setEnv \
     , delEnv \
+    , isDebug \
     , _run \
     , run \
     , runPy \

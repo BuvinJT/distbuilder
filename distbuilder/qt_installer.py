@@ -3833,6 +3833,9 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
  
     __PWD_PREFIX_CMD_TMPLT = 'cd "%s" && ' # cross platform!
     
+    __WRAP_EXE_MIXED_SUFFIX = "%sLauncher"
+    __WRAP_EXE_LCASE_SUFFIX = "%s_launcher"
+    
     # QtIfwExeWrapper
     def __init__( self, exeName, isGui=False, 
                   wrapperScript=None,
@@ -3855,8 +3858,11 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
         self.isElevated    = isElevated
         
         self.isExe = isExe if IS_WINDOWS else False
-        self.wrapperExeName =( normBinaryName( "%sLauncher" % (exeName,) ) 
-                               if IS_WINDOWS else None )
+        self.wrapperExeName =( normBinaryName( 
+                (QtIfwExeWrapper.__WRAP_EXE_LCASE_SUFFIX 
+                 if exeName.lower()==exeName else 
+                 QtIfwExeWrapper.__WRAP_EXE_MIXED_SUFFIX) % (exeName,) ) 
+            if IS_WINDOWS else None )
         self.wrapperIconName = None
         
         if IS_WINDOWS:

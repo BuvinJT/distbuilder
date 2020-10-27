@@ -12,8 +12,7 @@ f.entryPointPy     = "../run_conditions_app/hello_gui.py"
 #f.entryPointPy     = "../run_conditions_app/hello_terminal.py"  
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
 f.version          = (1,0,0,0)
-f.pkgIsStartUpApp         = True
-f.pkgIsStartUpAppAllUsers = False
+f.startOnBoot      = True # options: CURRENT_USER (same as True), ALL_USERS
 f.setupName        = "HelloStartupSetup"
 
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )

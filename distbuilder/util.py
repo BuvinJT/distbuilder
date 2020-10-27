@@ -40,6 +40,8 @@ BIT_CONTEXT = calcsize('P') * 8
 IS_32_BIT_CONTEXT = BIT_CONTEXT==32
 IS_64_BIT_CONTEXT = BIT_CONTEXT==64
 
+_NO_USER, ALL_USERS, CURRENT_USER = range(3)
+
 PY_EXT             = ".py"
 PY_DIR             = dirPath( PYTHON_PATH )
 SITE_PACKAGES_PATH = get_python_lib()
@@ -105,6 +107,12 @@ if IS_WINDOWS :
     __SHARED_RET_CODE_TMPLT = __SHARED_RET_CODE_PREFIX + "%d" 
 
 # -----------------------------------------------------------------------------  
+def isDebug():
+    try: return isDebug.__CACHE
+    except:
+        isDebug.__CACHE = getEnv( DEBUG_ENV_VAR_NAME ) == DEBUG_ENV_VAR_VALUE
+        return isDebug.__CACHE
+
 def run( binPath, args=[], 
          wrkDir=None, isElevated=False, isDebug=False ):
     _run( binPath, args, wrkDir, isElevated, isDebug )
