@@ -437,7 +437,8 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
         _DistBuildProcessBase.__init__( self, configFactory, name )        
         self.isZipped = isZipped
         
-        self.isWarningSuppression   = True                
+        self.isWarningSuppression   = True
+        self.isUnBufferedStdIo      = False                
         self.isPyInstDupDataPatched = None
         self.isObfuscationTest      = False
         self.isExeTest              = False
@@ -468,10 +469,13 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
             self._pyInstConfig.isSpecFileRemoved = True
             makePyInstSpec( self._pyInstConfig, opyConfig=opyConfig )
             if self.isPyInstDupDataPatched is None: 
-                self.isPyInstDupDataPatched = True  
-        spec = self._pyInstConfig.pyInstSpec                
-        if self.isWarningSuppression:
-            spec.warningBehavior = PyInstSpec.WARN_IGNORE 
+                self.isPyInstDupDataPatched = True                
+            spec = self._pyInstConfig.pyInstSpec
+            spec.isUnBufferedStdIo = self.isUnBufferedStdIo        
+            if self.isWarningSuppression:
+                spec.warningBehavior = PyInstSpec.WARN_IGNORE                  
+        spec = self._pyInstConfig.pyInstSpec            
+        if self.isWarningSuppression or self.isUnBufferedStdIo:                
             spec.injectInterpreterOptions()
         if self.isPyInstDupDataPatched and self._pyInstConfig.isOneFile:                    
             spec.injectDuplicateDataPatch()

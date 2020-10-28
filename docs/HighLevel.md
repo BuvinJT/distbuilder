@@ -495,8 +495,11 @@ Attributes & default values:
     configFactory          = <required>                              
     name                   = "Python to Binary Package Process"
 	isZipped               = False
-	isWarningSuppression   = True	                
-	isPyInstDupDataPatched = None
+	
+	isWarningSuppression   = True	      
+	isUnBufferedStdIo      = False          
+	isPyInstDupDataPatched = None <auto>
+	
 	isObfuscationTest      = False
 	isExeTest              = False
 	isElevatedTest         = False      
@@ -539,19 +542,28 @@ Setting this to `True` bundles the results into a zip file.
 
 ### isWarningSuppression  
 
-By default, this is enabled, and as such will prevent Python **warning** messages
-from being output to the terminal.  They will be "ignored" instead.
+By default, this is enabled by the library (thus differing from the standard in Python
+or PyInstaller). Such will prevent Python **warning** messages from being output to the 
+terminal (they will be "ignored" instead).
 
-This does not suppress or expose *exception* messages / stderr output.  That is
+Note this neither suppresses nor exposes *exception* messages / stderr output.  That is
 an entirely distinct matter.
 
-Note that the inclusion of warning suppression directly in your Python source 
+Note that the inclusion of warning suppression which may be present in your Python source 
 code will not actually be respected by PyInstaller binaries naturally!  This
-mechanism via the .spec file is the means to control such.  
+mechanism (driven via a .spec file manipulation under the hood) is the means to control such.  
 
 For more on Python warnings in general, refer to: 
 https://docs.python.org/3/library/warnings.html
 
+### isUnBufferedStdIo
+
+By default, this is disabled.  Python stdin/out/err streams are naturally buffered, as that
+is more efficient and thus preferable for most use cases.  Switching to "unbuffered" mode, 
+will, however, produce more rapid responsiveness on these streams.  Such may be desirable    
+if your program will communicate with other programs via these streams, or if you want to 
+view "real-time debugging" messages, or have other uses for fast i/o on in a shell/terminal
+context perhaps.   
 
 #### isPyInstDupDataPatched 
 

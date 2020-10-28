@@ -163,9 +163,14 @@ def _run( binPath, args=[],
             _WindowsSharedFile( isProducer=True, filePath=sharedFilePath )
             if sharedFilePath else None )
         p = Popen( cmdList, cwd=wrkDir, shell=False, 
-                   stdout=PIPE, stderr=STDOUT, bufsize=1 )
+                   stdout=PIPE, stderr=STDOUT, bufsize=0,
+                   universal_newlines=True )
         while p.poll() is None:
-            line = p.stdout.readline() if PY2 else p.stdout.readline().decode()
+            line = p.stdout.readline()        
+            # patch for some funky observed output from a python win service debug,
+            # where nulls appeared between every cNULLhNULLaNULLrNULLaNULLcNULLtNULLeNULLrNULL!
+            # I doubt anyone would miss nulls in some other context here?    
+            line = line.replace( chr(0), '' ) 
             if sharedFile: sharedFile.write( line )
             else:
                 stdout.write( line )
