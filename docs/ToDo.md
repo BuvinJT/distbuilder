@@ -6,29 +6,29 @@
 
 ## v.0.7.8.x **(WIP)**
 
-* Test, and confirm / fix UNinstallation mechanism for silent installers via the original installer.
+* Code signing for Windows
 
-* Fix workflow flaws with auto uninstall, so it's less possible for a user to screw that up.
-(Such as by not clicking the UAC prompt on Windows for the uninstaller...) 
+* Provide a "natural" silent uninstall / wrapper to run the Maintenance Tool.  
+
+* Directory creation on target (e.g. user data directories)		
+
+* Resource installation outside of the target directory
+
+* QtIFW graphic features
+
+## v.0.7.9.x 
 
 * RESTORE Linux / Mac QtIFW integration (broken during Windows development of 0.7.8.x)
+
+* Dependency installation for QtIFW via Linux package managers (partially developed already), and Homebrew on Mac
 
 * Add she bang respect / a Windows equivalent to ExecutableScript / QtIwfExternalOp 
 embedded scripting mechanism, allowing interepter paths / options to be defined.  Thus
 allowing options for embedding Python, Java, ect.
 
-* Add "pure" QScript (custom operations) examples / features for QtIFW. 
+* Code signing for Mac / Linux 
 
-* Revisit silent installers, using new page hiding features to further minimize 
-"quick flashes" of the ui.
-
-
-* Add these Qt IFW script generation features:
-	* Directory creation on target (e.g. user data directories)		
-	* Resource installation outside of the target directory
-	* Windows Registry functions, analogous settings on other platforms
-	(e.g. plist on Mac)     
-	* Dependency installation via package managers (partially developed already)
+* Direct Bat/Vbs/Ps to Exe high level process class
  
 ## v.0.8.0
 
@@ -36,29 +36,25 @@ allowing options for embedding Python, Java, ect.
 Auto launch maintainencetool when trying to install the same version.
 Have prompts questioning if the using wants to update or revert to a prior version.
 
-* Add Qt IFW Package Licenses (EULAs)
-
 * TEST (and develop as needed) QtIFW packages which: 
 	* contain only "data" (no exe)
 	* are not enabled for install by default
 	* do not install shortcuts
 
+* More Windows registry functions, and analogous settings on other platforms
+	(e.g. plist on Mac)     
+
+* Add "pure" QScript (custom operations) examples / features for QtIFW. 
+
 ## v.0.8.1
 
-* Provide *dynamically* assigned values for "QtIfwExeWrapper" via Installer 
-(for target) at runtime / during installation. 
-
 * Revisit "QtIfwExeWrapper" details.  Specifically, NON gui on Windows?
-
-* Revisit silent installers, in NON GUI environments e.g. CentOS. Provide a natural
-uninstall, i.e. a means to run the Maintenance Tool OR alternatively, the original installer 
-could drive an uninstall.
   
-## v.0.8.2
-
 * Add option for appending platform suffix onto installer file names. 
 
 * Add tarball alternative to zip packaging.
+
+## v.0.8.2
 
 * Add all yet to be provided parameters for PyInstaller.  
 
@@ -66,28 +62,22 @@ could drive an uninstall.
 
 ## v.0.8.3
 
-* Further develop QtIfwUiPage derived classes and resources.
-
-## v.0.9.0
-
 * Large scale refactoring, to simplify the library and make it more user friendly. 
 Rename high level process classes and functions.  Consider dialing back the volume
 of published low level functions? 
 
-## v.0.9.1+
+## v.0.9.x
 			
 * Improve and stabilize Opy to the point it can handle *most* scripts without *any*
 manual intervention. 
    
 * "Perfect" Opy "library bundling" (for both private and PyPi libraries). 
 
-* Add git integration: Clone/pull to build project from multiple remote sources
-
 ## v.1.0
 
 * Extended QA... TBD
 
-* TEST on more Windows versions (7?, 8.1?)
+* TEST on more Windows versions (Servers?, 8.1?)
 
 * TEST on more Linux distros (Debian, Fedora, Arch...?)
 
@@ -97,17 +87,23 @@ manual intervention.
 
 ## v.1.1.x 
 
-* Add Anaconda integration
+* Add QtIFW "online" installer features.
 
 ## v.1.2.x 
 
-* Add QtIFW "online" installer features.
+* Add git integration: Clone/pull to build project from multiple remote sources
 
-* Add auto conversion of alternate icon formats, so a project only needs one file for such.
+* Add Anaconda integration
+
+## v.1.3.x 
 
 * Add more git integration: auto commit / push / tag...
 
-## v.1.5.x
+* Add auto conversion of alternate icon formats, so a project only needs one file for such.
+
+* Further develop QtIfwUiPage derived classes and resources.
+
+## v.2.x
 
 * Provide PyInstaller forward/backward compatibility across OS versions.
 
@@ -125,7 +121,9 @@ Notably, there are known complications e.g. GCC .so dynamic linkage:
 	* https://pythonhosted.org/PyInstaller/usage.html#supporting-multiple-python-environments 
 	* https://pythonhosted.org/PyInstaller/usage.html#supporting-multiple-operating-systems
 
-## v.2 Spitballs... 		
+* QtIFW cross platform single run master script (several binaries produced of course)
+
+## Spit balls... 		
 
 * Add a Py2Exe wrapper as alternative to PyInstaller.
 
