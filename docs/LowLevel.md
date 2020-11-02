@@ -3,6 +3,23 @@
 
 ## Stand Alone Executables 
 
+### installPyInstaller, uninstallPyInstaller
+
+Distbuilder builds executables from Python source via PyInstaller.  For convenience,
+these install/uninstall functions for the tool are provided.  Note, you may install  
+a specific version if desired, in this (example) manner:  
+
+	installPyInstaller( version="3.4" )
+
+### PyInstallerVersion, PyInstallerMajorVer, PyInstallerMajorMinorVer
+
+These functions have been provided to help you in circumstances where you need to 
+pivot on the specific PyInstaller version installed. `PyInstallerVersion()` returns
+the string representation, pulled directly from the library.
+`PyInstallerMajorVer()`, just the major version explicitly cast as an integer.     
+`PyInstallerMajorMinorVer()`, returns a 2 element tuple with major *and* minor versions
+explicitly cast as integers.     
+
 ### buildExecutable
         
 To build a stand-alone binary distribution of a Python
@@ -76,10 +93,10 @@ invoke the makePyInstSpec function:
 
 **Returns: the absolute path to the spec file created.
     Also, updates the pyInstConfig argument, supplying 
-	a [PyInstSpec](#pyinstspec) object and effectively
+	a [PyInstSpec](ConfigClasses.md#pyinstspec) object and effectively
 	returning it "by reference". 
         
-**pyInstConfig**: An [PyInstallerConfig](#pyinstallerconfig) 
+**pyInstConfig**: An [PyInstallerConfig](ConfigClasses.md#pyinstallerconfig) 
     object used to dictate the details for generating 
     the spec file using the makespec Utility.
 
@@ -884,6 +901,13 @@ be set in such a manner to account for the libraries which were
 bundled, or which remain as "external" imports.
       
 ## Library Installation  
+ 
+### updatePip
+
+Distbuilder installs libraries via pip.  It is itself, also installed in via the
+same means!  While no feature is provided to *fully* uninstall / re-install (since
+doing so would break core features of the library), a convenience method to *update*
+pip was provided.   
  
 ### installLibrary
  

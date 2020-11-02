@@ -7,6 +7,8 @@ PIP_CMD_BASE = '"' + PYTHON_PATH + '" -m pip'
 PIP_INSTALL   = "install" 
 PIP_UNINSTALL = "uninstall"
 
+__PIP_UPGRADE    = "--upgrade pip"
+
 __PIP_INSTALL_TMPLT = '%s %s %s'
 __PIP_UNINSTALL_TMPLT = '%s %s --yes %s'
 __VCS_BASE_TEMPLT = "%s+%s#egg=%s"
@@ -62,6 +64,10 @@ class PipConfig:
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )         
 
 # -----------------------------------------------------------------------------
+def updatePip():
+    util._system( __PIP_INSTALL_TMPLT % 
+        ( PIP_CMD_BASE, PIP_INSTALL, __PIP_UPGRADE ) )  
+
 def installLibraries( *libs ):
         
     # Note: *libs allows a tuple of arbitrary length to be provided as  

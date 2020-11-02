@@ -8,9 +8,11 @@ Python:
 * 2.7  
 * 3.5  
 * 3.7  
+* 3.8
   
 Windows:    
 
+* 7
 * 8.0  
 * 10
 
@@ -33,6 +35,7 @@ PyInstaller:
 
 * 2.1
 * 3.4
+* 4.0
 * Binary / Script
 
 Qt Installer Framework:  
@@ -47,6 +50,7 @@ Pip:
 * 8.x  
 * 18.x  
 * 19.x  
+* 20.x
 
 Opy distbuilder:  
 

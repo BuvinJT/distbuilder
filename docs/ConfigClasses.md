@@ -89,13 +89,18 @@ For more on hooks, see:
 
 Constructor: 
 
-    PyInstHook( name, script=None ) 
+    PyInstHook( name, script=None,
+                isContribHook=True, isRunTimeHook=False ) 
 
 Attributes & default values:
         
-    name         = *required     
-    script       = None
-    hooksDirPath = None 
+    name          = *required     
+    script        = None
+
+	isContribHook = True
+	isRunTimeHook = False
+
+    hooksDirPath  = None 
 
 Object Methods:
     
@@ -103,6 +108,7 @@ Object Methods:
 
     read()
     write()
+    remove()
 
     debug()
 
@@ -116,7 +122,10 @@ The `name` attribute should simply specify the name of import which invokes the 
 The `name` should **not** contain the *literal* "hook-" *file name* prefix, or a 
 .py *file extension*.     
 
-hooksDirPath = This may be override, as needed.  If left as the default `None`, 
+**isContribHook**: Only respected for PyInstaller v4 or later, when it became available,
+and the new standard practice for hook distribution.
+
+**hooksDirPath** may be override, as needed.  If left as the default `None`, 
 the path will be automatically resolved. 
 
 ## PyInstSpec

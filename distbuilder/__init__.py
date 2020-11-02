@@ -12,8 +12,13 @@ from distbuilder.py_installer import \
     , PyInstHook \
     , WindowsExeVersionInfo \
     , buildExecutable \
-    , makePyInstSpec 
-    
+    , makePyInstSpec \
+    , installPyInstaller \
+    , uninstallPyInstaller \
+    , PyInstallerVersion \
+    , PyInstallerMajorVer \
+    , PyInstallerMajorMinorVer
+
 from distbuilder.qt_installer import \
       QtIfwConfig \
     , QtIfwConfigXml \
@@ -73,6 +78,7 @@ from distbuilder.qt_installer import \
 
 from distbuilder.pip_installer import \
       PipConfig \
+    , updatePip \
     , installLibraries \
     , installLibrary \
     , uninstallLibrary \

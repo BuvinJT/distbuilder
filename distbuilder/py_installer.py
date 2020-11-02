@@ -1,13 +1,15 @@
 import ast 
 from distbuilder import util 
 from distbuilder.util import *  # @UnusedWildImport
+from distbuilder.pip_installer import installLibrary, uninstallLibrary
 from distbuilder.opy_library import obfuscatePy, \
     _toObfuscatedPaths, OBFUS_DIR_PATH
 
 PYINST_BIN_NAME          = util.normBinaryName( "pyinstaller" )
 PYINST_MAKESPEC_BIN_NAME = util.normBinaryName( "pyi-makespec" )
 
-PYINST_ROOT_PKG_NAME = "PyInstaller"
+PYINST_ROOT_PKG_NAME   = "PyInstaller"
+HOOKS_CONTRIB_PKG_NAME = "_pyinstaller_hooks_contrib"
 
 SPEC_EXT = ".spec"
 
@@ -17,7 +19,10 @@ CACHE_DIR_PATH = absPath( "__pycache__" )
 
 HOOKS_DIR_NAME = "hooks"
 
-__TEMP_NEST_DIR_NAME = "__nested__"
+_RUNTIME_HOOKS_DIR_NAME  = "rthooks"
+_STANDARD_HOOKS_DIR_NAME = "stdhooks"
+
+_TEMP_NEST_DIR_NAME = "__nested__"
 
 # -----------------------------------------------------------------------------
 class PyInstallerConfig:
@@ -282,9 +287,12 @@ class PyInstHook( ExecutableScript ) :
     
     FILE_NAME_PREFIX = "hook-"
     
-    def __init__( self, name, script=None ):
+    def __init__( self, name, script=None,
+                  isContribHook=True, isRunTimeHook=False ):
         ExecutableScript.__init__( self,
             name, extension=PY_EXT, shebang=None, script=script ) 
+        self.isContribHook=isContribHook
+        self.isRunTimeHook=isRunTimeHook
         self.hooksDirPath = None 
 
     def __str__( self ): return self.script if self.script else ""
@@ -301,16 +309,30 @@ class PyInstHook( ExecutableScript ) :
         self.__resolveHooksPath()
         ExecutableScript.write( self, self.hooksDirPath )  
 
+    def remove( self ):
+        self.__resolveHooksPath()
+        hookPath = joinPath( self.hooksDirPath, self.fileName() )
+        if isFile( hookPath ): removeFile( hookPath )
+        
     def fileName( self ):
         return "%s%s" % (PyInstHook.FILE_NAME_PREFIX, 
                          ExecutableScript.fileName( self ) )
     
     def __resolveHooksPath( self ):
-        if self.hooksDirPath is None:
+        if self.hooksDirPath is None:        
+            isV4orNewer = PyInstallerMajorVer() >= 4
+            isContrib = self.isContribHook and isV4orNewer            
             try:
-                pgkDir = modulePackagePath( PYINST_ROOT_PKG_NAME )
-                if pgkDir is None: raise Exception()
+                pgkDir = modulePackagePath( HOOKS_CONTRIB_PKG_NAME if isContrib
+                                            else PYINST_ROOT_PKG_NAME )                            
+                if pgkDir is None: raise Exception()                
                 hooksDir = joinPath( pgkDir, HOOKS_DIR_NAME )
+                if isContrib:
+                    hooksDir = joinPath( hooksDir, 
+                        _RUNTIME_HOOKS_DIR_NAME if self.isRunTimeHook else
+                        _STANDARD_HOOKS_DIR_NAME )
+                elif self.isRunTimeHook:
+                    hooksDir = joinPath( hooksDir, _RUNTIME_HOOKS_DIR_NAME )                         
                 if isDir( hooksDir ): self.hooksDirPath = hooksDir
                 else: raise Exception()
             except:    
@@ -318,6 +340,22 @@ class PyInstHook( ExecutableScript ) :
                     "PyInstaller hooks directory could not be resolved." )         
                                     
 # -----------------------------------------------------------------------------   
+def installPyInstaller( version=None ):
+    installLibrary( PYINST_ROOT_PKG_NAME + ("=="+version if version else "") )
+
+def uninstallPyInstaller(): uninstallLibrary( PYINST_ROOT_PKG_NAME )
+
+def PyInstallerVersion():
+    from PyInstaller import __version__ 
+    return __version__
+
+def PyInstallerMajorVer(): 
+    return int(versionTuple( PyInstallerVersion(), parts=1 )[0])
+
+def PyInstallerMajorMinorVer():
+    major, minor = versionTuple( PyInstallerVersion(), parts=2 ) 
+    return int(major), int(minor)
+
 def buildExecutable( name=None, entryPointPy=None, 
                      pyInstConfig=PyInstallerConfig(), 
                      opyConfig=None,                    
@@ -376,7 +414,7 @@ def buildExecutable( name=None, entryPointPy=None,
     if not pyInstConfig.isOneFile :
         print( '"UN-nesting" the dist directory content...' )
         nestedInitDir = joinPath( distDirPath, name )
-        nestedTempDir = joinPath( distDirPath, __TEMP_NEST_DIR_NAME )
+        nestedTempDir = joinPath( distDirPath, _TEMP_NEST_DIR_NAME )
         if isDir( nestedInitDir ):           
             rename( nestedInitDir, nestedTempDir )
             dirEntries = listdir(nestedTempDir)

@@ -1,10 +1,19 @@
-"""
-TODO: This example, and the available functions of this nature need to be expanded upon...
-"""
+from distbuilder import updatePip, \
+    installPyInstaller, uninstallPyInstaller, \
+    installQtIfw, unInstallQtIfw
 
-from distbuilder import installQtIfw, unInstallQtIfw
+def updatePyInstaller():
+    uninstallPyInstaller()
+    installPyInstaller()
 
-#TODO: Uninstall is working but throwing out a error message, 
-# which seems to caused by a race condition...
-unInstallQtIfw( version="3.1.1" ) 
-installQtIfw()
+def updateQtIfw():
+    # Typically, you'll need to specify the version to uninstall here...
+    try:
+        #unInstallQtIfw( version="3.1.1" )
+        unInstallQtIfw( version="3.2.2" ) 
+    except Exception as e: print(e)    
+    installQtIfw()
+    
+updatePip()
+updatePyInstaller()
+updateQtIfw()
