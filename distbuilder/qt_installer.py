@@ -1719,7 +1719,7 @@ class _QtIfwScript:
             TAB + 'return installer.executeDetached( binPath, args )' + END +
             EBLK + NEW +              
             'function executeHidden( binPath, args, isElevated ) ' + SBLK + # TODO: Test in NIX/MAC 
-            ( 
+            (                 
             (TAB+ 'var ps = "Start-Process -FilePath \'" + binPath + "\' ' +
                             '-Wait -WindowStyle Hidden"' + END +
             TAB + 'if( isElevated ) ps += " -Verb RunAs"' + END +
@@ -1805,7 +1805,7 @@ class _QtIfwScript:
             TAB + 'var path = writeFile( __tempRootFilePath( "ps1" ), ps )' + END +
             TAB + 'var result = installer.execute(' + 
                 '"powershell", ["-NoLogo", "-ExecutionPolicy", "Bypass", ' +
-                                '"-File", path])' + END +
+                                '"-InputFormat", "None", "-File", path])' + END +
             TAB + _QtIfwScript.log( 
                 '"> Script return code: " + (result.length==2 ? result[1] : "?" )', 
                 isAutoQuote=False ) +                
@@ -1823,7 +1823,7 @@ class _QtIfwScript:
             TAB + 'var path = writeFile( scriptPath, ps )' + END +
             TAB + 'var result = installer.executeDetached(' + 
                 '"powershell", ["-NoLogo", "-ExecutionPolicy", "Bypass", ' +
-                                '"-File", path])' + END +
+                                '"-InputFormat", "None", "-File", path])' + END +
             EBLK + NEW                                                          
             )
         elif IS_LINUX:
@@ -3564,6 +3564,8 @@ Component.prototype.%s = function(){
     var psNologo       = "-NoLogo";
     var psExecPolicy   = "-ExecutionPolicy";
     var psBypassPolicy = "Bypass";
+    var psInputFormat  = "-InputFormat";
+    var psInputNone    = "None";     
     var psExecScript   = "-File";
 """)
         if IS_WINDOWS:
@@ -3618,7 +3620,9 @@ Component.prototype.%s = function(){
                             "PowerShell scripts are not INHERTENTLY "
                             "supported by this platform!" )                                             
                     args+=["psInterpreter", "psNologo", 
-                           "psExecPolicy", "psBypassPolicy", "psExecScript"]
+                           "psExecPolicy", "psBypassPolicy",                            
+                           "psInputFormat", "psInputNone",                                
+                           "psExecScript"]
                 elif scriptType=="scpt":            
                     if not IS_MACOS:
                         raise Exception( 
@@ -3645,7 +3649,9 @@ Component.prototype.%s = function(){
                     args+=["vbsInterpreter", "vbsNologo"]
                 elif scriptType=="ps1":
                     args+=["psInterpreter", "psNologo", 
-                           "psExecPolicy", "psBypassPolicy", "psExecScript"]
+                           "psExecPolicy", "psBypassPolicy",
+                           "psInputFormat", "psInputNone", 
+                           "psExecScript"]
                 elif scriptType=="scpt":            
                     args+=["osaInterpreter"]                                              
                 else: args+=["shellPath", "shellSwitch"]
@@ -4398,7 +4404,7 @@ UserQuietInstCmd=
             if   ext==".vbs":
                 command = 'cscript.exe "%script_name%"'
             elif ext==".ps1":
-                command = 'powershell.exe -ExecutionPolicy Bypass -File "%script_name%"'
+                command = 'powershell.exe -ExecutionPolicy Bypass -InputFormat None -File "%script_name%"'
             else:    
                 command = 'cmd.exe /c "%script_name%"'
             removeSrc =( 'del /q /f "%s"' % (srcPath,) 
