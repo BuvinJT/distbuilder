@@ -5913,6 +5913,8 @@ def __silentQtIfwScript( exeName, componentList=[],
         imports = (
 """     
 from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW
+try: from subprocess import DEVNULL 
+except ImportError: DEVNULL = open(os.devnull, 'wb')
 import tempfile
 import glob
 """ )
@@ -5945,6 +5947,7 @@ import glob
     processStartupInfo.dwFlags |= STARTF_USESHOWWINDOW 
     process = Popen( psArgs, cwd=WORK_DIR, 
                      shell=False, universal_newlines=True,
+                     stdin=DEVNULL, # Prevent PS blocking encountered in special contexts
                      startupinfo=processStartupInfo )
 
     # The PowerShell layer is used because it *actually* hides the installer.
