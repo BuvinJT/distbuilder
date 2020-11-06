@@ -82,7 +82,6 @@ Attributes & default values:
     ifwPkgScriptPath = None        
     ifwPkgScriptName = "installscript.qs"
 
-    pkgIsContent  = True
     pkgType       = None    
     pkgSubDirName = None
     pkgSrcDirPath = None
@@ -398,27 +397,27 @@ default. `ifwPkgIsRequired` dictates if the user can opt out of the component.
 `ifwPkgIsHidden` is similar to the prior switches, but insulates the user from 
 even seeing the component as separate entity when enabled.  
 
-#### pkgIsContent
-
-This switch indicates if the package contains "installable content" (in the traditional 
-sense at least).  This should be left enabled the majority of the time.  
-
-Setting this to false would be indicated in the use case that you want to bundle custom 
-installation operations / scripts as a "component".  Note that installer *resources* may be
-attached to such operations, and those are *not* installed content.  A notable use case,
-combining those two configuration options, would be to bundle another installer inside 
-the one produced here.  The nested installed could be a resource, which is invoked by a
-custom operation.  It does not install content into the target directory for this main program, 
-and the nested installer may or may not be retained in any fashion on the target machine.    
-
 #### pkgType    
-The type (`QtIfwPackage.Type`) of package being built.  If this is omitted and a 
-`binaryName` attribute is specified, `PY_INSTALLER` is assumed.  If there is no type 
-provided, and no `binaryName`, the `DATA` type is assumed.  Other options are also possible. This list is expected to grow over time:
 
-	QtIfwPackage.Type.DATA
+This specifies the type (`QtIfwPackage.Type`) of package being built.  
+The options for this include:  
+
 	QtIfwPackage.Type.PY_INSTALLER
+	QtIfwPackage.Type.DATA
+	QtIfwPackage.Type.RESOURCE
 	QtIfwPackage.Type.QT_CPP
+
+If this is omitted, and a `binaryName` attribute is specified, type `PY_INSTALLER` is assumed.  If this is omitted, but no `binaryName` is specified, the `DATA` type is assumed.  
+
+The `RESOURCE` type indicates that the package does not contain any "directly installed 
+content" (in the traditional sense at least).  This is to be used in situations where you 
+want to simply bundle custom installation operations / scripts as a "component".  Note, 
+however, that installer **resources** may be attached to such operations, and which are *not* 
+"directly installed content".  A notable use case where you would include a resource, 
+but no content files in a package, would be to "nest" another installer inside of the outer one.  The nested installer would be a resource, invoked by a custom operation.  
+See: 
+[QtIfwExternalResource](ConfigClasses.md#qtifwexternalresource)
+[QtIfwExternalOp](ConfigClasses.md#qtifwexternalop)   
 
 #### pkgSubDirName
 

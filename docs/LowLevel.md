@@ -46,7 +46,7 @@ program, invoke the buildExecutable function:
 	applied	if pyInstConfig is None. If omitted, the 
 	pyInstConfig attribute for this is used.
         
-**pyInstConfig**: An (optional) [PyInstallerConfig](#pyinstallerconfig) 
+**pyInstConfig**: An (optional) [PyInstallerConfig](ConfigClasses.md#pyinstallerconfig) 
     object to dictate extended details for building 
     the binary using the PyInstaller Utility. If 
     omitted, the name and entryPointPy arguments, 
@@ -334,6 +334,8 @@ resolved at *runtime* by QtIFW.  Note these are applicable for **BOTH** direct
 [Installer Script](#installer-scripting) generation, and as parameters
 and attributes for many higher level functions and objects in this library.   
 
+    QT_IFW_DYNAMIC_VARS <LIST CONTAINING ALL OF THESE>
+
     QT_IFW_TARGET_DIR 
 
     QT_IFW_ROOT_DIR 
@@ -395,6 +397,11 @@ Static Constants :
     END_LINE    
     START_BLOCK 
     END_BLOCK   
+    
+    IF    
+    ELSE  
+    TRY   "try { "
+    CATCH "catch(e) { "
     
     TRUE  
     FALSE 
@@ -470,7 +477,7 @@ Static Functions:
     dropElevation() 
                           
     getEnv( varName, isAutoQuote=True )
-
+    
     pathExists( path, isAutoQuote=True )
     ifPathExists( path, isAutoQuote=True, isMultiLine=False )   
     ifNotPathExists( path, isAutoQuote=True, isMultiLine=False )
@@ -486,8 +493,18 @@ Static Functions:
     targetDir()
     productName() 
                 
-    getComponent( name, isAutoQuote=True )	
+    resolveDynamicVars( s, varNames=QT_IFW_DYNAMIC_VARS, <None==QT_IFW_DYNAMIC_VARS> 
+                        isAutoQuote=True ) <returns string>
+                
+    getComponent( name, isAutoQuote=True )	   
     getPageOwner( pageName, isAutoQuote=True ) <returns Component>
+
+	isComponentInstalled( name )
+    isComponentSelected( name )
+    ifComponentInstalled( name, isNegated=False, 
+                          isAutoQuote=True, isMultiLine=False )   
+    ifComponentSelected( name, isNegated=False, 
+                         isAutoQuote=True, isMultiLine=False )       
     
     debugPopup( msg, isAutoQuote=True )
     errorPopup( msg, isAutoQuote=True )    
@@ -518,6 +535,7 @@ Static Constants :
     START_MENU_DIR_EDITBOX   
     ACCEPT_EULA_RADIO_BUTTON 
     RUN_PROGRAM_CHECKBOX     
+    FINISHED_MESSAGE_LABEL
 
 Static Functions:      
 
@@ -539,7 +557,9 @@ Static Functions:
     setVisible( controlName, isVisible=True )
     
     getText( controlName )
-    setText( controlName, text, isAutoQuote=True )
+    setText( controlName, text, varNames=None, isAutoQuote=True )
+    	(Note: varNames=None==QT_IFW_DYNAMIC_VARS, 
+    	       varNames=False==No variable resolution )
     
     	(Note: check box controls also work on radio buttons)    
     isChecked( checkboxName )
@@ -602,6 +622,7 @@ following add-on **QT SCRIPT** functions:
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
 	
+	resolveDynamicVars( s, varNames )  <returns string>
     replaceDynamicVarsInFile( path, varNames, isDoubleBackslash )
 	
 	clearErrorLog()
@@ -642,9 +663,14 @@ following add-on **QT SCRIPT** functions:
 	    isYumInstalled()
 	    isRpmInstalled()
 	    
-    getComponent( name )
-    getPageOwner( pageName )
-    removePage( pageName )
+    getComponent( name ) <throws on invalid name>
+
+	isComponentInstalled( name ) 
+    isComponentSelected( name ) 
+
+    getPageOwner( pageName ) <throws on invalid name>
+    insertCustomPage( pageName, position ) 
+    removeCustomPage( pageName )     
 	setCustomPageText( page, title, description )
 
 ### QtIfwPackage list manipulation

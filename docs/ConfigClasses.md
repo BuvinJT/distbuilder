@@ -425,6 +425,7 @@ Attributes & default values:
         
     isFinishedPageVisible = True        
     finishedPageCallbackBody = None
+    finishedPageCallBackTail = None
     isAutoFinishedPageCallback = True        
 
     isRunProgVisible = True
@@ -462,7 +463,7 @@ for extended configuration details.
 Constructor:  
 
     QtIfwPackage( pkgId=None, pkgType=None, name=None, 
-                  isContent=True, subDirName=None,
+                  subDirName=None,
                   srcDirPath=None, srcExePath=None,    
                   resBasePath=None, isTempSrc=False,
                   pkgXml=None, pkgScript=None,
@@ -482,8 +483,7 @@ Attributes:
     licenses        = {} <in the form name:filePath>
     isLicenseFormatPreserved = False
             
-    <source content>        
-    isContent     = True
+    <source content>            
     srcDirPath    = None <package ENTIRE source directory>
     srcExePath    = None
     resBasePath   = None

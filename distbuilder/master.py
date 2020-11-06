@@ -105,7 +105,6 @@ class ConfigFactory:
         self.ifwPkgScriptPath = None        
         self.ifwPkgScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
         
-        self.pkgIsContent    = True
         self.pkgType         = None
         self.pkgSubDirName   = None
         self.pkgSrcDirPath   = None
@@ -205,7 +204,6 @@ class ConfigFactory:
                 pkgId=self.__ifwPkgId(),
                 pkgType=pkgType, 
                 name=self.__ifwPkgName(), 
-                isContent=self.pkgIsContent,
                 subDirName=self.pkgSubDirName,
                 srcDirPath=self.__pkgSrcDirPath(),
                 srcExePath=self.pkgSrcExePath,            

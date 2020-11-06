@@ -152,8 +152,18 @@ QT_IFW_DYNAMIC_PATH_VARS = [
     , "ApplicationsDirX64" 
     , "InstallerTempDir"
     , "MaintenanceTempDir"
+    , "ScriptsDir"
     , "InstallerDirPath" 
     , "InstallerFilePath" 
+]
+
+QT_IFW_DYNAMIC_VARS = QT_IFW_DYNAMIC_PATH_VARS + [
+      "ProductName"
+    , "ProductVersion"
+    , "Title"
+    , "Publisher"
+    , "Url"
+    , "os"
 ]
 
 _RETAINED_RESOURCE_SUBDIR = 'maintenanceResources'
@@ -386,7 +396,7 @@ class QtIfwConfigXml( _QtIfwXml ):
 # -----------------------------------------------------------------------------
 class QtIfwPackage:
 
-    class Type: DATA, PY_INSTALLER, QT_CPP = range(3)  
+    class Type: DATA, RESOURCE, PY_INSTALLER, QT_CPP = range(4)  
     
     __PACKAGES_PATH_TMPLT       = "%s/packages"
     __DIR_PATH_TMPLT            = "%s/packages/%s"
@@ -402,7 +412,7 @@ class QtIfwPackage:
     
     # QtIfwPackage
     def __init__( self, pkgId=None, pkgType=None, name=None,
-                  isContent=True, subDirName=None,  
+                  subDirName=None,  
                   srcDirPath=None, srcExePath=None, 
                   resBasePath=None, isTempSrc=False, 
                   pkgXml=None, pkgScript=None,
@@ -418,7 +428,6 @@ class QtIfwPackage:
         self.licenses  = licenses
         self.isLicenseFormatPreserved = False        
         # content        
-        self.isContent     = isContent
         self.srcDirPath    = srcDirPath
         self.srcExePath    = srcExePath
         self.resBasePath   = resBasePath
@@ -550,6 +559,11 @@ class _QtIfwScript:
     END_LINE    = ";\n"
     START_BLOCK = "{\n"
     END_BLOCK   = "}\n"
+
+    IF    = "if "
+    ELSE  = "else "
+    TRY   = "try { "
+    CATCH = "catch(e) { "
     
     TRUE  = "true"
     FALSE = "false"
@@ -647,7 +661,10 @@ class _QtIfwScript:
     
     __GET_COMPONENT_TMPL  = 'getComponent( %s )' 
     __GET_PAGE_OWNER_TMPL = 'getPageOwner( %s )'
-    
+
+    __IS_COMPONENT_INSTALLED = 'isComponentInstalled( %s )' 
+    __IS_COMPONENT_SELECTED  = 'isComponentSelected( %s )'
+        
     __VALUE_TMPL      = "installer.value( %s, %s )"
     __VALUE_LIST_TMPL = "installer.values( %s, %s )"
     __SET_VALUE_TMPL  = "installer.setValue( %s, %s );\n"
@@ -655,6 +672,8 @@ class _QtIfwScript:
     __GET_ENV_VAR_TMPL = "installer.environmentVariable( %s )"
 
     __PATH_EXISTS_TMPL = "installer.fileExists( %s )"
+    
+    __RESOLVE_DYNAMIC_VARS_TMPL = "resolveDynamicVars( %s, %s )"
 
     __MAKE_DIR_TMPL   = "makeDir( resolveQtIfwPath( %s ) );\n"
     __REMOVE_DIR_TMPL = "removeDir( resolveQtIfwPath( %s ) );\n"
@@ -712,7 +731,7 @@ class _QtIfwScript:
     @staticmethod
     def genResources( embeddedResources ):
         return _QtIfwScript.__writeScripts( embeddedResources )
-    
+            
     @staticmethod
     def resolveScriptVars( scripts, subDir ):
         return _QtIfwScript.__writeScripts( scripts, True, False, subDir )
@@ -872,7 +891,7 @@ class _QtIfwScript:
         defList=""
         for v in defaultList: 
             defList += _QtIfwScript._autoQuote( str(v), isAutoQuote )
-        defList = "[%s]" % defList            
+        defList = "[%s]" % (",".join( defList ),)                    
         if delimiter:
             valScr = _QtIfwScript.lookupValue( key, isAutoQuote=True )
             return ( '( %s=="" ? %s : %s.split("%s") )' % 
@@ -880,7 +899,19 @@ class _QtIfwScript:
         return _QtIfwScript.__VALUE_LIST_TMPL % (
             _QtIfwScript._autoQuote( key, isAutoQuote ),
             defList )
-        
+    
+    @staticmethod
+    def resolveDynamicVars( s, varNames=None, isAutoQuote=True ):
+        if varNames is None:
+            nameList='null'
+        else :    
+            nameList=''
+            for v in varNames: 
+                nameList += _QtIfwScript._autoQuote( str(v), isAutoQuote )
+            nameList = "[%s]" % (",".join( nameList ),)        
+        return _QtIfwScript.__RESOLVE_DYNAMIC_VARS_TMPL % (
+            _QtIfwScript._autoQuote( s, isAutoQuote ), nameList )
+    
     @staticmethod        
     def quit( msg, isError=True, isSilent=False, isAutoQuote=True ): 
         return _QtIfwScript.__QUIT % (
@@ -1070,6 +1101,34 @@ class _QtIfwScript:
         return _QtIfwScript.__GET_PAGE_OWNER_TMPL % (
             _QtIfwScript._autoQuote( pageName, isAutoQuote ),) 
             
+    @staticmethod        
+    def isComponentInstalled( name, isAutoQuote=True ):
+        if isinstance( name, QtIfwPackage ): name = name.name                  
+        return _QtIfwScript.__IS_COMPONENT_INSTALLED % (
+            _QtIfwScript._autoQuote( name, isAutoQuote ),) 
+
+    @staticmethod        
+    def isComponentSelected( name, isAutoQuote=True ):
+        if isinstance( name, QtIfwPackage ): name = name.name                  
+        return _QtIfwScript.__IS_COMPONENT_SELECTED % (
+            _QtIfwScript._autoQuote( name, isAutoQuote ),) 
+
+    @staticmethod
+    def ifComponentInstalled( name, isNegated=False, 
+                              isAutoQuote=True, isMultiLine=False ):   
+        return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "", 
+            _QtIfwScript.isComponentInstalled( name, isAutoQuote ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+
+    @staticmethod
+    def ifComponentSelected( name, isNegated=False, 
+                              isAutoQuote=True, isMultiLine=False ):   
+        return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "", 
+            _QtIfwScript.isComponentSelected( name, isAutoQuote ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+                        
     # _QtIfwScript            
     def __init__( self, fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None, 
@@ -1089,6 +1148,8 @@ class _QtIfwScript:
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK
         
+        varsList = ",".join([ '"%s"' % (v,) 
+                              for v in QT_IFW_DYNAMIC_VARS ])
         pathVarsList = ",".join([ '"%s"' % (v,) 
                                   for v in QT_IFW_DYNAMIC_PATH_VARS ])
 
@@ -1102,6 +1163,7 @@ class _QtIfwScript:
             'function isLinux() ' + SBLK +
             TAB + 'return systemInfo.kernelType === "linux"' + END +
             EBLK + NEW +
+            'var dynamicVars = [ ' + varsList + ' ]' + END +
             'var dynamicPathVars = [ ' + pathVarsList + ' ]' + END +
             NEW +                                                         
             'var Dir = new function () ' + SBLK +
@@ -1234,7 +1296,17 @@ class _QtIfwScript:
             (2*TAB) + 'path = path.split( "@" + varName + "@" ).join( varVal )' + END +
             (2*TAB) + EBLK +             
             TAB + 'return path' + END +                                                                                                                          
-            EBLK + NEW +                                   
+            EBLK + NEW +
+            'function resolveDynamicVars( s, varNames ) ' + SBLK + 
+            TAB + 'var ret = s' + END +
+            TAB + 'if( !varNames ) varNames = dynamicVars' + END +                 
+            TAB + 'for( var i=0; i != varNames.length; ++i ) ' + SBLK +                                    
+            (2*TAB) + 'var varName = varNames[i]' + END +
+            (2*TAB) + 'var varVal = installer.value( varName, "?" )' + END +
+            (2*TAB) + 'ret = ret.split( "@" + varName + "@" ).join( varVal )' + END +
+            (2*TAB) + EBLK +             
+            TAB + 'return ret' + END +                                                                                                                          
+            EBLK + NEW +
             'function toMaintenanceToolPath( dir ) ' + SBLK +
                 TAB + 'return dir + ' + _QtIfwScript.PATH_SEP + ' + ' +
                     ('"%s"' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END + 
@@ -1692,6 +1764,16 @@ class _QtIfwScript:
             TAB + EBLK + 
             TAB + 'throw new Error("Component not found: " + name )' + END +
             EBLK + NEW +
+            'function isComponentInstalled( name ) ' + SBLK +
+            TAB + 'try{ return getComponent( name ).installed; }' + NEW +
+            TAB + 'catch(e){ console.log("Component not found: " + name ); }' + NEW +
+            TAB + 'return false' + END +
+            EBLK + NEW +            
+            'function isComponentSelected( name ) ' + SBLK +
+            TAB + 'try{ return getComponent( name ).enabled; }' + NEW +
+            TAB + 'catch(e){ console.log("Component not found: " + name ); }' + NEW +
+            TAB + 'return false' + END +
+            EBLK + NEW +                        
             'function getPageOwner( pageName ) ' + SBLK +
             TAB + 'var comps=installer.components()' + END +
             TAB + 'for( i=0; i < comps.length; i++ ) ' + SBLK +
@@ -2057,6 +2139,9 @@ Controller.prototype.Dynamic%sCallback = function() {
     START_MENU_DIR_EDITBOX   = "StartMenuPathLineEdit"
     ACCEPT_EULA_RADIO_BUTTON = "AcceptLicenseRadioButton"
     RUN_PROGRAM_CHECKBOX     = "RunItCheckBox"
+    
+    FINISHED_MESSAGE_LABEL   = "MessageLabel"
+    DEFAULT_FINISHED_MESSAGE = "Click finish to exit the @ProductName@ Wizard."
                                     
     @staticmethod        
     def _purgeTempFiles():                  
@@ -2150,9 +2235,12 @@ Controller.prototype.Dynamic%sCallback = function() {
             checkboxName )
 
     @staticmethod        
-    def setText( controlName, text, isAutoQuote=True ):                
-        return QtIfwControlScript.__SET_TEXT_TMPL % ( 
-                controlName, _QtIfwScript._autoQuote( text, isAutoQuote ) )
+    def setText( controlName, text, varNames=None, 
+                 isAutoQuote=True ):
+        text =( _QtIfwScript._autoQuote( text, isAutoQuote ) 
+                if varNames==False else
+                _QtIfwScript.resolveDynamicVars( text, varNames, isAutoQuote ) )        
+        return QtIfwControlScript.__SET_TEXT_TMPL % ( controlName, text )
 
     @staticmethod        
     def getText( controlName ):                
@@ -2278,6 +2366,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         
         self.isFinishedPageVisible = True
         self.finishedPageCallbackBody = None
+        self.finishedPageCallBackTail = None
         self.isAutoFinishedPageCallback = True        
 
         self.isRunProgInteractive = True
@@ -2878,7 +2967,9 @@ Controller.prototype.Dynamic%sCallback = function() {
                         _QtIfwScript.TAB + QtIfwControlScript.setCheckBox( 
                             QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
                                 _QtIfwScript.cmdLineSwitchArg(
-                                    _QtIfwScript.RUN_PROGRAM_CMD_ARG ) ) +
+                                    _QtIfwScript.RUN_PROGRAM_CMD_ARG ) ) +                
+                ("" if self.finishedPageCallBackTail is None else
+                 self.finishedPageCallBackTail) +                                
             TAB + EBLK +                 
             TAB + _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 TAB + QtIfwControlScript.clickButton( 
@@ -5491,7 +5582,7 @@ def __validateConfig( qtIfwConfig ):
     if qtIfwConfig.packages is None :
         raise Exception( "Package specification(s)/definition(s) required" )
     for p in qtIfwConfig.packages :
-        if not p.isContent: continue
+        if p.pkgType==QtIfwPackage.Type.RESOURCE: continue
         if p.srcDirPath is None:
             if p.srcExePath is None:
                 raise Exception( "Package Source directory OR exe path required" )
@@ -5558,7 +5649,7 @@ def __initBuild( qtIfwConfig ) :
                     __addArchive( res.srcPath, p, qtIfwConfig, 
                                   archiveRootName=res.name )        
         
-        if p.isContent: stageContent( p )
+        if not p.pkgType==QtIfwPackage.Type.RESOURCE: stageContent( p )
         stageAdditionalResources( p )
                                         
     print( "Build directory created: %s" % (BUILD_SETUP_DIR_PATH,) )
