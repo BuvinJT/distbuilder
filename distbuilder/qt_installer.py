@@ -217,9 +217,9 @@ class _QtIfwXml:
         root = _QtIfwXmlElement( self.rootTag )
         for k, v in six.iteritems( self.__dict__ ) :
             if k in self.tags and v is not None : 
-                _QtIfwXmlElement( k, v, root )                                        
+                _QtIfwXmlElement( k, str(v), root )                                        
         for k, v in six.iteritems( self.otherElements ) : 
-            _QtIfwXmlElement( k, v, root )
+            _QtIfwXmlElement( k, str(v), root )
         self.addCustomTags( root )    
         xml = ET.tostring( root )        
         return _QtIfwXml.__HEADER + (xml if six.PY2 else xml.decode()) 
@@ -371,7 +371,7 @@ class QtIfwConfigXml( _QtIfwXml ):
             runArgs = _QtIfwXmlElement( QtIfwConfigXml.__RUN_ARGS_TAG, 
                                         None, root )
             for arg in self.runProgramArgList:
-                _QtIfwXmlElement( QtIfwConfigXml.__ARG_TAG, arg, runArgs )                
+                _QtIfwXmlElement( QtIfwConfigXml.__ARG_TAG, str(arg), runArgs )                
         
     def path( self ) :   
         return joinPath( BUILD_SETUP_DIR_PATH, 
@@ -402,7 +402,7 @@ class QtIfwPackage:
     
     # QtIfwPackage
     def __init__( self, pkgId=None, pkgType=None, name=None,
-                  subDirName=None,  
+                  isContent=True, subDirName=None,  
                   srcDirPath=None, srcExePath=None, 
                   resBasePath=None, isTempSrc=False, 
                   pkgXml=None, pkgScript=None,
@@ -418,6 +418,7 @@ class QtIfwPackage:
         self.licenses  = licenses
         self.isLicenseFormatPreserved = False        
         # content        
+        self.isContent     = isContent
         self.srcDirPath    = srcDirPath
         self.srcExePath    = srcExePath
         self.resBasePath   = resBasePath
@@ -469,8 +470,16 @@ class QtIfwPackageXml( _QtIfwXml ):
                    , "Description"
                    , "Version"
                    , "ReleaseDate"    
+                   , "SortingPriority"
                    , "Default"
-                   , "Script" 
+                   , "ForcedInstallation"
+                   , "Essential"
+                   , "Virtual"
+                   , "Checkable"
+                   , "Replaces"
+                   , "Dependencies"
+                   , "AutoDependOn"
+                   , "Script"                       
                    ]
     __UIS_TAG      = "UserInterfaces"
     __UI_TAG       = "UserInterface"
@@ -481,20 +490,31 @@ class QtIfwPackageXml( _QtIfwXml ):
         
     # QtIfwPackageXml   
     def __init__( self, pkgName, displayName, description, 
-                  version, scriptName=None, isDefault=True ) :
+                  version, scriptName=None, 
+                  isDefault=True, isRequired=False, 
+                  isHidden=False, isCheckable=True ) :
         _QtIfwXml.__init__( self, QtIfwPackageXml.__ROOT_TAG, 
                             QtIfwPackageXml.__TAGS )        
         self.pkgName       = pkgName
         
-        # TODO: expand on the built-in attributes here...
-        self.DisplayName    = displayName
-        self.Description    = description
-        self.Version        = version            
-        self.Script         = scriptName 
-        self.Default        = isDefault
-        self.ReleaseDate    = date.today()
-        self.UserInterfaces = []
-        self.Licenses       = {} # name:filePath
+        # TODO: continue to expand on the natural IFW options here...
+        self.SortingPriority    = None
+        self.DisplayName        = displayName
+        self.Description        = description
+        self.Version            = version            
+        self.Script             = scriptName 
+        self.ReleaseDate        = date.today()
+        self.Virtual            = True if isHidden else None
+        self.Default            = None if isHidden or not isCheckable else isDefault
+        self.ForcedInstallation = (True if isRequired and 
+                                   not isHidden and (isCheckable or isCheckable is None) 
+                                   else None)
+        self.Checkable          = (False if not isCheckable 
+                                   and not isHidden and not isRequired else None)         
+        self.Dependencies       = None
+        self.AutoDependOn       = None
+        self.UserInterfaces     = []
+        self.Licenses           = {} # name:filePath
                          
     def addCustomTags( self, root ) :
         if self.UserInterfaces is not None :            
@@ -676,11 +696,14 @@ class _QtIfwScript:
                         " (Auto correcting this may produce hard to find bugs)" )
                 varName = script.fileName().replace(".","_dot_")                                
                 b64 = script.toBase64( toString=True )
-                b64Literals = ""
-                for chunk in chunks(b64, _QtIfwScript.__EMBED_RES_CHUNK_SIZE):
-                    concat = "  " if b64Literals=="" else "+ " 
-                    b64Literals += '%s%s%s"%s"' % (
-                        _QtIfwScript.NEW_LINE, _QtIfwScript.TAB, concat, chunk)                
+                if len(b64)==0: b64Literals = '""'                    
+                else:
+                    b64Literals = ""
+                    for chunk in chunks(b64, _QtIfwScript.__EMBED_RES_CHUNK_SIZE):
+                        concat = "  " if b64Literals=="" else "+ " 
+                        b64Literals += '%s%s%s"%s"' % (
+                            _QtIfwScript.NEW_LINE, _QtIfwScript.TAB, concat, 
+                            chunk )                                    
                 return _QtIfwScript.__EMBED_RES_TMPLT % (varName, b64Literals)                 
         raw = ""
         for res in embeddedResources: raw += embed( res )
@@ -5468,6 +5491,7 @@ def __validateConfig( qtIfwConfig ):
     if qtIfwConfig.packages is None :
         raise Exception( "Package specification(s)/definition(s) required" )
     for p in qtIfwConfig.packages :
+        if not p.isContent: continue
         if p.srcDirPath is None:
             if p.srcExePath is None:
                 raise Exception( "Package Source directory OR exe path required" )
@@ -5506,31 +5530,37 @@ def __initBuild( qtIfwConfig ) :
     # copy the source content into the build directory
     for p in qtIfwConfig.packages :
         if not isinstance( p, QtIfwPackage ) : continue
-        destDir = p.contentDirPath()                        
-        if p.srcDirPath : 
-            p.srcDirPath = normpath( p.srcDirPath )
-            copyDir( p.srcDirPath, destDir )                
-        if p.srcExePath :
-            srcExeDir, srcExeName = splitPath( 
-                normBinaryName( p.srcExePath, isPathPreserved=True, 
-                                isGui=p.isGui ) )
-            # if the source was was not in the source directory
-            # and therefore already copied to the destDir, do so...
-            if srcExeDir != p.srcDirPath :         
-                if not isDir( destDir ): makeDir( destDir )
-                copyToDir( p.srcExePath, destDirPath=destDir )
-            # reconcile the exeName with the source exe                     
-            if p.exeName is None: p.exeName = srcExeName 
-            elif p.exeName != srcExeName :             
-                rename( joinPath( destDir, srcExeName ),
-                        joinPath( destDir, p.exeName ) )
-        # generate / copy additional archives        
-        p.pkgScript._flatten()        
-        for res in p.pkgScript.installResources:
-            if isinstance( res, QtIfwExternalResource ) and res.srcPath: 
-                __addArchive( res.srcPath, p, qtIfwConfig, 
-                              archiveRootName=res.name )
-                        
+        
+        def stageContent( p ):
+            destDir = p.contentDirPath()                        
+            if p.srcDirPath : 
+                p.srcDirPath = normpath( p.srcDirPath )
+                copyDir( p.srcDirPath, destDir )                
+            if p.srcExePath :
+                srcExeDir, srcExeName = splitPath( 
+                    normBinaryName( p.srcExePath, isPathPreserved=True, 
+                                    isGui=p.isGui ) )
+                # if the source was was not in the source directory
+                # and therefore already copied to the destDir, do so...
+                if srcExeDir != p.srcDirPath :         
+                    if not isDir( destDir ): makeDir( destDir )
+                    copyToDir( p.srcExePath, destDirPath=destDir )
+                # reconcile the exeName with the source exe                     
+                if p.exeName is None: p.exeName = srcExeName 
+                elif p.exeName != srcExeName :             
+                    rename( joinPath( destDir, srcExeName ),
+                            joinPath( destDir, p.exeName ) )
+
+        def stageAdditionalResources( p ):        
+            p.pkgScript._flatten()        
+            for res in p.pkgScript.installResources:
+                if isinstance( res, QtIfwExternalResource ) and res.srcPath: 
+                    __addArchive( res.srcPath, p, qtIfwConfig, 
+                                  archiveRootName=res.name )        
+        
+        if p.isContent: stageContent( p )
+        stageAdditionalResources( p )
+                                        
     print( "Build directory created: %s" % (BUILD_SETUP_DIR_PATH,) )
 
 def __addInstallerResources( qtIfwConfig ) :

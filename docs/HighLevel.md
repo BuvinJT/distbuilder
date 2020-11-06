@@ -72,12 +72,17 @@ Attributes & default values:
     ifwPkgId         = None
     ifwPkgName       = None
     ifwPkgNamePrefix = "com"        
+
+    ifwPkgIsDefault  = True
+    ifwPkgIsRequired = False 
+    ifwPkgIsHidden   = False
 	       
     ifwPkgScript     = None           
     ifwPkgScriptText = None
     ifwPkgScriptPath = None        
     ifwPkgScriptName = "installscript.qs"
 
+    pkgIsContent  = True
     pkgType       = None    
     pkgSubDirName = None
     pkgSrcDirPath = None
@@ -228,7 +233,7 @@ more details on this.
 Notably, this attribute is used when generating a 
 [PyInstallerConfig](ConfigClasses.md#pyinstconfig)
 object when invoking the `pyInstallerConfig()` function for this class, 
-and then utlimately invoking the low level 
+and then ultimately invoking the low level 
 [buildExecutable](LowLevel.md#buildExecutable) operation with that.
 Note this may be done for you via various high level process classes.
 
@@ -341,7 +346,7 @@ defined script.
 
 `ifwCntrlScriptName` provides a means to define the name of the file generated, in case 
 there is need or desire to override the default. 
-      
+            
 #### ifwPkgScript, ifwPkgScriptText, ifwPkgScriptPath, ifwPkgScriptName
 
 QtIFW installers may have a "Control Script" and/or a collection of "Package Scripts".
@@ -384,8 +389,29 @@ involved. For more information refer to:
 QtInstaller for deployment on a target environment.  Normally, you may allow
 distbuilder to set the name for you automatically.
 
+### ifwPkgIsDefault, ifwPkgIsRequired, ifwPkgIsHidden
+
+These switches are commonly used, simple options for controlling how the package 
+(i.e. component) will selected by the end user of the installer.
+`ifwPkgIsDefault` will automatically select (or not select) the component by
+default. `ifwPkgIsRequired` dictates if the user can opt out of the component.
+`ifwPkgIsHidden` is similar to the prior switches, but insulates the user from 
+even seeing the component as separate entity when enabled.  
+
+#### pkgIsContent
+
+This switch indicates if the package contains "installable content" (in the traditional 
+sense at least).  This should be left enabled the majority of the time.  
+
+Setting this to false would be indicated in the use case that you want to bundle custom 
+installation operations / scripts as a "component".  Note that installer *resources* may be
+attached to such operations, and those are *not* installed content.  A notable use case,
+combining those two configuration options, would be to bundle another installer inside 
+the one produced here.  The nested installed could be a resource, which is invoked by a
+custom operation.  It does not install content into the target directory for this main program, 
+and the nested installer may or may not be retained in any fashion on the target machine.    
+
 #### pkgType    
-	
 The type (`QtIfwPackage.Type`) of package being built.  If this is omitted and a 
 `binaryName` attribute is specified, `PY_INSTALLER` is assumed.  If there is no type 
 provided, and no `binaryName`, the `DATA` type is assumed.  Other options are also possible. This list is expected to grow over time:

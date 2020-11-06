@@ -462,7 +462,7 @@ for extended configuration details.
 Constructor:  
 
     QtIfwPackage( pkgId=None, pkgType=None, name=None, 
-                  subDirName=None,
+                  isContent=True, subDirName=None,
                   srcDirPath=None, srcExePath=None,    
                   resBasePath=None, isTempSrc=False,
                   pkgXml=None, pkgScript=None,
@@ -483,6 +483,7 @@ Attributes:
     isLicenseFormatPreserved = False
             
     <source content>        
+    isContent     = True
     srcDirPath    = None <package ENTIRE source directory>
     srcExePath    = None
     resBasePath   = None
@@ -523,21 +524,30 @@ will not be written, otherwise they will be.
 Constructor:       
 
     QtIfwPackageXml( pkgName, displayName, description, version, 
-                   scriptName=None, isDefault=True )
+                     scriptName=None, 
+                     isDefault=True, isRequired=False, 
+                     isHidden=False, isCheckable=True )
                   
 Attributes & default values:      
 
     pkgName = <required>
-               
-    DisplayName    = <required>
-    Description    = <required>
-    Version        = <required>            
-    Script         = None 
-    Default        = True
-    ReleaseDate    = date.today()
+
+	SortingPriority    = None               
+    DisplayName        = <required>
+    Description        = <required>
+    Version            = <required>            
+    Script             = None     
+    ReleaseDate        = date.today()
+    Default            = True    
+    ForcedInstallation = False <isRequired>
+    Virtual            = False <isHidden>
+    Checkable          = True
+    Dependencies       = None
+    AutoDependOn       = None
+            
     UserInterfaces = []
     Licenses       = []
-    
+            
 Functions:      
 
     addCustomTags( root ) 

@@ -80,7 +80,7 @@ class ConfigFactory:
         self.ifwPackages   = None
 
         self.startOnBoot   = False
-        self.replaceTarget = False        
+        self.replaceTarget = False # TODO: Fix this, or drop it!
         
         self.ifwUiPages     = None
                     
@@ -89,17 +89,23 @@ class ConfigFactory:
         self.ifwCntrlScriptPath = None
         self.ifwCntrlScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
 
-        # All these package attribute should probably be protected?  
-        # Don't they change during a multi-package process...?
+        # These are used for direct package generation via the factory,
+        # to then be added to a process.  Most typically, this is for non
+        # Python packages.
         self.ifwPkgId         = None
         self.ifwPkgName       = None
         self.ifwPkgNamePrefix = "com"        
-                   
+
+        self.ifwPkgIsDefault  = True
+        self.ifwPkgIsRequired = False 
+        self.ifwPkgIsHidden   = False
+                                     
         self.ifwPkgScript     = None           
         self.ifwPkgScriptText = None
         self.ifwPkgScriptPath = None        
         self.ifwPkgScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
         
+        self.pkgIsContent    = True
         self.pkgType         = None
         self.pkgSubDirName   = None
         self.pkgSrcDirPath   = None
@@ -199,6 +205,7 @@ class ConfigFactory:
                 pkgId=self.__ifwPkgId(),
                 pkgType=pkgType, 
                 name=self.__ifwPkgName(), 
+                isContent=self.pkgIsContent,
                 subDirName=self.pkgSubDirName,
                 srcDirPath=self.__pkgSrcDirPath(),
                 srcExePath=self.pkgSrcExePath,            
@@ -246,8 +253,11 @@ class ConfigFactory:
 
     def qtIfwPackageXml( self ) :
         return QtIfwPackageXml( self.__ifwPkgName(), 
-                self.productName, self.description, 
-                self.__versionStr(), self.ifwPkgScriptName )
+                self.productName, self.description, self.__versionStr(), 
+                scriptName=self.ifwPkgScriptName,
+                isDefault=self.ifwPkgIsDefault, 
+                isRequired=self.ifwPkgIsRequired,
+                isHidden=self.ifwPkgIsHidden )
     
     def qtIfwPackageScript( self, pyInstConfig=None ) :
         if self.ifwPkgScript : return self.ifwPkgScript
