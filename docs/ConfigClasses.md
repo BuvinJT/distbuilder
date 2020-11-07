@@ -362,14 +362,15 @@ into the installer, which are typically passed at runtime via the command line.
 Constructor:                
 
     QtIfwControlScript( fileName="installscript.qs",                  
-                          script=None, scriptPath=None,
-                          virtualArgs={} ) :
+                        script=None, scriptPath=None,
+                        virtualArgs={} ) :
 
 Attributes & default values:                                               
     
     virtualArgs = virtualArgs
     
     uiPages = []
+    widgets = []
     
     controllerGlobals = None
     isAutoGlobals = True
@@ -467,7 +468,7 @@ Constructor:
                   srcDirPath=None, srcExePath=None,    
                   resBasePath=None, isTempSrc=False,
                   pkgXml=None, pkgScript=None,
-                  licenses={}, uiPages=[] ) 
+                  licenses={}, uiPages=[], widgets=[] ) 
 
 Attributes:    
 
@@ -480,6 +481,7 @@ Attributes:
     pkgXml          = None
     pkgScript       = None
     uiPages         = []
+    widgets         = []
     licenses        = {} <in the form name:filePath>
     isLicenseFormatPreserved = False
             
@@ -593,7 +595,7 @@ Constructor:
     QtIfwPackageScript( pkgName, pkgVersion, pkgSubDirName=None,
                         shortcuts=[], bundledScripts=[], 
                         externalOps=[], installResources=[],
-                        uiPages=[],
+                        uiPages=[], widgets=[],
                         fileName="installscript.qs", 
                         script=None, scriptPath=None )
                   
@@ -613,7 +615,8 @@ Attributes & default values:
     killOps          = []
     customOperations = None
     
-    uiPages     = []
+    uiPages = []
+    widgets = []
            
     packageGlobals = None
     isAutoGlobals = True
@@ -1263,7 +1266,7 @@ Constructor:
 
     QtIfwRemoveInstallationPage()  # 0 arguments!                
 
-### QtIfwTargetDirPagege
+### QtIfwTargetDirPage
 
 This class is derived from `QtIfwUiPage`. As one would assume, this provides a base
 from which to start modifying the "Target Directory" installer page.  If another page 
@@ -1290,6 +1293,47 @@ Constructor:
     QtIfwSimpleTextPage( name, pageOrder=None, 
                          title="", text="", 
                          onLoad=None, onEnter=None ) 
+
+### QtIfwWidget
+
+Gui components injected into QtIFW wizard pages.
+
+Constructor:
+    
+    QtIfwWidget( name, pageName, position=None, 
+                 sourcePath=None, content=None )
+
+Attributes:   
+
+    name     = <required>
+    pageName = <required>
+    position = None
+     
+    content          = None
+    replacements     = {}            
+        
+    _isOnLoadBase = True
+    
+Functions:
+
+    fileName()
+    resolve( qtIfwConfig )
+    write( dirPath )
+    
+### QtIfwAltRunProgramCheckbox
+
+A QtIfwWidget to be injected into the **Finished** QtIFW wizard page. 
+
+Constructor:
+
+    QtIfwAltRunProgramCheckbox()
+
+Functions:
+
+	<These return QScript snippets>
+    setText()
+    setChecked()
+    isChecked()
                        
 ## PipConfig
 

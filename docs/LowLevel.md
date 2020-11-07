@@ -564,6 +564,9 @@ Static Functions:
     	(Note: check box controls also work on radio buttons)    
     isChecked( checkboxName )
     setCheckBox( checkboxName, isCheck=True ): <pass Python bool or dynamic QtScript logic>    
+
+    insertCustomWidget( widgetName, pageName, position=None )
+    removeCustomWidget( widgetName )
     
 	<CUSTOM ("DYNAMIC") PAGES ONLY>	
 	    enableNextButton( isEnable=True ) <can't do on standard wizard pages!>				
@@ -669,6 +672,10 @@ following add-on **QT SCRIPT** functions:
     isComponentSelected( name ) 
 
     getPageOwner( pageName ) <throws on invalid name>
+
+	insertCustomWidget( widgetName, pageId, position )
+    removeCustomWidget( widgetName )
+
     insertCustomPage( pageName, position ) 
     removeCustomPage( pageName )     
 	setCustomPageText( page, title, description )

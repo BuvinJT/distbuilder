@@ -416,7 +416,7 @@ class QtIfwPackage:
                   srcDirPath=None, srcExePath=None, 
                   resBasePath=None, isTempSrc=False, 
                   pkgXml=None, pkgScript=None,
-                  licenses={}, uiPages=[] ) :
+                  licenses={}, uiPages=[], widgets=[] ) :
         # internal id / type
         self.pkgId     = pkgId
         self.pkgType   = pkgType       
@@ -425,6 +425,7 @@ class QtIfwPackage:
         self.pkgXml    = pkgXml
         self.pkgScript = pkgScript        
         self.uiPages   = uiPages
+        self.widgets   = widgets
         self.licenses  = licenses
         self.isLicenseFormatPreserved = False        
         # content        
@@ -1784,7 +1785,17 @@ class _QtIfwScript:
             (2*TAB) + EBLK +
             TAB + EBLK + 
             TAB + 'throw new Error("Owner not found for page: " + pageName )' + END +
+            EBLK + NEW +
             EBLK + NEW +                                    
+            'function insertCustomWidget( widgetName, pageId, position ) ' + SBLK +
+            TAB + 'try{ installer.addWizardPageItem( ' +
+                'getPageOwner( widgetName ), widgetName, pageId, position ); }' + NEW +
+            TAB + 'catch(e){ console.log("Warning: Cannot insert widget: " + widgetName ); }' + NEW +                
+            EBLK + NEW +
+            'function removeCustomWidget( widgetName ) ' + SBLK +
+            TAB + 'try{ installer.removeWizardPageItem( getPageOwner( widgetName ), widgetName ); }' + NEW +
+            TAB + 'catch(e){ console.log("Warning: Cannot remove widget: " + widgetName ); }' + NEW +
+            EBLK + NEW +                                                                                    
             'function insertCustomPage( pageName, position ) ' + SBLK +
             TAB + 'try{ installer.addWizardPage( ' +
                 'getPageOwner( pageName ), pageName, position ); }' + NEW +
@@ -1793,7 +1804,7 @@ class _QtIfwScript:
             'function removeCustomPage( pageName ) ' + SBLK +
             TAB + 'try{ installer.removeWizardPage( getPageOwner( pageName ), pageName ); }' + NEW +
             TAB + 'catch(e){ console.log("Warning: Cannot remove page: " + pageName ); }' + NEW +
-            EBLK + NEW +                                    
+            EBLK + NEW +                                                
             'function setCustomPageText( page, title, description ) {' + NEW +
             '    page.windowTitle = title;' + NEW +
             '    if( description ){' + NEW +
@@ -2103,6 +2114,9 @@ Controller.prototype.onFinishButtonClicked = function(){
 
     __ASSIGN_TEXT_TMPL = "    var %s = gui.currentPageWidget().%s.text;\n" 
 
+    __INSERT_PAGE_ITEM_TMPLT = "insertCustomWidget( %s, QInstaller.%s, %s );\n" 
+    __REMOVE_PAGE_ITEM_TMPLT = "removeCustomWidget( %s );\n" 
+
     __ENABLE_NEXT_BUTTON_TMPL = "gui.currentPageWidget().complete=%s;\n" 
     
     __SET_CUSTPAGE_TITLE_TMPL = "%s.windowTitle = %s;\n" 
@@ -2190,6 +2204,15 @@ Controller.prototype.Dynamic%sCallback = function() {
     @staticmethod        
     def removeCustomPage( pageName ):                
         return QtIfwControlScript.__REMOVE_PAGE_TMPLT % (pageName,)                        
+
+    @staticmethod        
+    def insertCustomWidget( widgetName, pageName, position=None ):
+        return  QtIfwControlScript.__INSERT_PAGE_ITEM_TMPLT % (
+            widgetName, pageName, position if position else "null" )
+
+    @staticmethod        
+    def removeCustomWidget( widgetName ):
+        return  QtIfwControlScript.__REMOVE_PAGE_ITEM_TMPLT % (widgetName,)
             
     @staticmethod        
     def connectWidgetEventHandler( controlName, eventName, slotName ):
@@ -2307,6 +2330,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.virtualArgs = None
 
         self.uiPages = []
+        self.widgets = []
 
         self._isLicenseRequired = False
         self._installerResources = []
@@ -3164,7 +3188,7 @@ Component.prototype.%s = function(){
     def __init__( self, pkgName, pkgVersion, pkgSubDirName=None,
                   shortcuts=[], bundledScripts=[],
                   externalOps=[], installResources=[],
-                  uiPages=[],                    
+                  uiPages=[], widgets=[],                    
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
         _QtIfwScript.__init__( self, fileName, script, scriptPath )
@@ -3181,6 +3205,7 @@ Component.prototype.%s = function(){
         self.installResources = installResources
 
         self.uiPages          = uiPages
+        self.widgets          = widgets
                 
         # Linux Only
         if IS_LINUX: self.isAskPassProgRequired = False
@@ -3396,7 +3421,19 @@ Component.prototype.%s = function(){
 
             if not isReplacement and p.isIncInAutoPilot: 
                 self.componentLoadedCallbackBody += _QtIfwScript.END_BLOCK
-    
+        
+        for w in self.widgets:
+                        
+            self.componentLoadedCallbackBody += (
+                _QtIfwScript.TAB + QtIfwControlScript.insertCustomWidget(
+                    w.name, w.pageName, w.position ) +      
+                _QtIfwScript.TAB + _QtIfwScript.log( 
+                    "%s Widget Loaded" % (w.name,) ) )             
+            
+            if w._isOnLoadBase:
+                self.componentLoadedCallbackBody += (
+                    QtIfwWidget.BASE_ON_LOAD_TMPT % (w.pageName, w.name) )
+                
     def __appendUiPageCallbacks( self ):    
         if self.uiPages: 
             for p in self.uiPages:
@@ -5261,6 +5298,110 @@ class QtIfwRemovePriorInstallationPage( QtIfwDynamicOperationsPage ):
             operation=OPERATION, asyncFuncs=[ removeTargetFunc ], 
             order=QT_IFW_PRE_INSTALL, 
             onCompletedDelayMillis=2500 )
+
+# -----------------------------------------------------------------------------
+class QtIfwWidget():
+
+    __FILE_ROOT_SUFFIX = "-widget"
+    __FILE_EXTENSION   = "ui"
+    __UI_RES_DIR_NAME  = "qtifw_ui"
+
+    # TODO: Test in NIX/MAC
+    BASE_ON_LOAD_TMPT = (    
+"""
+    var widget = gui.pageById(QInstaller.%s).%s;
+    switch( systemInfo.kernelType ){
+    case "darwin": // macOS
+        widget.minimumSize.width=221;
+        break;
+    case "linux": 
+        widget.minimumSize.width=401;
+        break;
+    default: // "windows"
+        // This is the hard coded width of "standard" QtIfw widgets
+        widget.minimumSize.width=412;   
+    }    
+""")
+    
+    @staticmethod
+    def __toFileName( name ): 
+        return joinExt( name + QtIfwWidget.__FILE_ROOT_SUFFIX, 
+                        QtIfwWidget.__FILE_EXTENSION ).lower()  
+    
+    @staticmethod
+    def _widgetResPath( name ):    
+        return util._toLibResPath( joinPath( 
+                QtIfwWidget.__UI_RES_DIR_NAME, 
+                QtIfwWidget.__toFileName( name ) ) )
+    
+    # QtIfwWidget    
+    def __init__( self, name, pageName, position=None, 
+                  sourcePath=None, content=None ) :
+        self.name         = name
+        self.pageName     =( pageName if pageName in _DEFAULT_PAGES 
+                             else None )     
+        self.position     = position
+        self.replacements = {}   
+        if sourcePath:
+            with open( sourcePath, 'r' ) as f: self.content = f.read()
+        else: self.content = content  
+        
+        self._isOnLoadBase = True
+
+    def __hash__( self ): return hash( self.name )
+    
+    def __eq__( self, other ):
+        return self.__class__ == other.__class__ and self.name==other.name
+               
+    def fileName( self ): return QtIfwWidget.__toFileName( self.name )  
+
+    # resolve static substitutions
+    def resolve( self, qtIfwConfig ):
+        self.replacements.update({ 
+             QT_IFW_TITLE           : qtIfwConfig.configXml.Title 
+        ,    QT_IFW_PRODUCT_NAME    : qtIfwConfig.configXml.Name 
+        ,    QT_IFW_PRODUCT_VERSION : qtIfwConfig.configXml.Version 
+        ,    QT_IFW_PUBLISHER       : qtIfwConfig.configXml.Publisher 
+        })
+        
+    def write( self, dirPath ):
+        if self.content is None : 
+            raise Exception( "No content found for widget definition: %s" % 
+                             (self.name,) )
+        if not isDir( dirPath ): makeDir( dirPath )
+        filePath = joinPath( dirPath, self.fileName() )
+        content = self.__resolveContent()
+        print( "Adding widget definition: %s\n\n%s\n" % ( 
+                filePath, content ) )                               
+        with open( filePath, 'w' ) as f: f.write( content ) 
+
+    def __resolveContent( self ):
+        self.replacements[ _PAGE_NAME_PLACHOLDER ] = self.name
+        ret = self.content
+        for placeholder, value in six.iteritems( self.replacements ):
+            ret = ret.replace( placeholder, value )
+        return ret    
+
+# -----------------------------------------------------------------------------    
+class QtIfwAltRunProgramCheckbox( QtIfwWidget ):
+    
+    __NAME    = "AltRunItCheckBoxWidget"
+    __PAGE_ID = QT_IFW_FINISHED_PAGE
+    __SRC     = QtIfwWidget._widgetResPath( "altrunitcheckbox-widget" )
+
+    __CHECKBOX_NAME = "AltRunItCheckBox"
+
+    def __init__( self ) :
+        QtIfwWidget.__init__( self, 
+            QtIfwAltRunProgramCheckbox.__NAME, 
+            pageId=QtIfwAltRunProgramCheckbox.__PAGE_ID, position=None,             
+            sourcePath=QtIfwAltRunProgramCheckbox.__SRC )
+
+    def setText( self ): return ""
+
+    def setChecked( self, isChecked=True ): return ""
+
+    def isChecked( self ): return ""
                     
 # -----------------------------------------------------------------------------    
 def installQtIfw( installerPath=None, version=None, targetPath=None ):    
