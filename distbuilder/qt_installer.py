@@ -6,6 +6,8 @@ import six
 
 from distbuilder import util
 from distbuilder.util import *  # @UnusedWildImport
+from _ast import Or
+from builtins import None
 
 QT_IFW_DEFAULT_VERSION = "3.2.2"
 QT_IFW_DOWNLOAD_URL_BASE = "https://download.qt.io/official_releases/qt-installer-framework"
@@ -5537,59 +5539,85 @@ def _addQtIfwEmbeddedResources( qtIfwConfig, packages ):
         addMaintenanceToolResources( qtIfwConfig, pkg )
         
 # if the page is already present and overwrite is False, NOTHING will be modified                  
-def _addQtIfwUiPages( qtIfwConfig, uiPages, isOverWrite=True ):
+def _addQtIfwUiElements( qtIfwConfig, uiElements, isOverWrite=True ):
 
-    def findPageOwner( packages, page ):    
+    def findUiOwner( packages, ui ):
         for pkg in packages :
-            for pg in pkg.uiPages :
-                if pg.name==page.name: return pkg
+            interfaces =( pkg.uiPages if isinstance( ui, QtIfwUiPage ) else 
+                          pkg.widgets )               
+            for interface in interfaces:
+                if interface.name==ui.name: return pkg
         return None            
     
-    def add( ctrlScript, pkg, page ):        
-        # if this is a replacement page for a built-in,
-        # it must be the first page in the list with that page order
-        # else the other pages with that order will end up appearing 
-        # *after* this one rather than *before* it
-        isInserted=False
-        if page.name.startswith( QT_IFW_REPLACE_PAGE_PREFIX ):
-            baseName = page.name[ len(QT_IFW_REPLACE_PAGE_PREFIX): ] 
-            if baseName in _DEFAULT_PAGES:
-                for i, pg in enumerate( pkg.uiPages ):
-                    isInserted=pg.pageOrder==baseName
-                    if isInserted: 
-                        pkg.uiPages.insert( i,  page )
-                        pkg.pkgScript.uiPages.insert( i, page )
-                        ctrlScript.uiPages.insert( i, page )
-                        break
-        # if the page wasn't inserted into the middle of the list, append it                     
-        if not isInserted:    
-            pkg.uiPages.append( page )           
-            pkg.pkgScript.uiPages.append( page )        
-            ctrlScript.uiPages.append( page ) 
-        # order doesn't matter for this list, but the items should be unique
-        pkg.pkgXml.UserInterfaces.append( page.fileName() )
-        pkg.pkgXml.UserInterfaces = list(set(pkg.pkgXml.UserInterfaces))
+    def add( ctrlScript, pkg, ui ):
+        
+        page = ui if isinstance( ui, QtIfwUiPage ) else None
+        widget = ui if isinstance( ui, QtIfwWidget ) else None
 
-    def overwrite( ctrlScript, pkg, page ):        
-        # order must be preserved here 
-        pkg.uiPages = [ page if p.name==page.name else p 
-                        for p in pkg.uiPages ]        
-        pkg.pkgScript.uiPages = [ page if p.name==page.name else p 
-                                  for p in pkg.pkgScript.uiPages ]
-        ctrlScript.uiPages = [ page if p.name==page.name else p 
-                               for p in  ctrlScript.uiPages ]
+        if page:                     
+            # if this is a replacement page for a built-in,
+            # it must be the first page in the list with that page order
+            # else the other pages with that order will end up appearing 
+            # *after* this one rather than *before* it
+            isInserted=False
+            if page.name.startswith( QT_IFW_REPLACE_PAGE_PREFIX ):
+                baseName = page.name[ len(QT_IFW_REPLACE_PAGE_PREFIX): ] 
+                if baseName in _DEFAULT_PAGES:
+                    for i, pg in enumerate( pkg.uiPages ):
+                        isInserted=pg.pageOrder==baseName
+                        if isInserted: 
+                            pkg.uiPages.insert( i,  page )
+                            pkg.pkgScript.uiPages.insert( i, page )
+                            ctrlScript.uiPages.insert( i, page )
+                            break
+            # if the page wasn't inserted into the middle of the list, append it                     
+            if not isInserted:    
+                pkg.uiPages.append( page )           
+                pkg.pkgScript.uiPages.append( page )        
+                ctrlScript.uiPages.append( page )
+            # order doesn't matter for this list, but the items should be unique
+            pkg.pkgXml.UserInterfaces.append( ui.fileName() )
+            pkg.pkgXml.UserInterfaces = list(set(pkg.pkgXml.UserInterfaces))
+
+        # there is no difference between add / overwrite for a widget!                 
+        elif widget: overwrite( ctrlScript, pkg, widget )                                                     
+
+    def overwrite( ctrlScript, pkg, ui ):        
+        
+        page = ui if isinstance( ui, QtIfwUiPage ) else None
+        widget = ui if isinstance( ui, QtIfwWidget ) else None
+        
+        if page:          
+            # order must be preserved here 
+            pkg.uiPages = [ page if p.name==page.name else p 
+                            for p in pkg.uiPages ]        
+            pkg.pkgScript.uiPages = [ page if p.name==page.name else p 
+                                      for p in pkg.pkgScript.uiPages ]
+            ctrlScript.uiPages = [ page if p.name==page.name else p 
+                                   for p in  ctrlScript.uiPages ]
+        elif widget:
+            # order doesn't matter for these lists, but the items should be unique                         
+            pkg.widgets.append( widget )
+            pkg.widgets = list(set(pkg.widgets))
+            pkg.pkgScript.widgets.append( widget )
+            pkg.pkgScript.widgets = list(set(pkg.pkgScript.widgets))
+            ctrlScript.widgets.append( widget )
+            ctrlScript.widgets = list(set(ctrlScript.widgets))            
+            
         # order doesn't matter for this list, but the items should be unique
-        pkg.pkgXml.UserInterfaces.append( page.fileName() )
+        pkg.pkgXml.UserInterfaces.append( ui.fileName() )
         pkg.pkgXml.UserInterfaces = list(set(pkg.pkgXml.UserInterfaces))
         
-    if uiPages is None: return
-    if isinstance( uiPages, QtIfwUiPage ): uiPages = [uiPages]  
-    for page in uiPages:
-        pkg = findPageOwner( qtIfwConfig.packages, page )
+    if uiElements is None: return
+    if not isinstance( uiElements, list ): uiElements = [uiElements]  
+    for ui in uiElements:
+        pkg = findUiOwner( qtIfwConfig.packages, ui )
         if pkg:
-            if isOverWrite: overwrite( qtIfwConfig.controlScript, pkg, page )
+            if isOverWrite: overwrite( qtIfwConfig.controlScript, pkg, ui )
             continue            
-        add( qtIfwConfig.controlScript, qtIfwConfig.packages[0], page )       
+        # if no owner is found, just arbitrarily inject the interface
+        # into the first package, as it makes no meaningful difference!
+        add( qtIfwConfig.controlScript, qtIfwConfig.packages[0], ui )       
         
 def findQtIfwPackage( pkgs, pkgId ):        
     for p in pkgs: 
@@ -5798,9 +5826,9 @@ def __initBuild( qtIfwConfig ) :
 def __addInstallerResources( qtIfwConfig ) :
         
     _addQtIfwEmbeddedResources( qtIfwConfig, qtIfwConfig.packages )
-    _addQtIfwUiPages( qtIfwConfig, QtIfwTargetDirPage(), isOverWrite=False )
-    _addQtIfwUiPages( qtIfwConfig, QtIfwOnPriorInstallationPage(), isOverWrite=False )
-    _addQtIfwUiPages( qtIfwConfig, QtIfwRemovePriorInstallationPage(), isOverWrite=False )
+    _addQtIfwUiElements( qtIfwConfig, QtIfwTargetDirPage(), isOverWrite=False )
+    _addQtIfwUiElements( qtIfwConfig, QtIfwOnPriorInstallationPage(), isOverWrite=False )
+    _addQtIfwUiElements( qtIfwConfig, QtIfwRemovePriorInstallationPage(), isOverWrite=False )
     
     __genQtIfwCntrlRes( qtIfwConfig ) 
                                       
@@ -5821,6 +5849,7 @@ def __addInstallerResources( qtIfwConfig ) :
             pkgScript.write()
 
         if p.uiPages: __addUiPages( qtIfwConfig, p ) 
+        if p.widgets: __addWidgets( qtIfwConfig, p ) 
 
         if p.pkgType == QtIfwPackage.Type.QT_CPP : 
             p.qtCppConfig.addDependencies( p )        
@@ -5911,11 +5940,19 @@ def __addLicenses( package ) :
                             
 def __addUiPages( qtIfwConfig, package ) :
     if package.uiPages is None or len(package.uiPages)==0: return
-    print( "Adding custom installer forms/pages..." )
+    print( "Adding custom installer pages..." )
     for ui in package.uiPages:
         if isinstance( ui, QtIfwUiPage ):
             ui.resolve( qtIfwConfig ) 
             ui.write( package.metaDirPath() )
+
+def __addWidgets( qtIfwConfig, package ) :
+    if package.widgets is None or len(package.widgets)==0: return
+    print( "Adding custom installer widgets..." )
+    for widget in package.widgets:
+        if isinstance( widget, QtIfwWidget ):
+            widget.resolve( qtIfwConfig ) 
+            widget.write( package.metaDirPath() )
                 
 def __addResources( package ) :    
     print( "Adding additional resources..." )

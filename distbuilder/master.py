@@ -23,7 +23,7 @@ from distbuilder.qt_installer import \
     , _buildInstaller \
     , _addQtIfwLicense \
     , _addQtIfwEmbeddedResources \
-    , _addQtIfwUiPages \
+    , _addQtIfwUiElements \
     , joinPathQtIfw \
     , QtIfwConfig \
     , QtIfwConfigXml \
@@ -158,7 +158,7 @@ class ConfigFactory:
                             setupExeName=self.setupName ) 
         _addQtIfwLicense( self.licensePath, self.ifwPackages, cfg )
         _addQtIfwEmbeddedResources( cfg, self.ifwPackages )        
-        _addQtIfwUiPages( cfg, self.ifwUiPages )
+        _addQtIfwUiElements( cfg, self.ifwUiPages )
         return cfg 
 
     def qtIfwConfigXml( self ) :
