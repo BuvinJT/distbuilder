@@ -700,6 +700,10 @@ class _QtIfwScript:
     _KILLALL_CMD_PREFIX = "%s %s" % (_KILLALL_PATH, " ".join( _KILLALL_ARGS ))
 
     @staticmethod        
+    def quote( value ):                  
+        return '"%s"' % (value,)  
+
+    @staticmethod        
     def _autoQuote( value, isAutoQuote ):                  
         return '"%s"' % (value,) if isAutoQuote else value 
 
@@ -2116,8 +2120,8 @@ Controller.prototype.onFinishButtonClicked = function(){
 
     __ASSIGN_TEXT_TMPL = "    var %s = gui.currentPageWidget().%s.text;\n" 
 
-    __INSERT_PAGE_ITEM_TMPLT = "insertCustomWidget( %s, QInstaller.%s, %s );\n" 
-    __REMOVE_PAGE_ITEM_TMPLT = "removeCustomWidget( %s );\n" 
+    __INSERT_PAGE_ITEM_TMPLT = 'insertCustomWidget( "%s", QInstaller.%s, %s );\n' 
+    __REMOVE_PAGE_ITEM_TMPLT = 'removeCustomWidget( "%s" );\n' 
 
     __ENABLE_NEXT_BUTTON_TMPL = "gui.currentPageWidget().complete=%s;\n" 
     
@@ -5374,6 +5378,8 @@ class QtIfwWidget( _QtIfwInterface ):
 # -----------------------------------------------------------------------------    
 class QtIfwOnInstallFinishedOptions( QtIfwWidget ):
 
+    __AUTO_POSITION = 0
+    
     __WIDGET_SUFFIX   = "Widget"
     __CHECKBOX_SUFFIX = "CheckBox"
     __PAGE_ID = QT_IFW_FINISHED_PAGE
@@ -5401,11 +5407,14 @@ class QtIfwOnInstallFinishedOptions( QtIfwWidget ):
     }    
 """)
     def __init__( self, name, text, action=None,
+                  position=None,
                   isVisible=True, isEnabled=True, isChecked=True ) :
         QtIfwWidget.__init__( self, 
             name + self.__WIDGET_SUFFIX, 
-            QtIfwOnInstallFinishedOptions.__PAGE_ID, position=None,             
+            QtIfwOnInstallFinishedOptions.__PAGE_ID, 
+            position=position if position else self.__AUTO_POSITION,             
             sourcePath=QtIfwOnInstallFinishedOptions.__SRC )
+        self.__AUTO_POSITION += 1
         self.replacements.update({ 
               self.__TEXT_PLACEHOLDER : text 
             , self.__IS_VISIBLE_PLACEHOLDER : _QtIfwScript.toBool( isVisible )

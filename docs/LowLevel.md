@@ -443,6 +443,8 @@ Static Constants :
 
 Static Functions:      
                                                    
+	quote( value )
+	
     log( msg, isAutoQuote=True )            
 
     toBool( b )         <pass Python bool or dynamic QtScript logic as Python string> 
