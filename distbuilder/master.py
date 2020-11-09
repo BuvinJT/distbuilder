@@ -83,6 +83,7 @@ class ConfigFactory:
         self.replaceTarget = False # TODO: Fix this, or drop it!
         
         self.ifwUiPages     = None
+        self.ifwWidgets     = None
                     
         self.ifwCntrlScript     = None # None=Default False=Exclude                
         self.ifwCntrlScriptText = None
@@ -159,6 +160,7 @@ class ConfigFactory:
         _addQtIfwLicense( self.licensePath, self.ifwPackages, cfg )
         _addQtIfwEmbeddedResources( cfg, self.ifwPackages )        
         _addQtIfwUiElements( cfg, self.ifwUiPages )
+        _addQtIfwUiElements( cfg, self.ifwWidgets )
         return cfg 
 
     def qtIfwConfigXml( self ) :

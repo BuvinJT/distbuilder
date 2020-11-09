@@ -6,8 +6,6 @@ import six
 
 from distbuilder import util
 from distbuilder.util import *  # @UnusedWildImport
-from _ast import Or
-from builtins import None
 
 QT_IFW_DEFAULT_VERSION = "3.2.2"
 QT_IFW_DOWNLOAD_URL_BASE = "https://download.qt.io/official_releases/qt-installer-framework"
@@ -132,7 +130,8 @@ _DEFAULT_PAGES = [
     , QT_IFW_FINISHED_PAGE   
 ]
 
-_PAGE_NAME_PLACHOLDER = "[PAGE_NAME]"
+_PAGE_NAME_PLACHOLDER   = "[PAGE_NAME]"
+_WIDGET_NAME_PLACHOLDER = "[WIDGET_NAME]"
 
 _ENV_TEMP_DIR     = "%temp%" if IS_WINDOWS else "/tmp"
 _QT_IFW_TEMP_NAME = "__distbuilder-qtifw"
@@ -567,6 +566,8 @@ class _QtIfwScript:
     ELSE  = "else "
     TRY   = "try { "
     CATCH = "catch(e) { "
+    
+    CONCAT = " + "
     
     TRUE  = "true"
     FALSE = "false"
@@ -1788,7 +1789,6 @@ class _QtIfwScript:
             TAB + EBLK + 
             TAB + 'throw new Error("Owner not found for page: " + pageName )' + END +
             EBLK + NEW +
-            EBLK + NEW +                                    
             'function insertCustomWidget( widgetName, pageId, position ) ' + SBLK +
             TAB + 'try{ installer.addWizardPageItem( ' +
                 'getPageOwner( widgetName ), widgetName, pageId, position ); }' + NEW +
@@ -2564,6 +2564,7 @@ Controller.prototype.Dynamic%sCallback = function() {
                 (funcName, funcBody) )
         
         self.__appendUiPageFunctions()
+        self.__appendWidgetFunctions()
         
     def __genValueChangeCallbackBody( self ):         
         #prepend = _QtIfwScript.log( '"Value Changed: " + key + "=" + value', isAutoQuote=False )
@@ -2661,7 +2662,18 @@ Controller.prototype.Dynamic%sCallback = function() {
                 if len(postInstallPageNames) > 0 else "")  +
                 QtIfwControlScript._purgeTempFiles() +
             EBLK )
-                               
+                             
+        if self.widgets: 
+            for w in self.widgets:
+                onEnter = w.onEnterSnippet()
+                if len(onEnter) > 0:    
+                    prepend +=(
+                        TAB + ('if( pageId == %s )' % (
+                            QtIfwControlScript.toDefaultPageId( 
+                                w.pageName ),)) + SBLK +                                    
+                            onEnter +
+                        EBLK )
+                
         if self.onPageChangeCallbackBody is None:
             self.onPageChangeCallbackBody=""                                            
         self.onPageChangeCallbackBody =( 
@@ -2671,15 +2683,14 @@ Controller.prototype.Dynamic%sCallback = function() {
         if self.uiPages: 
             for p in self.uiPages:
                 if p.supportScript: self.script += p.supportScript                             
-                # enter page event handler                
-                onEnter = _QtIfwScript.log( 
-                    "(Custom) %sPageCallback" % (p.name,) ) 
-                onEnter +=( QtIfwUiPage.BASE_ON_ENTER_TMPT % 
-                            (p.name, p.onEnter if p.onEnter else "") 
-                           if p._isOnEnterBase else p.onEnter )                    
                 self.script += (                         
                     QtIfwControlScript.__UI_PAGE_CALLBACK_FUNC_TMPLT % 
-                    ( p.name, onEnter ) )
+                    ( p.name, p.onEnterSnippet() ) )
+
+    def __appendWidgetFunctions( self ):    
+        if self.widgets: 
+            for w in self.widgets:
+                if w.supportScript: self.script += w.supportScript                             
 
     def __genGlobals( self ):
         NEW = _QtIfwScript.NEW_LINE
@@ -3302,6 +3313,7 @@ Component.prototype.%s = function(){
                           self.componentLoadedCallbackBody,) )                            
 
         if self.uiPages: self.__appendUiPageCallbacks()
+        if self.widgets: self.__appendWidgetCallbacks()
         
         if self.isAutoComponentCreateOperations:
             self.__genComponentCreateOperationsBody()
@@ -3410,31 +3422,16 @@ Component.prototype.%s = function(){
                 self.componentLoadedCallbackBody += ( NEW + TAB + 
                     (ADD_CUSTOM_PAGE_TMPLT % ( p.name, p.pageOrder )) + END )         
 
-            self.componentLoadedCallbackBody += (
-                _QtIfwScript.TAB + _QtIfwScript.log( 
-                    "(Custom) %sPageLoaded" % (p.name,) ) )  
-    
-            if p._isOnLoadBase:
-                self.componentLoadedCallbackBody += (
-                    QtIfwUiPage.BASE_ON_LOAD_TMPT % (p.name,) )
-                              
-            if p.onLoad:
-                self.componentLoadedCallbackBody += p.onLoad
+            self.componentLoadedCallbackBody += p.onLoadSnippet()
 
             if not isReplacement and p.isIncInAutoPilot: 
                 self.componentLoadedCallbackBody += _QtIfwScript.END_BLOCK
         
-        for w in self.widgets:
-                        
+        for w in self.widgets:                        
             self.componentLoadedCallbackBody += (
                 _QtIfwScript.TAB + QtIfwControlScript.insertCustomWidget(
-                    w.name, w.pageName, w.position ) +      
-                _QtIfwScript.TAB + _QtIfwScript.log( 
-                    "%s Widget Loaded" % (w.name,) ) )             
-            
-            if w._isOnLoadBase:
-                self.componentLoadedCallbackBody += (
-                    QtIfwWidget.BASE_ON_LOAD_TMPT % (w.pageName, w.name) )
+                    w.name, w.pageName, w.position ) +
+                w.onLoadSnippet() )             
                 
     def __appendUiPageCallbacks( self ):    
         if self.uiPages: 
@@ -3448,6 +3445,14 @@ Component.prototype.%s = function(){
                     for func in p._asyncFuncs:
                         if isinstance( func, QtIfwDynamicOperationsPage.AsyncFunc ): 
                             self.script += func._define()
+
+    def __appendWidgetCallbacks( self ):    
+        if self.widgets: 
+            for w in self.widgets:
+                for funcName, funcBody in six.iteritems( w.eventHandlers ):
+                    self.script += (  
+                        QtIfwPackageScript.__COMPONENT_CALLBACK_FUNC_TMPLT 
+                        % (funcName, funcBody) )
         
     def __genComponentCreateOperationsBody( self ):
         END = _QtIfwScript.END_LINE
@@ -4811,9 +4816,84 @@ class QtIfwKillOp:
         self.onInstall   = onInstall
         self.onUninstall = onUninstall
         self.isElevated  = True  
-    
+
 # -----------------------------------------------------------------------------
-class QtIfwUiPage():
+@six.add_metaclass( ABCMeta )
+class _QtIfwInterface:
+
+    __FILE_EXTENSION  = "ui"
+    __UI_RES_DIR_NAME = "qtifw_ui"
+    
+    @staticmethod
+    def _toFileName( templateName ): 
+        return joinExt( templateName, 
+                        _QtIfwInterface.__FILE_EXTENSION ).lower()  
+    
+    @staticmethod
+    def _toLibResPath( templateName ):    
+        return util._toLibResPath( joinPath( 
+                _QtIfwInterface.__UI_RES_DIR_NAME, 
+                _QtIfwInterface._toFileName( templateName ) ) )
+    
+    # _QtIfwInterface
+    def __init__( self, name, sourcePath=None, content=None,
+                  onLoad=None, onEnter=None ) :
+        self.name = name
+        if sourcePath:
+            with open( sourcePath, 'r' ) as f: self.content = f.read()
+        else: self.content = content          
+        
+        self.onLoad = onLoad
+        self.onEnter = onEnter
+        self._isOnLoadBase = True
+        self._isOnEnterBase = True
+
+        self.eventHandlers    = {} 
+        self.supportScript    = None
+
+        self.replacements = {}        
+        
+    def __hash__( self ): return hash( self.name )
+    
+    def __eq__( self, other ):
+        return self.__class__ == other.__class__ and self.name==other.name
+               
+    # resolve static substitutions
+    def resolve( self, qtIfwConfig ):
+        self.replacements.update({ 
+             QT_IFW_TITLE           : qtIfwConfig.configXml.Title 
+        ,    QT_IFW_PRODUCT_NAME    : qtIfwConfig.configXml.Name 
+        ,    QT_IFW_PRODUCT_VERSION : qtIfwConfig.configXml.Version 
+        ,    QT_IFW_PUBLISHER       : qtIfwConfig.configXml.Publisher 
+        })
+    
+    def __resolveContent( self ):
+        self.replacements[ _PAGE_NAME_PLACHOLDER ]   = self.name
+        self.replacements[ _WIDGET_NAME_PLACHOLDER ] = self.name
+        ret = self.content
+        for placeholder, value in six.iteritems( self.replacements ):
+            ret = ret.replace( placeholder, value )
+        return ret    
+        
+    def write( self, dirPath ):
+        if self.content is None : 
+            raise Exception( "No content found for interface definition: %s" % 
+                             (self.name,) )
+        if not isDir( dirPath ): makeDir( dirPath )
+        filePath = joinPath( dirPath, self.fileName() )
+        content = self.__resolveContent()
+        print( "Adding interface definition: %s\n\n%s\n" % ( 
+                filePath, content ) )                               
+        with open( filePath, 'w' ) as f: f.write( content ) 
+
+    def fileName( self ): return _QtIfwInterface._toFileName( self.name )  
+
+    def onLoadSnippet( self ): return self.onLoad if self.onLoad else ""          
+
+    def onEnterSnippet( self ): return self.onEnter if self.onEnter else ""          
+            
+# -----------------------------------------------------------------------------
+class QtIfwUiPage( _QtIfwInterface ):
 
     __FILE_EXTENSION  = "ui"
     __UI_RES_DIR_NAME = "qtifw_ui"
@@ -4843,74 +4923,39 @@ class QtIfwUiPage():
     %s                        
     }
 """)
-    
-    @staticmethod
-    def __toFileName( name ): 
-        return joinExt( name, QtIfwUiPage.__FILE_EXTENSION ).lower()  
-    
-    @staticmethod
-    def _pageResPath( name ):    
-        return util._toLibResPath( joinPath( 
-                QtIfwUiPage.__UI_RES_DIR_NAME, 
-                QtIfwUiPage.__toFileName( name ) ) )
-    
+        
     # QtIfwUiPage    
     def __init__( self, name, pageOrder=None, 
                   sourcePath=None, content=None,
-                  onLoad=None, onEnter=None ) :
-        self.name             = name
-        self.pageOrder        =( pageOrder if pageOrder in _DEFAULT_PAGES 
-                                 else None )        
-        self.onLoad           = onLoad
-        self.onEnter          = onEnter
-        self.eventHandlers    = {} 
-        self.supportScript    = None
-        self.replacements     = {}
+                  onLoad=None, onEnter=None ) :        
+        _QtIfwInterface.__init__( self, 
+            name, sourcePath, content, onLoad, onEnter )        
+        self.pageOrder =( pageOrder if pageOrder in _DEFAULT_PAGES 
+                          else None )        
         self.isIncInAutoPilot = False
-        self._isOnLoadBase    = True
-        self._isOnEnterBase   = True        
-        if sourcePath:
-            with open( sourcePath, 'r' ) as f: self.content = f.read()
-        else: self.content = content  
 
-    def __hash__( self ): return hash( self.name )
-    
-    def __eq__( self, other ):
-        return self.__class__ == other.__class__ and self.name==other.name
-               
-    def fileName( self ): return QtIfwUiPage.__toFileName( self.name )  
+    def onLoadSnippet( self ):
+        snippet = _QtIfwScript.TAB + _QtIfwScript.log( 
+                    "(Custom) %sPageLoaded" % (self.name,) )           
+        if self._isOnEnterBase:             
+            snippet += QtIfwUiPage.BASE_ON_LOAD_TMPT % (self.name,)
+        snippet += self.onLoad if self.onLoad else ""          
+        return snippet
 
-    # resolve static substitutions
-    def resolve( self, qtIfwConfig ):
-        self.replacements.update({ 
-             QT_IFW_TITLE           : qtIfwConfig.configXml.Title 
-        ,    QT_IFW_PRODUCT_NAME    : qtIfwConfig.configXml.Name 
-        ,    QT_IFW_PRODUCT_VERSION : qtIfwConfig.configXml.Version 
-        ,    QT_IFW_PUBLISHER       : qtIfwConfig.configXml.Publisher 
-        })
-        
-    def write( self, dirPath ):
-        if self.content is None : 
-            raise Exception( "No content found for QtIfwUiPage: %s" % 
-                             (self.name,) )
-        if not isDir( dirPath ): makeDir( dirPath )
-        filePath = joinPath( dirPath, self.fileName() )
-        content = self.__resolveContent()
-        print( "Adding installer page definition: %s\n\n%s\n" % ( 
-                filePath, content ) )                               
-        with open( filePath, 'w' ) as f: f.write( content ) 
-
-    def __resolveContent( self ):
-        self.replacements[ _PAGE_NAME_PLACHOLDER ] = self.name
-        ret = self.content
-        for placeholder, value in six.iteritems( self.replacements ):
-            ret = ret.replace( placeholder, value )
-        return ret    
+    def onEnterSnippet( self ):        
+        snippet = _QtIfwScript.TAB + _QtIfwScript.log( 
+                    "(Custom) %sPageCallback" % (self.name,) )        
+        if self._isOnEnterBase:             
+            snippet +=( QtIfwUiPage.BASE_ON_ENTER_TMPT % 
+                       (self.name, (self.onEnter if self.onEnter else "") ) ) 
+        else :
+            snippet += self.onEnter if self.onEnter else ""          
+        return snippet             
 
 # -----------------------------------------------------------------------------    
 class QtIfwSimpleTextPage( QtIfwUiPage ):
     
-    __SRC  = QtIfwUiPage._pageResPath( "simpletext" )
+    __SRC  = QtIfwUiPage._toLibResPath( "simpletext" )
     __TITLE_PLACEHOLDER = "[TITLE]"
     __TEXT_PLACEHOLDER = "[TEXT]"
 
@@ -4918,7 +4963,7 @@ class QtIfwSimpleTextPage( QtIfwUiPage ):
                   onLoad=None, onEnter=None ) :
         QtIfwUiPage.__init__( self, name, pageOrder=pageOrder, 
                               onLoad=onLoad, onEnter=onEnter, 
-                              sourcePath=QtIfwSimpleTextPage.__SRC  )
+                              sourcePath=QtIfwSimpleTextPage.__SRC )
         self.replacements.update({ 
             QtIfwSimpleTextPage.__TITLE_PLACEHOLDER : title,
             QtIfwSimpleTextPage.__TEXT_PLACEHOLDER : text 
@@ -4927,7 +4972,7 @@ class QtIfwSimpleTextPage( QtIfwUiPage ):
 # -----------------------------------------------------------------------------    
 class QtIfwDynamicOperationsPage( QtIfwUiPage ):
     
-    __SRC = QtIfwUiPage._pageResPath( "performoperation" )
+    __SRC = QtIfwUiPage._toLibResPath( "performoperation" )
      
     _TIMER_BUTTON = "timerKludgeButton"
      
@@ -5091,7 +5136,7 @@ class QtIfwDynamicOperationsPage( QtIfwUiPage ):
 class QtIfwTargetDirPage( QtIfwUiPage ):
     
     NAME = QT_IFW_REPLACE_PAGE_PREFIX + QT_IFW_TARGET_DIR_PAGE
-    __SRC  = QtIfwUiPage._pageResPath( QT_IFW_TARGET_DIR_PAGE )
+    __SRC = QtIfwUiPage._toLibResPath( QT_IFW_TARGET_DIR_PAGE )
 
     def __init__( self ):
             
@@ -5147,7 +5192,7 @@ class QtIfwOnPriorInstallationPage( QtIfwUiPage ):
     
     NAME  = "PriorInstallation"
 
-    __SRC = QtIfwUiPage._pageResPath( "priorinstallation" )
+    __SRC = QtIfwUiPage._toLibResPath( "priorinstallation" )
     __PAGE_ORDER = QT_IFW_READY_PAGE
 
     __TITLE = "Prior Installation Detected"
@@ -5302,11 +5347,42 @@ class QtIfwRemovePriorInstallationPage( QtIfwDynamicOperationsPage ):
             onCompletedDelayMillis=2500 )
 
 # -----------------------------------------------------------------------------
-class QtIfwWidget():
+class QtIfwWidget( _QtIfwInterface ):
 
     __FILE_ROOT_SUFFIX = "-widget"
-    __FILE_EXTENSION   = "ui"
-    __UI_RES_DIR_NAME  = "qtifw_ui"
+    
+    # QtIfwWidget    
+    def __init__( self, name, pageName, position=None, 
+                  sourcePath=None, content=None,
+                  onLoad=None, onEnter=None ) :        
+        _QtIfwInterface.__init__( self, 
+            name, sourcePath, content, onLoad, onEnter )        
+        self.pageName =( pageName if pageName in _DEFAULT_PAGES 
+                         else None )     
+        self.position = position
+
+    def onLoadSnippet( self ):
+        snippet = _QtIfwScript.TAB + _QtIfwScript.log( 
+                    "%s Widget Loaded" % (self.name,) )              
+        snippet += self.onLoad if self.onLoad else ""          
+        return snippet
+               
+    def fileName( self ): 
+        return _QtIfwInterface._toFileName( 
+            self.name + QtIfwWidget.__FILE_ROOT_SUFFIX )  
+
+# -----------------------------------------------------------------------------    
+class QtIfwOnInstallFinishedOptions( QtIfwWidget ):
+
+    __WIDGET_SUFFIX   = "Widget"
+    __CHECKBOX_SUFFIX = "CheckBox"
+    __PAGE_ID = QT_IFW_FINISHED_PAGE
+    __SRC     = QtIfwWidget._toLibResPath( "altrunitcheckbox-widget" )
+
+    __TEXT_PLACEHOLDER       = "[TEXT]"
+    __IS_VISIBLE_PLACEHOLDER = "[IS_VISIBLE]"
+    __IS_ENABLED_PLACEHOLDER = "[IS_ENABLED]"
+    __IS_CHECKED_PLACEHOLDER = "[IS_CHECKED]"
 
     # TODO: Test in NIX/MAC
     BASE_ON_LOAD_TMPT = (    
@@ -5324,86 +5400,41 @@ class QtIfwWidget():
         widget.minimumSize.width=412;   
     }    
 """)
-    
-    @staticmethod
-    def __toFileName( name ): 
-        return joinExt( name + QtIfwWidget.__FILE_ROOT_SUFFIX, 
-                        QtIfwWidget.__FILE_EXTENSION ).lower()  
-    
-    @staticmethod
-    def _widgetResPath( name ):    
-        return util._toLibResPath( joinPath( 
-                QtIfwWidget.__UI_RES_DIR_NAME, 
-                QtIfwWidget.__toFileName( name ) ) )
-    
-    # QtIfwWidget    
-    def __init__( self, name, pageName, position=None, 
-                  sourcePath=None, content=None ) :
-        self.name         = name
-        self.pageName     =( pageName if pageName in _DEFAULT_PAGES 
-                             else None )     
-        self.position     = position
-        self.replacements = {}   
-        if sourcePath:
-            with open( sourcePath, 'r' ) as f: self.content = f.read()
-        else: self.content = content  
-        
-        self._isOnLoadBase = True
-
-    def __hash__( self ): return hash( self.name )
-    
-    def __eq__( self, other ):
-        return self.__class__ == other.__class__ and self.name==other.name
-               
-    def fileName( self ): return QtIfwWidget.__toFileName( self.name )  
-
-    # resolve static substitutions
-    def resolve( self, qtIfwConfig ):
-        self.replacements.update({ 
-             QT_IFW_TITLE           : qtIfwConfig.configXml.Title 
-        ,    QT_IFW_PRODUCT_NAME    : qtIfwConfig.configXml.Name 
-        ,    QT_IFW_PRODUCT_VERSION : qtIfwConfig.configXml.Version 
-        ,    QT_IFW_PUBLISHER       : qtIfwConfig.configXml.Publisher 
-        })
-        
-    def write( self, dirPath ):
-        if self.content is None : 
-            raise Exception( "No content found for widget definition: %s" % 
-                             (self.name,) )
-        if not isDir( dirPath ): makeDir( dirPath )
-        filePath = joinPath( dirPath, self.fileName() )
-        content = self.__resolveContent()
-        print( "Adding widget definition: %s\n\n%s\n" % ( 
-                filePath, content ) )                               
-        with open( filePath, 'w' ) as f: f.write( content ) 
-
-    def __resolveContent( self ):
-        self.replacements[ _PAGE_NAME_PLACHOLDER ] = self.name
-        ret = self.content
-        for placeholder, value in six.iteritems( self.replacements ):
-            ret = ret.replace( placeholder, value )
-        return ret    
-
-# -----------------------------------------------------------------------------    
-class QtIfwAltRunProgramCheckbox( QtIfwWidget ):
-    
-    __NAME    = "AltRunItCheckBoxWidget"
-    __PAGE_ID = QT_IFW_FINISHED_PAGE
-    __SRC     = QtIfwWidget._widgetResPath( "altrunitcheckbox-widget" )
-
-    __CHECKBOX_NAME = "AltRunItCheckBox"
-
-    def __init__( self ) :
+    def __init__( self, name, text, action=None,
+                  isVisible=True, isEnabled=True, isChecked=True ) :
         QtIfwWidget.__init__( self, 
-            QtIfwAltRunProgramCheckbox.__NAME, 
-            pageId=QtIfwAltRunProgramCheckbox.__PAGE_ID, position=None,             
-            sourcePath=QtIfwAltRunProgramCheckbox.__SRC )
+            name + self.__WIDGET_SUFFIX, 
+            QtIfwOnInstallFinishedOptions.__PAGE_ID, position=None,             
+            sourcePath=QtIfwOnInstallFinishedOptions.__SRC )
+        self.replacements.update({ 
+              self.__TEXT_PLACEHOLDER : text 
+            , self.__IS_VISIBLE_PLACEHOLDER : _QtIfwScript.toBool( isVisible )
+            , self.__IS_ENABLED_PLACEHOLDER : _QtIfwScript.toBool( isEnabled )
+            , self.__IS_CHECKED_PLACEHOLDER : _QtIfwScript.toBool( isChecked )
+        })
+        self.checkBoxName = name + self.__CHECKBOX_SUFFIX
+        self.action = action
 
-    def setText( self ): return ""
+    def onLoadSnippet( self ):
+        snippet = _QtIfwScript.TAB + _QtIfwScript.log( 
+                    "%s Widget Loaded" % (self.name,) )              
+        if self._isOnLoadBase:             
+            snippet += QtIfwOnInstallFinishedOptions.BASE_ON_LOAD_TMPT % (
+                self.pageName, self.name )
+        snippet += self.onLoad if self.onLoad else ""          
+        return snippet
+    
+    def isChecked( self ): 
+        return QtIfwControlScript.isChecked( self.checkBoxName )
 
-    def setChecked( self, isChecked=True ): return ""
+    def setChecked( self, isChecked=True ):
+        return QtIfwControlScript.setChecked( self.checkBoxName, isChecked )
 
-    def isChecked( self ): return ""
+    def enable( self, isEnable=True ): 
+        return QtIfwControlScript.enable( self.checkBoxName, isEnable )
+
+    def setVisible( self, isVisible=True ): 
+        return QtIfwControlScript.setVisible( self.checkBoxName, isVisible )
                     
 # -----------------------------------------------------------------------------    
 def installQtIfw( installerPath=None, version=None, targetPath=None ):    
