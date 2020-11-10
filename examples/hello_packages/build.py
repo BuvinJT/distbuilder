@@ -1,5 +1,5 @@
 from distbuilder import( RobustInstallerProcess, ConfigFactory,
-    QtIfwControlScript, QtIfwOnInstallFinishedOptions,
+    QtIfwControlScript, QtIfwOnExitCheckbox,
     findQtIfwPackage )
   
 f = masterConfigFactory = ConfigFactory()
@@ -10,18 +10,18 @@ f.iconFilePath     = "../hello_world_tk/demo.ico"
 f.version          = (1,0,0,0)
 f.setupName        = "HelloPackagesSetup"
 
+# Define a package factory dictionary 
+# (None values==clone the master, then allow customization from that "base")
 TK_CONFIG_KEY  = "tk"
 CLI_CONFIG_KEY = "cli"
 pkgFactories={ TK_CONFIG_KEY:None, CLI_CONFIG_KEY:None }
 
-RUN_TK_WIDGET  = "RunTk"
-RUN_CLI_WIDGET = "RunCli"
-f.ifwWidgets       = [
-      QtIfwOnInstallFinishedOptions( 
-        RUN_TK_WIDGET,  "Run Tk Example",  action=None )
-    , QtIfwOnInstallFinishedOptions( 
-        RUN_CLI_WIDGET, "Run CLI Example", action=None )
-]
+# Add some custom installer widgets to the master config factory
+runTkCheckbox = QtIfwOnExitCheckbox( 
+    "runTk",  "Run Tk Example",  action=None ) 
+runCliCheckbox = QtIfwOnExitCheckbox( 
+    "runCli", "Run CLI Example", action=None )
+f.ifwWidgets = [ runTkCheckbox, runCliCheckbox ]
  
 class BuildProcess( RobustInstallerProcess ):
     
@@ -54,26 +54,18 @@ class BuildProcess( RobustInstallerProcess ):
             
     def onQtIfwConfig( self, cfg ):     
 
-        def customizeInstaller( cfg ):
-            
-            pkgs = cfg.packages
-            tkPkg  = findQtIfwPackage( pkgs, TK_CONFIG_KEY )            
-            cliPkg = findQtIfwPackage( pkgs, CLI_CONFIG_KEY )
-            
-            defineComponentsOrder( tkPkg, cliPkg )
-            reviseRunProgram( cfg )                                
-            reviseFinishedPage( cfg, tkPkg, cliPkg )
-
         def defineComponentsOrder( tkPkg, cliPkg ):
-            # Listed in descending order! (highest *priority* first)
+            # Listed / installed in descending order 
+            # (i.e. highest *priority* first)
             tkPkg.pkgXml.SortingPriority  = 10
             cliPkg.pkgXml.SortingPriority = 1
-
-        def reviseRunProgram( cfg ):      
-            cfg.configXml.RunProgram = None 
-            cfg.controlScript.isRunProgVisible = False
             
-        def reviseFinishedPage( cfg, tkPkg, cliPkg ):
+        def customizeFinishedPage( cfg, tkPkg, cliPkg ):
+            # Disable/remove the standard run on exit checkbox
+            cfg.controlScript.isRunProgChecked = False
+            cfg.controlScript.isRunProgVisible = False  
+            
+            # Add custom QScript to the finished page 
             SCRPT       = QtIfwControlScript
             ELSE        = SCRPT.ELSE 
             CONCAT      = SCRPT.CONCAT
@@ -81,25 +73,43 @@ class BuildProcess( RobustInstallerProcess ):
             EBLK        = SCRPT.END_BLOCK
             MSG_LBL     = SCRPT.FINISHED_MESSAGE_LABEL
             DEFAULT_MSG = SCRPT.DEFAULT_FINISHED_MESSAGE
-            quote       = QtIfwControlScript.quote
-            cfg.controlScript.finishedPageCallBackTail = ( 
-                SCRPT.ifMaintenanceTool() + 
+            TK_INSTALLED_MSG = SCRPT.quote(
+                '<br /><br />Thank you installing the <b>Tk Example</b>!' )
+            CLI_INSTALLED_MSG = SCRPT.quote(
+                '<br /><br />Thank you installing the <b>CLI Example</b>!' )
+            cfg.controlScript.finishedPageCallBackTail =( 
+                SCRPT.ifMaintenanceTool( isMultiLine=True ) + 
                     SCRPT.setText( MSG_LBL, DEFAULT_MSG ) +
-                ELSE + SBLK +
+                    runTkCheckbox.setChecked( False ) +
+                    runTkCheckbox.setVisible( False ) +
+                    runCliCheckbox.setChecked( False ) +
+                    runCliCheckbox.setVisible( False ) +
+                EBLK + ELSE + SBLK +
                     SCRPT.setText( MSG_LBL, DEFAULT_MSG ) +                                    
                     SCRPT.ifComponentInstalled( tkPkg.name ) +
                         SCRPT.setText( MSG_LBL, SCRPT.getText( MSG_LBL ) + 
-                            CONCAT + quote( 
-                            '<br /><br />Thank you installing the <b>Tk Example</b>!'),
+                            CONCAT + TK_INSTALLED_MSG,
                             varNames=False, isAutoQuote=False ) +
                     SCRPT.ifComponentInstalled( cliPkg.name ) +
                         SCRPT.setText( MSG_LBL, SCRPT.getText( MSG_LBL ) + 
-                            CONCAT + quote( 
-                            '<br /><br />Thank you installing the <b>CLI Example</b>!'),
+                            CONCAT + CLI_INSTALLED_MSG,
                             varNames=False, isAutoQuote=False ) +
+                    runTkCheckbox.setChecked( 
+                        SCRPT.isComponentInstalled( tkPkg.name ) ) +
+                    runTkCheckbox.setVisible( 
+                        SCRPT.isComponentInstalled( tkPkg.name ) ) +
+                    runCliCheckbox.setChecked( 
+                        SCRPT.isComponentInstalled( cliPkg.name ) ) +
+                    runCliCheckbox.setVisible( 
+                        SCRPT.isComponentInstalled( cliPkg.name ) ) +                            
                 EBLK                        
             )        
-        customizeInstaller( cfg )        
+
+        pkgs   = cfg.packages
+        tkPkg  = findQtIfwPackage( pkgs, TK_CONFIG_KEY )            
+        cliPkg = findQtIfwPackage( pkgs, CLI_CONFIG_KEY )        
+        defineComponentsOrder( tkPkg, cliPkg )       
+        customizeFinishedPage( cfg, tkPkg, cliPkg )
             
 p = BuildProcess( masterConfigFactory, pyPkgConfigFactoryDict=pkgFactories, 
                   isDesktopTarget=True )

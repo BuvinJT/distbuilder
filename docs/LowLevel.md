@@ -565,7 +565,7 @@ Static Functions:
     
     	(Note: check box controls also work on radio buttons)    
     isChecked( checkboxName )
-    setCheckBox( checkboxName, isCheck=True ): <pass Python bool or dynamic QtScript logic>    
+    setChecked( checkboxName, isCheck=True ): <pass Python bool or dynamic QtScript logic>    
 
     insertCustomWidget( widgetName, pageName, position=None )
     removeCustomWidget( widgetName )

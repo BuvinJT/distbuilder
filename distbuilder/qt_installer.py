@@ -2253,7 +2253,7 @@ Controller.prototype.Dynamic%sCallback = function() {
 
     # Note: checkbox controls also work on radio buttons!
     @staticmethod        
-    def setCheckBox( checkboxName, isCheck=True ):
+    def setChecked( checkboxName, isCheck=True ):
         return QtIfwControlScript.__SET_CHECKBOX_STATE_TMPL % ( 
             checkboxName, _QtIfwScript.toBool( isCheck ) )
 
@@ -2399,8 +2399,9 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.finishedPageCallBackTail = None
         self.isAutoFinishedPageCallback = True        
 
-        self.isRunProgInteractive = True
         self.isRunProgVisible = True
+        self.isRunProgEnabled = True
+        self.isRunProgChecked = True
 
         self.__standardEventSlots = {}            
         self.__autoPilotEventSlots = {}
@@ -2938,7 +2939,7 @@ Controller.prototype.Dynamic%sCallback = function() {
             _QtIfwScript.log("LicenseAgreementPageCallback") +
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
             '{\n' +                        
-                QtIfwControlScript.setCheckBox( 
+                QtIfwControlScript.setChecked( 
                     QtIfwControlScript.ACCEPT_EULA_RADIO_BUTTON ) +                 
                 _QtIfwScript.TAB + QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) + 
@@ -2946,7 +2947,7 @@ Controller.prototype.Dynamic%sCallback = function() {
                 _QtIfwScript.ifCmdLineArg( 
                     _QtIfwScript.ACCEPT_EULA_CMD_ARG ) +  
                     _QtIfwScript.TAB +             
-                    QtIfwControlScript.setCheckBox( 
+                    QtIfwControlScript.setChecked( 
                         QtIfwControlScript.ACCEPT_EULA_RADIO_BUTTON, 
                             _QtIfwScript.cmdLineSwitchArg(
                                 _QtIfwScript.ACCEPT_EULA_CMD_ARG ) ) +
@@ -2991,24 +2992,30 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.finishedPageCallbackBody = (                
             TAB + _QtIfwScript.log("FinishedPageCallback") +
             TAB + _QtIfwScript.ifBoolValue( _QtIfwScript.INTERUPTED_KEY, isMultiLine=True ) +
-                    QtIfwControlScript.enable( 
-                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False ) +            
-                (2*TAB) + QtIfwControlScript.setVisible( 
+                    QtIfwControlScript.setVisible( 
+                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False ) +
+                (2*TAB) + QtIfwControlScript.enable( 
+                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False ) +                            
+                (2*TAB) + QtIfwControlScript.setChecked( 
                         QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False ) +
             EBLK +                           
             TAB + "else " + _QtIfwScript.ifInstalling( isMultiLine=True ) +
-                TAB + QtIfwControlScript.enable( 
-                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
-                        self.isRunProgInteractive ) +                              
                 TAB + QtIfwControlScript.setVisible( 
                         QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
                         self.isRunProgVisible ) +                  
-                TAB + _QtIfwScript.ifCmdLineArg( 
+                TAB + QtIfwControlScript.enable( 
+                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
+                        self.isRunProgEnabled ) +
+                (TAB + _QtIfwScript.ifCmdLineArg( 
                         _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +               
-                        _QtIfwScript.TAB + QtIfwControlScript.setCheckBox( 
+                        _QtIfwScript.TAB + QtIfwControlScript.setChecked( 
                             QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
                                 _QtIfwScript.cmdLineSwitchArg(
-                                    _QtIfwScript.RUN_PROGRAM_CMD_ARG ) ) +                
+                                    _QtIfwScript.RUN_PROGRAM_CMD_ARG ) )
+                if self.isRunProgChecked else                                  
+                    TAB + QtIfwControlScript.setChecked( 
+                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False )                         
+                ) +                
                 ("" if self.finishedPageCallBackTail is None else
                  self.finishedPageCallBackTail) +                                
             TAB + EBLK +                 
@@ -5162,8 +5169,10 @@ class QtIfwTargetDirPage( QtIfwUiPage ):
         ON_TARGET_BROWSE_CLICKED = (
 """
     var page = gui.pageWidgetByObjectName("Dynamic%s");
-    page.targetDirectory.setText( Dir.toNativeSeparator(
-        QFileDialog.getExistingDirectory("", page.targetDirectory.text) ) );
+    var curTarget = Dir.toNativeSeparator( page.targetDirectory.text );
+    var newTarget = Dir.toNativeSeparator( 
+        QFileDialog.getExistingDirectory( "", curTarget ) );
+    if( newTarget ) page.targetDirectory.setText( newTarget );
 """) % ( QtIfwTargetDirPage.NAME, )
     
         ON_LOAD = (    
@@ -5376,7 +5385,7 @@ class QtIfwWidget( _QtIfwInterface ):
             self.name + QtIfwWidget.__FILE_ROOT_SUFFIX )  
 
 # -----------------------------------------------------------------------------    
-class QtIfwOnInstallFinishedOptions( QtIfwWidget ):
+class QtIfwOnExitCheckbox( QtIfwWidget ):
 
     __AUTO_POSITION = 0
     
@@ -5385,10 +5394,11 @@ class QtIfwOnInstallFinishedOptions( QtIfwWidget ):
     __PAGE_ID = QT_IFW_FINISHED_PAGE
     __SRC     = QtIfwWidget._toLibResPath( "altrunitcheckbox-widget" )
 
-    __TEXT_PLACEHOLDER       = "[TEXT]"
-    __IS_VISIBLE_PLACEHOLDER = "[IS_VISIBLE]"
-    __IS_ENABLED_PLACEHOLDER = "[IS_ENABLED]"
-    __IS_CHECKED_PLACEHOLDER = "[IS_CHECKED]"
+    __CHECKBOX_NAME_PLACEHOLDER = "[CHECKBOX_NAME]"
+    __TEXT_PLACEHOLDER          = "[TEXT]"    
+    __IS_VISIBLE_PLACEHOLDER    = "[IS_VISIBLE]"
+    __IS_ENABLED_PLACEHOLDER    = "[IS_ENABLED]"
+    __IS_CHECKED_PLACEHOLDER    = "[IS_CHECKED]"
 
     # TODO: Test in NIX/MAC
     BASE_ON_LOAD_TMPT = (    
@@ -5411,24 +5421,26 @@ class QtIfwOnInstallFinishedOptions( QtIfwWidget ):
                   isVisible=True, isEnabled=True, isChecked=True ) :
         QtIfwWidget.__init__( self, 
             name + self.__WIDGET_SUFFIX, 
-            QtIfwOnInstallFinishedOptions.__PAGE_ID, 
+            QtIfwOnExitCheckbox.__PAGE_ID, 
             position=position if position else self.__AUTO_POSITION,             
-            sourcePath=QtIfwOnInstallFinishedOptions.__SRC )
+            sourcePath=QtIfwOnExitCheckbox.__SRC )
         self.__AUTO_POSITION += 1
+        checkBoxName = name + self.__CHECKBOX_SUFFIX
+        self.checkBoxName = "%s.%s" % ( self.name, checkBoxName )
+        self.action = action
         self.replacements.update({ 
-              self.__TEXT_PLACEHOLDER : text 
+              self.__CHECKBOX_NAME_PLACEHOLDER: checkBoxName 
+            , self.__TEXT_PLACEHOLDER : text 
             , self.__IS_VISIBLE_PLACEHOLDER : _QtIfwScript.toBool( isVisible )
             , self.__IS_ENABLED_PLACEHOLDER : _QtIfwScript.toBool( isEnabled )
-            , self.__IS_CHECKED_PLACEHOLDER : _QtIfwScript.toBool( isChecked )
+            , self.__IS_CHECKED_PLACEHOLDER : _QtIfwScript.toBool( isChecked )            
         })
-        self.checkBoxName = name + self.__CHECKBOX_SUFFIX
-        self.action = action
 
     def onLoadSnippet( self ):
         snippet = _QtIfwScript.TAB + _QtIfwScript.log( 
                     "%s Widget Loaded" % (self.name,) )              
         if self._isOnLoadBase:             
-            snippet += QtIfwOnInstallFinishedOptions.BASE_ON_LOAD_TMPT % (
+            snippet += QtIfwOnExitCheckbox.BASE_ON_LOAD_TMPT % (
                 self.pageName, self.name )
         snippet += self.onLoad if self.onLoad else ""          
         return snippet
@@ -6130,8 +6142,9 @@ def __buildSilentWrapper( qtIfwConfig ) :
         if len(pkgLics) > 0: licenses[package.pkgXml.pkgName] = pkgLics
 
     wrapperScript = __silentQtIfwScript( nestedExeName, componentList,
-        isRunSwitch=( False if cfgXml.RunProgram is None else 
-                      None if ctrlScrpt.isRunProgInteractive and 
+        isRunSwitch=( False if cfgXml.RunProgram is None or 
+                      not ctrlScrpt.isRunProgChecked else 
+                      None if ctrlScrpt.isRunProgEnabled and 
                               ctrlScrpt.isRunProgVisible else True ),
         licenses=licenses,
         productName=cfgXml.Name, version=cfgXml.Version,

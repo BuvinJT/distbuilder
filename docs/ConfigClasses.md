@@ -430,7 +430,8 @@ Attributes & default values:
     isAutoFinishedPageCallback = True        
 
     isRunProgVisible = True
-    isRunProgInteractive = True
+    isRunProgEnabled = True
+    isRunProgChecked = True
     
 Object Methods:
     
