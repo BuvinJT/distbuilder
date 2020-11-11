@@ -359,9 +359,12 @@ def PyInstallerMajorMinorVer():
 def buildExecutable( name=None, entryPointPy=None, 
                      pyInstConfig=PyInstallerConfig(), 
                      opyConfig=None,                    
-                     distResources=[], distDirs=[] ):
+                     distResources=None, distDirs=None ):
     ''' returns: (binDir, binPath) '''   
     
+    if distResources is None: distResources=[]
+    if distDirs is None: distDirs=[]
+     
     # Resolve PyInstallerConfig and the overlapping parameters passed directly
     # (PyInstallerConfig values are given priority)    
     if pyInstConfig is None: 

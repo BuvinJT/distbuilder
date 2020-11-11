@@ -240,6 +240,11 @@ Attributes & default values:
     isDebugMode    = True
     otherQtIfwArgs = ""
 
+Functions:
+	
+    addUiElements( uiElements, isOverWrite=True ) 
+    addLicense( licensePath, name="End User License Agreement" )
+
 ## QtIfwConfigXml 
 
 Objects of this type define the contents of a QtIFW 
@@ -1035,10 +1040,16 @@ Functions:
              
 ## QtIfwUiPage
 
-A great deal can be done to customize the way an installer's interface works by
-simply adding custom scripts.  There are limitations, however, to that approach.
+This class closely resembles [QtIfwWidget](#qtifwwidget).  They internally derive
+from a common (protected) base class.  In contrast, however, QtIfwWidgets are
+**collections** of user interface elements to be injected *into* default wizard pages, 
+where QtIfwUiPages are entirely new steps/pages injected *between* (or *over*) 
+default wizard pages.   
 
-This class is used to completely overwrite, or add, custom pages to an installer.
+A great deal can be done to customize the way an installer's interface works by
+simply adding custom widgets.  There are limitations, however, to that approach.
+
+This class is used to completely add or overwrite pages in the an installer.
 The content of the pages are defined as Qt "forms", i.e. `.ui` (xml) files which 
 adhere to the
 [Qt UI file format](https://doc.qt.io/qt-5/designer-ui-file-format.html).
@@ -1297,12 +1308,28 @@ Constructor:
 
 ### QtIfwWidget
 
-Gui components injected into QtIFW wizard pages.
+This class closely resembles [QtIfwUiPage](#qtifwuipage).  They internally derive
+from a common (protected) base class.  In contrast, however, QtIfwWidgets are
+**collections** of user interface elements to be injected *into* default wizard pages, 
+where QtIfwUiPages are entirely new steps/pages injected *between* (or *over*) 
+default wizard pages.    
+
+Note that a QtIfwWidget that you create and inject into a page will generally contain 
+other widgets.  To access the nested widgets in a QtScript, you would use the notation `page.parent.child`.
+
+The content of the widgets are defined as Qt "forms", i.e. `.ui` (xml) files which 
+adhere to the
+[Qt UI file format](https://doc.qt.io/qt-5/designer-ui-file-format.html).
+While it is possible to *manually* create such forms, typically such files    
+are machine generated using a WYSIWYG tool from within
+[Qt Creator](https://doc.qt.io/qtcreator/) or
+[Qt Designer](https://doc.qt.io/qt-5/qtdesigner-manual.html).
 
 Constructor:
     
     QtIfwWidget( name, pageName, position=None, 
-                 sourcePath=None, content=None )
+                 sourcePath=None, content=None,
+                 onLoad=None, onEnter=None )
 
 Attributes:   
 
@@ -1312,30 +1339,56 @@ Attributes:
      
     content          = None
     replacements     = {}            
-        
-    _isOnLoadBase = True
+         
+    onLoad           = None
+    onEnter          = None       
+    eventHandlers    = {}
+    supportScript    = None  
     
+    _isOnLoadBase    = True    
+    _isOnEnterBase   = True
+            
 Functions:
 
     fileName()
     resolve( qtIfwConfig )
     write( dirPath )
-    
-### QtIfwAltRunProgramCheckbox
 
-A QtIfwWidget to be injected into the **Finished** QtIFW wizard page. 
+**pageName**: The wizard page where the widget will be added.
+
+**position**: 0 based index where the widget will be injected onto the page.
+Injections occur at the bottom of the default page, below the default elements.
+(per Qt's design).
+    
+### QtIfwOnFinishedCheckbox
+
+A QtIfwWidget to be injected into the **Finished** QtIFW wizard page.
+If one of these checkboxes is selected upon exiting a successfully completed wizard,
+the action associated with that will be executed in a "detached" manner
+(i.e. a process which is spawned by the installer, but not bound to it,
+so that it may live on after the installer process no longer exists).   
 
 Constructor:
 
-    QtIfwAltRunProgramCheckbox()
+    QtIfwOnFinishedCheckbox( name, text, action=None,
+                             position=None,
+                             isVisible=True, isEnabled=True, isChecked=True )
 
+Attributes & default values:    
+
+    name         = <required>
+    checkBoxName = <automatic>    
+    position     = None <automatic, per object instantiation order>     
+    action       = None
+        
 Functions:
 
 	<These return QScript snippets>
-    setText()
-    setChecked()
     isChecked()
-                       
+    setChecked()
+    enable( isEnable=True )
+    setVisible( isVisible=True )
+                           
 ## PipConfig
 
 Objects of this type define the details for downloading

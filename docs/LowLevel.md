@@ -397,12 +397,13 @@ Static Constants :
     END_LINE    
     START_BLOCK 
     END_BLOCK   
-    
+        
     IF    
     ELSE  
     TRY   "try { "
     CATCH "catch(e) { "
     
+    NULL    
     TRUE  
     FALSE 
     
@@ -447,6 +448,8 @@ Static Functions:
 	
     log( msg, isAutoQuote=True )            
 
+	toNull( v )         <convert Python None to QtScript null, else pass through>
+	
     toBool( b )         <pass Python bool or dynamic QtScript logic as Python string> 
     boolToString( b )	<pass Python bool or dynamic QtScript logic as Python string>
     stringToBool( value, isAutoQuote=True )

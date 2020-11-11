@@ -203,10 +203,141 @@ class QtIfwConfig:
         tokens = (configSpec, packageDirSpec, verboseSpec, self.otherQtIfwArgs)
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )         
 
+    # if the element is already present and overwrite is False, NOTHING will be modified                  
+    def addUiElements( self, uiElements, isOverWrite=True ):
+    
+        def findOwnerPackage( ui ):
+            for pkg in self.packages :
+                interfaces =( pkg.uiPages if isinstance( ui, QtIfwUiPage ) else 
+                              pkg.widgets )               
+                for interface in interfaces:
+                    if interface==ui: return pkg
+            return None            
+        
+        def add( pkg, ui ):            
+            page   = ui if isinstance( ui, QtIfwUiPage ) else None
+            widget = ui if isinstance( ui, QtIfwWidget ) else None    
+            if page:                     
+                # if this is a replacement page for a built-in,
+                # it must be the first page in the list with that page order
+                # else the other pages with that order will end up appearing 
+                # *after* this one rather than *before* it
+                isInserted=False
+                if page.name.startswith( QT_IFW_REPLACE_PAGE_PREFIX ):
+                    baseName = page.name[ len(QT_IFW_REPLACE_PAGE_PREFIX): ] 
+                    if baseName in _DEFAULT_PAGES:
+                        for i, pg in enumerate( pkg.uiPages ):
+                            isInserted=pg.pageOrder==baseName
+                            if isInserted: 
+                                pkg.uiPages.insert( i,  page )
+                                pkg.pkgScript.uiPages.insert( i, page )
+                                self.controlScript.uiPages.insert( i, page )
+                                break
+                # if the page wasn't inserted into the middle of the list, append it                     
+                if not isInserted:    
+                    pkg.uiPages.append( page )           
+                    pkg.pkgScript.uiPages.append( page )        
+                    self.controlScript.uiPages.append( page )
+            elif widget:
+                # order doesn't matter for these lists, but the items should be unique                         
+                pkg.widgets.append( widget )
+                pkg.widgets = list(set(pkg.widgets))
+                pkg.pkgScript.widgets.append( widget )
+                pkg.pkgScript.widgets = list(set(pkg.pkgScript.widgets))
+                self.controlScript.widgets.append( widget )
+                self.controlScript.widgets = list(set(self.controlScript.widgets))            
+            # order doesn't matter for this list, but the items should be unique
+            pkg.pkgXml.UserInterfaces.append( ui.fileName() )
+            pkg.pkgXml.UserInterfaces = list(set(pkg.pkgXml.UserInterfaces))
+    
+        def overwrite( pkg, ui ):                    
+            page   = ui if isinstance( ui, QtIfwUiPage ) else None
+            widget = ui if isinstance( ui, QtIfwWidget ) else None            
+            if page:          
+                # order must be preserved here 
+                pkg.uiPages = [ page if p.name==page.name else p 
+                                for p in pkg.uiPages ]        
+                pkg.pkgScript.uiPages = [ page if p.name==page.name else p 
+                                          for p in pkg.pkgScript.uiPages ]
+                self.controlScript.uiPages = [ page if p.name==page.name else p 
+                                               for p in self.controlScript.uiPages ]
+                # order doesn't matter for this list, but the items should be unique
+                pkg.pkgXml.UserInterfaces.append( ui.fileName() )
+                pkg.pkgXml.UserInterfaces = list(set(pkg.pkgXml.UserInterfaces))                                             
+            elif widget:
+                # there is no difference in how to add vs overwrite a widget! 
+                add( pkg, widget )                                                     
+                            
+        if uiElements is None: return
+        if self.packages is None or len(self.packages)==0: return
+        if self.controlScript is None: return        
+        if not isinstance( uiElements, list ): uiElements = [uiElements]
+
+        # For each ui element to add:
+        # Search for a package which already "owns" (contains) the ui
+        # and then overwrite that ui, if that option is enabled. Else,
+        # simply do nothing - leaving the original definition in place. 
+        # If the ui is not found, just arbitrarily inject it into the 
+        # first package, as that owner has no functional significance!                  
+        for ui in uiElements:
+            pkg = findOwnerPackage( ui )
+            if pkg:
+                if isOverWrite: overwrite( pkg, ui )
+            else: add( self.packages[0], ui )       
+
+    def addLicense( self, licensePath, name="End User License Agreement" ): 
+        try:
+            if licensePath is not None: self.packages[0].licenses[name] = licensePath
+        except: pass
+        try:        
+            for p in self.packages:
+                if len( p.licenses ) > 0:
+                    self.controlScript._isLicenseRequired = True
+                    break        
+        except: pass
+        
+    # cleans up and shuffles around resources per some complicated design 
+    # details a client should not have to know about and deal with
+    def _scrubEmbeddedResources( self ): 
+    
+        def isScriptFound( script, resources ):        
+            if not script or not resources: return
+            for res in resources:
+                if isinstance( res, ExecutableScript ):
+                    if res.rootName == script.rootName: return True
+            return False
+
+        def addResource( res, resources ):        
+            try: resources.append( res )
+            except: resources = [res]
+    
+        def addMaintenanceToolResources( pkg ):
+            try:
+                for exOp in pkg.pkgScript.externalOps:
+                    # uninstall scripts must be added to Maintenance Tool resources
+                    if isinstance( exOp.uninstScript, ExecutableScript ):
+                        if not isScriptFound( exOp.uninstScript, 
+                            self.controlScript._maintenanceToolResources ):
+                            addResource( exOp.uninstScript, 
+                                self.controlScript._maintenanceToolResources )         
+                    for resScript in exOp.uninstResourceScripts:
+                        if isinstance( resScript, ExecutableScript ):
+                            if not isScriptFound( resScript, 
+                                self.controlScript._maintenanceToolResources ):
+                                addResource( resScript, 
+                                    self.controlScript._maintenanceToolResources )                    
+            except: pass
+    
+        if self.packages is None or len(self.packages)==0: return
+        if self.controlScript is None: return        
+        for pkg in self.packages:
+            if not isinstance( pkg, QtIfwPackage ) : continue
+            addMaintenanceToolResources( pkg )
+
 # -----------------------------------------------------------------------------    
-class _QtIfwXmlElement( ET.Element ):
-    def __init__( self, tag, text=None, parent=None, attrib={}, **extra ):
-        ET.Element.__init__( self, tag, attrib, **extra )
+class _QtIfwXmlElement( ET.Element ):                #attrib={}
+    def __init__( self, tag, text=None, parent=None, attrib=None, **extra ):
+        ET.Element.__init__( self, tag, attrib if attrib else {}, **extra )
         if text:
             if   isinstance(text, bool): text = str(text)
             elif isinstance(text, date): text = text.isoformat() 
@@ -417,7 +548,7 @@ class QtIfwPackage:
                   srcDirPath=None, srcExePath=None, 
                   resBasePath=None, isTempSrc=False, 
                   pkgXml=None, pkgScript=None,
-                  licenses={}, uiPages=[], widgets=[] ) :
+                  licenses=None, uiPages=None, widgets=None ) :
         # internal id / type
         self.pkgId     = pkgId
         self.pkgType   = pkgType       
@@ -425,9 +556,9 @@ class QtIfwPackage:
         self.name      = name
         self.pkgXml    = pkgXml
         self.pkgScript = pkgScript        
-        self.uiPages   = uiPages
-        self.widgets   = widgets
-        self.licenses  = licenses
+        self.uiPages   = uiPages if uiPages else []
+        self.widgets   = widgets if widgets else []
+        self.licenses  = licenses if licenses else {}
         self.isLicenseFormatPreserved = False        
         # content        
         self.srcDirPath    = srcDirPath
@@ -506,7 +637,7 @@ class QtIfwPackageXml( _QtIfwXml ):
                   isHidden=False, isCheckable=True ) :
         _QtIfwXml.__init__( self, QtIfwPackageXml.__ROOT_TAG, 
                             QtIfwPackageXml.__TAGS )        
-        self.pkgName       = pkgName
+        self.pkgName = pkgName
         
         # TODO: continue to expand on the natural IFW options here...
         self.SortingPriority    = None
@@ -569,6 +700,7 @@ class _QtIfwScript:
     
     CONCAT = " + "
     
+    NULL  = "null"    
     TRUE  = "true"
     FALSE = "false"
     
@@ -836,6 +968,9 @@ class _QtIfwScript:
              _QtIfwScript._autoQuote( msg, isAutoQuote ),) 
 
     @staticmethod        
+    def toNull( v ): return _QtIfwScript.NULL if v is None else v
+
+    @staticmethod        
     def toBool( b ):
         if isinstance( b, six.string_types ): return b                          
         return _QtIfwScript.TRUE if b else _QtIfwScript.FALSE   
@@ -894,8 +1029,9 @@ class _QtIfwScript:
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
     @staticmethod        
-    def lookupValueList( key, defaultList=[], isAutoQuote=True, 
+    def lookupValueList( key, defaultList=None, isAutoQuote=True, 
                           delimiter=None ):
+        if defaultList is None: defaultList=[]
         defList=""
         for v in defaultList: 
             defList += _QtIfwScript._autoQuote( str(v), isAutoQuote )
@@ -911,7 +1047,7 @@ class _QtIfwScript:
     @staticmethod
     def resolveDynamicVars( s, varNames=None, isAutoQuote=True ):
         if varNames is None:
-            nameList='null'
+            nameList = _QtIfwScript.toNull(varNames)
         else :    
             nameList=''
             for v in varNames: 
@@ -982,7 +1118,8 @@ class _QtIfwScript:
         return _QtIfwScript.lookupBoolValue( arg, isAutoQuote ) 
 
     @staticmethod        
-    def cmdLineListArg( arg, default=[] ):                  
+    def cmdLineListArg( arg, default=None ):
+        if default is None: default=[]                  
         return _QtIfwScript.lookupValueList( 
             arg, default, delimiter="," )
 
@@ -1140,12 +1277,12 @@ class _QtIfwScript:
     # _QtIfwScript            
     def __init__( self, fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None, 
-                  virtualArgs={}, isAutoLib=True ) :
+                  virtualArgs=None, isAutoLib=True ) :
         self.fileName = fileName
         if scriptPath :
             with open( scriptPath, 'rb' ) as f: self.script = f.read()
         else : self.script = script  
-        self.virtualArgs = virtualArgs
+        self.virtualArgs = virtualArgs if virtualArgs else {}
         self.isAutoLib   = isAutoLib
         self.qtScriptLib = None
 
@@ -2214,7 +2351,7 @@ Controller.prototype.Dynamic%sCallback = function() {
     @staticmethod        
     def insertCustomWidget( widgetName, pageName, position=None ):
         return  QtIfwControlScript.__INSERT_PAGE_ITEM_TMPLT % (
-            widgetName, pageName, position if position else "null" )
+            widgetName, pageName, _QtIfwScript.toNull( position ) )
 
     @staticmethod        
     def removeCustomWidget( widgetName ):
@@ -2670,7 +2807,7 @@ Controller.prototype.Dynamic%sCallback = function() {
                              
         if self.widgets: 
             for w in self.widgets:
-                onEnter = w.onEnterSnippet()
+                onEnter = w._onEnterSnippet()
                 if len(onEnter) > 0:    
                     prepend +=(
                         TAB + ('if( pageId == %s )' % (
@@ -2690,7 +2827,7 @@ Controller.prototype.Dynamic%sCallback = function() {
                 if p.supportScript: self.script += p.supportScript                             
                 self.script += (                         
                     QtIfwControlScript.__UI_PAGE_CALLBACK_FUNC_TMPLT % 
-                    ( p.name, p.onEnterSnippet() ) )
+                    ( p.name, p._onEnterSnippet() ) )
 
     def __appendWidgetFunctions( self ):    
         if self.widgets: 
@@ -3133,8 +3270,8 @@ Component.prototype.%s = function(){
         else:
             return "" # TODO: FILLIN FOR NIX/MAc    
         
-    @staticmethod
-    def __winAddShortcut( location, exeName, command=None, args=[], 
+    @staticmethod                                         #args=[]
+    def __winAddShortcut( location, exeName, command=None, args=None, 
                           windowStyle=None,
                           label=QT_IFW_PRODUCT_NAME,
                           exeDir=QT_IFW_TARGET_DIR,                          
@@ -3183,7 +3320,7 @@ Component.prototype.%s = function(){
 
     @staticmethod
     def __linuxAddDesktopEntry( location, exeName, version,
-                                command=None, args=[], 
+                                command=None, args=None, 
                                 label=QT_IFW_PRODUCT_NAME, 
                                 exeDir=QT_IFW_TARGET_DIR,                          
                                 wrkDir=QT_IFW_TARGET_DIR, 
@@ -3210,9 +3347,9 @@ Component.prototype.%s = function(){
                 
     # QtIfwPackageScript                              
     def __init__( self, pkgName, pkgVersion, pkgSubDirName=None,
-                  shortcuts=[], bundledScripts=[],
-                  externalOps=[], installResources=[],
-                  uiPages=[], widgets=[],                    
+                  shortcuts=None, bundledScripts=None,
+                  externalOps=None, installResources=None,
+                  uiPages=None, widgets=None,                    
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
                   script=None, scriptPath=None ) :
         _QtIfwScript.__init__( self, fileName, script, scriptPath )
@@ -3221,15 +3358,15 @@ Component.prototype.%s = function(){
         self.pkgVersion       = pkgVersion
         self.pkgSubDirName    = pkgSubDirName
         
-        self.shortcuts        = shortcuts
-        self.externalOps      = externalOps
+        self.shortcuts        = shortcuts if shortcuts else [] 
+        self.externalOps      = externalOps if externalOps else []
         self.killOps          = []
         self.customOperations = None        
-        self.bundledScripts   = bundledScripts
-        self.installResources = installResources
+        self.bundledScripts   = bundledScripts if bundledScripts else []
+        self.installResources = installResources if installResources else {}
 
-        self.uiPages          = uiPages
-        self.widgets          = widgets
+        self.uiPages          = uiPages if uiPages else []
+        self.widgets          = widgets if widgets else []
                 
         # Linux Only
         if IS_LINUX: self.isAskPassProgRequired = False
@@ -3254,7 +3391,7 @@ Component.prototype.%s = function(){
 
     # TODO: Provide more control over the order - relative to external ops, etc.
     #        (search for current use)
-    def addSimpleOperation( self, name, parms=[], isElevated=False, isAutoQuote=True ):
+    def addSimpleOperation( self, name, parms=None, isElevated=False, isAutoQuote=True ):
         if self.customOperations is None: self.customOperations= ""        
         if parms is not None:
             if len(parms)==0: parms=None        
@@ -3433,7 +3570,7 @@ Component.prototype.%s = function(){
                 self.componentLoadedCallbackBody += ( NEW + TAB + 
                     (ADD_CUSTOM_PAGE_TMPLT % ( p.name, p.pageOrder )) + END )         
 
-            self.componentLoadedCallbackBody += p.onLoadSnippet()
+            self.componentLoadedCallbackBody += p._onLoadSnippet()
 
             if not isReplacement and p.isIncInAutoPilot: 
                 self.componentLoadedCallbackBody += _QtIfwScript.END_BLOCK
@@ -3442,7 +3579,7 @@ Component.prototype.%s = function(){
             self.componentLoadedCallbackBody += (
                 _QtIfwScript.TAB + QtIfwControlScript.insertCustomWidget(
                     w.name, w.pageName, w.position ) +
-                w.onLoadSnippet() )             
+                w._onLoadSnippet() )             
                 
     def __appendUiPageCallbacks( self ):    
         if self.uiPages: 
@@ -3871,13 +4008,13 @@ Component.prototype.%s = function(){
 # -----------------------------------------------------------------------------    
 class QtIfwShortcut:
     def __init__( self, productName=QT_IFW_PRODUCT_NAME, 
-                  command=None, args=[], 
+                  command=None, args=None, 
                   exeDir=QT_IFW_TARGET_DIR, exeName=None, 
                   exeVersion="0.0.0.0",
                   isGui=True, pngIconResPath=None ) :
         self.productName    = productName
         self.command        = command   
-        self.args           = args
+        self.args           = args if args else []
         self.exeDir         = exeDir       
         self.exeName        = exeName           
         self.isGui          = isGui
@@ -4449,7 +4586,7 @@ class QtIfwExternalOp:
     @staticmethod
     def __genScriptOp( event, script, uninstScript=None, 
                        isReversible=True, isElevated=False,
-                       externalRes=[] ):    
+                       externalRes=None ):    
         if   event==QtIfwExternalOp.ON_INSTALL:
             onInstall   = script
             onUninstall = None
@@ -4467,9 +4604,10 @@ class QtIfwExternalOp:
                 raise Exception( 
                     "Installer operation cannot be automatically undone." )
             onInstall   = script 
-            onUninstall = uninstScript                  
+            onUninstall = uninstScript                              
         return QtIfwExternalOp( script=onInstall, uninstScript=onUninstall,
-                isElevated=isElevated, externalRes=externalRes ) 
+                isElevated=isElevated, 
+                externalRes=externalRes if externalRes else [] ) 
 
     @staticmethod
     def RemoveFileScript( filePath ): # TODO: Test in NIX/MAC            
@@ -4706,30 +4844,30 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
                 "removeIconDir": removeIconDir } )
  
     # QtIfwExternalOp
-    def __init__( self, 
-              script=None,       exePath=None,       args=[], successRetCodes=[0],  
-        uninstScript=None, uninstExePath=None, uninstArgs=[],  uninstRetCodes=[0],
+    def __init__( self,                                                       # [0]
+              script=None,       exePath=None,       args=None, successRetCodes=None,  
+        uninstScript=None, uninstExePath=None, uninstArgs=None,  uninstRetCodes=None,
         isElevated=False, workingDir=QT_IFW_TARGET_DIR, onErrorMessage=None,
-        resourceScripts=[], uninstResourceScripts=[], externalRes=[] ):
+        resourceScripts=None, uninstResourceScripts=None, externalRes=None ):
         
         self.script          = script #ExecutableScript        
         self.exePath         = exePath
-        self.args            = args
-        self.successRetCodes = successRetCodes
+        self.args            = args if args else []
+        self.successRetCodes = successRetCodes if successRetCodes else [0]
 
         self.uninstScript    = uninstScript #ExecutableScript
         self.uninstExePath   = uninstExePath
-        self.uninstArgs      = uninstArgs
-        self.uninstRetCodes  = uninstRetCodes
+        self.uninstArgs      = uninstArgs if uninstArgs else []
+        self.uninstRetCodes  = uninstRetCodes if uninstRetCodes else [0]
         
         self.isElevated      = isElevated 
         self.workingDir      = workingDir
                 
         self.onErrorMessage  = onErrorMessage # TODO: TEST!
 
-        self.resourceScripts       = resourceScripts
-        self.uninstResourceScripts = uninstResourceScripts
-        self.externalRes           = externalRes
+        self.resourceScripts       = resourceScripts if resourceScripts else []
+        self.uninstResourceScripts = uninstResourceScripts if uninstResourceScripts else []
+        self.externalRes           = externalRes if externalRes else []
 
 # -----------------------------------------------------------------------------
 class QtIfwExternalResource:
@@ -4761,7 +4899,7 @@ class QtIfwExternalResource:
             contentKeys=QtIfwExternalResource.__CONTENT_KEYS.get(name,{}) )
 
     def __init__( self, name, srcPath, srcBasePath=None, 
-                  isMaintenanceNeed=False, contentKeys={} ):
+                  isMaintenanceNeed=False, contentKeys=None ):
         if "-" in name:
             raise Exception( "Resource names may not contain dashes!"
                 " (Auto correcting this may produce hard to find bugs)" )
@@ -4769,7 +4907,7 @@ class QtIfwExternalResource:
         self.srcPath = absPath( srcPath, srcBasePath )        
         print("self.srcPath", self.srcPath)
         self.isMaintenanceNeed = isMaintenanceNeed        
-        self.contentKeys = contentKeys
+        self.contentKeys = contentKeys if contentKeys else {}
         if( (contentKeys is None or len(contentKeys)==0) and 
             isFile( self.srcPath ) and 
             fileExt(self.srcPath) != _QT_IFW_ARCHIVE_EXT ):                
@@ -4899,9 +5037,9 @@ class _QtIfwInterface:
 
     def fileName( self ): return _QtIfwInterface._toFileName( self.name )  
 
-    def onLoadSnippet( self ): return self.onLoad if self.onLoad else ""          
+    def _onLoadSnippet( self ): return self.onLoad if self.onLoad else ""          
 
-    def onEnterSnippet( self ): return self.onEnter if self.onEnter else ""          
+    def _onEnterSnippet( self ): return self.onEnter if self.onEnter else ""          
             
 # -----------------------------------------------------------------------------
 class QtIfwUiPage( _QtIfwInterface ):
@@ -4945,7 +5083,7 @@ class QtIfwUiPage( _QtIfwInterface ):
                           else None )        
         self.isIncInAutoPilot = False
 
-    def onLoadSnippet( self ):
+    def _onLoadSnippet( self ):
         snippet = _QtIfwScript.TAB + _QtIfwScript.log( 
                     "(Custom) %sPageLoaded" % (self.name,) )           
         if self._isOnEnterBase:             
@@ -4953,7 +5091,7 @@ class QtIfwUiPage( _QtIfwInterface ):
         snippet += self.onLoad if self.onLoad else ""          
         return snippet
 
-    def onEnterSnippet( self ):        
+    def _onEnterSnippet( self ):        
         snippet = _QtIfwScript.TAB + _QtIfwScript.log( 
                     "(Custom) %sPageCallback" % (self.name,) )        
         if self._isOnEnterBase:             
@@ -5000,7 +5138,7 @@ class QtIfwDynamicOperationsPage( QtIfwUiPage ):
         return "%s();\n" % ( 
             QtIfwDynamicOperationsPage.__onCompletedName( name ), )  
 
-    def __init__( self, name, operation="", asyncFuncs=[],
+    def __init__( self, name, operation="", asyncFuncs=None,
                   order=QT_IFW_PRE_INSTALL, 
                   onCompletedDelayMillis=None ) :
 
@@ -5051,6 +5189,7 @@ class QtIfwDynamicOperationsPage( QtIfwUiPage ):
                 "func", default='""', isAutoQuote=False ) + END +            
             _QtIfwScript.log( '"Async func requested:" + func' , isAutoQuote=False )
         )
+        if asyncFuncs is None: asyncFuncs=[]
         for func in asyncFuncs:
             if isinstance( func, self.AsyncFunc ):                 
                 ON_TIMEOUT +=(
@@ -5086,16 +5225,17 @@ class QtIfwDynamicOperationsPage( QtIfwUiPage ):
     }    
     """)
         
-        def __init__( self, name, args=[], body="", delayMillis=1,
+        def __init__( self, name, args=None, body="", delayMillis=1,
                       standardPageId=None, customPageName=None ):
             self.name           = name
-            self.args           = args
+            self.args           = args if args else []
             self.body           = body
             self.delayMillis    = delayMillis
             self.standardPageId = standardPageId
             self.customPageName = customPageName
     
-        def invoke( self, args=[], isAutoQuote=True ):        
+        def invoke( self, args=None, isAutoQuote=True ):
+            if args is None: args=[]        
             if isAutoQuote:
                 args = ['"%s"' % (a,) for a in args]        
             if self.standardPageId: 
@@ -5374,7 +5514,7 @@ class QtIfwWidget( _QtIfwInterface ):
                          else None )     
         self.position = position
 
-    def onLoadSnippet( self ):
+    def _onLoadSnippet( self ):
         snippet = _QtIfwScript.TAB + _QtIfwScript.log( 
                     "%s Widget Loaded" % (self.name,) )              
         snippet += self.onLoad if self.onLoad else ""          
@@ -5385,11 +5525,10 @@ class QtIfwWidget( _QtIfwInterface ):
             self.name + QtIfwWidget.__FILE_ROOT_SUFFIX )  
 
 # -----------------------------------------------------------------------------    
-class QtIfwOnExitCheckbox( QtIfwWidget ):
+class QtIfwOnFinishedCheckbox( QtIfwWidget ):
 
     __AUTO_POSITION = 0
     
-    __WIDGET_SUFFIX   = "Widget"
     __CHECKBOX_SUFFIX = "CheckBox"
     __PAGE_ID = QT_IFW_FINISHED_PAGE
     __SRC     = QtIfwWidget._toLibResPath( "altrunitcheckbox-widget" )
@@ -5419,12 +5558,11 @@ class QtIfwOnExitCheckbox( QtIfwWidget ):
     def __init__( self, name, text, action=None,
                   position=None,
                   isVisible=True, isEnabled=True, isChecked=True ) :
-        QtIfwWidget.__init__( self, 
-            name + self.__WIDGET_SUFFIX, 
-            QtIfwOnExitCheckbox.__PAGE_ID, 
-            position=position if position else self.__AUTO_POSITION,             
-            sourcePath=QtIfwOnExitCheckbox.__SRC )
-        self.__AUTO_POSITION += 1
+        QtIfwWidget.__init__( self, name, QtIfwOnFinishedCheckbox.__PAGE_ID, 
+            position=( position if position else 
+                       QtIfwOnFinishedCheckbox.__AUTO_POSITION ),             
+            sourcePath=QtIfwOnFinishedCheckbox.__SRC )
+        QtIfwOnFinishedCheckbox.__AUTO_POSITION += 1
         checkBoxName = name + self.__CHECKBOX_SUFFIX
         self.checkBoxName = "%s.%s" % ( self.name, checkBoxName )
         self.action = action
@@ -5436,11 +5574,11 @@ class QtIfwOnExitCheckbox( QtIfwWidget ):
             , self.__IS_CHECKED_PLACEHOLDER : _QtIfwScript.toBool( isChecked )            
         })
 
-    def onLoadSnippet( self ):
+    def _onLoadSnippet( self ):
         snippet = _QtIfwScript.TAB + _QtIfwScript.log( 
                     "%s Widget Loaded" % (self.name,) )              
         if self._isOnLoadBase:             
-            snippet += QtIfwOnExitCheckbox.BASE_ON_LOAD_TMPT % (
+            snippet += QtIfwOnFinishedCheckbox.BASE_ON_LOAD_TMPT % (
                 self.pageName, self.name )
         snippet += self.onLoad if self.onLoad else ""          
         return snippet
@@ -5542,139 +5680,23 @@ def __qtIfwArchiveGenPath( qtIfwDir ):
         joinPath( __BIN_SUB_DIR, __QT_IFW_ARCHIVEGEN_EXE_NAME ) )
     return generatorPath if isFile( generatorPath ) else None
     
-# -----------------------------------------------------------------------------
-def _addQtIfwLicense( licensePath, packages, qtIfwConfig, 
-                      name="End User License Agreement" ): 
-    try:
-        if licensePath is not None: packages[0].licenses[name] = licensePath
-    except: pass
-    try:        
-        for p in packages:
-            if len( p.licenses ) > 0:
-                qtIfwConfig.controlScript._isLicenseRequired = True
-                break        
-    except: pass
-    
-# adds any missing resources, required by the packages, to the configuration
-def _addQtIfwEmbeddedResources( qtIfwConfig, packages ): 
-
-    def isScriptFound( script, resources ):        
-        if not script or not resources: return
-        for res in resources:
-            if isinstance( res, ExecutableScript ):
-                if res.rootName == script.rootName: return True
-        return False
-
-    def addResource( res, resources ):        
-        try: resources.append( res )
-        except: resources = [res]
-
-    def addMaintenanceToolResources( cfg, pkg ):
-        try:
-            for exOp in pkg.pkgScript.externalOps:
-                # uninstall scripts must be added to Maintenance Tool resources
-                if isinstance( exOp.uninstScript, ExecutableScript ):
-                    if not isScriptFound( exOp.uninstScript, 
-                        cfg.controlScript._maintenanceToolResources ):
-                        addResource( exOp.uninstScript, 
-                            cfg.controlScript._maintenanceToolResources )         
-                for resScript in exOp.uninstResourceScripts:
-                    if isinstance( resScript, ExecutableScript ):
-                        if not isScriptFound( resScript, 
-                            cfg.controlScript._maintenanceToolResources ):
-                            addResource( resScript, 
-                                cfg.controlScript._maintenanceToolResources )                    
-        except: pass
-
-    for pkg in packages:
-        if not isinstance( pkg, QtIfwPackage ) : continue
-        addMaintenanceToolResources( qtIfwConfig, pkg )
-        
-# if the page is already present and overwrite is False, NOTHING will be modified                  
-def _addQtIfwUiElements( qtIfwConfig, uiElements, isOverWrite=True ):
-
-    def findUiOwner( packages, ui ):
-        for pkg in packages :
-            interfaces =( pkg.uiPages if isinstance( ui, QtIfwUiPage ) else 
-                          pkg.widgets )               
-            for interface in interfaces:
-                if interface.name==ui.name: return pkg
-        return None            
-    
-    def add( ctrlScript, pkg, ui ):
-        
-        page = ui if isinstance( ui, QtIfwUiPage ) else None
-        widget = ui if isinstance( ui, QtIfwWidget ) else None
-
-        if page:                     
-            # if this is a replacement page for a built-in,
-            # it must be the first page in the list with that page order
-            # else the other pages with that order will end up appearing 
-            # *after* this one rather than *before* it
-            isInserted=False
-            if page.name.startswith( QT_IFW_REPLACE_PAGE_PREFIX ):
-                baseName = page.name[ len(QT_IFW_REPLACE_PAGE_PREFIX): ] 
-                if baseName in _DEFAULT_PAGES:
-                    for i, pg in enumerate( pkg.uiPages ):
-                        isInserted=pg.pageOrder==baseName
-                        if isInserted: 
-                            pkg.uiPages.insert( i,  page )
-                            pkg.pkgScript.uiPages.insert( i, page )
-                            ctrlScript.uiPages.insert( i, page )
-                            break
-            # if the page wasn't inserted into the middle of the list, append it                     
-            if not isInserted:    
-                pkg.uiPages.append( page )           
-                pkg.pkgScript.uiPages.append( page )        
-                ctrlScript.uiPages.append( page )
-            # order doesn't matter for this list, but the items should be unique
-            pkg.pkgXml.UserInterfaces.append( ui.fileName() )
-            pkg.pkgXml.UserInterfaces = list(set(pkg.pkgXml.UserInterfaces))
-
-        # there is no difference between add / overwrite for a widget!                 
-        elif widget: overwrite( ctrlScript, pkg, widget )                                                     
-
-    def overwrite( ctrlScript, pkg, ui ):        
-        
-        page = ui if isinstance( ui, QtIfwUiPage ) else None
-        widget = ui if isinstance( ui, QtIfwWidget ) else None
-        
-        if page:          
-            # order must be preserved here 
-            pkg.uiPages = [ page if p.name==page.name else p 
-                            for p in pkg.uiPages ]        
-            pkg.pkgScript.uiPages = [ page if p.name==page.name else p 
-                                      for p in pkg.pkgScript.uiPages ]
-            ctrlScript.uiPages = [ page if p.name==page.name else p 
-                                   for p in  ctrlScript.uiPages ]
-        elif widget:
-            # order doesn't matter for these lists, but the items should be unique                         
-            pkg.widgets.append( widget )
-            pkg.widgets = list(set(pkg.widgets))
-            pkg.pkgScript.widgets.append( widget )
-            pkg.pkgScript.widgets = list(set(pkg.pkgScript.widgets))
-            ctrlScript.widgets.append( widget )
-            ctrlScript.widgets = list(set(ctrlScript.widgets))            
-            
-        # order doesn't matter for this list, but the items should be unique
-        pkg.pkgXml.UserInterfaces.append( ui.fileName() )
-        pkg.pkgXml.UserInterfaces = list(set(pkg.pkgXml.UserInterfaces))
-        
-    if uiElements is None: return
-    if not isinstance( uiElements, list ): uiElements = [uiElements]  
-    for ui in uiElements:
-        pkg = findUiOwner( qtIfwConfig.packages, ui )
-        if pkg:
-            if isOverWrite: overwrite( qtIfwConfig.controlScript, pkg, ui )
-            continue            
-        # if no owner is found, just arbitrarily inject the interface
-        # into the first package, as it makes no meaningful difference!
-        add( qtIfwConfig.controlScript, qtIfwConfig.packages[0], ui )       
-        
+# -----------------------------------------------------------------------------                
 def findQtIfwPackage( pkgs, pkgId ):        
     for p in pkgs: 
         if p.pkgId==pkgId: return p
     return None 
+
+def findQtIfwUiPage( pkgs, name ):
+    for p in pkgs: 
+        for p in p.uiPages: 
+            if p.name==name: return p
+    return None     
+
+def findQtIfwWidget( pkgs, name ):
+    for p in pkgs: 
+        for w in p.widgets: 
+            if w.name==name: return w
+    return None     
 
 def removeQtIfwPackage( pkgs, pkgId ):        
     pkgIndex=None
@@ -5877,10 +5899,10 @@ def __initBuild( qtIfwConfig ) :
 
 def __addInstallerResources( qtIfwConfig ) :
         
-    _addQtIfwEmbeddedResources( qtIfwConfig, qtIfwConfig.packages )
-    _addQtIfwUiElements( qtIfwConfig, QtIfwTargetDirPage(), isOverWrite=False )
-    _addQtIfwUiElements( qtIfwConfig, QtIfwOnPriorInstallationPage(), isOverWrite=False )
-    _addQtIfwUiElements( qtIfwConfig, QtIfwRemovePriorInstallationPage(), isOverWrite=False )
+    qtIfwConfig._scrubEmbeddedResources()
+    qtIfwConfig.addUiElements( QtIfwTargetDirPage(), isOverWrite=False )
+    qtIfwConfig.addUiElements( QtIfwOnPriorInstallationPage(), isOverWrite=False )
+    qtIfwConfig.addUiElements( QtIfwRemovePriorInstallationPage(), isOverWrite=False )
     
     __genQtIfwCntrlRes( qtIfwConfig ) 
                                       
@@ -6205,12 +6227,12 @@ def __buildSilentWrapper( qtIfwConfig ) :
     return absPath( destSetupExeName )
 
 # TODO: Break up this monolith!    
-def __silentQtIfwScript( exeName, componentList=[],
+def __silentQtIfwScript( exeName, componentList=None,
                          isQtIfwInstaller=False,
                          isQtIfwUnInstaller=False,
                          scriptPath=None,
                          wrkDir=None, targetDir=None,
-                         isRunSwitch=None, licenses={},
+                         isRunSwitch=None, licenses=None,
                          productName=None, version=None, 
                          companyLegalName=None ) :
     """
@@ -6219,6 +6241,8 @@ def __silentQtIfwScript( exeName, componentList=[],
     stdout, stderr, and other logged communications.  
     Note: On Windows, the wrapper is auto-elevated via PyInstaller.
     """
+    if componentList is None: componentList=[]
+    if licenses is None: licenses={}
     
     versionInfo = productName if productName else ""
     if version:

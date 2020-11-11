@@ -113,11 +113,11 @@ def isDebug():
         isDebug.__CACHE = getEnv( DEBUG_ENV_VAR_NAME ) == DEBUG_ENV_VAR_VALUE
         return isDebug.__CACHE
 
-def run( binPath, args=[], 
+def run( binPath, args=None, 
          wrkDir=None, isElevated=False, isDebug=False ):
     _run( binPath, args, wrkDir, isElevated, isDebug )
          
-def _run( binPath, args=[], 
+def _run( binPath, args=None, 
          wrkDir=None, isElevated=False, 
          isDebug=False, sharedFilePath=None ):
     
@@ -131,6 +131,8 @@ def _run( binPath, args=[],
     def __printRetCode( retCode ):
         stdout.write( "\nReturn code: %d\n" % (retCode,) )
         stdout.flush()    
+    
+    if args is None: args=[]
             
     binDir, fileName = splitPath( binPath )   
     if wrkDir is None : wrkDir = binDir
@@ -200,7 +202,7 @@ def _run( binPath, args=[],
     cmd = ('%s %s%s %s' % (elevate, pwdCmd, fileName, args)).strip()
     _system( cmd, wrkDir )
     
-def runPy( pyPath, args=[], isElevated=False ):
+def runPy( pyPath, args=None, isElevated=False ):
     wrkDir, fileName = splitPath( pyPath )
     pyArgs = [fileName]
     if isinstance(args,list): pyArgs.extend( args )
@@ -263,7 +265,7 @@ def __windowsIsElevated():
     return ctypes.windll.shell32.IsUserAnAdmin()==1
 
 # returns  (isRun, retCode, output)            
-def __windowsElevated( exePath, args=[], wrkDir=None ):
+def __windowsElevated( exePath, args=None, wrkDir=None ):
 
     def __runElevated( exePath, args, wrkDir, sharedFilePath ):
         verb = "runas"
@@ -309,6 +311,7 @@ def __windowsElevated( exePath, args=[], wrkDir=None ):
         sharedFile.close()    
         return retCode 
 
+    if args is None: args=[]
     sharedFilePath = _reserveTempFile()
     isRun = __runElevated( exePath, args, wrkDir, sharedFilePath )
     retCode = __getResults( sharedFilePath ) if isRun else None
@@ -946,7 +949,7 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
                   extension=True, # True==auto assign, str==what to use, or None
                   shebang=True, # True==auto assign, str==what to use, or None                  
                   script=None, scriptPath=None,
-                  replacements={} ) :
+                  replacements=None ) :
         self.rootName = rootName
         if extension==True:
             self.extension = ( ExecutableScript.__WIN_DEFAULT_EXT 
@@ -961,7 +964,7 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
             with open( scriptPath, 'r' ) as f: self.script = f.read()
         elif isinstance( script, list ): self.fromLines( script )
         else: self.script = script
-        self.replacements=replacements  
+        self.replacements=replacements if replacements else {}  
         self.isIfwVarEscapeBackslash = False
                                                     
     def __str__( self ) :

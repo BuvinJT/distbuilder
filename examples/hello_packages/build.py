@@ -1,5 +1,5 @@
 from distbuilder import( RobustInstallerProcess, ConfigFactory,
-    QtIfwControlScript, QtIfwOnExitCheckbox,
+    QtIfwControlScript, QtIfwOnFinishedCheckbox,
     findQtIfwPackage )
   
 f = masterConfigFactory = ConfigFactory()
@@ -16,13 +16,6 @@ TK_CONFIG_KEY  = "tk"
 CLI_CONFIG_KEY = "cli"
 pkgFactories={ TK_CONFIG_KEY:None, CLI_CONFIG_KEY:None }
 
-# Add some custom installer widgets to the master config factory
-runTkCheckbox = QtIfwOnExitCheckbox( 
-    "runTk",  "Run Tk Example",  action=None ) 
-runCliCheckbox = QtIfwOnExitCheckbox( 
-    "runCli", "Run CLI Example", action=None )
-f.ifwWidgets = [ runTkCheckbox, runCliCheckbox ]
- 
 class BuildProcess( RobustInstallerProcess ):
     
     def onConfigFactory( self, key, f ):
@@ -65,6 +58,16 @@ class BuildProcess( RobustInstallerProcess ):
             cfg.controlScript.isRunProgChecked = False
             cfg.controlScript.isRunProgVisible = False  
             
+            # Add some custom widgets to the page
+            # Note: QtIfwOnFinishedCheckbox objects are implicitly 
+            # placed on the finished page.  The page order for such is 
+            # dictated by the object instantiation order, by default.
+            runTkCheckbox = QtIfwOnFinishedCheckbox( 
+                "runTk",  "Run Tk Example",  action=None ) 
+            runCliCheckbox = QtIfwOnFinishedCheckbox( 
+                "runCli", "Run CLI Example", action=None )            
+            cfg.addUiElements( [ runTkCheckbox, runCliCheckbox ] )            
+
             # Add custom QScript to the finished page 
             SCRPT       = QtIfwControlScript
             ELSE        = SCRPT.ELSE 

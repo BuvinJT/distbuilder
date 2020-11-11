@@ -21,9 +21,6 @@ from distbuilder.opy_library import \
 from distbuilder.qt_installer import \
       _stageInstallerPackages \
     , _buildInstaller \
-    , _addQtIfwLicense \
-    , _addQtIfwEmbeddedResources \
-    , _addQtIfwUiElements \
     , joinPathQtIfw \
     , QtIfwConfig \
     , QtIfwConfigXml \
@@ -59,32 +56,36 @@ class ConfigFactory:
         self.companyTradeName = None
         self.companyLegalName = None      
 
+        self.version       = (0,0,0,0)
+        self.isGui         = False
+
+        self.binaryName    = None          
+        self.sourceDir     = None              
+        self.iconFilePath  = None
+        
+        # PyInstaller
+        self.entryPointPy  = None               
+        self.specFilePath  = None
+        self.distResources = []
+
+        # Python Obfuscation
         self.isObfuscating = False                
         self.opyBundleLibs = None
         self.opyPatches    = None
         
-        self.binaryName    = None  
-        self.version       = (0,0,0,0)
-        self.isGui         = False
-        
-        self.sourceDir     = None              
-        self.entryPointPy  = None
-        self.iconFilePath  = None       
-        self.distResources = []
-        self.specFilePath  = None
-        
+        # For Installers: applied via "master" factories        
         self.isSilentSetup = False
-        self.licensePath   = None
         self.setupName     = DEFAULT_SETUP_NAME
+        
         self.ifwDefDirPath = None        
         self.ifwPackages   = None
-
-        self.startOnBoot   = False
+         
         self.replaceTarget = False # TODO: Fix this, or drop it!
+                
+        self.licensePath = None        
+        self.ifwUiPages  = None
+        self.ifwWidgets  = None                    
         
-        self.ifwUiPages     = None
-        self.ifwWidgets     = None
-                    
         self.ifwCntrlScript     = None # None=Default False=Exclude                
         self.ifwCntrlScriptText = None
         self.ifwCntrlScriptPath = None
@@ -111,10 +112,12 @@ class ConfigFactory:
         self.pkgSrcDirPath   = None
         self.pkgSrcExePath   = None
         self.pkgExeWrapper   = None 
-               
-        self.qtCppConfig = None
+
+        self.startOnBoot   = False
        
+        # Configurations for specific package types               
         self.__pkgPyInstConfig = None
+        self.qtCppConfig = None
                             
     def pyInstallerConfig( self ): 
         cfg = PyInstallerConfig()        
@@ -150,17 +153,17 @@ class ConfigFactory:
                           patches=self.opyPatches )                 
     
     def qtIfwConfig( self, packages=None ):
-        if packages is not None: self.ifwPackages = packages        
-        
+        if packages is not None: self.ifwPackages = packages                
         cfg = QtIfwConfig( installerDefDirPath=self.ifwDefDirPath,
-                            packages=self.ifwPackages,
-                            configXml=self.qtIfwConfigXml(), 
-                            controlScript=self.qtIfwControlScript(),
-                            setupExeName=self.setupName ) 
-        _addQtIfwLicense( self.licensePath, self.ifwPackages, cfg )
-        _addQtIfwEmbeddedResources( cfg, self.ifwPackages )        
-        _addQtIfwUiElements( cfg, self.ifwUiPages )
-        _addQtIfwUiElements( cfg, self.ifwWidgets )
+                           packages=self.ifwPackages,
+                           configXml=self.qtIfwConfigXml(), 
+                           controlScript=self.qtIfwControlScript(),
+                           setupExeName=self.setupName ) 
+        cfg.addLicense( self.licensePath )
+        cfg.addUiElements( self.ifwUiPages )
+        cfg.addUiElements( self.ifwWidgets )
+        cfg._scrubEmbeddedResources()        
+        self.ifwPackages = cfg.packages
         return cfg 
 
     def qtIfwConfigXml( self ) :
@@ -213,7 +216,7 @@ class ConfigFactory:
                 isTempSrc = isTempSrc,
                 pkgXml=self.qtIfwPackageXml(), 
                 pkgScript=self.qtIfwPackageScript( self.__pkgPyInstConfig ) )
-        
+                
         pkg.exeName    = self.__pkgExeName()
         pkg.isGui      = self.isGui
         
@@ -516,11 +519,12 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
 
     def __init__( self, configFactory,
                   name="Build Installer Process",  
-                  pyToBinPkgProcesses=[], ifwPackages=[],                                                                                   
+                  pyToBinPkgProcesses=None, ifwPackages=None,                                                                                   
                   isDesktopTarget=False, isHomeDirTarget=False ) :
         _DistBuildProcessBase.__init__( self, configFactory, name )
-        self.pyToBinPkgProcesses = pyToBinPkgProcesses        
-        self.ifwPackages         = ifwPackages
+        self.pyToBinPkgProcesses =( pyToBinPkgProcesses 
+                                    if pyToBinPkgProcesses else [] )        
+        self.ifwPackages         = ifwPackages if ifwPackages else [] 
         self.isDesktopTarget     = isDesktopTarget
         self.isHomeDirTarget     = isHomeDirTarget
         
@@ -616,9 +620,9 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
     
     def __init__( self, masterConfigFactory, 
                   name="Multi-Package Python to Binary Installer Process",
-                  pyPkgConfigFactoryDict={}, ifwPackages=[],                                     
+                  pyPkgConfigFactoryDict=None, ifwPackages=None,                                     
                   isDesktopTarget=False, isHomeDirTarget=False ) :
-        
+                
         class CallbackPyToBinPackageProcess( PyToBinPackageProcess ):
             def __init__( self, parent, key, configFactory ):
                 PyToBinPackageProcess.__init__( self, configFactory )
@@ -635,6 +639,9 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
             def onFinalize( self ):          
                 self.__parent.onPyPackageFinalize( self.__key )           
     
+        if pyPkgConfigFactoryDict is None: pyPkgConfigFactoryDict={}
+        if ifwPackages is None: ifwPackages=[]
+
         binPrcs = []
         for key, factory in six.iteritems( pyPkgConfigFactoryDict ) :        
             if factory is None :

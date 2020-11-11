@@ -38,57 +38,68 @@ Attributes & default values:
     
     companyTradeName = None
     companyLegalName = None      
-
-	isObfuscating = False             
-    opyBundleLibs = None
-    opyPatches    = None
     
-    binaryName = None  
     version    = (0,0,0,0)
     isGui      = False           
     
-    sourceDir     = None
-    entryPointPy  = None
-    specFilePath  = None
-    iconFilePath  = None
-    distResources = []       
+    sourceDir    = None
+    binaryName   = None  
+    iconFilePath = None
+    
+    <PyInstaller>
+    
+	    entryPointPy  = None               
+	    specFilePath  = None
+	    distResources = []
+         
+    <Python Obfuscation>
+    
+		isObfuscating = False             
+	    opyBundleLibs = None
+	    opyPatches    = None
 
-    isSilentSetup    = False    		
-    licensePath      = None    
-    setupName        = "setup"
-    ifwDefDirPath    = None
-    ifwPackages      = None
-
-	startOnBoot   = False <CURRENT_USER, ALL_USERS>    
-    replaceTarget = False
-
-    ifwUiPages = None
-       
-    ifwCntrlScript     = None # None=Default False=Exclude                
-    ifwCntrlScriptText = None
-    ifwCntrlScriptPath = None
-    ifwCntrlScriptName = "installscript.qs"
-
-    ifwPkgId         = None
-    ifwPkgName       = None
-    ifwPkgNamePrefix = "com"        
-
-    ifwPkgIsDefault  = True
-    ifwPkgIsRequired = False 
-    ifwPkgIsHidden   = False
+    <For Installers (applied via "master" factories)>
+    
+	    isSilentSetup    = False    		
+	    setupName        = "setup"
+	    ifwDefDirPath    = None
+	    ifwPackages      = None
+	
+	    replaceTarget = False
+	
+	    licensePath = None    
+	    ifwUiPages  = None
+		ifwWidgets  = None                    
 	       
-    ifwPkgScript     = None           
-    ifwPkgScriptText = None
-    ifwPkgScriptPath = None        
-    ifwPkgScriptName = "installscript.qs"
+	    ifwCntrlScript     = None # None=Default False=Exclude                
+	    ifwCntrlScriptText = None
+	    ifwCntrlScriptPath = None
+	    ifwCntrlScriptName = "installscript.qs"
 
-    pkgType       = None    
-    pkgSubDirName = None
-    pkgSrcDirPath = None
-    pkgSrcExePath = None
-    pkgExeWrapper = None
-        
-    qtCppConfig      = None
+	<For Installer Packages>
+	
+	    ifwPkgId         = None
+	    ifwPkgName       = None
+	    ifwPkgNamePrefix = "com"        
+	
+	    ifwPkgIsDefault  = True
+	    ifwPkgIsRequired = False 
+	    ifwPkgIsHidden   = False
+		       
+	    ifwPkgScript     = None           
+	    ifwPkgScriptText = None
+	    ifwPkgScriptPath = None        
+	    ifwPkgScriptName = "installscript.qs"
+	
+	    pkgType       = None    
+	    pkgSubDirName = None
+	    pkgSrcDirPath = None
+	    pkgSrcExePath = None
+	    pkgExeWrapper = None
+	
+		startOnBoot   = False <CURRENT_USER, ALL_USERS>    
+	        
+	    qtCppConfig      = None
  
 Object creation functions:
      
@@ -170,7 +181,7 @@ as: `(2,11,6,139)`
 #### binaryName, isGui           
 
 These are attribute used for a variety of purposes, which would be difficult to 
-list here. Most notably, they are applied directly to the production of  
+list here. Perhaps most notably, they are applied directly to the production of  
 [Stand Alone Executables](LowLevel.md#stand-alone-executables). In that specific 
 process these details are set on a [PyInstallerConfig](ConfigClasses.md#pyinstconfig) 
 object when invoking the `pyInstallerConfig()` function for this class.

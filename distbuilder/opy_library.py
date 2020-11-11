@@ -81,7 +81,8 @@ def obfuscatePy( opyConfig ):
     if opyConfig.isLibrary : return __obfuscateLib( opyConfig )
     else :                   return __runOpy(       opyConfig )
 
-def opyAnalyze( opyConfig, filesSubset=[] ):
+def opyAnalyze( opyConfig, filesSubset=None ):
+    if filesSubset is None: filesSubset=[]
     if opyConfig.isLibrary : 
         return __obfuscateLib( opyConfig, 
                                isAnalysis=True, filesSubset=filesSubset )
@@ -89,8 +90,10 @@ def opyAnalyze( opyConfig, filesSubset=[] ):
         return __runOpy(       opyConfig, 
                                isAnalysis=True, filesSubset=filesSubset )
 
-def __obfuscateLib( opyConfig, isAnalysis=False, filesSubset=[] ):
+def __obfuscateLib( opyConfig, isAnalysis=False, filesSubset=None ):    
     ''' returns: (obDir, obPath) OR an OpyResults object when isAnalysis=True '''
+    
+    if filesSubset is None: filesSubset=[]
     
     # Leave the setup script and all package entry points in plain text
     plainFiles = [LIBRARY_SETUP_FILE_NAME]
@@ -120,7 +123,9 @@ def __obfuscateLib( opyConfig, isAnalysis=False, filesSubset=[] ):
     opyConfig.entryPointPy = LIBRARY_SETUP_FILE_NAME    
     return __runOpy( opyConfig, isAnalysis, filesSubset ) 
 
-def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
+def __runOpy( opyConfig, isAnalysis=False, filesSubset=None ):
+    
+    if filesSubset is None: filesSubset=[]
     
     def _main():
         if opyConfig.extLibHandling == OpyConfigExt.ExtLibHandling.BUNDLE:
@@ -253,8 +258,10 @@ def __runOpy( opyConfig, isAnalysis=False, filesSubset=[] ):
           
     return _main() 
     
-def createStageDir( bundleLibs=[], sourceDir=THIS_DIR ):
+def createStageDir( bundleLibs=None, sourceDir=THIS_DIR ):
     ''' returns: stageDir '''
+    
+    if bundleLibs is None: bundleLibs=[]
     
     from distbuilder.pip_installer import installLibrary
     if exists( STAGE_DIR_PATH ) : removeDir( STAGE_DIR_PATH )
