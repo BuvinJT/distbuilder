@@ -2731,9 +2731,15 @@ Controller.prototype.Dynamic%sCallback = function() {
             isAutoQuote=False )  
 
     def __genFinishedClickedCallbackBody( self ):
+        NEW =_QtIfwScript.NEW_LINE
         EBLK =_QtIfwScript.END_BLOCK
         
         prepend = _QtIfwScript.log( "finish clicked" )
+        
+        for w in self.widgets:
+            if isinstance( w, QtIfwOnFinishedCheckbox ): 
+                prepend += w.action 
+        
         append =( 
             _QtIfwScript.ifMaintenanceTool( isNegated=True, isMultiLine=True ) +            
                 _QtIfwScript.ifCmdLineArg( _QtIfwScript._KEEP_ALIVE_PATH_CMD_ARG ) +

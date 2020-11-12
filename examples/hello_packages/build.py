@@ -1,6 +1,7 @@
 from distbuilder import( RobustInstallerProcess, ConfigFactory,
     QtIfwControlScript, QtIfwOnFinishedCheckbox,
-    findQtIfwPackage )
+    findQtIfwPackage, 
+    joinPathQtIfw,  QT_IFW_TARGET_DIR )
   
 f = masterConfigFactory = ConfigFactory()
 f.productName      = "Hello Packages Example"
@@ -63,9 +64,17 @@ class BuildProcess( RobustInstallerProcess ):
             # placed on the finished page.  The page order for such is 
             # dictated by the object instantiation order, by default.
             runTkCheckbox = QtIfwOnFinishedCheckbox( 
-                "runTk",  "Run Tk Example",  action=None ) 
+                "runTk", "Run Tk Example",  
+                action='executeDetached( %s );\n' % (
+                    QtIfwControlScript.resolveDynamicVars(
+                        joinPathQtIfw( QT_IFW_TARGET_DIR, tkPkg.exeName ) ), ) 
+            ) 
             runCliCheckbox = QtIfwOnFinishedCheckbox( 
-                "runCli", "Run CLI Example", action=None )            
+                "runCli", "Run CLI Example", 
+                action='executeDetached( %s );\n' % (
+                    QtIfwControlScript.resolveDynamicVars(
+                        joinPathQtIfw( QT_IFW_TARGET_DIR, cliPkg.exeName ) ), ) 
+            )                         
             cfg.addUiElements( [ runTkCheckbox, runCliCheckbox ] )            
 
             # Add custom QScript to the finished page 
