@@ -695,14 +695,18 @@ class _QtIfwScript:
 
     IF    = "if "
     ELSE  = "else "
+    
     TRY   = "try { "
     CATCH = "catch(e) { "
-    
-    CONCAT = " + "
-    
+        
     NULL  = "null"    
     TRUE  = "true"
     FALSE = "false"
+    
+    AND = " && "
+    OR  = " || "
+
+    CONCAT = " + "
     
     PATH_SEP = '"\\\\"' if IS_WINDOWS else '"/"'  
         
@@ -834,6 +838,22 @@ class _QtIfwScript:
     @staticmethod        
     def quote( value ):                  
         return '"%s"' % (value,)  
+
+    @staticmethod        
+    def ifCondition( condition, isNegated=False, isMultiLine=False ):
+        return 'if( %s%s )%s\n%s' % (
+            ("!" if isNegated else ""), condition, 
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+
+    @staticmethod        
+    def andList( conditions ):
+        conditions = [ '(%s)' % (c,) for c in conditions ]
+        return '(%s)' % ( _QtIfwScript.AND.join(), )
+
+    @staticmethod        
+    def orList( conditions ):
+        conditions = [ '(%s)' % (c,) for c in conditions ]
+        return '(%s)' % ( _QtIfwScript.OR.join(), )
 
     @staticmethod        
     def _autoQuote( value, isAutoQuote ):                  
@@ -2399,6 +2419,14 @@ Controller.prototype.Dynamic%sCallback = function() {
     def isChecked( checkboxName ):
         return QtIfwControlScript.__GET_CHECKBOX_STATE_TMPL % ( 
             checkboxName )
+        
+    # Note: checkbox controls also work on radio buttons!
+    @staticmethod        
+    def ifChecked( checkboxName, isNegated=False, isMultiLine=False ):   
+        return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "", 
+            QtIfwControlScript.isChecked( checkboxName ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
     @staticmethod        
     def setText( controlName, text, varNames=None, 
@@ -2451,9 +2479,18 @@ Controller.prototype.Dynamic%sCallback = function() {
 
     # Note: checkbox controls also work on radio buttons!
     @staticmethod        
-    def isCustomChecked( checkboxName, pageVar="page"  ):
+    def isCustomChecked( checkboxName, pageVar="page" ):
         return QtIfwControlScript.__GET_CUSTPAGE_CHECKBOX_STATE_TMPL % ( 
             pageVar, checkboxName )
+
+    # Note: checkbox controls also work on radio buttons!
+    @staticmethod        
+    def ifCustomChecked( checkboxName, pageVar="page", isNegated=False, 
+                         isMultiLine=False ):   
+        return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "", 
+            QtIfwControlScript.isCustomChecked( checkboxName, pageVar ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
     @staticmethod        
     def setCustomText( controlName, text, isAutoQuote=True, pageVar="page" ):                
@@ -2731,14 +2768,18 @@ Controller.prototype.Dynamic%sCallback = function() {
             isAutoQuote=False )  
 
     def __genFinishedClickedCallbackBody( self ):
-        NEW =_QtIfwScript.NEW_LINE
         EBLK =_QtIfwScript.END_BLOCK
         
         prepend = _QtIfwScript.log( "finish clicked" )
         
         for w in self.widgets:
-            if isinstance( w, QtIfwOnFinishedCheckbox ): 
-                prepend += w.action 
+            if isinstance( w, QtIfwOnFinishedCheckbox ):                    
+                prepend += ( 
+                    QtIfwControlScript.ifChecked( w.checkboxName, 
+                                                  isMultiLine=True ) +
+                        w.action +
+                    EBLK
+                ) 
         
         append =( 
             _QtIfwScript.ifMaintenanceTool( isNegated=True, isMultiLine=True ) +            
@@ -5569,11 +5610,11 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
                        QtIfwOnFinishedCheckbox.__AUTO_POSITION ),             
             sourcePath=QtIfwOnFinishedCheckbox.__SRC )
         QtIfwOnFinishedCheckbox.__AUTO_POSITION += 1
-        checkBoxName = name + self.__CHECKBOX_SUFFIX
-        self.checkBoxName = "%s.%s" % ( self.name, checkBoxName )
+        checkboxName = name + self.__CHECKBOX_SUFFIX
+        self.checkboxName = "%s.%s" % ( self.name, checkboxName )
         self.action = action
         self.replacements.update({ 
-              self.__CHECKBOX_NAME_PLACEHOLDER: checkBoxName 
+              self.__CHECKBOX_NAME_PLACEHOLDER: checkboxName 
             , self.__TEXT_PLACEHOLDER : text 
             , self.__IS_VISIBLE_PLACEHOLDER : _QtIfwScript.toBool( isVisible )
             , self.__IS_ENABLED_PLACEHOLDER : _QtIfwScript.toBool( isEnabled )
@@ -5590,16 +5631,16 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
         return snippet
     
     def isChecked( self ): 
-        return QtIfwControlScript.isChecked( self.checkBoxName )
+        return QtIfwControlScript.isChecked( self.checkboxName )
 
     def setChecked( self, isChecked=True ):
-        return QtIfwControlScript.setChecked( self.checkBoxName, isChecked )
+        return QtIfwControlScript.setChecked( self.checkboxName, isChecked )
 
     def enable( self, isEnable=True ): 
-        return QtIfwControlScript.enable( self.checkBoxName, isEnable )
+        return QtIfwControlScript.enable( self.checkboxName, isEnable )
 
     def setVisible( self, isVisible=True ): 
-        return QtIfwControlScript.setVisible( self.checkBoxName, isVisible )
+        return QtIfwControlScript.setVisible( self.checkboxName, isVisible )
                     
 # -----------------------------------------------------------------------------    
 def installQtIfw( installerPath=None, version=None, targetPath=None ):    

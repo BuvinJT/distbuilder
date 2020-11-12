@@ -393,20 +393,28 @@ Both of the distbuilder script classes provide the following **PYTHON** helpers:
 Static Constants :
 
     TAB         
+    
     NEW_LINE     
     END_LINE    
+    
     START_BLOCK 
     END_BLOCK   
         
     IF    
     ELSE  
-    TRY   "try { "
-    CATCH "catch(e) { "
+    
+    TRY   <Note: END_BLOCK required where called for>
+    CATCH <Note: END_BLOCK required where called for, exception called "e">
     
     NULL    
     TRUE  
     FALSE 
-    
+      
+    AND 
+    OR  
+
+    CONCAT 
+        
     PATH_SEP   
     
     MAINTENANCE_TOOL_NAME  
@@ -443,10 +451,13 @@ Static Constants :
     CANCEL 
 
 Static Functions:      
+                  
+    ifCondition( condition, isNegated=False, isMultiLine=False )
+    andList( conditions )
+    orList( conditions )
                                                    
 	quote( value )
-	
-    log( msg, isAutoQuote=True )            
+    _autoQuote( value, isAutoQuote )
 
 	toNull( v )         <convert Python None to QtScript null, else pass through>
 	
@@ -476,8 +487,7 @@ Static Functions:
     ifInstalling( isMultiLine=False )
 
     isElevated()
-    ifElevated( isNegated=False, isMultiLine=False )
-    
+    ifElevated( isNegated=False, isMultiLine=False )    
     elevate()
     dropElevation() 
                           
@@ -524,9 +534,9 @@ Static Functions:
 		<It is not possible to re-enable the user prompt after using these!>
     disableQuit()		<negate with disableQuitPrompt>         
     disableQuitPrompt()         
+	
+    log( msg, isAutoQuote=True )            
         
-    _autoQuote( value, isAutoQuote )
-
 In addition, **QtIfwControlScript** provides: 
 
 Static Constants :
@@ -568,6 +578,7 @@ Static Functions:
     
     	(Note: check box controls also work on radio buttons)    
     isChecked( checkboxName )
+    ifChecked( checkboxName, isNegated=False, isMultiLine=False )   
     setChecked( checkboxName, isCheck=True ): <pass Python bool or dynamic QtScript logic>    
 
     insertCustomWidget( widgetName, pageName, position=None )
@@ -590,6 +601,8 @@ Static Functions:
 
         isCustomChecked( checkboxName, pageVar="page" )
 	    setCustomCheckBox( checkboxName, isCheck=True, pageVar="page" )
+	    ifCustomChecked( checkboxName, pageVar="page", isNegated=False, 
+                         isMultiLine=False )
 
 See [QtIfwUiPage](ConfigClasses.md#qtifwuipage)
 

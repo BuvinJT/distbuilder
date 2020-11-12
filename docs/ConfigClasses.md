@@ -1377,7 +1377,7 @@ Constructor:
 Attributes & default values:    
 
     name         = <required>
-    checkBoxName = <automatic>    
+    checkboxName = <automatic>    
     position     = None <automatic, per object instantiation order>     
     action       = None
         
