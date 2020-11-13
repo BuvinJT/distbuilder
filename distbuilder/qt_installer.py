@@ -5,7 +5,7 @@ from xml.dom import minidom
 import six
 
 from distbuilder import util
-from distbuilder.util import *  # @UnusedWildImport
+from distbuilder.util import * # @UnusedWildImport
 
 QT_IFW_DEFAULT_VERSION = "3.2.2"
 QT_IFW_DOWNLOAD_URL_BASE = "https://download.qt.io/official_releases/qt-installer-framework"
@@ -142,7 +142,8 @@ _QT_IFW_WATCH_DOG_SUFFIX = "-watchdog"
 _QT_IFW_WATCH_DOG_EXT    = ".vbs" if IS_WINDOWS else ""
 
 QT_IFW_DYNAMIC_PATH_VARS = [
-      "RootDir" 
+      "TargetDir"
+    , "RootDir" 
     , "HomeDir"  
     , "DesktopDir" 
     , "ApplicationsDir" 
@@ -2777,7 +2778,7 @@ Controller.prototype.Dynamic%sCallback = function() {
                 prepend += ( 
                     QtIfwControlScript.ifChecked( w.checkboxName, 
                                                   isMultiLine=True ) +
-                        w.action +
+                        w._action +
                     EBLK
                 ) 
         
@@ -5602,25 +5603,73 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
         widget.minimumSize.width=412;   
     }    
 """)
-    def __init__( self, name, text, action=None,
-                  position=None,
+    
+    __RUN_PROG_DESCR_TMPLT = "Run %s now."
+    
+    __EXEC_DETACHED_TMPLT='executeDetached( resolveQtIfwPath( "%s" ), %s );\n'
+    
+    # QtIfwOnFinishedCheckbox
+    def __init__( self, name, position=None,  
+                  ifwPackage=None, script=None,
+                  text=None, runProgram=None, argList=None,                    
                   isVisible=True, isEnabled=True, isChecked=True ) :
         QtIfwWidget.__init__( self, name, QtIfwOnFinishedCheckbox.__PAGE_ID, 
             position=( position if position else 
                        QtIfwOnFinishedCheckbox.__AUTO_POSITION ),             
             sourcePath=QtIfwOnFinishedCheckbox.__SRC )
         QtIfwOnFinishedCheckbox.__AUTO_POSITION += 1
+        
+        self.text = None
+        if isinstance( ifwPackage, QtIfwPackage ): 
+            self.__setFromPackage( ifwPackage, argList )
+        elif isinstance( script, ExecutableScript ):
+            self.__setFromScript( script, argList )                
+        else :
+            self.runProgram = runProgram
+            self.argList    = argList                     
+            self.__setSimpleExecDetachedAction()
+        if text: self.text = text # allows override from package default
+            
         checkboxName = name + self.__CHECKBOX_SUFFIX
         self.checkboxName = "%s.%s" % ( self.name, checkboxName )
-        self.action = action
         self.replacements.update({ 
               self.__CHECKBOX_NAME_PLACEHOLDER: checkboxName 
-            , self.__TEXT_PLACEHOLDER : text 
+            , self.__TEXT_PLACEHOLDER : self.text
             , self.__IS_VISIBLE_PLACEHOLDER : _QtIfwScript.toBool( isVisible )
             , self.__IS_ENABLED_PLACEHOLDER : _QtIfwScript.toBool( isEnabled )
             , self.__IS_CHECKED_PLACEHOLDER : _QtIfwScript.toBool( isChecked )            
-        })
+        })       
+        
+    # TODO: Bind this logic with that in QtIfwConfigXml         
+    def __setFromPackage( self, ifwPackage, argList ) :
+        self.text =( QtIfwOnFinishedCheckbox.__RUN_PROG_DESCR_TMPLT
+                       % (ifwPackage.pkgXml.DisplayName,) )
+        if ifwPackage.exeWrapper:
+            self.runProgram = ifwPackage.exeWrapper._runProgram 
+            self.argList    = ifwPackage.exeWrapper._runProgArgs                        
+        elif ifwPackage.exeName:        
+            exeName = util.normBinaryName( ifwPackage.exeName, 
+                                           isGui=ifwPackage.isGui )            
+            programPath = joinPathQtIfw( QT_IFW_TARGET_DIR, exeName )
+            self.argList = argList    
+            if util._isMacApp( exeName ):   
+                self.runProgram = util._LAUNCH_MACOS_APP_CMD 
+                if not isinstance( self.argList, list ): self.argList = []
+                else: self.argList.insert( 0, util._LAUNCH_MACOS_APP_ARGS_SWITCH )     
+                self.argList.insert( 0, programPath )
+            else: self.runProgram = programPath                                    
+        self.__setSimpleExecDetachedAction()
 
+    def __setFromScript( self, script, argList ): 
+        #TODO
+        pass
+                                            
+    def __setSimpleExecDetachedAction( self ):
+        args = self.argList if self.argList else []        
+        args = '[%s]' % (",".join( ['"%s"' % (a,) for a in args] ),)            
+        self._action = QtIfwOnFinishedCheckbox.__EXEC_DETACHED_TMPLT % (
+            self.runProgram, args ) 
+        
     def _onLoadSnippet( self ):
         snippet = _QtIfwScript.TAB + _QtIfwScript.log( 
                     "%s Widget Loaded" % (self.name,) )              
@@ -5630,6 +5679,7 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
         snippet += self.onLoad if self.onLoad else ""          
         return snippet
     
+    # Dynamic script
     def isChecked( self ): 
         return QtIfwControlScript.isChecked( self.checkboxName )
 

@@ -63,18 +63,10 @@ class BuildProcess( RobustInstallerProcess ):
             # Note: QtIfwOnFinishedCheckbox objects are implicitly 
             # placed on the finished page.  The page order for such is 
             # dictated by the object instantiation order, by default.
-            runTkCheckbox = QtIfwOnFinishedCheckbox( 
-                "runTk", "Run Tk Example",  
-                action='executeDetached( %s );\n' % (
-                    QtIfwControlScript.resolveDynamicVars(
-                        joinPathQtIfw( QT_IFW_TARGET_DIR, tkPkg.exeName ) ), ) 
-            ) 
+            runTkCheckbox  = QtIfwOnFinishedCheckbox( 
+                "runTk",  ifwPackage=tkPkg ) 
             runCliCheckbox = QtIfwOnFinishedCheckbox( 
-                "runCli", "Run CLI Example", 
-                action='executeDetached( %s );\n' % (
-                    QtIfwControlScript.resolveDynamicVars(
-                        joinPathQtIfw( QT_IFW_TARGET_DIR, cliPkg.exeName ) ), ) 
-            )                         
+                "runCli", ifwPackage=cliPkg ) 
             cfg.addUiElements( [ runTkCheckbox, runCliCheckbox ] )            
 
             # Add custom QScript to the finished page 

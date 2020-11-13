@@ -48,7 +48,7 @@ Have prompts questioning if the using wants to update or revert to a prior versi
 
 ## v.0.8.1
 
-* Revisit "QtIfwExeWrapper" details.  Specifically, NON gui on Windows?
+* Revisit "QtIfwExeWrapper" details.  Specifically: NON gui on Windows? Used with QtIfwOnFinishedCheckbox?
   
 * Add option for appending platform suffix onto installer file names. 
 
