@@ -2302,6 +2302,8 @@ Controller.prototype.Dynamic%sCallback = function() {
 %s
 }
 """    )
+
+    __OPEN_VIA_OS_TMPL = "QDesktopServices.openUrl( resolveDynamicVars( %s ) );\n"
                   
     BACK_BUTTON     = "buttons.BackButton"
     NEXT_BUTTON     = "buttons.NextButton"
@@ -2501,6 +2503,11 @@ Controller.prototype.Dynamic%sCallback = function() {
     @staticmethod        
     def getCustomText( controlName, pageVar="page" ):                
         return QtIfwControlScript.__GET_CUSTPAGE_TEXT_TMPL % (pageVar, controlName)   
+
+    @staticmethod        
+    def openViaOs( path, isAutoQuote=True ):                
+        return QtIfwControlScript.__OPEN_VIA_OS_TMPL % ( 
+                _QtIfwScript._autoQuote( path, isAutoQuote ) )
 
     # QtIfwControlScript
     def __init__( self, 
@@ -5609,9 +5616,10 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
     __EXEC_DETACHED_TMPLT='executeDetached( resolveQtIfwPath( "%s" ), %s );\n'
     
     # QtIfwOnFinishedCheckbox
-    def __init__( self, name, position=None,  
+    def __init__( self, name, text=None, position=None,  
                   ifwPackage=None, script=None,
-                  text=None, runProgram=None, argList=None,                    
+                  openViaOsPath=None,
+                  runProgram=None, argList=None,                                      
                   isVisible=True, isEnabled=True, isChecked=True ) :
         QtIfwWidget.__init__( self, name, QtIfwOnFinishedCheckbox.__PAGE_ID, 
             position=( position if position else 
@@ -5623,7 +5631,9 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
         if isinstance( ifwPackage, QtIfwPackage ): 
             self.__setFromPackage( ifwPackage, argList )
         elif isinstance( script, ExecutableScript ):
-            self.__setFromScript( script, argList )                
+            self.__setFromScript( script, argList )
+        elif openViaOsPath:
+            self._action = QtIfwControlScript.openViaOs( openViaOsPath )                    
         else :
             self.runProgram = runProgram
             self.argList    = argList                     

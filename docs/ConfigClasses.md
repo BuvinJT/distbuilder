@@ -1257,7 +1257,7 @@ to access the UI elements.
 generating.  (This not somehow literally "invoke" the function when called from the Python
 library! )
 
-## QtIfwOnPriorInstallationPage
+### QtIfwOnPriorInstallationPage
 
 This class is derived from `QtIfwUiPage`. As one would assume, this provides a base
 from which to start modifying the distbuilder addition to QtIFW "Prior Installation Detected" 
@@ -1306,7 +1306,7 @@ Constructor:
                          title="", text="", 
                          onLoad=None, onEnter=None ) 
 
-### QtIfwWidget
+## QtIfwWidget
 
 This class closely resembles [QtIfwUiPage](#qtifwuipage).  They internally derive
 from a common (protected) base class.  In contrast, however, QtIfwWidgets are

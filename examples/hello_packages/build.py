@@ -66,8 +66,19 @@ class BuildProcess( RobustInstallerProcess ):
             runTkCheckbox  = QtIfwOnFinishedCheckbox( 
                 "runTk",  ifwPackage=tkPkg ) 
             runCliCheckbox = QtIfwOnFinishedCheckbox( 
-                "runCli", ifwPackage=cliPkg ) 
-            cfg.addUiElements( [ runTkCheckbox, runCliCheckbox ] )            
+                "runCli", ifwPackage=cliPkg )             
+            openLicenseViaOsCheckbox = QtIfwOnFinishedCheckbox( 
+                "openLicViaOs", text="Open License w/ Default Editor", 
+                openViaOsPath=joinPathQtIfw( QT_IFW_TARGET_DIR, "LICENSE" ) )
+            openOnlineManualViaOsCheckbox = QtIfwOnFinishedCheckbox( 
+                "openOnlineManualViaOs", text="Open Online Manual", 
+                openViaOsPath="https://distribution-builder.readthedocs.io/en/latest/" )             
+            cfg.addUiElements([ 
+                  runTkCheckbox
+                , runCliCheckbox
+                , openLicenseViaOsCheckbox
+                , openOnlineManualViaOsCheckbox 
+            ])            
 
             # Add custom QScript to the finished page 
             SCRPT       = QtIfwControlScript
@@ -88,6 +99,10 @@ class BuildProcess( RobustInstallerProcess ):
                     runTkCheckbox.setVisible( False ) +
                     runCliCheckbox.setChecked( False ) +
                     runCliCheckbox.setVisible( False ) +
+                    openLicenseViaOsCheckbox.setVisible( False ) +
+                    openLicenseViaOsCheckbox.setVisible( False ) +
+                    openOnlineManualViaOsCheckbox.setChecked( True ) +
+                    openOnlineManualViaOsCheckbox.setVisible( True ) +                                                
                 EBLK + ELSE + SBLK +
                     SCRPT.setText( MSG_LBL, DEFAULT_MSG ) +                                    
                     SCRPT.ifComponentInstalled( tkPkg.name ) +
@@ -105,7 +120,13 @@ class BuildProcess( RobustInstallerProcess ):
                     runCliCheckbox.setChecked( 
                         SCRPT.isComponentInstalled( cliPkg.name ) ) +
                     runCliCheckbox.setVisible( 
-                        SCRPT.isComponentInstalled( cliPkg.name ) ) +                            
+                        SCRPT.isComponentInstalled( cliPkg.name ) ) +                    
+                    openLicenseViaOsCheckbox.setChecked( 
+                        SCRPT.isComponentInstalled( cliPkg.name ) ) +
+                    openLicenseViaOsCheckbox.setVisible( 
+                        SCRPT.isComponentInstalled( cliPkg.name ) ) +
+                    openOnlineManualViaOsCheckbox.setChecked( True ) +
+                    openOnlineManualViaOsCheckbox.setVisible( True ) +                            
                 EBLK                        
             )        
 

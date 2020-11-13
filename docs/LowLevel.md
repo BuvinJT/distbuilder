@@ -554,6 +554,8 @@ Static Constants :
 
 Static Functions:      
 
+    openViaOs( path, isAutoQuote=True )
+
     currentPageWidget()                
     assignCurrentPageWidgetVar( varName="page" )                              
                    
