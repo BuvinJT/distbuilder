@@ -431,7 +431,7 @@ Attributes & default values:
         
     isFinishedPageVisible = True        
     finishedPageCallbackBody = None
-    finishedPageCallBackTail = None
+    finishedPageOnInstall = None
     isAutoFinishedPageCallback = True        
 
     isRunProgVisible = True

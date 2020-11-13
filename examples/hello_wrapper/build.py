@@ -69,7 +69,7 @@ p.isInstallTest = True
 #p.run()       
 
 #------------------------------------------------------------------------------
-licenseName = "LICENSE"
+licenseName = "LICENSE.TXT"
 
 if IS_WINDOWS :
     textViewer = "notepad"
@@ -136,12 +136,13 @@ p.isInstallTest = True
 
 #------------------------------------------------------------------------------
 if IS_WINDOWS :    
-    # Generating a binary "wrapper" over another (well "proxy" for), is only  
-    # currently supported on the Windows implementation of the library
-    licenseName = "LICENSE"
+    # Generating a binary "wrapper" over another (well a "proxy" for original),   
+    # is only currently supported on the Windows implementation of the library
+    licenseName = "LICENSE.TXT"
     textViewer  = "notepad"
-    # Note this alternate, more robust, style for defining a script
-    # which includes dynamic variables supplied by the installer
+    # Note this alternate, more robust, style for defining a script which  
+    # includes dynamic variables (e.g. QT_IFW_TARGET_DIR) supplied by the  
+    # installer at *run time* - per end user input.
     launchScript = ExecutableScript( rootFileName( f.binaryName ), script=([
         'start "" "{dirName}\{appName}"',
         'start "" {textViewer} "{dirName}\{licenseName}"']), 

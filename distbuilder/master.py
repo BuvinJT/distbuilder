@@ -1,7 +1,6 @@
 import sys
 import six
 from abc import ABCMeta, abstractmethod
-from copy import deepcopy
 from datetime import datetime 
 from time import time as curTime
 

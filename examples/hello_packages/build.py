@@ -11,8 +11,10 @@ f.iconFilePath     = "../hello_world_tk/demo.ico"
 f.version          = (1,0,0,0)
 f.setupName        = "HelloPackagesSetup"
 
-# Define a package factory dictionary 
-# (None values==clone the master, then allow customization from that "base")
+# Define a "Package Factory Dictionary" 
+# Note: None values for a ConfigFactory results in making a clone of the 
+# master, which can then be customization from that "base" within 
+# RobustInstallerProcess.onConfigFactory
 TK_CONFIG_KEY  = "tk"
 CLI_CONFIG_KEY = "cli"
 pkgFactories={ TK_CONFIG_KEY:None, CLI_CONFIG_KEY:None }
@@ -40,7 +42,7 @@ class BuildProcess( RobustInstallerProcess ):
             f.entryPointPy     = "hello.py"  
             f.isObfuscating    = False
             f.iconFilePath     = None             
-            f.distResources    = ["LICENSE"]
+            f.distResources    = ["LICENSE.TXT"]
             
     def onOpyConfig( self, key, cfg ):
         if key==TK_CONFIG_KEY:    
@@ -69,7 +71,7 @@ class BuildProcess( RobustInstallerProcess ):
                 "runCli", ifwPackage=cliPkg )             
             openLicenseViaOsCheckbox = QtIfwOnFinishedCheckbox( 
                 "openLicViaOs", text="Open License w/ Default Editor", 
-                openViaOsPath=joinPathQtIfw( QT_IFW_TARGET_DIR, "LICENSE" ) )
+                openViaOsPath=joinPathQtIfw( QT_IFW_TARGET_DIR, "LICENSE.TXT" ) )
             openOnlineManualViaOsCheckbox = QtIfwOnFinishedCheckbox( 
                 "openOnlineManualViaOs", text="Open Online Manual", 
                 openViaOsPath="https://distribution-builder.readthedocs.io/en/latest/" )             
@@ -81,53 +83,38 @@ class BuildProcess( RobustInstallerProcess ):
             ])            
 
             # Add custom QScript to the finished page 
-            SCRPT       = QtIfwControlScript
-            ELSE        = SCRPT.ELSE 
-            CONCAT      = SCRPT.CONCAT
-            SBLK        = SCRPT.START_BLOCK
-            EBLK        = SCRPT.END_BLOCK
-            MSG_LBL     = SCRPT.FINISHED_MESSAGE_LABEL
-            DEFAULT_MSG = SCRPT.DEFAULT_FINISHED_MESSAGE
-            TK_INSTALLED_MSG = SCRPT.quote(
+            Script      = QtIfwControlScript
+            CONCAT      = Script.CONCAT
+            MSG_LBL     = Script.FINISHED_MESSAGE_LABEL
+            DEFAULT_MSG = Script.DEFAULT_FINISHED_MESSAGE
+            TK_INSTALLED_MSG = Script.quote(
                 '<br /><br />Thank you installing the <b>Tk Example</b>!' )
-            CLI_INSTALLED_MSG = SCRPT.quote(
+            CLI_INSTALLED_MSG = Script.quote(
                 '<br /><br />Thank you installing the <b>CLI Example</b>!' )
-            cfg.controlScript.finishedPageCallBackTail =( 
-                SCRPT.ifMaintenanceTool( isMultiLine=True ) + 
-                    SCRPT.setText( MSG_LBL, DEFAULT_MSG ) +
-                    runTkCheckbox.setChecked( False ) +
-                    runTkCheckbox.setVisible( False ) +
-                    runCliCheckbox.setChecked( False ) +
-                    runCliCheckbox.setVisible( False ) +
-                    openLicenseViaOsCheckbox.setVisible( False ) +
-                    openLicenseViaOsCheckbox.setVisible( False ) +
-                    openOnlineManualViaOsCheckbox.setChecked( True ) +
-                    openOnlineManualViaOsCheckbox.setVisible( True ) +                                                
-                EBLK + ELSE + SBLK +
-                    SCRPT.setText( MSG_LBL, DEFAULT_MSG ) +                                    
-                    SCRPT.ifComponentInstalled( tkPkg.name ) +
-                        SCRPT.setText( MSG_LBL, SCRPT.getText( MSG_LBL ) + 
-                            CONCAT + TK_INSTALLED_MSG,
-                            varNames=False, isAutoQuote=False ) +
-                    SCRPT.ifComponentInstalled( cliPkg.name ) +
-                        SCRPT.setText( MSG_LBL, SCRPT.getText( MSG_LBL ) + 
-                            CONCAT + CLI_INSTALLED_MSG,
-                            varNames=False, isAutoQuote=False ) +
-                    runTkCheckbox.setChecked( 
-                        SCRPT.isComponentInstalled( tkPkg.name ) ) +
-                    runTkCheckbox.setVisible( 
-                        SCRPT.isComponentInstalled( tkPkg.name ) ) +
-                    runCliCheckbox.setChecked( 
-                        SCRPT.isComponentInstalled( cliPkg.name ) ) +
-                    runCliCheckbox.setVisible( 
-                        SCRPT.isComponentInstalled( cliPkg.name ) ) +                    
-                    openLicenseViaOsCheckbox.setChecked( 
-                        SCRPT.isComponentInstalled( cliPkg.name ) ) +
-                    openLicenseViaOsCheckbox.setVisible( 
-                        SCRPT.isComponentInstalled( cliPkg.name ) ) +
-                    openOnlineManualViaOsCheckbox.setChecked( True ) +
-                    openOnlineManualViaOsCheckbox.setVisible( True ) +                            
-                EBLK                        
+            cfg.controlScript.finishedPageOnInstall =( 
+                Script.setText( MSG_LBL, DEFAULT_MSG ) +                                    
+                Script.ifComponentInstalled( tkPkg.name ) +
+                    Script.setText( MSG_LBL, Script.getText( MSG_LBL ) + 
+                        CONCAT + TK_INSTALLED_MSG,
+                        varNames=False, isAutoQuote=False ) +
+                Script.ifComponentInstalled( cliPkg.name ) +
+                    Script.setText( MSG_LBL, Script.getText( MSG_LBL ) + 
+                        CONCAT + CLI_INSTALLED_MSG,
+                        varNames=False, isAutoQuote=False ) +
+                runTkCheckbox.setChecked( 
+                    Script.isComponentInstalled( tkPkg.name ) ) +
+                runTkCheckbox.setVisible( 
+                    Script.isComponentInstalled( tkPkg.name ) ) +
+                runCliCheckbox.setChecked( 
+                    Script.isComponentInstalled( cliPkg.name ) ) +
+                runCliCheckbox.setVisible( 
+                    Script.isComponentInstalled( cliPkg.name ) ) +                    
+                openLicenseViaOsCheckbox.setChecked( 
+                    Script.isComponentInstalled( cliPkg.name ) ) +
+                openLicenseViaOsCheckbox.setVisible( 
+                    Script.isComponentInstalled( cliPkg.name ) ) +
+                openOnlineManualViaOsCheckbox.setChecked( True ) +
+                openOnlineManualViaOsCheckbox.setVisible( True )                             
             )        
 
         pkgs   = cfg.packages

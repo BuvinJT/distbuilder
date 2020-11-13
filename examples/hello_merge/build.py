@@ -9,6 +9,10 @@ f.iconFilePath     = "../hello_world_tk/demo.ico"
 f.version          = (1,0,0,0)
 f.setupName        = "HelloMergeSetup"
 
+# Define a "Package Factory Dictionary" 
+# Note: None values for a ConfigFactory results in making a clone of the 
+# master, which can then be customization from that "base" within 
+# RobustInstallerProcess.onConfigFactory
 TK_CONFIG_KEY  = "tk"
 CLI_CONFIG_KEY = "cli"
 pkgFactories={ TK_CONFIG_KEY:None, CLI_CONFIG_KEY:None }
@@ -36,7 +40,7 @@ class BuildProcess( RobustInstallerProcess ):
             f.entryPointPy     = "hello.py"  
             f.isObfuscating    = False
             f.iconFilePath     = None             
-            f.distResources    = ["LICENSE"]
+            f.distResources    = ["LICENSE.TXT"]
             
     def onOpyConfig( self, key, cfg ):
         if key==TK_CONFIG_KEY:    
@@ -47,9 +51,10 @@ class BuildProcess( RobustInstallerProcess ):
         comboPkg = mergeQtIfwPackages( pkgs, CLI_CONFIG_KEY, TK_CONFIG_KEY )
         #comboPkg = nestQtIfwPackage( pkgs, CLI_CONFIG_KEY, TK_CONFIG_KEY )
 
-        # Note: it would be more efficient to set these to the desired values
-        # prior to the package merge, but this illustrates how you can revise 
-        # these configurations manually at this point in the build process.  
+        # Note: it may be slightly more efficient to set these to the desired 
+        # values prior to the package merge, but this illustrates how you can  
+        # revise these configurations manually at this point in the build 
+        # process.  
         configXml = cfg.configXml
         configXml.RunProgramDescription = "Start Hello World Tk Example"
         print( "Regenerating {0}...".format( configXml.path() ) )

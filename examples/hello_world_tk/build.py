@@ -10,7 +10,7 @@ f.isGui            = True
 f.entryPointPy     = "hello.py"  
 f.isObfuscating    = True
 f.iconFilePath     = "demo.ico" 
-f.licensePath      = "LICENSE"
+f.licensePath      = "LICENSE.TXT"
 f.version          = (1,0,0,0)
 f.setupName        = "HelloWorldTkSetup"
 

@@ -240,13 +240,21 @@ class QtIfwConfig:
                     pkg.pkgScript.uiPages.append( page )        
                     self.controlScript.uiPages.append( page )
             elif widget:
-                # order doesn't matter for these lists, but the items should be unique                         
+                # items must unique and sorted
+                sortAttr1 = "pageName"
+                sortAttr2 = "position"                         
+                sortAttr3 = "name"
                 pkg.widgets.append( widget )
-                pkg.widgets = list(set(pkg.widgets))
-                pkg.pkgScript.widgets.append( widget )
-                pkg.pkgScript.widgets = list(set(pkg.pkgScript.widgets))
+                pkg.widgets = sorted(list(set(pkg.widgets)),
+                    key=attrgetter(sortAttr1, sortAttr2, sortAttr3) )
+                # a copy here might be faster than another append + sort?
+                pkg.pkgScript.widgets = deepcopy( pkg.widgets )
+                # can't just copy this from the package, because it is a 
+                # different (encompassing) collection
                 self.controlScript.widgets.append( widget )
-                self.controlScript.widgets = list(set(self.controlScript.widgets))            
+                self.controlScript.widgets = sorted(list(set(
+                    self.controlScript.widgets)),
+                    key=attrgetter(sortAttr1, sortAttr2, sortAttr3) )                            
             # order doesn't matter for this list, but the items should be unique
             pkg.pkgXml.UserInterfaces.append( ui.fileName() )
             pkg.pkgXml.UserInterfaces = list(set(pkg.pkgXml.UserInterfaces))
@@ -1028,11 +1036,12 @@ class _QtIfwScript:
             _QtIfwScript._autoQuote( default, isAutoQuote ))
 
     @staticmethod        
-    def lookupBoolValue( key, isAutoQuote=True ):
-        return ( '(%s=="%s")' % 
-            ( _QtIfwScript.lookupValue( key, isAutoQuote=isAutoQuote ) ,
-              _QtIfwScript.TRUE ) )
-
+    def lookupBoolValue( key, isNegated=False, isHardFalse=False, isAutoQuote=True ):
+        return '( %s%s"%s" )' % (
+            _QtIfwScript.lookupValue( key, isAutoQuote=isAutoQuote ),
+            ("!=" if isNegated and not isHardFalse else "==") ,
+            (_QtIfwScript.FALSE if isHardFalse else _QtIfwScript.TRUE) )
+        
     @staticmethod        
     def ifValueDefined( key, isNegated=False, isMultiLine=False ):
         return 'if( %s%s"" )%s\n%s' % (
@@ -1041,12 +1050,11 @@ class _QtIfwScript:
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
     @staticmethod        
-    def ifBoolValue( key, isNegated=False, isHardFalse=False, isMultiLine=False ):
-        if isHardFalse: isNegated=True
+    def ifBoolValue( key, isNegated=False, isHardFalse=False, isMultiLine=False ):        
         return 'if( %s%s"%s" )%s\n%s' % (
             _QtIfwScript.lookupValue( key ),
             ("!=" if isNegated and not isHardFalse else "==") ,
-            (_QtIfwScript.TRUE if isNegated and isHardFalse else _QtIfwScript.TRUE),
+            (_QtIfwScript.FALSE if isHardFalse else _QtIfwScript.TRUE),
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
     @staticmethod        
@@ -1135,8 +1143,9 @@ class _QtIfwScript:
         return _QtIfwScript.lookupValue( arg, default )
 
     @staticmethod        
-    def cmdLineSwitchArg( arg, isAutoQuote=True ):
-        return _QtIfwScript.lookupBoolValue( arg, isAutoQuote ) 
+    def cmdLineSwitchArg( arg, isNegated=False, isHardFalse=False ):
+        return _QtIfwScript.lookupBoolValue( arg, 
+            isNegated=isNegated, isHardFalse=isHardFalse ) 
 
     @staticmethod        
     def cmdLineListArg( arg, default=None ):
@@ -1161,6 +1170,16 @@ class _QtIfwScript:
         return 'if( %s )%s\n%s' % (
             _QtIfwScript.__IS_INSTALLER,
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+
+    @staticmethod
+    def isAutoPilot( isNegated=False ):
+        return _QtIfwScript.lookupBoolValue( _QtIfwScript.AUTO_PILOT_CMD_ARG,
+                    isNegated=isNegated ) 
+
+    @staticmethod
+    def ifAutoPilot( isNegated=False, isMultiLine=False ):
+        return _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG,
+                    isNegated=isNegated, isMultiLine=isMultiLine ) 
 
     @staticmethod        
     def yesNoPopup( msg, title="Question", resultVar="result" ):                  
@@ -2578,7 +2597,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         
         self.isFinishedPageVisible = True
         self.finishedPageCallbackBody = None
-        self.finishedPageCallBackTail = None
+        self.finishedPageOnInstall = None
         self.isAutoFinishedPageCallback = True        
 
         self.isRunProgVisible = True
@@ -2776,19 +2795,28 @@ Controller.prototype.Dynamic%sCallback = function() {
             isAutoQuote=False )  
 
     def __genFinishedClickedCallbackBody( self ):
-        EBLK =_QtIfwScript.END_BLOCK
+        TAB  = _QtIfwScript.TAB
+        EBLK = _QtIfwScript.END_BLOCK
         
         prepend = _QtIfwScript.log( "finish clicked" )
         
-        for w in self.widgets:
-            if isinstance( w, QtIfwOnFinishedCheckbox ):                    
-                prepend += ( 
-                    QtIfwControlScript.ifChecked( w.checkboxName, 
+        # Execute custom on wizard finished/exited actions
+        finshedCheckboxes = [ w for w in self.widgets 
+                             if isinstance( w, QtIfwOnFinishedCheckbox ) ]
+        if len(finshedCheckboxes) > 0:   
+            prepend +=( TAB + 
+                _QtIfwScript.ifBoolValue( _QtIfwScript.INTERUPTED_KEY, 
+                                          isNegated=True, isMultiLine=True ) +
+                (2*TAB) + _QtIfwScript.ifInstalling( isMultiLine=True ) 
+            )
+            for checkbox in finshedCheckboxes:
+                prepend += ( (3*TAB) + 
+                    QtIfwControlScript.ifChecked( checkbox.checkboxName, 
                                                   isMultiLine=True ) +
-                        w._action +
-                    EBLK
-                ) 
+                        checkbox._action + EBLK ) 
+            prepend += EBLK + EBLK
         
+        # Remove keep alive file     
         append =( 
             _QtIfwScript.ifMaintenanceTool( isNegated=True, isMultiLine=True ) +            
                 _QtIfwScript.ifCmdLineArg( _QtIfwScript._KEEP_ALIVE_PATH_CMD_ARG ) +
@@ -2797,6 +2825,7 @@ Controller.prototype.Dynamic%sCallback = function() {
                             isAutoQuote=False ) +
             EBLK                
         )        
+        
         if self.onFinishedClickedCallbackBody is None:
             self.onFinishedClickedCallbackBody=""                                            
         self.onFinishedClickedCallbackBody =( 
@@ -3180,36 +3209,45 @@ Controller.prototype.Dynamic%sCallback = function() {
 
     def __genFinishedPageCallbackBody( self ):
         TAB  = _QtIfwScript.TAB
+        SBLK = _QtIfwScript.START_BLOCK
         EBLK = _QtIfwScript.END_BLOCK
         self.finishedPageCallbackBody = (                
             TAB + _QtIfwScript.log("FinishedPageCallback") +
             TAB + _QtIfwScript.ifBoolValue( _QtIfwScript.INTERUPTED_KEY, isMultiLine=True ) +
                     QtIfwControlScript.setVisible( 
                         QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False ) +
-                (2*TAB) + QtIfwControlScript.enable( 
-                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False ) +                            
                 (2*TAB) + QtIfwControlScript.setChecked( 
-                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False ) +
+                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False ) 
+        )                
+        for w in self.widgets:
+            # TODO: Do something similar for all widgets, in some unified manner?
+            # Perhaps an abstract onInterupted function?  
+            if isinstance( w, QtIfwOnFinishedCheckbox ):                    
+                self.finishedPageCallbackBody += (
+                    w.setVisible( False ) + w.setChecked( False ) )                 
+        self.finishedPageCallbackBody += (                           
             EBLK +                           
-            TAB + "else " + _QtIfwScript.ifInstalling( isMultiLine=True ) +
-                TAB + QtIfwControlScript.setVisible( 
-                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
-                        self.isRunProgVisible ) +                  
-                TAB + QtIfwControlScript.enable( 
-                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
-                        self.isRunProgEnabled ) +
-                (TAB + _QtIfwScript.ifCmdLineArg( 
-                        _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +               
-                        _QtIfwScript.TAB + QtIfwControlScript.setChecked( 
+            TAB + "else " + SBLK + 
+                (2*TAB) + _QtIfwScript.ifInstalling( isMultiLine=True ) +
+                    (3*TAB) + QtIfwControlScript.setVisible( 
                             QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
-                                _QtIfwScript.cmdLineSwitchArg(
-                                    _QtIfwScript.RUN_PROGRAM_CMD_ARG ) )
-                if self.isRunProgChecked else                                  
-                    TAB + QtIfwControlScript.setChecked( 
-                        QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False )                         
-                ) +                
-                ("" if self.finishedPageCallBackTail is None else
-                 self.finishedPageCallBackTail) +                                
+                            self.isRunProgVisible ) +                  
+                    (3*TAB) + QtIfwControlScript.enable( 
+                            QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
+                            self.isRunProgEnabled ) +
+                    ((3*TAB) + _QtIfwScript.ifCmdLineArg( 
+                            _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +               
+                            _QtIfwScript.TAB + QtIfwControlScript.setChecked( 
+                                QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
+                                    _QtIfwScript.cmdLineSwitchArg(
+                                        _QtIfwScript.RUN_PROGRAM_CMD_ARG ) )
+                        if self.isRunProgChecked else                                  
+                     (3*TAB) + QtIfwControlScript.setChecked( 
+                                QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False )                         
+                    ) +
+                    ("" if self.finishedPageOnInstall is None else
+                    (2*TAB) + self.finishedPageOnInstall) +                                                    
+                (2*TAB) + EBLK +                                 
             TAB + EBLK +                 
             TAB + _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 TAB + QtIfwControlScript.clickButton( 

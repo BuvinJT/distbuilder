@@ -469,7 +469,7 @@ Static Functions:
     setBoolValue( key, b, isAutoQuote=True )
                    
     lookupValue( key, default="", isAutoQuote=True )
-    lookupBoolValue( key, isAutoQuote=True )            
+    lookupBoolValue( key, isNegated=False, isHardFalse=False, isAutoQuote=True )            
     lookupValueList( key, defaultList=[], isAutoQuote=True, 
                      delimiter=None )
 
@@ -477,7 +477,7 @@ Static Functions:
     ifBoolValue( key, isNegated=False, isHardFalse=False, isMultiLine=False )
     
     cmdLineArg( arg, default="" )
-    cmdLineSwitchArg( arg )
+    cmdLineSwitchArg( arg, isNegated=False, isHardFalse=False )
     cmdLineListArg( arg, default=[] )
     ifCmdLineArg( arg, isNegated=False, isMultiLine=False, )  
     ifCmdLineSwitch( arg, isNegated=False, isHardFalse=False, isMultiLine=False )
@@ -485,6 +485,9 @@ Static Functions:
     isMaintenanceTool( isNegated=False )
     ifMaintenanceTool( isNegated=False, isMultiLine=False )
     ifInstalling( isMultiLine=False )
+    
+    isAutoPilot( isNegated=False )
+    ifAutoPilot( isNegated=False, isMultiLine=False )
 
     isElevated()
     ifElevated( isNegated=False, isMultiLine=False )    

@@ -46,6 +46,10 @@ Have prompts questioning if the using wants to update or revert to a prior versi
 
 * Add "pure" QScript (custom operations) examples / features for QtIFW. 
 
+* Determine if custom UI elements can be used in an uninstaller context? How about an update?
+The ui forms are contained in packages, per QtIFW design.  But packages are not loaded
+during uninstallation, so it seems an uninstaller couldn't support such ui customization...     
+
 ## v.0.8.1
 
 * Revisit "QtIfwExeWrapper" details.  Specifically: NON gui on Windows? Used with QtIfwOnFinishedCheckbox?

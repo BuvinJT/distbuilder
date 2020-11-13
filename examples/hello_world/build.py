@@ -7,6 +7,6 @@ f.companyLegalName = "Some Company Inc."
 f.binaryName       = "HelloWorld"
 f.entryPointPy     = "hello.py"  
 f.version          = (1,0,0,0)
-f.distResources    = ["LICENSE"]
+f.distResources    = ["LICENSE.TXT"]
 
 PyToBinPackageProcess( configFactory, isZipped=True ).run()       

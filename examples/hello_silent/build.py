@@ -9,7 +9,7 @@ f.binaryName       = "HelloWorld"
 f.version          = (1,0,0,0)
 f.sourceDir        = "../hello_world"
 f.entryPointPy     = "hello.py"  
-f.licensePath      = "LICENSE"
+f.licensePath      = "LICENSE.TXT"
 f.setupName        = "HelloWorldSilentSetup"
 f.isSilentSetup    = True
 
