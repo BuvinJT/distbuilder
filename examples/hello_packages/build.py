@@ -1,7 +1,7 @@
 from distbuilder import( RobustInstallerProcess, ConfigFactory,
-    QtIfwControlScript, QtIfwOnFinishedCheckbox,
-    findQtIfwPackage, 
-    joinPathQtIfw,  QT_IFW_TARGET_DIR )
+    QtIfwControlScript, QtIfwOnFinishedCheckbox, ExecutableScript,
+    findQtIfwPackage, joinPathQtIfw, 
+    IS_WINDOWS, IS_MACOS, QT_IFW_TARGET_DIR )
   
 f = masterConfigFactory = ConfigFactory()
 f.productName      = "Hello Packages Example"
@@ -18,6 +18,8 @@ f.setupName        = "HelloPackagesSetup"
 TK_CONFIG_KEY  = "tk"
 CLI_CONFIG_KEY = "cli"
 pkgFactories={ TK_CONFIG_KEY:None, CLI_CONFIG_KEY:None }
+
+licenseName = "LICENSE.TXT"
 
 class BuildProcess( RobustInstallerProcess ):
     
@@ -42,7 +44,7 @@ class BuildProcess( RobustInstallerProcess ):
             f.entryPointPy     = "hello.py"  
             f.isObfuscating    = False
             f.iconFilePath     = None             
-            f.distResources    = ["LICENSE.TXT"]
+            f.distResources    = [licenseName]
             
     def onOpyConfig( self, key, cfg ):
         if key==TK_CONFIG_KEY:    
@@ -60,7 +62,7 @@ class BuildProcess( RobustInstallerProcess ):
             # Disable/remove the standard run on exit checkbox
             cfg.controlScript.isRunProgChecked = False
             cfg.controlScript.isRunProgVisible = False  
-            
+
             # Add some custom widgets to the page
             # Note: QtIfwOnFinishedCheckbox objects are implicitly 
             # placed on the finished page.  The page order for such is 
@@ -69,17 +71,26 @@ class BuildProcess( RobustInstallerProcess ):
                 "runTk",  ifwPackage=tkPkg ) 
             runCliCheckbox = QtIfwOnFinishedCheckbox( 
                 "runCli", ifwPackage=cliPkg )             
-            openLicenseViaOsCheckbox = QtIfwOnFinishedCheckbox( 
-                "openLicViaOs", text="Open License w/ Default Editor", 
-                openViaOsPath=joinPathQtIfw( QT_IFW_TARGET_DIR, "LICENSE.TXT" ) )
             openOnlineManualViaOsCheckbox = QtIfwOnFinishedCheckbox( 
                 "openOnlineManualViaOs", text="Open Online Manual", 
                 openViaOsPath="https://distribution-builder.readthedocs.io/en/latest/" )             
+            openLicenseViaOsCheckbox = QtIfwOnFinishedCheckbox( 
+                "openLicenseViaOs", text="Open License w/ Default Editor", 
+                openViaOsPath=joinPathQtIfw( QT_IFW_TARGET_DIR, licenseName ) )
+            openLicenseViaScriptCheckbox = QtIfwOnFinishedCheckbox( 
+                "openLicenseViaScript", text="Open License w/ Script", 
+                script=ExecutableScript( "openLicense", script=(
+                'notepad "@TargetDir@\{licenseName}"'          if IS_WINDOWS else
+                'open -a TextEdit "@TargetDir@/{licenseName}"' if IS_MACOS else
+                'gedit "@TargetDir@/{licenseName}"'            #if IS_LINUX 
+                ), 
+                replacements={ "licenseName": licenseName } ) )
             cfg.addUiElements([ 
                   runTkCheckbox
                 , runCliCheckbox
-                , openLicenseViaOsCheckbox
                 , openOnlineManualViaOsCheckbox 
+                , openLicenseViaOsCheckbox
+                , openLicenseViaScriptCheckbox
             ])            
 
             # Add custom QScript to the finished page 
@@ -112,6 +123,10 @@ class BuildProcess( RobustInstallerProcess ):
                 openLicenseViaOsCheckbox.setChecked( 
                     Script.isComponentInstalled( cliPkg.name ) ) +
                 openLicenseViaOsCheckbox.setVisible( 
+                    Script.isComponentInstalled( cliPkg.name ) ) +
+                openLicenseViaScriptCheckbox.setChecked( 
+                    Script.isComponentInstalled( cliPkg.name ) ) +
+                openLicenseViaScriptCheckbox.setVisible( 
                     Script.isComponentInstalled( cliPkg.name ) ) +
                 openOnlineManualViaOsCheckbox.setChecked( True ) +
                 openOnlineManualViaOsCheckbox.setVisible( True )                             

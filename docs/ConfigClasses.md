@@ -1370,8 +1370,10 @@ so that it may live on after the installer process no longer exists).
 
 Constructor:
 
-    QtIfwOnFinishedCheckbox( name, text, action=None,
-                             position=None,
+    QtIfwOnFinishedCheckbox( name, text=None, position=None,  
+                             ifwPackage=None, script=None,
+                             openViaOsPath=None,
+                             runProgram=None, argList=None,                                      
                              isVisible=True, isEnabled=True, isChecked=True )
 
 Attributes & default values:    
@@ -1379,7 +1381,7 @@ Attributes & default values:
     name         = <required>
     checkboxName = <automatic>    
     position     = None <automatic, per object instantiation order>     
-    action       = None
+    _action      = None
         
 Functions:
 

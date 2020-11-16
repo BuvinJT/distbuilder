@@ -833,7 +833,7 @@ class _QtIfwScript:
     __EMBED_RES_TMPLT       = 'var %s = %s;\n\n'
     __EMBED_RES_CHUNK_SIZE  = 128
     __EXT_DELIM_PLACEHOLDER = "_dot_"
-    __SCRIPT_FROM_B64_TMPL  = '__writeScriptFromBase64( "%s", %s, %s, %s );\n'
+    __SCRIPT_FROM_B64_TMPL  = '__writeScriptFromBase64( "%s", %s, %s, %s, %s, %s );\n'
     __REPLACE_VARS_FILE_TMPL = 'replaceDynamicVarsInFile( %s, %s, %s );\n' 
     
     # Note, there is in fact an installer.killProcess(string absoluteFilePath)
@@ -898,8 +898,9 @@ class _QtIfwScript:
         return raw
 
     @staticmethod
-    def genResources( embeddedResources ):
-        return _QtIfwScript.__writeScripts( embeddedResources )
+    def genResources( embeddedResources, isTempRootTarget=False ):
+        return _QtIfwScript.__writeScripts( embeddedResources, 
+                                            isTempRootTarget=isTempRootTarget )
             
     @staticmethod
     def resolveScriptVars( scripts, subDir ):
@@ -910,7 +911,8 @@ class _QtIfwScript:
         return _QtIfwScript.__writeScripts( scripts, True, True, subDir )
 
     @staticmethod
-    def __writeScripts( scripts, isUpdate=False, isOp=False, subDir=None ):
+    def __writeScripts( scripts, isUpdate=False, isOp=False, 
+                        subDir=None, isTempRootTarget=False ):
         
         MAX_VAR_LENGTH = 64 # Not a true limit to the language, just a sanity check for this context
         VAR_NAME_CHARS = string.digits + string.ascii_letters + "_"
@@ -940,17 +942,20 @@ class _QtIfwScript:
                          dynamicVarNames, isDoubleBackslash )
             return None
         
-        def gen( script ):
+        def gen( script, isTempRootTarget ):
             parms = dynamicParms( script )  
             if parms:
                 ( _, scriptName, resourceVarName, 
                   dynamicVarNames, isDoubleBackslash ) = parms
+                isB64Removed =  isTempRootTarget
                 return ( 
                     #_QtIfwScript.log( "script: %s" % (scriptName,) ) + 
                     #_QtIfwScript.log( scriptContent ) + # this introduces assorted escaping complications...
                     _QtIfwScript.__SCRIPT_FROM_B64_TMPL % 
                     (scriptName, resourceVarName, dynamicVarNames,
-                     _QtIfwScript.toBool(isDoubleBackslash) ) )                
+                     _QtIfwScript.toBool(isDoubleBackslash),
+                     _QtIfwScript.toBool(isTempRootTarget),
+                     _QtIfwScript.toBool(isB64Removed) ) )                
             return ""        
         
         def update( script, isOp, subDir ):
@@ -968,7 +973,8 @@ class _QtIfwScript:
                         _QtIfwScript.toBool(isDoubleBackslash) ) 
             return ""
         
-        return "".join( [ update( s, isOp, subDir ) if isUpdate else gen( s )
+        return "".join( [ update( s, isOp, subDir ) if isUpdate else 
+                          gen( s, isTempRootTarget )
                           for s in scripts ] )
         
     @staticmethod        
@@ -1730,13 +1736,14 @@ class _QtIfwScript:
             TAB + _QtIfwScript.log( '"removed dir: " + path', isAutoQuote=False ) + 
             TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                            
-            'function __writeScriptFromBase64( fileName, b64, varNames, isDoubleBackslash ) ' + SBLK +  # TODO: Test in NIX/MAC                
-            TAB + 'var path = __writeFileFromBase64( fileName, b64 )' + END +
+            'function __writeScriptFromBase64( fileName, b64, varNames, isDoubleBackslash, isTempRootTarget, isB64Removed ) ' + SBLK +  # TODO: Test in NIX/MAC                
+            TAB + 'var path = __writeFileFromBase64( fileName, b64, isTempRootTarget, isB64Removed )' + END +
             TAB + 'replaceDynamicVarsInFile( path, varNames, isDoubleBackslash )' +  END +            
             EBLK + NEW +                                                                         
-            'function __writeFileFromBase64( fileName, b64 ) ' + SBLK +      # TODO: Test in NIX/MAC
-            TAB + 'var path = Dir.toNativeSeparator( Dir.temp() + "/" + fileName )' + END +            
-            TAB + 'var tempPath = Dir.toNativeSeparator( Dir.temp() + "/" + fileName + ".b64" )' + END +
+            'function __writeFileFromBase64( fileName, b64, isTempRootTarget, isB64Removed ) ' + SBLK +      # TODO: Test in NIX/MAC
+            TAB + 'var dirPath = isTempRootTarget ? getEnv("temp") : Dir.temp()' + END +            
+            TAB + 'var tempPath = Dir.toNativeSeparator( dirPath + "/" + fileName + ".b64" )' + END +
+            TAB + 'var path = Dir.toNativeSeparator( dirPath + "/" + fileName )' + END +            
             (TAB + 'b64 = "-----BEGIN CERTIFICATE-----\\n" + '
                    'b64 + "\\n-----END CERTIFICATE-----\\n"' + END 
             if IS_WINDOWS else "" ) +
@@ -1762,7 +1769,7 @@ class _QtIfwScript:
             TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
             (2*TAB) + 'throw new Error("writeFileFromBase64 failed. (file does not exists)")' + END +
             TAB + _QtIfwScript.log( '"Wrote file from base64: " + path', isAutoQuote=False ) + 
-            #TAB + 'deleteFile( tempPath )' + END +
+            TAB + 'if( isB64Removed ) deleteFile( tempPath )' + END +
             TAB + 'return path' + END +                                                                                                               
             EBLK + NEW + # TODO: Test in NIX/MAC                
             'function __replaceDynamicVarsInFileScript( path, varNames, isDoubleBackslash ) ' + SBLK + 
@@ -2074,6 +2081,17 @@ class _QtIfwScript:
             'function isOsRegisteredProgram() ' + SBLK +
             TAB + 'return maintenanceToolPaths() != null' + END + 
             EBLK + NEW +                           
+            'function executeBatchDetached( scriptPath, bat, args ) ' + SBLK +
+            TAB + _QtIfwScript.log( "Executing Detached Batch:" ) +
+            TAB + _QtIfwScript.log( "scriptPath", isAutoQuote=False ) +                
+            TAB + _QtIfwScript.log( "bat", isAutoQuote=False ) +          
+            TAB + 'var path = bat ? writeFile( scriptPath, bat ) : '
+            'Dir.toNativeSeparator( scriptPath )' + END +                 
+            TAB + 'if( !args ) args=[]' + END +
+            TAB + 'args.unshift( path )' + END +
+            TAB + 'args.unshift( "/c" )' + END +
+            TAB + 'var result = installer.executeDetached( "cmd.exe", args )' + END +
+            EBLK + NEW +                        
             'function executeVbScript( vbs ) ' + SBLK +
             TAB + _QtIfwScript.log( "Executing VbScript:" ) +
             TAB + _QtIfwScript.log( "vbs", isAutoQuote=False ) +          
@@ -2664,8 +2682,13 @@ Controller.prototype.Dynamic%sCallback = function() {
         if self.isAutoLib: _QtIfwScript._genLib( self )        
         if self.qtScriptLib: self.script += self.qtScriptLib
 
-        self.script += _QtIfwScript.embedResources( 
-            self._maintenanceToolResources ) 
+        controlScripts =( self._maintenanceToolResources 
+                          if self._maintenanceToolResources else [] )
+        for w in self.widgets: 
+            if( isinstance( w, QtIfwOnFinishedCheckbox ) and 
+                isinstance( w.script, ExecutableScript ) ):
+                controlScripts.append( w.script )                                    
+        self.script += _QtIfwScript.embedResources( controlScripts )
 
         if self.isAutoGlobals: self.__genGlobals()
         if self.controllerGlobals: self.script += self.controllerGlobals
@@ -5652,6 +5675,7 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
     __RUN_PROG_DESCR_TMPLT = "Run %s now."
     
     __EXEC_DETACHED_TMPLT='executeDetached( resolveQtIfwPath( "%s" ), %s );\n'
+    __EXEC_BAT_DETACHED_TMPLT='executeBatchDetached( resolveQtIfwPath( "%s" ), null, %s );\n'    
     
     # QtIfwOnFinishedCheckbox
     def __init__( self, name, text=None, position=None,  
@@ -5663,9 +5687,17 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
             position=( position if position else 
                        QtIfwOnFinishedCheckbox.__AUTO_POSITION ),             
             sourcePath=QtIfwOnFinishedCheckbox.__SRC )
+
         QtIfwOnFinishedCheckbox.__AUTO_POSITION += 1
+        checkboxName = name + self.__CHECKBOX_SUFFIX
+        self.checkboxName = "%s.%s" % ( self.name, checkboxName )
         
-        self.text = None
+        self.text       = None
+        self.runProgram = None
+        self.argList    = None
+        self.script     = None 
+        self._action    = None                            
+        
         if isinstance( ifwPackage, QtIfwPackage ): 
             self.__setFromPackage( ifwPackage, argList )
         elif isinstance( script, ExecutableScript ):
@@ -5676,10 +5708,10 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
             self.runProgram = runProgram
             self.argList    = argList                     
             self.__setSimpleExecDetachedAction()
-        if text: self.text = text # allows override from package default
+        
+        # allows override from package default    
+        if text: self.text = text 
             
-        checkboxName = name + self.__CHECKBOX_SUFFIX
-        self.checkboxName = "%s.%s" % ( self.name, checkboxName )
         self.replacements.update({ 
               self.__CHECKBOX_NAME_PLACEHOLDER: checkboxName 
             , self.__TEXT_PLACEHOLDER : self.text
@@ -5708,10 +5740,18 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
             else: self.runProgram = programPath                                    
         self.__setSimpleExecDetachedAction()
 
-    def __setFromScript( self, script, argList ): 
-        #TODO
-        pass
-                                            
+    def __setFromScript( self, script, argList ):         
+        self.script = script
+        self.runProgram = joinPathQtIfw( _ENV_TEMP_DIR, script.fileName() )
+        self.argList = argList
+        args =( '[%s]' % (",".join( ['"%s"' % (a,) for a in self.argList ] ),) 
+                if self.argList else _QtIfwScript.NULL )
+        self._action =( _QtIfwScript.genResources( 
+                [script], isTempRootTarget=True ) +
+            QtIfwOnFinishedCheckbox.__EXEC_BAT_DETACHED_TMPLT % (
+                self.runProgram, args ) 
+        )
+                                                        
     def __setSimpleExecDetachedAction( self ):
         args = self.argList if self.argList else []        
         args = '[%s]' % (",".join( ['"%s"' % (a,) for a in args] ),)            
