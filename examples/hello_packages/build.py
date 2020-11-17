@@ -59,14 +59,58 @@ class BuildProcess( RobustInstallerProcess ):
             cliPkg.pkgXml.SortingPriority = 1
             
         def customizeFinishedPage( cfg, tkPkg, cliPkg ):
+                        
             # Disable/remove the standard run on exit checkbox
             cfg.controlScript.isRunProgChecked = False
             cfg.controlScript.isRunProgVisible = False  
 
-            # Add some custom widgets to the page
+                       
+            if  IS_WINDOWS:
+                textViewer = "notepad"  
+                
+                # Batch / "Native"
+                openLicCommand=( 
+                    '{textViewer} "@TargetDir@\{licenseName}"' )     
+                #openLicScript = openLicCommand                             
+                #scriptExtension=True # True==auto assign    
+                
+                # PowerShell
+                #openLicScript =(
+                #    'Start-Process -FilePath "{textViewer}" '
+                #        '-ArgumentList "@TargetDir@\{licenseName}"' ) 
+                #scriptExtension = "ps1"
+
+                # VBScript
+                openLicScript =([ # as line list
+                    'Set oShell = WScript.CreateObject("WScript.Shell")',
+                    'oShell.Run "{textViewer} ""@TargetDir@\{licenseName}"""',
+                    'Set oShell = Nothing'
+                ])  
+                scriptExtension = "vbs"                        
+                
+            elif IS_MACOS :
+                textViewer = "TextEdit" 
+                
+                # Shell Script / "Native"
+                openLicCommand=( 
+                    'open -a {textViewer} "@TargetDir@/{licenseName}"' )
+                openLicScript = openLicCommand
+                scriptExtension=True # True==auto assign      
+                              
+            else: # IS_LINUX 
+                textViewer = "gedit" # distro specific...   
+                             
+                # Shell Script / "Native"
+                openLicCommand=( 
+                    '{textViewer} "@TargetDir@/{licenseName}"' )
+                openLicScript = openLicCommand
+                scriptExtension=True # True==auto assign    
+                          
+            # Add custom widgets to the page
             # Note: QtIfwOnFinishedCheckbox objects are implicitly 
-            # placed on the finished page.  The page order for such is 
-            # dictated by the object instantiation order, by default.
+            # placed on the *finished* page.  The page order for such is 
+            # dictated by the object instantiation order, by default
+            # (but can be explicitly defined during construction).
             runTkCheckbox  = QtIfwOnFinishedCheckbox( 
                 "runTk",  ifwPackage=tkPkg ) 
             runCliCheckbox = QtIfwOnFinishedCheckbox( 
@@ -74,23 +118,36 @@ class BuildProcess( RobustInstallerProcess ):
             openOnlineManualViaOsCheckbox = QtIfwOnFinishedCheckbox( 
                 "openOnlineManualViaOs", text="Open Online Manual", 
                 openViaOsPath="https://distribution-builder.readthedocs.io/en/latest/" )             
-            openLicenseViaOsCheckbox = QtIfwOnFinishedCheckbox( 
-                "openLicenseViaOs", text="Open License w/ Default Editor", 
+            openLicViaOsCheckbox = QtIfwOnFinishedCheckbox( 
+                "openLicViaOs", text="Open License w/ Default Editor", 
                 openViaOsPath=joinPathQtIfw( QT_IFW_TARGET_DIR, licenseName ) )
-            openLicenseViaScriptCheckbox = QtIfwOnFinishedCheckbox( 
-                "openLicenseViaScript", text="Open License w/ Script", 
-                script=ExecutableScript( "openLicense", script=(
-                'notepad "@TargetDir@\{licenseName}"'          if IS_WINDOWS else
-                'open -a TextEdit "@TargetDir@/{licenseName}"' if IS_MACOS else
-                'gedit "@TargetDir@/{licenseName}"'            #if IS_LINUX 
-                ), 
-                replacements={ "licenseName": licenseName } ) )
+            openLicViaProgCheckbox = QtIfwOnFinishedCheckbox( 
+                "openLicViaProg", text="Open License w/ Program", 
+                runProgram=textViewer, # on system path, else use full path here
+                argList=[joinPathQtIfw( QT_IFW_TARGET_DIR, licenseName )] )
+            openLicViaCmdCheckbox = QtIfwOnFinishedCheckbox( 
+                "openLicViaCommand", text="Open License w/ Command", 
+                shellCmd=openLicCommand.replace(
+                "{textViewer}" , textViewer ).replace(
+                "{licenseName}", licenseName ) )
+            openLicViaScriptCheckbox = QtIfwOnFinishedCheckbox( 
+                "openLicViaScript", text="Open License w/ Script", 
+                script=ExecutableScript( 
+                    "openLic", extension=scriptExtension,
+                    script=openLicScript, replacements={ 
+                      "textViewer" : textViewer 
+                    , "licenseName": licenseName } ) )
+            rebootCheckbox = QtIfwOnFinishedCheckbox( 
+                "rebootNow", isReboot=True )
             cfg.addUiElements([ 
                   runTkCheckbox
                 , runCliCheckbox
                 , openOnlineManualViaOsCheckbox 
-                , openLicenseViaOsCheckbox
-                , openLicenseViaScriptCheckbox
+                , openLicViaOsCheckbox
+                , openLicViaProgCheckbox
+                , openLicViaCmdCheckbox
+                , openLicViaScriptCheckbox
+                , rebootCheckbox
             ])            
 
             # Add custom QScript to the finished page 
@@ -102,6 +159,14 @@ class BuildProcess( RobustInstallerProcess ):
                 '<br /><br />Thank you installing the <b>Tk Example</b>!' )
             CLI_INSTALLED_MSG = Script.quote(
                 '<br /><br />Thank you installing the <b>CLI Example</b>!' )
+            
+            def showIfInstalled( checkbox, pkg, isChecked=True ):
+                return( checkbox.setChecked( Script.andList([
+                            Script.isComponentInstalled( pkg.name ),
+                            isChecked ]) ) +
+                        checkbox.setVisible( 
+                            Script.isComponentInstalled( pkg.name ) ) )
+
             cfg.controlScript.finishedPageOnInstall =( 
                 Script.setText( MSG_LBL, DEFAULT_MSG ) +                                    
                 Script.ifComponentInstalled( tkPkg.name ) +
@@ -112,24 +177,19 @@ class BuildProcess( RobustInstallerProcess ):
                     Script.setText( MSG_LBL, Script.getText( MSG_LBL ) + 
                         CONCAT + CLI_INSTALLED_MSG,
                         varNames=False, isAutoQuote=False ) +
-                runTkCheckbox.setChecked( 
-                    Script.isComponentInstalled( tkPkg.name ) ) +
-                runTkCheckbox.setVisible( 
-                    Script.isComponentInstalled( tkPkg.name ) ) +
-                runCliCheckbox.setChecked( 
-                    Script.isComponentInstalled( cliPkg.name ) ) +
-                runCliCheckbox.setVisible( 
-                    Script.isComponentInstalled( cliPkg.name ) ) +                    
-                openLicenseViaOsCheckbox.setChecked( 
-                    Script.isComponentInstalled( cliPkg.name ) ) +
-                openLicenseViaOsCheckbox.setVisible( 
-                    Script.isComponentInstalled( cliPkg.name ) ) +
-                openLicenseViaScriptCheckbox.setChecked( 
-                    Script.isComponentInstalled( cliPkg.name ) ) +
-                openLicenseViaScriptCheckbox.setVisible( 
-                    Script.isComponentInstalled( cliPkg.name ) ) +
+                showIfInstalled( runTkCheckbox, tkPkg ) +
+                showIfInstalled( runCliCheckbox, cliPkg ) +
                 openOnlineManualViaOsCheckbox.setChecked( True ) +
-                openOnlineManualViaOsCheckbox.setVisible( True )                             
+                openOnlineManualViaOsCheckbox.setVisible( True ) +                    
+                showIfInstalled( openLicViaOsCheckbox, cliPkg ) +
+                showIfInstalled( openLicViaProgCheckbox, cliPkg,   
+                                 isChecked=False ) +
+                showIfInstalled( openLicViaCmdCheckbox, cliPkg,    
+                                 isChecked=False ) +
+                showIfInstalled( openLicViaScriptCheckbox, cliPkg, 
+                                 isChecked=False ) +
+                rebootCheckbox.setChecked( False ) +
+                rebootCheckbox.setVisible( True )
             )        
 
         pkgs   = cfg.packages

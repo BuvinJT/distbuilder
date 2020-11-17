@@ -856,13 +856,17 @@ class _QtIfwScript:
 
     @staticmethod        
     def andList( conditions ):
-        conditions = [ '(%s)' % (c,) for c in conditions ]
-        return '(%s)' % ( _QtIfwScript.AND.join(), )
+        conditions = [ '(%s)' % (c,) if isinstance(c,six.string_types) 
+                       else _QtIfwScript.toBool(c)
+                       for c in conditions ]
+        return '(%s)' % ( _QtIfwScript.AND.join( conditions ), )
 
     @staticmethod        
     def orList( conditions ):
-        conditions = [ '(%s)' % (c,) for c in conditions ]
-        return '(%s)' % ( _QtIfwScript.OR.join(), )
+        conditions = [ '(%s)' % (c,) if isinstance(c,six.string_types) 
+                       else _QtIfwScript.toBool(c)
+                       for c in conditions ]
+        return '(%s)' % ( _QtIfwScript.OR.join( conditions ), )
 
     @staticmethod        
     def _autoQuote( value, isAutoQuote ):                  
@@ -2024,6 +2028,13 @@ class _QtIfwScript:
             TAB + _QtIfwScript.log( '"Executing: " + cmd', isAutoQuote=False ) +
             TAB + 'return installer.executeDetached( binPath, args )' + END +
             EBLK + NEW +              
+            'function executeShellCmdDetached( cmd ) ' + SBLK +
+            TAB + 'cmd = "\\"" + cmd + "\\""' + END +
+            TAB + _QtIfwScript.log( '"Executing Command Detached: " + cmd', isAutoQuote=False ) +
+            TAB + 'return installer.executeDetached( ' +
+                ('"cmd.exe", ["/c", cmd]' if IS_WINDOWS else
+                 '"sh", ["-c", cmd]' ) + ' )' + END +                                  
+            EBLK + NEW +              
             'function executeHidden( binPath, args, isElevated ) ' + SBLK + # TODO: Test in NIX/MAC 
             (                 
             (TAB+ 'var ps = "Start-Process -FilePath \'" + binPath + "\' ' +
@@ -2086,7 +2097,7 @@ class _QtIfwScript:
             TAB + _QtIfwScript.log( "scriptPath", isAutoQuote=False ) +                
             TAB + _QtIfwScript.log( "bat", isAutoQuote=False ) +          
             TAB + 'var path = bat ? writeFile( scriptPath, bat ) : '
-            'Dir.toNativeSeparator( scriptPath )' + END +                 
+                        'Dir.toNativeSeparator( scriptPath )' + END +                 
             TAB + 'if( !args ) args=[]' + END +
             TAB + 'args.unshift( path )' + END +
             TAB + 'args.unshift( "/c" )' + END +
@@ -2108,11 +2119,13 @@ class _QtIfwScript:
             (2*TAB) + 'catch(e){ sleep(1); }' + NEW +
             TAB + EBLK + NEW +
             EBLK + NEW +
-            'function executeVbScriptDetached( scriptPath, vbs ) ' + SBLK +
+            'function executeVbScriptDetached( scriptPath, vbs, args ) ' + SBLK + 
+            # TODO: add args implementation
             TAB + _QtIfwScript.log( "Executing Detached VbScript:" ) +
             TAB + _QtIfwScript.log( "scriptPath", isAutoQuote=False ) +                
             TAB + _QtIfwScript.log( "vbs", isAutoQuote=False ) +          
-            TAB + 'var path = writeFile( scriptPath, vbs )' + END +
+            TAB + 'var path = vbs ? writeFile( scriptPath, vbs ) : '
+                        'Dir.toNativeSeparator( scriptPath )' + END +                             
             TAB + 'var result = installer.executeDetached(' + 
                 '"cscript", ["//Nologo", path])' + END +
             EBLK + NEW +            
@@ -2133,11 +2146,13 @@ class _QtIfwScript:
             (2*TAB) + 'catch(e){ sleep(1); }' + NEW +
             TAB + EBLK + NEW +
             EBLK + NEW +
-            'function executePowerShellDetached( scriptPath, ps ) ' + SBLK +
+            'function executePowerShellDetached( scriptPath, ps, args ) ' + SBLK + 
+            # TODO: add args implementation
             TAB + _QtIfwScript.log( "Executing Detached PowerShell Script:" ) +
             TAB + _QtIfwScript.log( "scriptPath", isAutoQuote=False ) +                
             TAB + _QtIfwScript.log( "ps", isAutoQuote=False ) +          
-            TAB + 'var path = writeFile( scriptPath, ps )' + END +
+            TAB + 'var path = ps ? writeFile( scriptPath, ps ) : '
+                        'Dir.toNativeSeparator( scriptPath )' + END +                             
             TAB + 'var result = installer.executeDetached(' + 
                 '"powershell", ["-NoLogo", "-ExecutionPolicy", "Bypass", ' +
                                 '"-InputFormat", "None", "-File", path])' + END +
@@ -5674,14 +5689,36 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
     
     __RUN_PROG_DESCR_TMPLT = "Run %s now."
     
-    __EXEC_DETACHED_TMPLT='executeDetached( resolveQtIfwPath( "%s" ), %s );\n'
-    __EXEC_BAT_DETACHED_TMPLT='executeBatchDetached( resolveQtIfwPath( "%s" ), null, %s );\n'    
+    __EXEC_DETACHED_TMPLT=(
+        'executeDetached( resolveQtIfwPath( "%s" ), %s );\n' )
+    __EXEC_CMD_DETACHED_TMPLT=(
+        'executeShellCmdDetached( Dir.toNativeSeparator( '
+            ' resolveDynamicVars( "%s" ) ) );\n' ) 
+    __EXEC_BAT_DETACHED_TMPLT=(
+        'executeBatchDetached( resolveNativePath( "%s" ), null, %s );\n' )
+    __EXEC_VBS_DETACHED_TMPLT=(
+        'executeVbScriptDetached( resolveNativePath( "%s" ), null, %s );\n' )
+    __EXEC_PS_DETACHED_TMPLT=(
+        'executePowerShellDetached( resolveNativePath( "%s" ), null, %s );\n' )
+    
+    __SCRIPT_TMPLTS = { 
+          "bat" : __EXEC_BAT_DETACHED_TMPLT 
+        , "vbs" : __EXEC_VBS_DETACHED_TMPLT
+        , "ps1" : __EXEC_PS_DETACHED_TMPLT
+    }
+    
+    __REBOOT_TEXT = "REBOOT NOW."
+    
+    # TODO: Test in NIX/MAC - sudo?
+    __REBOOT_CMD = "shutdown /r -t 2" if IS_WINDOWS else "reboot" 
     
     # QtIfwOnFinishedCheckbox
     def __init__( self, name, text=None, position=None,  
-                  ifwPackage=None, script=None,
-                  openViaOsPath=None,
-                  runProgram=None, argList=None,                                      
+                  ifwPackage=None, 
+                  runProgram=None, argList=None,
+                  shellCmd=None, script=None,
+                  openViaOsPath=None,                 
+                  isReboot=False,                     
                   isVisible=True, isEnabled=True, isChecked=True ) :
         QtIfwWidget.__init__( self, name, QtIfwOnFinishedCheckbox.__PAGE_ID, 
             position=( position if position else 
@@ -5696,14 +5733,25 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
         self.runProgram = None
         self.argList    = None
         self.script     = None 
+        self.isReboot   = isReboot
         self._action    = None                            
-        
-        if isinstance( ifwPackage, QtIfwPackage ): 
+                
+        if isReboot:
+            self.text =  QtIfwOnFinishedCheckbox.__REBOOT_TEXT   
+            self._action =( QtIfwOnFinishedCheckbox.__EXEC_CMD_DETACHED_TMPLT 
+                            % (QtIfwOnFinishedCheckbox.__REBOOT_CMD,) )
+        elif isinstance( ifwPackage, QtIfwPackage ): 
             self.__setFromPackage( ifwPackage, argList )
         elif isinstance( script, ExecutableScript ):
             self.__setFromScript( script, argList )
         elif openViaOsPath:
             self._action = QtIfwControlScript.openViaOs( openViaOsPath )                    
+        elif shellCmd:   
+            # Escape quotes and flip backslashes for the QScript generation.
+            # On Windows, the slashes will flipped back at runtime. 
+            shellCmd = shellCmd.replace('\\','/').replace('"','\\"')
+            self._action =( QtIfwOnFinishedCheckbox.__EXEC_CMD_DETACHED_TMPLT 
+                            % (shellCmd,) )
         else :
             self.runProgram = runProgram
             self.argList    = argList                     
@@ -5745,11 +5793,13 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
         self.runProgram = joinPathQtIfw( _ENV_TEMP_DIR, script.fileName() )
         self.argList = argList
         args =( '[%s]' % (",".join( ['"%s"' % (a,) for a in self.argList ] ),) 
-                if self.argList else _QtIfwScript.NULL )
-        self._action =( _QtIfwScript.genResources( 
-                [script], isTempRootTarget=True ) +
-            QtIfwOnFinishedCheckbox.__EXEC_BAT_DETACHED_TMPLT % (
-                self.runProgram, args ) 
+                if self.argList else _QtIfwScript.NULL )        
+        execTemplate = QtIfwOnFinishedCheckbox.__SCRIPT_TMPLTS.get( 
+            script.extension )
+        if execTemplate is None: raise Exception("Script type not supported")
+        self._action =( 
+            _QtIfwScript.genResources( [script], isTempRootTarget=True ) +
+            execTemplate % ( self.runProgram, args ) 
         )
                                                         
     def __setSimpleExecDetachedAction( self ):

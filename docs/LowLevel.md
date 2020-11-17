@@ -663,12 +663,14 @@ following add-on **QT SCRIPT** functions:
 	silentAbort( msg )
 	
     execute( binPath, args )
-    executeDetached( binPath, args )
+    executeDetached( binPath, args ) 
+    executeShellCmdDetached( cmd )
 	executeHidden( binPath, args, isElevated )
 	
 	<Windows Only>   
 		maintenanceToolPaths()	<resolves via registry lookups>
 		isOsRegisteredProgram()	
+		executeBatchDetached( scriptPath, bat, args )
 		executeVbScript( vbs )
 		executeVbScriptDetached( scriptPath, vbs )
 		executePowerShell( ps ) 
