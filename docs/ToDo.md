@@ -23,7 +23,7 @@
 * Dependency installation for QtIFW via Linux package managers (partially developed already), and Homebrew on Mac
 
 * Add she bang respect / a Windows equivalent to ExecutableScript / QtIwfExternalOp 
-embedded scripting mechanism, allowing interepter paths / options to be defined.  Thus
+embedded scripting mechanism, allowing interpreter paths / options to be defined.  Thus
 allowing options for embedding Python, Java, ect.
 
 * Code signing for Mac / Linux 
@@ -53,6 +53,8 @@ during uninstallation, so it seems an uninstaller couldn't support such ui custo
 ## v.0.8.1
 
 * Revisit "QtIfwExeWrapper" details.  Specifically: NON gui on Windows? Used with QtIfwOnFinishedCheckbox?
+
+* Revisit QtIfwOnFinishedCheckbox.  It has several TODOs documented in the code. 
   
 * Add option for appending platform suffix onto installer file names. 
 

@@ -1375,7 +1375,7 @@ Constructor:
                              runProgram=None, argList=None,
                              shellCmd=None, script=None,
                              openViaOsPath=None,        
-                             isReboot=False,                                
+                             isReboot=False, rebootDelaySecs=2,                                
                              isVisible=True, isEnabled=True, isChecked=True )
 
 Attributes & default values:    

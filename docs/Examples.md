@@ -234,6 +234,10 @@ produced by, [QtIfwConfigXml](ConfigClasses.md#qtifwpackage) and
 [QtIfwPackageXml](ConfigClasses.md#qtifwpackage) objects to give you further
 insight into the design patterns and functionality of the library. 
 
+## Hello Dynamic Finish Example
+
+TODO: FILL IN!
+
 ## Hello Installer UI Example
 
 A QtIwf installer is extremely customizable.  In addition to simply copying
@@ -308,6 +312,30 @@ are running in an "elevated" context, etc.
 
 If desired, you may also wish to test running these demo programs post installation in 
 "debug mode". See the documentation on the [run](LowLevel.md#run) function.
+
+## Hello Operations Examples
+
+TODO: FILL IN!
+
+### Embedded Script Operations Example
+
+TODO: FILL IN!
+
+### Embedded Convenience Operations Example
+
+TODO: FILL IN!
+
+## Hello Startup Example
+
+TODO: FILL IN!
+
+## Hello Opy Example
+
+TODO: FILL IN!
+
+## Hello Opy Bundle Example
+
+TODO: FILL IN!
 
 ## Hello World Qt Example
 

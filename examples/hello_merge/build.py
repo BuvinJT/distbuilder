@@ -28,7 +28,6 @@ class BuildProcess( RobustInstallerProcess ):
             f.isGui            = True        
             f.sourceDir        = "../hello_world_tk"
             f.entryPointPy     = "hello.py"  
-            f.isObfuscating    = True
             f.iconFilePath     = "demo.ico"             
         elif key==CLI_CONFIG_KEY: 
             f.productName      = "Hello World CLI Example"
@@ -38,14 +37,9 @@ class BuildProcess( RobustInstallerProcess ):
             f.isGui            = False
             f.sourceDir        = "../hello_world"
             f.entryPointPy     = "hello.py"  
-            f.isObfuscating    = False
             f.iconFilePath     = None             
             f.distResources    = ["LICENSE.TXT"]
-            
-    def onOpyConfig( self, key, cfg ):
-        if key==TK_CONFIG_KEY:    
-            cfg.external_modules.extend( [ 'tkinter', 'tkinter.ttk' ] )
-            
+                        
     def onPackagesStaged( self, cfg, pkgs ):
         # Swap these commented out functions to test alternate merge types
         comboPkg = mergeQtIfwPackages( pkgs, CLI_CONFIG_KEY, TK_CONFIG_KEY )

@@ -2029,7 +2029,7 @@ class _QtIfwScript:
             TAB + 'return installer.executeDetached( binPath, args )' + END +
             EBLK + NEW +              
             'function executeShellCmdDetached( cmd ) ' + SBLK +
-            TAB + 'cmd = "\\"" + cmd + "\\""' + END +
+            #TAB + 'cmd = "\\"" + cmd + "\\""' + END +
             TAB + _QtIfwScript.log( '"Executing Command Detached: " + cmd', isAutoQuote=False ) +
             TAB + 'return installer.executeDetached( ' +
                 ('"cmd.exe", ["/c", cmd]' if IS_WINDOWS else
@@ -2927,6 +2927,7 @@ Controller.prototype.Dynamic%sCallback = function() {
                 QtIfwControlScript._purgeTempFiles() +
             EBLK )
                              
+        # TODO: Test this                             
         if self.widgets: 
             for w in self.widgets:
                 onEnter = w._onEnterSnippet()
@@ -5638,13 +5639,14 @@ class QtIfwWidget( _QtIfwInterface ):
     # QtIfwWidget    
     def __init__( self, name, pageName, position=None, 
                   sourcePath=None, content=None,
-                  onLoad=None, onEnter=None ) :        
+                  onLoad=None, onEnter=None ) :
+        # TODO: Test onEnter        
         _QtIfwInterface.__init__( self, 
             name, sourcePath, content, onLoad, onEnter )        
         self.pageName =( pageName if pageName in _DEFAULT_PAGES 
                          else None )     
         self.position = position
-
+    
     def _onLoadSnippet( self ):
         snippet = _QtIfwScript.TAB + _QtIfwScript.log( 
                     "%s Widget Loaded" % (self.name,) )              
@@ -5692,8 +5694,7 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
     __EXEC_DETACHED_TMPLT=(
         'executeDetached( resolveQtIfwPath( "%s" ), %s );\n' )
     __EXEC_CMD_DETACHED_TMPLT=(
-        'executeShellCmdDetached( Dir.toNativeSeparator( '
-            ' resolveDynamicVars( "%s" ) ) );\n' ) 
+        'executeShellCmdDetached( resolveDynamicVars( "%s" ) );\n' ) 
     __EXEC_BAT_DETACHED_TMPLT=(
         'executeBatchDetached( resolveNativePath( "%s" ), null, %s );\n' )
     __EXEC_VBS_DETACHED_TMPLT=(
@@ -5709,8 +5710,9 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
     
     __REBOOT_TEXT = "REBOOT NOW."
     
-    # TODO: Test in NIX/MAC - sudo?
-    __REBOOT_CMD = "shutdown /r -t 2" if IS_WINDOWS else "reboot" 
+    # TODO: Test in NIX/MAC - handle elevation ?
+    __REBOOT_CMD =( "shutdown /r -t %d" if IS_WINDOWS else 
+                    "sleep %d; sudo reboot" )
     
     # QtIfwOnFinishedCheckbox
     def __init__( self, name, text=None, position=None,  
@@ -5718,7 +5720,7 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
                   runProgram=None, argList=None,
                   shellCmd=None, script=None,
                   openViaOsPath=None,                 
-                  isReboot=False,                     
+                  isReboot=False, rebootDelaySecs=2,                    
                   isVisible=True, isEnabled=True, isChecked=True ) :
         QtIfwWidget.__init__( self, name, QtIfwOnFinishedCheckbox.__PAGE_ID, 
             position=( position if position else 
@@ -5738,8 +5740,9 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
                 
         if isReboot:
             self.text =  QtIfwOnFinishedCheckbox.__REBOOT_TEXT   
-            self._action =( QtIfwOnFinishedCheckbox.__EXEC_CMD_DETACHED_TMPLT 
-                            % (QtIfwOnFinishedCheckbox.__REBOOT_CMD,) )
+            cmd = QtIfwOnFinishedCheckbox.__REBOOT_CMD % (rebootDelaySecs,)
+            self._action =( 
+                QtIfwOnFinishedCheckbox.__EXEC_CMD_DETACHED_TMPLT % (cmd,) )
         elif isinstance( ifwPackage, QtIfwPackage ): 
             self.__setFromPackage( ifwPackage, argList )
         elif isinstance( script, ExecutableScript ):
@@ -5747,9 +5750,11 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
         elif openViaOsPath:
             self._action = QtIfwControlScript.openViaOs( openViaOsPath )                    
         elif shellCmd:   
-            # Escape quotes and flip backslashes for the QScript generation.
-            # On Windows, the slashes will flipped back at runtime. 
-            shellCmd = shellCmd.replace('\\','/').replace('"','\\"')
+            # TODO: Figure out how to use quotes in the commands here!
+            # It seems they never work - around paths in the command 
+            # or around entire commands.
+            # Escape quotes & backslashes for the QScript literal. 
+            shellCmd = shellCmd.replace('\\','\\\\').replace('"','\\"')
             self._action =( QtIfwOnFinishedCheckbox.__EXEC_CMD_DETACHED_TMPLT 
                             % (shellCmd,) )
         else :
@@ -5769,6 +5774,7 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
         })       
         
     # TODO: Bind this logic with that in QtIfwConfigXml         
+    # TODO: Test implementation of QtIfwExeWrapper
     def __setFromPackage( self, ifwPackage, argList ) :
         self.text =( QtIfwOnFinishedCheckbox.__RUN_PROG_DESCR_TMPLT
                        % (ifwPackage.pkgXml.DisplayName,) )
@@ -5788,6 +5794,8 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
             else: self.runProgram = programPath                                    
         self.__setSimpleExecDetachedAction()
 
+    # TODO: Finish testing and filling in the use of arguments in each script
+    # type context
     def __setFromScript( self, script, argList ):         
         self.script = script
         self.runProgram = joinPathQtIfw( _ENV_TEMP_DIR, script.fileName() )

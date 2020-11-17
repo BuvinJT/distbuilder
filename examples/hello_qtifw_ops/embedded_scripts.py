@@ -15,6 +15,7 @@ f.version          = (1,0,0,0)
 f.setupName        = "HelloIfwEmbeddedScriptsSetup"
 
 # SET A DEMO OPTION TO TEST A GIVEN SCRIPT TYPE
+# Note: SHELL==BATCH on Windows
 (SHELL, POWERSHELL, VBSCRIPT, APPLESCRIPT) = range(4)
 DEMO_OPTION = SHELL
 
@@ -111,10 +112,10 @@ end tell
             filePath = joinPath( QT_IFW_HOME_DIR, "distbuilder-example.dat" )
             genOps = { SHELL: shellCreateFileOp }            
             if IS_WINDOWS:
-                genOps.extend( { POWERSHELL: powerShellCreateFileOp,
-                                VBSCRIPT:   vbScriptCreateFileOp } )
+                genOps.update( { POWERSHELL: powerShellCreateFileOp,
+                                 VBSCRIPT:   vbScriptCreateFileOp } )
             if IS_MACOS:
-                genOps.extend( { APPLESCRIPT: appleScriptCreateFileOp } )
+                genOps.update( { APPLESCRIPT: appleScriptCreateFileOp } )
             pkg.pkgScript.externalOps += [ genOps[ DEMO_OPTION ]( filePath ) ]        
                 
         pkg = cfg.packages[0]            
