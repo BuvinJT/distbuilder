@@ -176,18 +176,18 @@ class BuildProcess( RobustInstallerProcess ):
             # helper function
             def showIfInstalled( checkbox, pkg, isChecked=True ):
                 return( checkbox.setChecked( Script.andList([
-                            Script.isComponentInstalled( pkg.name ),
+                            Script.isComponentInstalled( pkg ),
                             isChecked ]) ) +
                         checkbox.setVisible( 
-                            Script.isComponentInstalled( pkg.name ) ) )
+                            Script.isComponentInstalled( pkg ) ) )
 
             cfg.controlScript.finishedPageOnInstall =( 
                 Script.setText( MSG_LBL, DEFAULT_MSG ) +                                    
-                Script.ifComponentInstalled( tkPkg.name ) +
+                Script.ifComponentInstalled( tkPkg ) +
                     Script.setText( MSG_LBL, Script.getText( MSG_LBL ) + 
                         CONCAT + TK_INSTALLED_MSG,
                         varNames=False, isAutoQuote=False ) +
-                Script.ifComponentInstalled( cliPkg.name ) +
+                Script.ifComponentInstalled( cliPkg ) +
                     Script.setText( MSG_LBL, Script.getText( MSG_LBL ) + 
                         CONCAT + CLI_INSTALLED_MSG,
                         varNames=False, isAutoQuote=False ) +

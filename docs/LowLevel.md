@@ -517,11 +517,13 @@ Static Functions:
     getComponent( name, isAutoQuote=True )	   
     getPageOwner( pageName, isAutoQuote=True ) <returns Component>
 
-	isComponentInstalled( name )
-    isComponentSelected( name )
-    ifComponentInstalled( name, isNegated=False, 
+		<package parameters here can be passed aa QtIfwPackage, 
+		or the name of such as raw string ...>
+	isComponentInstalled( package )
+    isComponentSelected( package )
+    ifComponentInstalled( package, isNegated=False, 
                           isAutoQuote=True, isMultiLine=False )   
-    ifComponentSelected( name, isNegated=False, 
+    ifComponentSelected( package, isNegated=False, 
                          isAutoQuote=True, isMultiLine=False )       
     
     debugPopup( msg, isAutoQuote=True )

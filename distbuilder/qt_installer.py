@@ -1297,28 +1297,30 @@ class _QtIfwScript:
             _QtIfwScript._autoQuote( pageName, isAutoQuote ),) 
             
     @staticmethod        
-    def isComponentInstalled( name, isAutoQuote=True ):
-        if isinstance( name, QtIfwPackage ): name = name.name                  
+    def isComponentInstalled( package, isAutoQuote=True ):
+        name = package.name if isinstance( package, QtIfwPackage ) else package              
         return _QtIfwScript.__IS_COMPONENT_INSTALLED % (
             _QtIfwScript._autoQuote( name, isAutoQuote ),) 
 
     @staticmethod        
-    def isComponentSelected( name, isAutoQuote=True ):
-        if isinstance( name, QtIfwPackage ): name = name.name                  
+    def isComponentSelected( package, isAutoQuote=True ):
+        name = package.name if isinstance( package, QtIfwPackage ) else package                  
         return _QtIfwScript.__IS_COMPONENT_SELECTED % (
             _QtIfwScript._autoQuote( name, isAutoQuote ),) 
 
     @staticmethod
-    def ifComponentInstalled( name, isNegated=False, 
-                              isAutoQuote=True, isMultiLine=False ):   
+    def ifComponentInstalled( package, isNegated=False, 
+                              isAutoQuote=True, isMultiLine=False ):
+        name = package.name if isinstance( package, QtIfwPackage ) else package   
         return 'if( %s%s )%s\n%s' % (
             "!" if isNegated else "", 
             _QtIfwScript.isComponentInstalled( name, isAutoQuote ),
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
     @staticmethod
-    def ifComponentSelected( name, isNegated=False, 
-                              isAutoQuote=True, isMultiLine=False ):   
+    def ifComponentSelected( package, isNegated=False, 
+                              isAutoQuote=True, isMultiLine=False ):
+        name = package.name if isinstance( package, QtIfwPackage ) else package
         return 'if( %s%s )%s\n%s' % (
             "!" if isNegated else "", 
             _QtIfwScript.isComponentSelected( name, isAutoQuote ),
@@ -3495,7 +3497,7 @@ Component.prototype.%s = function(){
         self.killOps          = []
         self.customOperations = None        
         self.bundledScripts   = bundledScripts if bundledScripts else []
-        self.installResources = installResources if installResources else {}
+        self.installResources = installResources if installResources else []
 
         self.uiPages          = uiPages if uiPages else []
         self.widgets          = widgets if widgets else []
