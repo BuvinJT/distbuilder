@@ -29,7 +29,7 @@ import inspect  # @UnusedImport
 from time import sleep
 from struct import calcsize
 import base64  # @UnusedImport
-from operator import attrgetter # @UnusedImport 
+from operator import attrgetter, itemgetter # @UnusedImport 
 from copy import deepcopy # @UnusedImport
 
 # -----------------------------------------------------------------------------   

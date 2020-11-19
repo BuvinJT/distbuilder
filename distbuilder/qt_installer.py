@@ -173,6 +173,9 @@ _RETAINED_RESOURCE_DIR = '"%s/%s"' % (QT_IFW_TARGET_DIR,_RETAINED_RESOURCE_SUBDI
 _TEMP_RESOURCE_SUBDIR = "resources"
 _TEMP_RESOURCE_DIR = '__installerTempPath() + "/%s"' % (_TEMP_RESOURCE_SUBDIR,)
 
+_WRAPPER_MSG_PREFIX = "__MSG__:"
+_REBOOT_MSG = "Please reboot now to complete the installation."
+
 # don't use back slash on Windows!
 def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
 
@@ -656,12 +659,16 @@ class QtIfwPackageXml( _QtIfwXml ):
         self.Script             = scriptName 
         self.ReleaseDate        = date.today()
         self.Virtual            = True if isHidden else None
-        self.Default            = None if isHidden or not isCheckable else isDefault
+        self.Default            =( None if isHidden or isRequired
+                                   or not isCheckable 
+                                   else isDefault )
         self.ForcedInstallation = (True if isRequired and 
-                                   not isHidden and (isCheckable or isCheckable is None) 
+                                   not isHidden and 
+                                   (isCheckable or isCheckable is None) 
                                    else None)
         self.Checkable          = (False if not isCheckable 
-                                   and not isHidden and not isRequired else None)         
+                                   and not isHidden and not isRequired 
+                                   else None)         
         self.Dependencies       = None
         self.AutoDependOn       = None
         self.UserInterfaces     = []
@@ -732,6 +739,11 @@ class _QtIfwScript:
         "%temp%\\\\installer.err" if IS_WINDOWS else
         "/tmp/installer.err" ) # /tmp is supposedly guaranteed to exist, though it's not secure
 
+    OUT_LOG_PATH_CMD_ARG      = "outlog"
+    OUT_LOG_DEFAULT_PATH      = ( 
+        "%temp%\\\\installer.out" if IS_WINDOWS else
+        "/tmp/installer.out" ) # /tmp is supposedly guaranteed to exist, though it's not secure
+
     TARGET_DIR_CMD_ARG        = "target"
     START_MENU_DIR_CMD_ARG    = "startmenu"    
     ACCEPT_EULA_CMD_ARG       = "accept"
@@ -739,6 +751,7 @@ class _QtIfwScript:
     INCLUDE_LIST_CMD_ARG      = "include"
     EXCLUDE_LIST_CMD_ARG      = "exclude"
     RUN_PROGRAM_CMD_ARG       = "run"
+    REBOOT_CMD_ARG            = "reboot"
     AUTO_PILOT_CMD_ARG        = "auto"
     _KEEP_ALIVE_PATH_CMD_ARG  = "__keepalive"
     TARGET_EXISTS_OPT_CMD_ARG = "onexist"
@@ -789,6 +802,7 @@ class _QtIfwScript:
     __STRING_TO_BOOL_TMPL = '(%s=="%s")'
 
     __LOG_TMPL = "console.log(%s);\n"
+    __MSG_WRAPPER_TMPL = 'writeOutLog( %s );\n'
     __DEBUG_POPUP_TMPL = ( 
         'QMessageBox.information("debugbox", "Debug", ' +
             '%s, QMessageBox.Ok );\n' )
@@ -984,6 +998,11 @@ class _QtIfwScript:
     @staticmethod        
     def log( msg, isAutoQuote=True ):                  
         return _QtIfwScript.__LOG_TMPL % (
+            _QtIfwScript._autoQuote( msg, isAutoQuote ),)
+
+    @staticmethod        
+    def _msgToSilentWrapper( msg, isAutoQuote=True ):                  
+        return _QtIfwScript.__MSG_WRAPPER_TMPL % (
             _QtIfwScript._autoQuote( msg, isAutoQuote ),)
 
     @staticmethod        
@@ -1836,7 +1855,7 @@ class _QtIfwScript:
             TAB + 'return " " + escaped' + END +                                                                                          
             EBLK + NEW +      
             'function writeFile( path, content ) ' + SBLK +            
-            TAB + 'path = Dir.toNativeSeparator( path )' + END +           
+            TAB + 'path = resolveNativePath( path )' + END +           
             TAB + 'var lines = content.split(\"\\n\")' + END +                                             
             TAB + 'var redirect = " >"' + END +      
             TAB + 'var writeCmd = ""' + END +
@@ -1864,7 +1883,7 @@ class _QtIfwScript:
             TAB + 'return path' + END +
             EBLK + NEW +                   
             'function deleteFile( path ) ' + SBLK +
-            TAB + 'path = Dir.toNativeSeparator( path )' + END +           
+            TAB + 'path = resolveNativePath( path )' + END +           
             TAB + 'var deleteCmd = "' +                    
                 ('echo off && del \\"" + path + "\\" /q\\necho " + path + "\\n"' 
                  if IS_WINDOWS else
@@ -1883,50 +1902,25 @@ class _QtIfwScript:
             TAB + _QtIfwScript.log( '"Deleted file: " + path', isAutoQuote=False ) + 
             TAB + 'return path' + END +                                                                                                                                       
             EBLK + NEW +                                                                     
-            'function clearErrorLog() ' + SBLK + # TODO: Call deleteFile()
-            TAB + 'var path = ' + _QtIfwScript.cmdLineArg( 
+            'function clearOutLog() ' + SBLK + 
+            TAB + 'deleteFile( ' + _QtIfwScript.cmdLineArg( 
+                _QtIfwScript.OUT_LOG_PATH_CMD_ARG,
+                _QtIfwScript.OUT_LOG_DEFAULT_PATH ) + ' )' + END + 
+            EBLK + NEW +                           
+            'function writeOutLog( msg ) ' + SBLK +
+            TAB + 'writeFile( ' + _QtIfwScript.cmdLineArg( 
+                _QtIfwScript.OUT_LOG_PATH_CMD_ARG,
+                _QtIfwScript.OUT_LOG_DEFAULT_PATH ) + ', msg )' + END +
+            EBLK + NEW +
+            'function clearErrorLog() ' + SBLK + 
+            TAB + 'deleteFile( ' + _QtIfwScript.cmdLineArg( 
                 _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
-                _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END + 
-            TAB + 'var deleteCmd = "' +                    
-                ('echo off && del \\"" + path + "\\" /q\\necho " + path + "\\n"' 
-                 if IS_WINDOWS else
-                 'rm \\"" + path + "\\"; echo " + path' ) + END +                                                                                                
-            TAB + 'var result = installer.execute( ' +
-                ('"cmd.exe", ["/k"], deleteCmd' if IS_WINDOWS else
-                 '"sh", ["-c", deleteCmd]' ) + ' )' + END +             
-            TAB + 'if( result[1] != 0 ) ' + NEW +
-            (2*TAB) + 'throw new Error("Clear error log failed.")' + END +
-            TAB + 'try' + SBLK +
-            TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
-            TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
-            TAB + 'catch(e){ path = "";' + EBLK +                
-            TAB + 'if( path=="" || ' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-            (2*TAB) + 'throw new Error("Clear error log failed. (file exists)")' + END +
-            TAB + _QtIfwScript.log( '"Cleared error log: " + path', isAutoQuote=False ) +                                                                                                                                        
-        EBLK + NEW +                           
-        'function writeErrorLog( msg ) ' + SBLK +   # TODO: Call writeFile()
-            TAB + 'var path = ' + _QtIfwScript.cmdLineArg( 
+                _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + ' )' + END + 
+            EBLK + NEW +                           
+            'function writeErrorLog( msg ) ' + SBLK +
+            TAB + 'writeFile( ' + _QtIfwScript.cmdLineArg( 
                 _QtIfwScript.ERR_LOG_PATH_CMD_ARG,
-                _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + END +                
-            TAB + 'var writeCmd = "' +
-                ('echo off && '
-                 'echo " + msg + " > \\"" + path + "\\"\n'
-                 'echo " + path + "\\n"' 
-                 if IS_WINDOWS else
-                 'echo " + msg + " > \\"" + path + "\\";'
-                 'echo " + path' ) + END +      
-            TAB + 'var result = installer.execute( ' +
-                ('"cmd.exe", ["/k"], writeCmd' if IS_WINDOWS else
-                 '"sh", ["-c", writeCmd]' ) + ' )' + END +                
-            TAB + 'if( result[1] != 0 ) ' + NEW +
-            (2*TAB) + 'throw new Error("Write error log failed.")' + END +
-            TAB + 'try' + SBLK +
-            TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
-            TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
-            TAB + 'catch(e){ path = "";' + EBLK +
-            TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-            (2*TAB) + 'throw new Error("Write error log failed. (file does not exists)")' + END +
-            TAB + _QtIfwScript.log( '"Wrote error log to: " + path', isAutoQuote=False ) +                                                                                                
+                _QtIfwScript.ERR_LOG_DEFAULT_PATH ) + ', msg )' + END +
             EBLK + NEW +
             'function silentAbort( msg ) ' + SBLK +
             TAB + 'console.log( msg )' + END +
@@ -2318,8 +2312,13 @@ Controller.prototype.onFinishButtonClicked = function(){
  
     __SET_ENABLE_STATE_TMPL = (
         "gui.currentPageWidget().%s.setEnabled(%s);\n" )    
+    __GET_ENABLE_STATE_TMPL = (
+        "gui.currentPageWidget().%s.enabled" )
+    
     __SET_VISIBLE_STATE_TMPL = (
         "gui.currentPageWidget().%s.setVisible(%s);\n" )    
+    __GET_VISIBLE_STATE_TMPL = (
+        "gui.currentPageWidget().%s.visible" )
     
     __SET_CHECKBOX_STATE_TMPL = (
         "gui.currentPageWidget().%s.setChecked(%s);\n" )    
@@ -2339,8 +2338,11 @@ Controller.prototype.onFinishButtonClicked = function(){
     
     __SET_CUSTPAGE_TITLE_TMPL = "%s.windowTitle = %s;\n" 
 
-    __SET_CUSTPAGE_ENABLE_STATE_TMPL = "%s.%s.setEnabled(%s);\n" 
+    __SET_CUSTPAGE_ENABLE_STATE_TMPL  = "%s.%s.setEnabled(%s);\n"     
+    __GET_CUSTPAGE_ENABLE_STATE_TMPL = "%s.%s.enabled"
+    
     __SET_CUSTPAGE_VISIBLE_STATE_TMPL = "%s.%s.setVisible(%s);\n" 
+    __GET_CUSTPAGE_VISIBLE_STATE_TMPL = "%s.%s.visible"
     
     __SET_CUSTPAGE_CHECKBOX_STATE_TMPL = "%s.%s.setChecked(%s);\n" 
     __GET_CUSTPAGE_CHECKBOX_STATE_TMPL = "%s.%s.checked" 
@@ -2460,11 +2462,33 @@ Controller.prototype.Dynamic%sCallback = function() {
             controlName, _QtIfwScript.toBool( isEnable ) )
 
     @staticmethod        
+    def isEnabled( controlName ):
+        return QtIfwControlScript.__GET_ENABLE_STATE_TMPL % (controlName,)
+        
+    @staticmethod        
+    def ifEnabled( controlName, isNegated=False, isMultiLine=False ):   
+        return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "", 
+            QtIfwControlScript.isEnabled( controlName ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+
+    @staticmethod        
     def setVisible( controlName, isVisible=True ):
         """ DOES NOT WORK FOR WIZARD BUTTONS!!! """                
         return QtIfwControlScript.__SET_VISIBLE_STATE_TMPL % ( 
             controlName, _QtIfwScript.toBool( isVisible ) )
 
+    @staticmethod        
+    def isVisible( controlName ):
+        return QtIfwControlScript.__GET_VISIBLE_STATE_TMPL % (controlName,)
+        
+    @staticmethod        
+    def ifVisible( controlName, isNegated=False, isMultiLine=False ):   
+        return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "", 
+            QtIfwControlScript.isVisible( controlName ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+        
     # Note: checkbox controls also work on radio buttons!
     @staticmethod        
     def setChecked( checkboxName, isCheck=True ):
@@ -2523,10 +2547,38 @@ Controller.prototype.Dynamic%sCallback = function() {
             controlName, _QtIfwScript.toBool( isEnable ) )
 
     @staticmethod        
+    def isCustomEnabled( controlName, pageVar="page" ):
+        return QtIfwControlScript.__GET_CUSTPAGE_ENABLE_STATE_TMPL % ( 
+            pageVar, controlName )
+
+    # Note: checkbox controls also work on radio buttons!
+    @staticmethod        
+    def ifCustomEnabled( controlName, pageVar="page", isNegated=False, 
+                         isMultiLine=False ):   
+        return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "", 
+            QtIfwControlScript.isCustomEnabled( controlName, pageVar ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+        
+    @staticmethod        
     def setCustomVisible( controlName, isVisible=True, pageVar="page" ):
         """ DOES NOT WORK FOR WIZARD BUTTONS!!! """                
         return QtIfwControlScript.__SET_CUSTPAGE_VISIBLE_STATE_TMPL % ( pageVar, 
             controlName, _QtIfwScript.toBool( isVisible ) )
+        
+    @staticmethod        
+    def isCustomVisible( controlName, pageVar="page" ):
+        return QtIfwControlScript.__GET_CUSTPAGE_VISIBLE_STATE_TMPL % ( 
+            pageVar, controlName )
+
+    # Note: checkbox controls also work on radio buttons!
+    @staticmethod        
+    def ifCustomVisible( controlName, pageVar="page", isNegated=False, 
+                         isMultiLine=False ):   
+        return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "", 
+            QtIfwControlScript.isCustomVisible( controlName, pageVar ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
     # Note: checkbox controls also work on radio buttons!
     @staticmethod        
@@ -2585,9 +2637,11 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.isAutoControllerConstructor = True
 
         self.onValueChangeCallbackBody = None
+        self.onValueChangeCallbackInjection = None
         self.isAutoValueChangeCallBack = True
         
         self.onPageChangeCallbackBody = None
+        self.onPageChangeCallbackInjection = None
         self.isAutoPageChangeCallBack = True
                 
         self.onPageInsertRequestCallbackBody = None
@@ -2600,6 +2654,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.isAutoPageVisibilityRequestCallBack = True
         
         self.onFinishedClickedCallbackBody     = None
+        self.onFinishedClickedCallbackInjection = None
         self.isAutoFinishedClickedCallbackBody = True
             
         self.isIntroductionPageVisible = True                                                                    
@@ -2748,7 +2803,8 @@ Controller.prototype.Dynamic%sCallback = function() {
                                  
         if self.isAutoControllerConstructor:
             self.__genControllerConstructorBody()
-        self.script += ( "function Controller() {\n%s\n}\n" % 
+        self.script += ('function Controller() {\n%s'
+                        '    console.log("Controller constructed");\n}\n' % 
                          (self.controllerConstructorBody,) )
                             
         if self.isAutoIntroductionPageCallback:
@@ -2816,10 +2872,11 @@ Controller.prototype.Dynamic%sCallback = function() {
         #prepend = _QtIfwScript.log( '"Value Changed: " + key + "=" + value', isAutoQuote=False )
         prepend = ""
         append  = ""
-        if self.onValueChangeCallbackBody is None:
-            self.onValueChangeCallbackBody=""                                            
         self.onValueChangeCallbackBody =( 
-            prepend + self.onValueChangeCallbackBody + append )
+            prepend + 
+            (self.onValueChangeCallbackInjection 
+             if self.onValueChangeCallbackInjection else "") 
+            + append )
 
     def __genPageInsertRequestCallbackBody( self ):
         self.onPageInsertRequestCallbackBody = _QtIfwScript.log( 
@@ -2837,12 +2894,13 @@ Controller.prototype.Dynamic%sCallback = function() {
     def __genFinishedClickedCallbackBody( self ):
         TAB  = _QtIfwScript.TAB
         EBLK = _QtIfwScript.END_BLOCK
-        
+        ELSE = _QtIfwScript.ELSE
+   
         prepend = _QtIfwScript.log( "finish clicked" )
         
         # Execute custom on wizard finished/exited actions
         finshedCheckboxes = [ w for w in self.widgets 
-                             if isinstance( w, QtIfwOnFinishedCheckbox ) ]
+                              if isinstance( w, QtIfwOnFinishedCheckbox ) ]
         if len(finshedCheckboxes) > 0:   
             prepend +=( TAB + 
                 _QtIfwScript.ifBoolValue( _QtIfwScript.INTERUPTED_KEY, 
@@ -2851,9 +2909,10 @@ Controller.prototype.Dynamic%sCallback = function() {
             )
             for checkbox in finshedCheckboxes:
                 prepend += ( (3*TAB) + 
-                    QtIfwControlScript.ifChecked( checkbox.checkboxName, 
-                                                  isMultiLine=True ) +
-                        checkbox._action + EBLK ) 
+                    QtIfwControlScript.ifChecked( 
+                        checkbox.checkboxName, isMultiLine=True ) +
+                        checkbox._action + 
+                    EBLK ) 
             prepend += EBLK + EBLK
         
         # Remove keep alive file     
@@ -2866,10 +2925,11 @@ Controller.prototype.Dynamic%sCallback = function() {
             EBLK                
         )        
         
-        if self.onFinishedClickedCallbackBody is None:
-            self.onFinishedClickedCallbackBody=""                                            
         self.onFinishedClickedCallbackBody =( 
-            prepend + self.onFinishedClickedCallbackBody + append )
+            prepend + 
+            (self.onFinishedClickedCallbackInjection 
+             if self.onFinishedClickedCallbackInjection else "") 
+            + append )
            
     def __genPageChangeCallbackBody( self ):
         TAB  = _QtIfwScript.TAB
@@ -2930,21 +2990,24 @@ Controller.prototype.Dynamic%sCallback = function() {
             EBLK )
                              
         # TODO: Test this                             
-        if self.widgets: 
+        if self.widgets:             
             for w in self.widgets:
                 onEnter = w._onEnterSnippet()
                 if len(onEnter) > 0:    
                     prepend +=(
                         TAB + ('if( pageId == %s )' % (
                             QtIfwControlScript.toDefaultPageId( 
-                                w.pageName ),)) + SBLK +                                    
+                                w.pageName ),)) + SBLK +
+                            (2*TAB) + _QtIfwScript.log( 
+                                "%s widget on page enter invoked" % (w.name,) ) +                                    
                             onEnter +
                         EBLK )
-                
-        if self.onPageChangeCallbackBody is None:
-            self.onPageChangeCallbackBody=""                                            
+                                                                    
         self.onPageChangeCallbackBody =( 
-            prepend + self.onPageChangeCallbackBody + append )
+            prepend +
+            (self.onPageChangeCallbackInjection 
+             if self.onPageChangeCallbackInjection else "")  
+            + append )
 
     def __appendUiPageFunctions( self ):    
         if self.uiPages: 
@@ -2991,7 +3054,8 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + 'installer.setValue( "__lockFilePath", "" )' + END +
             TAB + 'installer.setValue( "__watchDogPath", "" )' + END +
             TAB + 'installer.setValue( ' +
-                ('"%s"' % (_REMOVE_TARGET_KEY,) ) + ', "" )' + END +
+                ('"%s"' % (_REMOVE_TARGET_KEY,) ) + ', "" )' + END +            
+            TAB + 'clearOutLog()' + END +
             TAB + 'clearErrorLog()' + END +
             TAB + _QtIfwScript.logValue( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +                                                 
             TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) +
@@ -3001,6 +3065,9 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + _QtIfwScript.logValue( _QtIfwScript.INSTALL_LIST_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.EXCLUDE_LIST_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +
+            TAB + _QtIfwScript.logValue( _QtIfwScript.REBOOT_CMD_ARG ) +
+            TAB + _QtIfwScript.logValue( _QtIfwScript.ERR_LOG_PATH_CMD_ARG ) +
+            TAB + _QtIfwScript.logValue( _QtIfwScript.OUT_LOG_PATH_CMD_ARG ) +            
             TAB + _QtIfwScript.logValue( _KEEP_TEMP_SWITCH ) + 
             TAB + _QtIfwScript.logValue( _QtIfwScript._KEEP_ALIVE_PATH_CMD_ARG ) +            
             TAB + '__installerTempPath()' + END +
@@ -3252,23 +3319,30 @@ Controller.prototype.Dynamic%sCallback = function() {
         TAB  = _QtIfwScript.TAB
         SBLK = _QtIfwScript.START_BLOCK
         EBLK = _QtIfwScript.END_BLOCK
+        ELSE = _QtIfwScript.ELSE        
         self.finishedPageCallbackBody = (                
-            TAB + _QtIfwScript.log("FinishedPageCallback") +
+            TAB + _QtIfwScript.log("FinishedPageCallback") )
+
+        finshedCheckboxes = [ w for w in self.widgets 
+                             if isinstance( w, QtIfwOnFinishedCheckbox ) ]        
+        # on interrupt
+        self.finishedPageCallbackBody += (
             TAB + _QtIfwScript.ifBoolValue( _QtIfwScript.INTERUPTED_KEY, isMultiLine=True ) +
                     QtIfwControlScript.setVisible( 
                         QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False ) +
                 (2*TAB) + QtIfwControlScript.setChecked( 
                         QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False ) 
-        )                
-        for w in self.widgets:
-            # TODO: Do something similar for all widgets, in some unified manner?
-            # Perhaps an abstract onInterupted function?  
-            if isinstance( w, QtIfwOnFinishedCheckbox ):                    
-                self.finishedPageCallbackBody += (
-                    w.setVisible( False ) + w.setChecked( False ) )                 
-        self.finishedPageCallbackBody += (                           
-            EBLK +                           
-            TAB + "else " + SBLK + 
+        )                        
+        # TODO: Do something similar for all widgets, in some unified manner?
+        # Perhaps an abstract onInterupted function?  
+        for checkbox in finshedCheckboxes:
+            self.finishedPageCallbackBody += ( checkbox.setVisible( False ) + 
+                                               checkbox.setChecked( False ) )  
+        self.finishedPageCallbackBody += EBLK 
+
+        # else...                               
+        self.finishedPageCallbackBody += (                                                                  
+            TAB + ELSE + SBLK + 
                 (2*TAB) + _QtIfwScript.ifInstalling( isMultiLine=True ) +
                     (3*TAB) + QtIfwControlScript.setVisible( 
                             QtIfwControlScript.RUN_PROGRAM_CHECKBOX, 
@@ -3287,7 +3361,17 @@ Controller.prototype.Dynamic%sCallback = function() {
                                 QtIfwControlScript.RUN_PROGRAM_CHECKBOX, False )                         
                     ) +
                     ("" if self.finishedPageOnInstall is None else
-                    (2*TAB) + self.finishedPageOnInstall) +                                                    
+                    (2*TAB) + self.finishedPageOnInstall)         
+                )
+        for checkbox in finshedCheckboxes:
+            if checkbox.isReboot: 
+                self.finishedPageCallbackBody += ( 
+                    (3*TAB) + QtIfwControlScript.ifVisible( 
+                        checkbox.checkboxName ) +
+                        (3*TAB) + _QtIfwScript._msgToSilentWrapper( 
+                                                            _REBOOT_MSG )                      
+            )             
+        self.finishedPageCallbackBody += (                                                                
                 (2*TAB) + EBLK +                                 
             TAB + EBLK +                 
             TAB + _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
@@ -3585,8 +3669,10 @@ Component.prototype.%s = function(){
 
         if self.isAutoComponentConstructor:
             self.__genComponentConstructorBody()
-        self.script += ( "function Component() {\n%s\n}\n" % 
-                         (self.componentConstructorBody,) )
+        self.script += ( 'function Component() {\n%s\n'
+                         '    console.log("Component %s constructed");\n}\n' % 
+                         (self.componentConstructorBody,
+                          self.pkgName) )
 
         if self.isAutoComponentLoadedCallback:
             self.__genComponentLoadedCallbackBody()
@@ -5740,11 +5826,7 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
         self.isReboot   = isReboot
         self._action    = None                            
                 
-        if isReboot:
-            self.text =  QtIfwOnFinishedCheckbox.__REBOOT_TEXT   
-            cmd = QtIfwOnFinishedCheckbox.__REBOOT_CMD % (rebootDelaySecs,)
-            self._action =( 
-                QtIfwOnFinishedCheckbox.__EXEC_CMD_DETACHED_TMPLT % (cmd,) )
+        if isReboot: self.__setAsReboot( rebootDelaySecs )
         elif isinstance( ifwPackage, QtIfwPackage ): 
             self.__setFromPackage( ifwPackage, argList )
         elif isinstance( script, ExecutableScript ):
@@ -5811,6 +5893,21 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
             _QtIfwScript.genResources( [script], isTempRootTarget=True ) +
             execTemplate % ( self.runProgram, args ) 
         )
+                                                        
+    def __setAsReboot( self, rebootDelaySecs ):
+        self.isReboot = True
+        self.text =  QtIfwOnFinishedCheckbox.__REBOOT_TEXT   
+        cmd = QtIfwOnFinishedCheckbox.__REBOOT_CMD % (rebootDelaySecs,)
+        self._action =( 
+            QtIfwOnFinishedCheckbox.__EXEC_CMD_DETACHED_TMPLT % (cmd,) )
+        self.onEnter =(
+            _QtIfwScript.ifInstalling( isMultiLine=True ) +
+                _QtIfwScript.ifCmdLineArg( _QtIfwScript.REBOOT_CMD_ARG ) +               
+                    _QtIfwScript.TAB + self.setChecked( 
+                        _QtIfwScript.cmdLineSwitchArg(
+                            _QtIfwScript.REBOOT_CMD_ARG ) ) +
+            _QtIfwScript.END_BLOCK                                
+            )                                                                 
                                                         
     def __setSimpleExecDetachedAction( self ):
         args = self.argList if self.argList else []        
@@ -6374,7 +6471,7 @@ def __toSilentConfig( qtIfwConfig ):
     # Minimum visible pages required for functionality
     qtIfwConfig.controlScript.isIntroductionPageVisible         = True  # required to install                                                                   
     qtIfwConfig.controlScript.isTargetDirectoryPageVisible      = False
-    qtIfwConfig.controlScript.isComponentSelectionPageVisible   = False
+    qtIfwConfig.controlScript.isComponentSelectionPageVisible   = True  # need for component auto select
     qtIfwConfig.controlScript.isLicenseAgreementPageVisible     = False
     qtIfwConfig.controlScript.isStartMenuDirectoryPageVisible   = False
     qtIfwConfig.controlScript.isReadyForInstallationPageVisible = True  # required to install
@@ -6395,24 +6492,38 @@ def __buildSilentWrapper( qtIfwConfig ) :
     nestedExeName     = util.normBinaryName( __NESTED_INSTALLER_NAME,  isGui=True )
     wrapperExeName    = __WRAPPER_INSTALLER_NAME
     wrapperPyName     = __WRAPPER_SCRIPT_NAME    
-    componentList     = [ (package.pkgXml.Default,
-                           package.pkgXml.pkgName, 
-                           package.pkgXml.DisplayName) 
-                           for package in qtIfwConfig.packages ]            
+    componentList     = [] 
+    for p in qtIfwConfig.packages:
+        if p.pkgXml.Virtual: continue  # package never shown to the user      
+        isRequired = p.pkgXml.ForcedInstallation 
+        isDefault = p.pkgXml.Default   
+        componentList.append( (isRequired, isDefault, 
+            p.pkgXml.pkgName, p.pkgXml.DisplayName, p.pkgXml.SortingPriority) )
+    componentList.sort( key=itemgetter(4), reverse=True ) 
+         
     licenses={}
-    for package in qtIfwConfig.packages:
+    for p in qtIfwConfig.packages:
         pkgLics={}
-        for name, filePath in six.iteritems( package.licenses ):
-            srcPath = absPath( filePath, basePath=package.resBasePath )            
+        for name, filePath in six.iteritems( p.licenses ):
+            srcPath = absPath( filePath, basePath=p.resBasePath )            
             with open( srcPath, 'r' ) as f: 
                 pkgLics[name] = __scrubLicenseText( f.read() )
-        if len(pkgLics) > 0: licenses[package.pkgXml.pkgName] = pkgLics
-
+        if len(pkgLics) > 0: licenses[p.pkgXml.pkgName] = pkgLics
+    isRunSwitch=( False if cfgXml.RunProgram is None or 
+                  not ctrlScrpt.isRunProgChecked else 
+                  None if ctrlScrpt.isRunProgEnabled and 
+                          ctrlScrpt.isRunProgVisible else True )
+    isRebootSwitch = None
+    for p in qtIfwConfig.packages:
+        for w in p.widgets:
+            if( isinstance(w, QtIfwOnFinishedCheckbox)
+                and w.isReboot):
+                isRebootSwitch = False # Show option, but disabled
+                break            
+        if isRebootSwitch is not None: break
+            
     wrapperScript = __silentQtIfwScript( nestedExeName, componentList,
-        isRunSwitch=( False if cfgXml.RunProgram is None or 
-                      not ctrlScrpt.isRunProgChecked else 
-                      None if ctrlScrpt.isRunProgEnabled and 
-                              ctrlScrpt.isRunProgVisible else True ),
+        isRunSwitch=isRunSwitch, isRebootSwitch=isRebootSwitch, 
         licenses=licenses,
         productName=cfgXml.Name, version=cfgXml.Version,
         companyLegalName=cfgXml.Publisher )
@@ -6477,7 +6588,8 @@ def __silentQtIfwScript( exeName, componentList=None,
                          isQtIfwUnInstaller=False,
                          scriptPath=None,
                          wrkDir=None, targetDir=None,
-                         isRunSwitch=None, licenses=None,
+                         isRunSwitch=None, isRebootSwitch=None,
+                         licenses=None,
                          productName=None, version=None, 
                          companyLegalName=None ) :
     """
@@ -6501,33 +6613,41 @@ def __silentQtIfwScript( exeName, componentList=None,
              companyLegalName) )
     
     componentsRepr     = "[]"
+    componentsReqRepr  = "[]"
     componentsEpilogue = "" 
-    componentsPrefix   = ""
+    componentsPrefix   = ""    
     if len(componentList) > 1 :
         componentsRepr = ""
         idLen = 0 
-        for (_, compId, _ ) in componentList :
+        for (isReq, _, compId, _, _) in componentList :
             componentsRepr += ( ("" if componentsRepr=="" else ", ")  
-                              + ("'%s'" % (compId,)) )            
+                              + ("'%s'" % (compId,)) )
+            if isReq:            
+                componentsReqRepr += ( ("" if componentsReqRepr=="" else ", ")  
+                                       + ("'%s'" % (compId,)) )                        
             if len( compId ) > idLen : idLen = len( compId )
             prefix = ".".join( compId.split(".")[:-1] ) + "."
             if componentsPrefix=="" : componentsPrefix = prefix
             elif prefix != componentsPrefix: componentsPrefix=None
         componentsRepr = "[ " + componentsRepr + " ]"            
+        componentsReqRepr = "[ " + componentsReqRepr + " ]"
         componentsPrefixLen = (0 if componentsPrefix is None 
                                else len(componentsPrefix) )
         lineLen = 79
-        defLen = 5
+        flagLen = 3
         idLen = idLen - componentsPrefixLen + 2        
-        nameLen = lineLen - defLen - idLen   
-        lnFormat = '{0:>%s}{1:<%s}{2:<%s}\n' % ( defLen, idLen, nameLen )
-        componentsEpilogue = ( "Components:\n" + 
-            lnFormat.format("Def ", "Id", "Name\n" ) ) 
-        for (isDef, compId, name ) in componentList :
-            default = "* " if isDef else ""
+        nameLen = lineLen - flagLen - idLen   
+        lnFormat = '{0:>%s}{1:<%s}{2:<%s}\n' % ( flagLen, idLen, nameLen )
+        componentsEpilogue = ( "components:\n" + 
+            lnFormat.format("  ", "id", "name\n" ) )
+        REQ_SYM = "! "  
+        DEF_SYM = "* "
+        for (isReq, isDef, compId, name, _) in componentList :
+            req = REQ_SYM if isReq else DEF_SYM if isDef else ""
             if componentsPrefixLen : compId = compId[componentsPrefixLen:]
-            componentsEpilogue += lnFormat.format( default, compId, name ) 
-
+            componentsEpilogue += lnFormat.format( req, compId, name ) 
+        componentsEpilogue+="\n%s= Required   %s= Default" % (REQ_SYM,DEF_SYM)        
+    if componentsPrefix is None: componentsPrefix = ""  
     licensesRepr = str(licenses)   
         
     if IS_WINDOWS: 
@@ -6619,7 +6739,7 @@ import glob
         try: os.remove( EXE_PATH )
         except: pass
     
-    removeIfwErrLog()
+    removeIfwLogs()
                                 
     # this ugly pause causes the PyInstaller temp directory  
     # auto removal to work more reliably
@@ -6724,7 +6844,7 @@ def runAppleScript( script ):
 
         cleanUp = (
 """            
-    removeIfwErrLog()
+    removeIfwLogs()
 """ )
 
     if IS_LINUX : 
@@ -6830,7 +6950,7 @@ def installTempDependencies():
     for cmd in CLEANUP_CMDS:
         if IS_VERBOSE: print( ' '.join( cmd ) ) 
         subprocess.check_call( cmd )         
-    removeIfwErrLog()
+    removeIfwLogs()
 """)       
 
     if isQtIfwInstaller or isQtIfwUnInstaller :
@@ -6869,7 +6989,7 @@ def runInstaller():
 def cleanUp():
 {8}
 
-def removeIfwErrLog(): pass
+def removeIfwLogs(): pass
 
 sys.exit( main() )
 """).format( 
@@ -6902,13 +7022,17 @@ IS_WINDOWS = {10}
 WORK_DIR         = sys._MEIPASS
 EXE_NAME         = "{0}"
 EXE_PATH         = os.path.join( WORK_DIR, EXE_NAME )
+IFW_OUT_LOG_NAME = "installer.out"
+IFW_OUT_LOG_PATH = os.path.join( WORK_DIR, IFW_OUT_LOG_NAME )
 IFW_ERR_LOG_NAME = "installer.err"
 IFW_ERR_LOG_PATH = os.path.join( WORK_DIR, IFW_ERR_LOG_NAME )
 
 VERBOSE_SWITCH = "{4}"
 IS_RUN_SWITCH  = {22}
+IS_REBOOT_SWITCH = {28}
 
 components = {14}
+componentsRequired = {27}
 componentsEpilogue = ( 
 '''{15}'''
 )
@@ -6930,7 +7054,7 @@ def main():
     except: pass    
     ARGS = toIwfArgs( wrapperArgs() )  
     IS_VERBOSE = VERBOSE_SWITCH in ARGS
-    removeIfwErrLog() 
+    removeIfwLogs() 
     {19}
     exitCode = runInstaller()
     cleanUp()        
@@ -6976,6 +7100,11 @@ def wrapperArgs():
                              help='run the program post installation', 
                              action='store_true' )
 
+    if IS_REBOOT_SWITCH is not None:                     
+        parser.add_argument( '-b', '--reboot', default=False, 
+                             help='allow post installation reboot (if required)', 
+                             action='store_true' )
+
     parser.add_argument( '-d', '--debug', default=False,
                          help='show debugging information', 
                          action='store_true' )
@@ -6986,7 +7115,9 @@ def toIwfArgs( wrapperArgs ):
     # silent install always uses:
     #     auto pilot mode
     #     client defined error log path    
-    args = ["{1}", ("{2}=%s" % IFW_ERR_LOG_NAME)]
+    args = ["{1}", 
+            "{2}=%s" % (IFW_ERR_LOG_NAME,), 
+            "{30}=%s" % (IFW_OUT_LOG_NAME,) ]
     
     if wrapperArgs.debug: args.append( VERBOSE_SWITCH )        
     
@@ -7000,13 +7131,17 @@ def toIwfArgs( wrapperArgs ):
             args.append( "{9}=%s" % (wrapperArgs.startmenu.replace("\\\\","/"),) )
     
     if len(components) > 0 : 
-        def appendComponentArg( wrapperArg, ifwArg ):     
+        def appendComponentArg( wrapperArg, ifwArg, isExclude=False ):                
             if len(wrapperArg) > 0:
                 comps = ["%s%s" % (componentsPrefix,c) for c in wrapperArg]
                 for id in comps:
                     if id not in components: 
                         sys.stderr.write( "Invalid component id: %s" % (id,) )
                         sys.exit( FAILURE )
+                    if isExclude and id in componentsRequired:
+                        sys.stderr.write( "Cannot exclude component id: %s" % (id,) )
+                        sys.exit( FAILURE )    
+                if not isExclude: wrapperArg += componentsRequired                            
                 args.append( "%s=%s" % (ifwArg, ",".join(comps)) )
         appendComponentArg( wrapperArgs.components, "{11}" )
         appendComponentArg( wrapperArgs.include,    "{12}" )
@@ -7014,12 +7149,20 @@ def toIwfArgs( wrapperArgs ):
 
     args.append( "{3}=%s" % str( wrapperArgs.run 
             if IS_RUN_SWITCH is None else IS_RUN_SWITCH ).lower() )
+    if IS_REBOOT_SWITCH is not None:         
+        args.append( "{29}=%s" % str( wrapperArgs.reboot ).lower() )
 
     return args
 
 def runInstaller():
     retCode=None
 {20}
+    
+    # Display (non-error) messages left by the installer
+    if os.path.exists( IFW_OUT_LOG_PATH ):
+        with open( IFW_OUT_LOG_PATH ) as f:
+            sys.stdout.write( f.read() )
+
     # use error log existence to set an exit code, 
     # since IFW doesn't support such   
     if os.path.exists( IFW_ERR_LOG_PATH ):
@@ -7031,7 +7174,9 @@ def runInstaller():
 def cleanUp():
 {21}
 
-def removeIfwErrLog(): 
+def removeIfwLogs(): 
+    if os.path.exists( IFW_OUT_LOG_PATH ):
+        os.remove( IFW_OUT_LOG_PATH )
     if os.path.exists( IFW_ERR_LOG_PATH ):
         os.remove( IFW_ERR_LOG_PATH )
 
@@ -7078,6 +7223,10 @@ sys.exit( main() )
     , _QtIfwScript.MAINTAIN_MODE_CMD_ARG                    # {24}
     , _QtIfwScript.MAINTAIN_MODE_OPT_REMOVE_ALL             # {25}
     , versionInfo                                           # {26}
+    , componentsReqRepr                                     # {27}
+    , str(isRebootSwitch)                                   # {28}
+    , _QtIfwScript.REBOOT_CMD_ARG                           # {29}
+    , _QtIfwScript.OUT_LOG_PATH_CMD_ARG                     # {30}
 )
 
 def __generateQtIfwInstallPyScript( installerPath, ifwScriptPath, 

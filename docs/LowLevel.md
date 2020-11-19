@@ -208,7 +208,7 @@ See [Silent Installers](#silent-installers) for more information.
 
 The standard (non silent) QtIFW installer can accept a collection of command line arguments
 out of the box.  To see the available options, simply pass the switch `-h` or `--help` 
-when executing the binary from a terminal.
+when executing the installer binary from a terminal.
 
 The distbuilder library, has added a series of additional options as well (assuming the
 built-in default Control Script additions are preserved).  Unfortunately,
@@ -237,10 +237,13 @@ here, as they are already "included" implicitly.
 represented as a space delimited list of package ids.  Only default components need to be listed
 here, those not automatically included they are already "excluded" implicitly.
 
-**accept=[true/false]**: Enable the check box for accepting the end user license agreement.
+**accept=[true/false]**: Enable the check box for accepting the end user license agreement (if applicable).
 
 **run=[true/false]**: Enable the check box for running the target program at the end of 
-the installation.
+the installation (if applicable).
+
+**reboot=[true/false]**: Enable the check box for rebooting the system at the 
+end of the installation (if applicable).
        
 **onexist=[fail/remove/prompt]**: Define the action taken when an existing (conflicting)
 installation is present.  The default is to prompt, and allow for automatic removal if
@@ -299,21 +302,21 @@ shortcuts.
 
 **-c / --components [ids]**: The full set of components to include in the installation, 
 represented as a space delimited list of package ids.  Those ids NOT listed, will not be installed 
-(unless some custom logic added to the Control script forces them to be).  This list takes 
+(unless they are required or some custom logic added to the Control script forces them to be).  This list takes 
 priority over any `include` or `exclude` arguments.
 
 **-i / --include [ids]**: The components to *additionally* include in the installation, 
-represented as a space delimited list of package ids.  Default components do NOT need to be listed
-here, as they are already "included" implicitly. 
+represented as a space delimited list of package ids.  Required/Default components do NOT need to be listed
+here, as they are already included implicitly. 
 
 **-e / --exclude [ids]**: The components to exclude from in the installation, 
 represented as a space delimited list of package ids.  Only default components need to be listed
-here, those not automatically included they are already "excluded" implicitly.
+here, as those which not automatically included are implicitly excluded by default.  Attempts exclude a required package will produce an error .  
 
 The component selecting arguments are only made available when more than one
 package is defined for the installer.  If there is only a single package, there is not
 a needed to select/de-select it!  When these arguments can be used, the `--help` text
-will list the package ids and indicate if they are included by default.  As package ids
+will list the package ids and indicate if they are required or default inclusions.  As package ids
 are defined in the "Java package" format (e.g. "com.company.product"), and typically 
 installers will all have the same long form prefix for all such ids, that prefix will be
 truncated for the user's benefit.  So, rather than "com.company.product", the id will become
@@ -324,6 +327,11 @@ will all be be listed in the long manner.
 available when the installer naturally provides the option to choose this at runtime (i.e. in non-silent mode).  If the option is not exposed to the user normally, it is not exposed 
 here.  When available, this is **disabled** by default.  You must explicitly opt to launch 
 the program by including this switch.
+
+**-b / --reboot**: Reboot the system automatically post installation, if the installer deems that necessary.  Otherwise, a message should appear on the terminal instructing the user to do this.  This option is only made 
+available when the installer naturally provides the option to choose this at runtime (i.e. in non-silent mode).  If the option is not exposed to the user normally, it is not exposed 
+here.  When available, this is **disabled** by default.  You must explicitly
+opt to allow a reboot by including this switch.
 
 **-d / --debug**: Enable debugging output. 
 
@@ -576,7 +584,12 @@ Static Functions:
     clickButton( buttonName, delayMillis=None )                
     
     enable( controlName, isEnable=True )	
+    isEnabled( controlName )
+    ifEnabled( controlName, isNegated=False, isMultiLine=False )   
+
     setVisible( controlName, isVisible=True )
+    isVisible( controlName )
+    ifVisible( controlName, isNegated=False, isMultiLine=False )   
     
     getText( controlName )
     setText( controlName, text, varNames=None, isAutoQuote=True )
@@ -601,7 +614,14 @@ Static Functions:
 		setCustomPageText( title, description, isAutoQuote=True, pageVar="page" )
 
 	    enableCustom( controlName, isEnable=True, pageVar="page" )
+	    isCustomEnabled( controlName, pageVar="page" )
+	    ifCustomEnabled( controlName, pageVar="page", isNegated=False, 
+	    	             isMultiLine=False )   
+
 	    setCustomVisible( controlName, isVisible=True, pageVar="page" )
+	    isCustomVisible( controlName, pageVar="page" )
+	    ifCustomVisible( controlName, pageVar="page", isNegated=False, 
+	    	             isMultiLine=False )   
 
 	    setCustomText( controlName, text, isAutoQuote=True, pageVar="page" )                
 	    getCustomText( controlName, pageVar="page" )

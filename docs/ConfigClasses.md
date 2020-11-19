@@ -383,11 +383,13 @@ Attributes & default values:
     controllerConstructorBody = None
     isAutoControllerConstructor = True
 
-    onPageChangeCallbackBody = None
-    isAutoPageChangeCallBack = True
+    onPageChangeCallbackBody      = None
+    onPageChangeCallbackInjection = None
+    isAutoPageChangeCallBack      = True
 
-    onFinishedClickedCallbackBody     = None
-    isAutoFinishedClickedCallbackBody = True
+    onFinishedClickedCallbackBody      = None
+    onFinishedClickedCallbackInjection = None
+    isAutoFinishedClickedCallbackBody  = True
 
     onPageInsertRequestCallbackBody = None
     isAutoPageInsertRequestCallBack = True
@@ -398,8 +400,9 @@ Attributes & default values:
     onPageVisibilityRequestCallbackBody = None
     isAutoPageVisibilityRequestCallBack = True
       
-    onValueChangeCallbackBody = None
-    isAutoValueChangeCallBack = True
+    onValueChangeCallbackBody      = None
+    onValueChangeCallbackInjection = None
+    isAutoValueChangeCallBack      = True
                                         
     isIntroductionPageVisible = True                                                                                                                                
     introductionPageCallbackBody = None
@@ -1359,6 +1362,8 @@ Functions:
 **position**: 0 based index where the widget will be injected onto the page.
 Injections occur at the bottom of the default page, below the default elements.
 (per Qt's design).
+
+**onEnter**: Qt Script snippet invoked upon entering / displaying the page to the user.  This code will be invoked AFTER the initial "page call back" on which the widget was injected.  To modify those page call backs instead, see [QtIfwControlScript](#qtifwcontrolscript).     
     
 ### QtIfwOnFinishedCheckbox
 
