@@ -257,6 +257,11 @@ installation like a [Silent Installer](#silent-installers), and is in fact at th
 of how that works. Unlike a silent installer, GUI suppression is involved, however,
 and some of the extended features are not available e.g. error return codes.                                                      
  
+**_keeptemp=[true/false]**: DEBUGGING feature: Enable to leave scripts in a temp 
+directory, post any dynamic modifications, allowing them to scrutinized / 
+executed directly.  This may also be enabled by setting an environmental variable
+as `_keeptemp=true`.
+ 
 ### Silent Installers
 
 "Silent installation" is the process of running a installer without any interactive prompts 
@@ -334,6 +339,11 @@ here.  When available, this is **disabled** by default.  You must explicitly
 opt to allow a reboot by including this switch.
 
 **-d / --debug**: Enable debugging output. 
+
+**_keeptemp=true**: DEBUGGING feature: Leave scripts in a temp 
+directory, post any dynamic modifications, allowing them to scrutinized / 
+executed directly.  Enabled by setting an **environmental variable**
+as `_keeptemp=true`.
 
 ### Installer Variables
 

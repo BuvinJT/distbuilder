@@ -3054,7 +3054,9 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + 'installer.setValue( "__lockFilePath", "" )' + END +
             TAB + 'installer.setValue( "__watchDogPath", "" )' + END +
             TAB + 'installer.setValue( ' +
-                ('"%s"' % (_REMOVE_TARGET_KEY,) ) + ', "" )' + END +            
+                ('"%s"' % (_REMOVE_TARGET_KEY,) ) + ', "" )' + END +        
+            TAB + ('if( getEnv("%s")=="true" )' % (_KEEP_TEMP_SWITCH,)) + NEW +
+            (2*TAB) + _QtIfwScript.setBoolValue( _KEEP_TEMP_SWITCH, True ) +
             TAB + 'clearOutLog()' + END +
             TAB + 'clearErrorLog()' + END +
             TAB + _QtIfwScript.logValue( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +                                                 
@@ -4119,7 +4121,8 @@ Component.prototype.%s = function(){
                                              task.uninstScript.fileName() )
                 if task.uninstScript 
                 else task.uninstExePath if task.uninstExePath 
-                else None )      
+                else None )  
+            uninstScriptType=( task.uninstScript.extension if task.uninstScript else None )            
             if uninstExePath:
                 if not IS_WINDOWS: uninstExePath = uninstExePath.replace(" ", "\\\\ ")
                 setArgs += '%sundoPath = "%s"%s' % (TAB,uninstExePath,END)
@@ -4171,14 +4174,14 @@ Component.prototype.%s = function(){
                 if not exePath : args+=["shellPath", "shellSwitch"] # dummy install action
                 args+=['"UNDOEXECUTE"']                
                 if task.uninstRetCodes: args+=["undoRetCodes"]
-                if scriptType=="vbs": 
+                if uninstScriptType=="vbs": 
                     args+=["vbsInterpreter", "vbsNologo"]
-                elif scriptType=="ps1":
+                elif uninstScriptType=="ps1":
                     args+=["psInterpreter", "psNologo", 
                            "psExecPolicy", "psBypassPolicy",
                            "psInputFormat", "psInputNone", 
                            "psExecScript"]
-                elif scriptType=="scpt":            
+                elif uninstScriptType=="scpt":            
                     args+=["osaInterpreter"]                                              
                 else: args+=["shellPath", "shellSwitch"]
                 if IS_WINDOWS:
@@ -4659,6 +4662,13 @@ class QtIfwExternalOp:
         return QtIfwExternalOp.__genScriptOp( event, 
                 script=QtIfwExternalOp.RemoveDirScript( dirPath ), 
                 isElevated=isElevated )
+     
+    @staticmethod
+    def RunProgram( event, path, arguments=None, isHidden=False, # TODO: Test in NIX/MAC 
+                    isElevated=True ):           
+        return QtIfwExternalOp.__genScriptOp( event, 
+            script=QtIfwExternalOp.RunProgramScript( path, arguments, isHidden ), 
+            isElevated=isElevated )
     
     @staticmethod
     def CreateStartupEntry( pkg=None, 
@@ -4842,27 +4852,51 @@ class QtIfwExternalOp:
             "removeDir" ), script=(
             'rd /q /s "{dirPath}"' if IS_WINDOWS else 'rm -r "{dirPath}"'  ), 
             replacements={ "dirPath": dirPath } )
-    
+
+    @staticmethod
+    def RunProgramScript( path, arguments=None, isHidden=False, 
+                          replacements=None ):
+        if arguments is None: arguments =[] 
+        if isHidden: 
+            if IS_WINDOWS :        
+                argList =( (" -ArgumentList " +
+                    ",".join( ['"%s"' % (a,) for a in arguments]) )         
+                    if len(arguments) > 0 else "" )               
+                return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                    "runHiddenProgram" ), extension="ps1", script=(
+                    'Start-Process -FilePath "%s" -Wait -WindowStyle Hidden%s'
+                    % (path, argList) ), replacements=replacements )
+            else: 
+                # TODO: Fill-in on NIX/MAC
+                util._onPlatformErr()
+        else :
+            tokens = [path] + arguments  
+            return ExecutableScript( "runProgram", script=( 
+                " ".join(['"%s"' % (t,) if " " in t else t for t in tokens])) ) 
+                     
     if IS_WINDOWS:
         # See
         # https://blog.netwrix.com/2018/09/11/how-to-get-edit-create-and-delete-registry-keys-with-powershell/
         # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-itemproperty?view=powershell-7
         @staticmethod
         def CreateRegistryEntryScript( key, valueName=None, 
-                                       value="", valueType="String" ):
+                                       value="", valueType="String",
+                                       replacements=None ):
             valueName = "-Name '%s' " % (valueName,) if valueName else ""
             if value is None: value=""
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "createRegEntry" ), extension="ps1", script=(
                 "New-ItemProperty -Path '%s' %s-Value '%s' -PropertyType '%s'" 
-                % (key, valueName, value, valueType) ) )
+                % (key, valueName, value, valueType) ), 
+                replacements=replacements )
         
         @staticmethod
-        def RemoveRegistryEntryScript( key, valueName=None ):
+        def RemoveRegistryEntryScript( key, valueName=None, replacements=None ):
             valueName = "-Name '%s' " % (valueName,) if valueName else ""            
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "removeRegEntry" ), extension="ps1", script=(                
-                "Remove-ItemProperty -Path '%s' %s" % (key, valueName) ) )
+                "Remove-ItemProperty -Path '%s' %s" % (key, valueName) ),
+                replacements=replacements )
  
         @staticmethod
         def Script2ExeScript( srcPath, destPath, isSrcRemoved=False ):            

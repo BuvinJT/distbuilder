@@ -866,9 +866,10 @@ Attributes & default values:
     isDesktopTarget = False
     isHomeDirTarget = False
             
-    isInstallTest     = False
-    isAutoInstallTest    = False
-    isVerboseInstallTest = True
+    isInstallTest            = False
+    isAutoInstallTest        = False
+    isVerboseInstallTest     = True
+    isScriptDebugInstallTest = False
         
 "Virtual" configuration functions to override:  
 (Note the order shown is that in which these functions are invoked)

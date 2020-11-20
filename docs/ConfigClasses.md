@@ -779,11 +779,16 @@ Tools defined this list will be rolled into the installer without explicitly
 updating the [QtIfwPackageScript](#qtifwpackagescript) owner of this operation
 object. 
 
-### QtIfwExternalOp Convenience Methods
+### QtIfwExternalOp Builders
 
 #### ON_INSTALL, ON_UNINSTALL, ON_BOTH, AUTO_UNDO
 
 Event constants for convenience methods.
+
+#### QtIfwExternalOp.RunProgram
+
+    RunProgram( event, path, arguments=None, isHidden=False,
+                isElevated=True )
 
 #### QtIfwExternalOp.RemoveFile
 
@@ -810,8 +815,37 @@ Event constants for convenience methods.
 	
 	**WINDOWS ONLY**
  
-    RemoveRegistryEntry( event, key, valueName=None )          
-          
+    RemoveRegistryEntry( event, key, valueName=None )        
+
+### QtIfwExternalOp Convenience Scripts
+    
+#### QtIfwExternalOp.RunProgramScript
+
+    RunProgramScript( path, arguments=None, isHidden=False, 
+    				  replacements=None )
+
+#### QtIfwExternalOp.RemoveFileScript( filePath )
+
+	RemoveFileScript( filePath )
+ 
+#### QtIfwExternalOp.RemoveDirScript( dirPath )
+
+	RemoveDirScript( dirPath )
+
+### QtIfwExternalOp.CreateRegistryEntryScript
+
+	**WINDOWS ONLY**
+
+	CreateRegistryEntryScript( key, valueName=None, 
+                               value="", valueType="String",
+                               replacements=None )
+                               
+### QtIfwExternalOp.RemoveRegistryEntryScript
+
+	**WINDOWS ONLY**
+
+    RemoveRegistryEntryScript( key, valueName=None, replacements=None ) 
+                                                                                        
 #### QtIfwExternalOp.CreateExeFromScript
 	
 	**WINDOWS ONLY**
