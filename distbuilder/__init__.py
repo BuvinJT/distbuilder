@@ -44,6 +44,7 @@ from distbuilder.qt_installer import \
     , mergeQtIfwPackages \
     , nestQtIfwPackage \
     , joinPathQtIfw \
+    , qtIfwDynamicValue \
     , QT_IFW_VERBOSE_SWITCH \
     , QT_IFW_DYNAMIC_VARS \
     , QT_IFW_TARGET_DIR \

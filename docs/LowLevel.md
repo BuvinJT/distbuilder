@@ -1351,6 +1351,14 @@ Note, use `joinPath` to build paths in a platform specific manner,
 applicable to where a build script will be employing it to *create* 
 a distribution.    
 
+### qtIfwDynamicValue
+
+Use this produce the resolution of dynamic substitution variables 
+utilized by QtIFW scripts (directly or indirectly) on a target machine.
+These are often paths to files or directories on the target, or embedded 
+resources in the installer, but may in fact be used for strings containing
+any content, which the installer knows how to resolve.  
+
 ### isParentDir 
 
     isParentDir( parent, child, basePath=None ):

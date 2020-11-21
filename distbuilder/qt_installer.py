@@ -179,6 +179,8 @@ _REBOOT_MSG = "Please reboot now to complete the installation."
 # don't use back slash on Windows!
 def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
 
+def qtIfwDynamicValue( name ): return "@%s@" % (name,)
+
 # -----------------------------------------------------------------------------
 class QtIfwConfig:   
     def __init__( self, 
@@ -4663,12 +4665,14 @@ class QtIfwExternalOp:
                 script=QtIfwExternalOp.RemoveDirScript( dirPath ), 
                 isElevated=isElevated )
      
+    # TODO: Test in NIX/MAC 
+    # TODO: Add isSynchronous=True
     @staticmethod
-    def RunProgram( event, path, arguments=None, isHidden=False, # TODO: Test in NIX/MAC 
-                    isElevated=True, isAutoBitContext=True ):           
+    def RunProgram( event, path, arguments=None, isAutoQuote=True,  
+                    isHidden=False, isElevated=True, isAutoBitContext=True ):           
         return QtIfwExternalOp.__genScriptOp( event, 
             script=QtIfwExternalOp.RunProgramScript( 
-                path, arguments, isHidden, isAutoBitContext=isAutoBitContext ), 
+                path, arguments, isAutoQuote, isHidden, isAutoBitContext ), 
             isElevated=isElevated )
     
     @staticmethod
@@ -4865,9 +4869,11 @@ class QtIfwExternalOp:
             'rd /q /s "{dirPath}"' if IS_WINDOWS else 'rm -r "{dirPath}"'  ), 
             replacements={ "dirPath": dirPath } )
 
+    # TODO: Add isSynchronous=True
     @staticmethod
-    def RunProgramScript( path, arguments=None, isHidden=False, 
-                          replacements=None, isAutoBitContext=True ):
+    def RunProgramScript( path, arguments=None, isAutoQuote=True, 
+                          isHidden=False, isAutoBitContext=True,
+                          replacements=None  ):
         if arguments is None: arguments =[] 
         if isHidden: 
             if IS_WINDOWS :        
@@ -4884,9 +4890,12 @@ class QtIfwExternalOp:
                 # TODO: Fill-in on NIX/MAC
                 util._onPlatformErr()
         else :
-            tokens = [path] + arguments
-            runCmd = " ".join( [('"%s"' % (t,) if " " in t else t) 
-                                for t in tokens] ) 
+            tokens = [path] + arguments            
+            if isAutoQuote:
+                tokens = [('"%s"' % (t,) if (" " in t or "@" in t) else t) 
+                          for t in tokens]
+            
+            runCmd = " ".join( tokens ) 
             if IS_WINDOWS and not isAutoBitContext:
                 script=([
                     'set "RUN_CMD=%s"' % (runCmd,),
