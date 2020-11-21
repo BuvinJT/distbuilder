@@ -788,7 +788,10 @@ Event constants for convenience methods.
 #### QtIfwExternalOp.RunProgram
 
     RunProgram( event, path, arguments=None, isHidden=False,
-                isElevated=True )
+                isElevated=True, isAutoBitContext=True )
+
+On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
+program from the installer's 32 bit context.
 
 #### QtIfwExternalOp.RemoveFile
 
@@ -805,24 +808,49 @@ Event constants for convenience methods.
 
 	TODO: Add Linux & macOS implementations
 
+#### QtIfwExternalOp.UninstallWindowsApp
+
+	**WINDOWS ONLY**
+ 	
+    UninstallWindowsApp( appName, arguments=None,
+                         isSynchronous=True, isHidden=True, 
+                         isAutoBitContext=True )
+
 #### QtIfwExternalOp.CreateRegistryEntry
 	
 	**WINDOWS ONLY**
 
-    CreateRegistryEntry( event, key, valueName=None, value="", valueType="String" )
+    CreateRegistryEntry( event, 
+    	key, valueName=None, value="", valueType="String",
+    	isAutoBitContext=True )
+
+Set `isAutoBitContext=False` if you need to access 64 bit entries
+from the installer's 32 bit context, and/or wish to be explicit in the
+use of SysWow64 nodes.
 
 #### QtIfwExternalOp.RemoveRegistryEntry
 	
 	**WINDOWS ONLY**
  
-    RemoveRegistryEntry( event, key, valueName=None )        
+    RemoveRegistryEntry( event, 
+    	key, valueName=None, isAutoBitContext=True )        
+
+Set `isAutoBitContext=False` if you need to access 64 bit entries
+from the installer's 32 bit context, and/or wish to be explicit in the
+use of SysWow64 nodes.
 
 ### QtIfwExternalOp Convenience Scripts
     
 #### QtIfwExternalOp.RunProgramScript
 
     RunProgramScript( path, arguments=None, isHidden=False, 
-    				  replacements=None )
+    				  isAutoBitContext=True, replacements=None )
+
+On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
+program from the installer's 32 bit context.
+
+Note: Elevation is controlled via the operation executing the script 
+rather embedded within it.
 
 #### QtIfwExternalOp.RemoveFileScript( filePath )
 
@@ -832,19 +860,28 @@ Event constants for convenience methods.
 
 	RemoveDirScript( dirPath )
 
+#### QtIfwExternalOp.UninstallWindowsAppScript
+
+	**WINDOWS ONLY**
+ 	
+    UninstallWindowsAppScript( appName, arguments=None,
+                               isSynchronous=True, isHidden=True, 
+                               isAutoBitContext=True )
+                
 ### QtIfwExternalOp.CreateRegistryEntryScript
 
 	**WINDOWS ONLY**
-
-	CreateRegistryEntryScript( key, valueName=None, 
+ 
+    CreateRegistryEntryScript( key, valueName=None, 
                                value="", valueType="String",
-                               replacements=None )
+                               isAutoBitContext=True, replacements=None )
                                
 ### QtIfwExternalOp.RemoveRegistryEntryScript
 
 	**WINDOWS ONLY**
 
-    RemoveRegistryEntryScript( key, valueName=None, replacements=None ) 
+    RemoveRegistryEntryScript( key, valueName=None, 
+                               isAutoBitContext=True, replacements=None ) 
                                                                                         
 #### QtIfwExternalOp.CreateExeFromScript
 	

@@ -4665,9 +4665,10 @@ class QtIfwExternalOp:
      
     @staticmethod
     def RunProgram( event, path, arguments=None, isHidden=False, # TODO: Test in NIX/MAC 
-                    isElevated=True ):           
+                    isElevated=True, isAutoBitContext=True ):           
         return QtIfwExternalOp.__genScriptOp( event, 
-            script=QtIfwExternalOp.RunProgramScript( path, arguments, isHidden ), 
+            script=QtIfwExternalOp.RunProgramScript( 
+                path, arguments, isHidden, isAutoBitContext=isAutoBitContext ), 
             isElevated=isElevated )
     
     @staticmethod
@@ -4715,20 +4716,31 @@ class QtIfwExternalOp:
         # https://stackoverflow.com/questions/630382/how-to-access-the-64-bit-registry-from-a-32-bit-powershell-instance
         
         @staticmethod
+        def UninstallWindowsApp( event, appName, arguments=None,
+                                 isSynchronous=True, isHidden=True, 
+                                 isAutoBitContext=True ):
+            return QtIfwExternalOp.__genScriptOp( event, 
+                script=QtIfwExternalOp.UninstallWindowsAppScript( appName,
+                    arguments, isSynchronous, isHidden, isAutoBitContext ),
+                isReversible=False, isElevated=True )
+                
+        @staticmethod
         def CreateRegistryEntry( event, key, valueName=None, 
-                                 value="", valueType="String" ):
+                                 value="", valueType="String",
+                                 isAutoBitContext=True ):
             return QtIfwExternalOp.__genScriptOp( event, 
                 script=QtIfwExternalOp.CreateRegistryEntryScript( 
-                    key, valueName, value, valueType ), 
+                    key, valueName, value, valueType, isAutoBitContext ), 
                 uninstScript=QtIfwExternalOp.RemoveRegistryEntryScript( 
-                    key, valueName ), 
+                    key, valueName, isAutoBitContext ), 
                 isElevated=True )
         
         @staticmethod
-        def RemoveRegistryEntry( event, key, valueName=None ):
+        def RemoveRegistryEntry( event, key, valueName=None,
+                                 isAutoBitContext=True ):
             return QtIfwExternalOp.__genScriptOp( event, 
                 script=QtIfwExternalOp.RemoveRegistryEntryScript( 
-                    key, valueName ), 
+                    key, valueName, isAutoBitContext ), 
                 isReversible=False, isElevated=True )
 
         @staticmethod
@@ -4855,7 +4867,7 @@ class QtIfwExternalOp:
 
     @staticmethod
     def RunProgramScript( path, arguments=None, isHidden=False, 
-                          replacements=None ):
+                          replacements=None, isAutoBitContext=True ):
         if arguments is None: arguments =[] 
         if isHidden: 
             if IS_WINDOWS :        
@@ -4863,39 +4875,162 @@ class QtIfwExternalOp:
                     ",".join( ['"%s"' % (a,) for a in arguments]) )         
                     if len(arguments) > 0 else "" )               
                 return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                    "runHiddenProgram" ), extension="ps1", script=(
+                    "runHiddenProgram" ), extension="ps1", script=([
+                    QtIfwExternalOp.__psSetBitContext( isAutoBitContext ),   
                     'Start-Process -FilePath "%s" -Wait -WindowStyle Hidden%s'
-                    % (path, argList) ), replacements=replacements )
+                         % (path, argList), 
+                    'exit $LastExitCode']), replacements=replacements )
             else: 
                 # TODO: Fill-in on NIX/MAC
                 util._onPlatformErr()
         else :
-            tokens = [path] + arguments  
-            return ExecutableScript( "runProgram", script=( 
-                " ".join(['"%s"' % (t,) if " " in t else t for t in tokens])) ) 
+            tokens = [path] + arguments
+            runCmd = " ".join( [('"%s"' % (t,) if " " in t else t) 
+                                for t in tokens] ) 
+            if IS_WINDOWS and not isAutoBitContext:
+                script=([
+                    'set "RUN_CMD=%s"' % (runCmd,),
+                    'if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%RUN_CMD%" ) else ( %RUN_CMD% )',
+                    runCmd])  
+            else: script=runCmd
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "runProgram" ), script=script )
                      
     if IS_WINDOWS:
+        
+        __PS_32_TO_64_BIT_CONTEXT_HEADER=(
+"""                
+if( $env:PROCESSOR_ARCHITEW6432 -eq "AMD64" ) {
+    $powershell=$PSHOME.tolower().replace("syswow64","sysnative").replace("system32","sysnative")
+    if ($myInvocation.Line) {
+        &"$powershell\powershell.exe" -NonInteractive -NoProfile $myInvocation.Line
+    } else {
+        &"$powershell\powershell.exe" -NonInteractive -NoProfile -file "$($myInvocation.InvocationName)" $args
+    }
+    exit $lastexitcode
+}
+""")
+        @staticmethod
+        def __psSetBitContext( isAutoBitContext ): 
+            return( "" if isAutoBitContext else 
+                    QtIfwExternalOp.__PS_32_TO_64_BIT_CONTEXT_HEADER )
+            
+        @staticmethod
+        def UninstallWindowsAppScript( appName, arguments=None,
+                                       isSynchronous=True, isHidden=True, 
+                                       isAutoBitContext=True ):
+            psScriptTemplate=(
+r"""
+{setBitContext}
+
+$APP_NAME = "{appName}"
+
+# Search for the uninstall command within the registry Local Machine key (32 & 64 bit locations)
+$RegPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall" 
+$app = Get-ChildItem -Path $RegPath | Get-ItemProperty | Where-Object {$_.DisplayName -match $APP_NAME }
+if( $app.QuietUninstallString ){ $UninstallCmd = $app.QuietUninstallString }
+elseif( $app.UninstallString ){ $UninstallCmd = $app.UninstallString }
+
+if( !$UninstallCmd ){
+    # Search within the Current User key (Wow6432Node never used here for this?)
+    $RegPath = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
+    $app = Get-ChildItem -Path $RegPath | Get-ItemProperty | Where-Object {$_.DisplayName -match $APP_NAME }
+    if( $app.QuietUninstallString ){ $UninstallCmd = $app.QuietUninstallString }
+    elseif( $app.UninstallString ){ $UninstallCmd = $app.UninstallString }
+}
+
+if( !$UninstallCmd ){
+    # Search in a final odd ball location, used by some old legacy programs
+    $RegPath = "HKLM:\SOFTWARE\Classes\Installer\Products"
+    $app = Get-ChildItem -Path $RegPath | Get-ItemProperty | Where-Object {$_.ProductName -match $APP_NAME }
+    if( $app.UninstallString ){ $UninstallCmd = $app.UninstallString }    
+}
+
+# Exit with error if no command found
+if( !$UninstallCmd ){ 
+    Write-Error "Uninstall command not found for: $APP_NAME"
+    exit 1 
+}
+
+Write-Host "OS registered uninstall command: $UninstallCmd"
+
+# Tweak QtIFW / Distbuilder commands
+if( $UninstallCmd.tolower().Contains( "maintenancetool.exe" ) ){
+    # Run in QtIFW verbose mode, in case distbuilder built - specify auto pilot / removeall
+    $UninstallCmd="$UninstallCmd -v auto=true mode=removeall" 
+}  
+
+# Tweak MSI commands    
+elseif( $UninstallCmd.tolower().Contains( "msiexec.exe" ) ){
+    # Replace an install switch with an uninstall switch, if found
+    # (not sure why some registered uninstall strings might have this issue, but apparently some do...?)
+    # preserve the original case
+    $UninstallCmd.Replace( "MsiExec.exe /I", "MsiExec.exe /X" )    
+    $UninstallCmd.Replace( "msiexec.exe /I", "msiexec.exe /X" )    
+    # Add silent switch if not present
+    if( !$UninstallCmd.Contains( " /qn" ) ) { $UninstallCmd="$UninstallCmd /qn" } 
+}  
+
+# Split the command string into the program path and argument list
+$tokens=$UninstallCmd.split(' ')
+$lastProgTokenIdx=0
+foreach( $token in $tokens ) {    
+    if( $token.EndsWith('.exe') ){ break }    
+    $lastProgTokenIdx++
+}
+$prog=$tokens[0..$lastProgTokenIdx]
+$prog="$prog"
+$lastIdx=$tokens.Count-1
+if( $lastProgTokenIdx -lt $lastIdx ){ $args=$tokens[($lastProgTokenIdx+1)..$lastIdx] }
+else{ $args=@{} }
+{addArgs}
+
+# Run the uninstaller with window hidden (if it respects that request!)
+Write-Host "Running: $prog"
+Write-Host "With arguments: $args"
+Start-Process $prog {wait}{hide}-ArgumentList $args
+""")                                    
+            if arguments:
+                ADD_ARG_TMPL = '$args.Add("%s")\n'
+                addArgs = [ ADD_ARG_TMPL % (a,) for a in arguments ]
+            else: addArgs = ""
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "uninstallApp" ), extension="ps1", script=psScriptTemplate,
+                replacements={
+                      "setBitContext": QtIfwExternalOp.__psSetBitContext( 
+                                            isAutoBitContext )
+                    , "appName" : appName
+                    , "addArgs": addArgs
+                    , "wait": ("-Wait " if isSynchronous else "")
+                    , "hide": ("-WindowStyle Hidden " if isHidden else "")  
+                } )
+
         # See
         # https://blog.netwrix.com/2018/09/11/how-to-get-edit-create-and-delete-registry-keys-with-powershell/
         # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-itemproperty?view=powershell-7
         @staticmethod
         def CreateRegistryEntryScript( key, valueName=None, 
                                        value="", valueType="String",
+                                       isAutoBitContext=True,
                                        replacements=None ):
             valueName = "-Name '%s' " % (valueName,) if valueName else ""
             if value is None: value=""
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "createRegEntry" ), extension="ps1", script=(
+                "createRegEntry" ), extension="ps1", script=([
+                QtIfwExternalOp.__psSetBitContext( isAutoBitContext ),
                 "New-ItemProperty -Path '%s' %s-Value '%s' -PropertyType '%s'" 
-                % (key, valueName, value, valueType) ), 
+                    % (key, valueName, value, valueType)] ), 
                 replacements=replacements )
         
         @staticmethod
-        def RemoveRegistryEntryScript( key, valueName=None, replacements=None ):
+        def RemoveRegistryEntryScript( key, valueName=None, 
+                                       isAutoBitContext=True,
+                                       replacements=None ):
             valueName = "-Name '%s' " % (valueName,) if valueName else ""            
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "removeRegEntry" ), extension="ps1", script=(                
-                "Remove-ItemProperty -Path '%s' %s" % (key, valueName) ),
+                "removeRegEntry" ), extension="ps1", script=([
+                QtIfwExternalOp.__psSetBitContext( isAutoBitContext ),                
+                "Remove-ItemProperty -Path '%s' %s" % (key, valueName) ]),
                 replacements=replacements )
  
         @staticmethod
