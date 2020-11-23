@@ -860,6 +860,18 @@ class _QtIfwScript:
     _KILLALL_ARGS = ["/F","/IM"] if IS_WINDOWS else ["-9"] #TODO: CROSS SH? some might want -s9 ?
     _KILLALL_CMD_PREFIX = "%s %s" % (_KILLALL_PATH, " ".join( _KILLALL_ARGS ))
 
+    if IS_WINDOWS:
+
+        __REG_KEY_EXISTS_TMPL = "registryKeyExists( %s, %s )"        
+        __REG_KEY_EXISTS_LIKE_TMPL = "registryKeyExistsLike( %s, %s, %s, %s )"             
+
+        __REG_ENTRY_VALUE_TMPL = "registryEntryValue( %s, %s, %s )"
+        __ASSIGN_REG_ENTRY_VALUE_TMPL = "var %s = %s;\n"
+
+        __REG_ENTRY_EXISTS_TMPL = "registryEntryExists( %s, %s, %s )"                        
+        __REG_ENTRY_EXISTS_LIKE_TMPL =( 
+            "registryEntryExistsLike( %s, %s, %s, %s, %s  )" )
+
     @staticmethod        
     def quote( value ):                  
         return '"%s"' % (value,)  
@@ -1346,6 +1358,120 @@ class _QtIfwScript:
             "!" if isNegated else "", 
             _QtIfwScript.isComponentSelected( name, isAutoQuote ),
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+                       
+
+    if IS_WINDOWS:
+        
+        @staticmethod
+        def registryKeyExists( key, isAutoBitContext=True,
+                               isAutoQuote=True ): 
+            return _QtIfwScript.__REG_KEY_EXISTS_TMPL % (
+                _QtIfwScript._autoQuote( key, isAutoQuote ), 
+                _QtIfwScript.toBool( isAutoBitContext ) )
+        
+        @staticmethod
+        def ifRegistryKeyExists( key, isAutoBitContext=True, isNegated=False, 
+                                isAutoQuote=True, isMultiLine=False ): 
+            return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "", 
+            _QtIfwScript.registryKeyExists( key, 
+                isAutoBitContext=isAutoBitContext, isAutoQuote=isAutoQuote ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+        
+        @staticmethod
+        def registryKeyExistsLike( keyNameContains, isAutoBitContext=True, 
+                                   isCaseSensitive=False, isRecursive=False,
+                                   isAutoQuote=True ): 
+            return _QtIfwScript.__REG_KEY_EXISTS_TMPL % (
+                _QtIfwScript._autoQuote( keyNameContains, isAutoQuote ), 
+                _QtIfwScript.toBool( isAutoBitContext ), 
+                _QtIfwScript.toBool( isCaseSensitive ),
+                _QtIfwScript.toBool( isRecursive ) )
+                
+        @staticmethod
+        def ifRegistryKeyExistsLike( keyNameContains, isAutoBitContext=True, 
+                                     isCaseSensitive=False, isRecursive=False,
+                                     isNegated=False, 
+                                     isAutoQuote=True, isMultiLine=False ): 
+            return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "", 
+            _QtIfwScript.registryKeyExistsLike( keyNameContains,                                                   
+                isAutoBitContext=isAutoBitContext,
+                isCaseSensitive=isCaseSensitive, isRecursive=isRecursive, 
+                isAutoQuote=isAutoQuote ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+        
+        @staticmethod
+        def registryEntryValue( key, valueName, isAutoBitContext=True,
+                                isAutoQuote=True ): 
+            return _QtIfwScript.__REG_ENTRY_VALUE_TMPL % (
+                _QtIfwScript._autoQuote( key, isAutoQuote ),
+                _QtIfwScript._autoQuote( valueName, isAutoQuote ),
+                _QtIfwScript.toBool( isAutoBitContext )  )                                
+
+        @staticmethod            
+        def assignRegistryEntryVar( key, valueName, isAutoBitContext=True,
+                                    varName="regValue", isAutoQuote=True ): 
+            return _QtIfwScript.__ASSIGN_REG_ENTRY_VALUE_TMPL % (
+                _QtIfwScript._autoQuote( varName, isAutoQuote ),
+                _QtIfwScript.registryEntryValue( 
+                    key, valueName, isAutoBitContext=isAutoBitContext,
+                    isAutoQuote=isAutoQuote ) ) 
+
+        @staticmethod
+        def setValueFromRegistryEntry( key, 
+                                       regKey, valueName, isAutoBitContext=True,                                    
+                                       isAutoQuote=True ):                                    
+            return _QtIfwScript.setValue( key, 
+                _QtIfwScript.registryEntryValue( 
+                    regKey, valueName, isAutoBitContext=isAutoBitContext,
+                    isAutoQuote=isAutoQuote ), 
+                isAutoQuote=isAutoQuote )
+        
+        @staticmethod
+        def registryEntryExists( key, valueName, isAutoBitContext=True,
+                                 isAutoQuote=True ):         
+            return _QtIfwScript.__REG_ENTRY_EXISTS_TMPL % (
+                _QtIfwScript._autoQuote( key, isAutoQuote ),
+                _QtIfwScript._autoQuote( valueName, isAutoQuote ),
+                _QtIfwScript.toBool( isAutoBitContext )  ) 
+                                         
+        @staticmethod
+        def ifRegistryEntryExists( key, valueName, isAutoBitContext=True,
+                                   isNegated=False, 
+                                   isAutoQuote=True, isMultiLine=False ) : 
+            return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "", 
+            _QtIfwScript.registryEntryExists( key, valueName,                                                   
+                isAutoBitContext=isAutoBitContext,                
+                isAutoQuote=isAutoQuote ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+                            
+        @staticmethod
+        def registryEntryExistsLike( key, valueNameContains, 
+                                     isAutoBitContext=True, 
+                                     isCaseSensitive=False, isRecursive=False,
+                                     isAutoQuote=True ): 
+            return _QtIfwScript.__REG_ENTRY_EXISTS_LIKE_TMPL % ( 
+                _QtIfwScript._autoQuote( key, isAutoQuote ),
+                _QtIfwScript._autoQuote( valueNameContains, isAutoQuote ),
+                _QtIfwScript.toBool( isAutoBitContext ), 
+                _QtIfwScript.toBool( isCaseSensitive ),
+                _QtIfwScript.toBool( isRecursive ) )                                 
+
+        @staticmethod
+        def ifRegistryEntryExistsLike( key, valueNameContains, 
+                                       isAutoBitContext=True, 
+                                       isCaseSensitive=False, isRecursive=False,
+                                       isNegated=False, 
+                                       isAutoQuote=True, isMultiLine=False ): 
+            return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "", 
+            _QtIfwScript.registryEntryExistsLike(  key, valueNameContains,                                                   
+                isAutoBitContext=isAutoBitContext,
+                isCaseSensitive=isCaseSensitive, isRecursive=isRecursive, 
+                isAutoQuote=isAutoQuote ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
                         
     # _QtIfwScript            
     def __init__( self, fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
@@ -1365,6 +1491,10 @@ class _QtIfwScript:
         TAB = _QtIfwScript.TAB
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK
+        TRY   = _QtIfwScript.TRY
+        CATCH = _QtIfwScript.CATCH
+        #IF    = _QtIfwScript.ELSE
+        #ELSE  = _QtIfwScript.ELSE
         
         varsList = ",".join([ '"%s"' % (v,) 
                               for v in QT_IFW_DYNAMIC_VARS ])
@@ -2063,8 +2193,148 @@ class _QtIfwScript:
             # Note the regQueryUninstallKeys string is defined below with 
             # multiple levels of escape. Reviewing the resulting QScript maybe easier
             # for initial debugging than doing so in this Python layer.                
-            regQueryUninstallKeys = '@echo off & for /f delims^=^ eol^= %i in (\\\'REG QUERY HKCU\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\ /s /f \\"" + installer.value("ProductName") + "\\" /t REG_SZ /c /e ^| find \\"HKEY_CURRENT_USER\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\\\"\\\') do ( for /f \\"tokens=2*\\" %a in (\\\'REG QUERY %i /v \\"UninstallString\\" ^| find \\"UninstallString\\"\\\') do echo %b )\\n'          
-            self.qtScriptLib += (
+            regQueryUninstallKeys =( 
+                '@echo off & for /f delims^=^ eol^= %i in ('
+                '\\\'REG QUERY HKCU\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\ '
+                '/s /f \\"" + installer.value("ProductName") + "\\" /t REG_SZ /c /e '
+                '^| find \\"HKEY_CURRENT_USER\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\\\"\\\')'
+                ' do ( for /f \\"tokens=2*\\" %a in (\\\'REG QUERY %i /v \\"UninstallString\\" '
+                '^| find \\"UninstallString\\"\\\') do echo %b )\\n' 
+            )          
+            self.qtScriptLib += (                
+            'function registryEntryValue( key, valueName, isAutoBitContext ) ' + SBLK +
+            TAB + _QtIfwScript.log( "Registry entry value query" ) + 
+            TAB + _QtIfwScript.log( '"    key: " + key', isAutoQuote=False ) +
+            TAB + _QtIfwScript.log( '"    valueName: " + valueName', isAutoQuote=False ) +
+            TAB + _QtIfwScript.log( '"    isAutoBitContext: " + isAutoBitContext', isAutoQuote=False ) +            
+            TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
+            (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +
+            TAB + 'if( !registryEntryExists( key, valueName, isAutoBitContext ) )' + NEW +
+            (2*TAB) + 'return null' + END +                
+            TAB + 'var valSearch = valueName==null ? " /VE " : '
+                '" /V \\"" + valueName + "\\""' + END +        
+            TAB + 'var bitContext = isAutoBitContext===false ? " /reg:64" : ""' + END +            
+            TAB + 'var regQuery = "for /f \\"tokens=2*\\" %a in '
+                '(\'REG QUERY \\"" + key + "\\"" + valSearch + bitContext + '
+                    '" ^| FINDSTR \\"REG_\\"\') do @echo %b\\n"' + END +
+            TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("Registry query failed.")' + END +
+            TAB + TRY +
+            (2*TAB) + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
+            (2*TAB) + 'value = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+            TAB + CATCH + 'value = null;' + EBLK +                
+            TAB + _QtIfwScript.log( '"Registry value: " + value', isAutoQuote=False ) + 
+            TAB + 'return value' + END +                  
+            EBLK + NEW +
+            'function registryEntryExists( key, valueName, isAutoBitContext ) ' + SBLK +            
+            TAB + _QtIfwScript.log( "Registry entry exists query" ) + 
+            TAB + _QtIfwScript.log( '"    key: " + key', isAutoQuote=False ) +
+            TAB + _QtIfwScript.log( '"    valueName: " + valueName', isAutoQuote=False ) +
+            TAB + _QtIfwScript.log( '"    isAutoBitContext: " + isAutoBitContext', isAutoQuote=False ) +            
+            TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
+            (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +            
+            TAB + 'var existsOutput = "exists"' + END +
+            TAB + 'var valSearch = valueName==null ? " /VE " : '
+                '" /V \\"" + valueName + "\\""' + END +        
+            TAB + 'var bitContext = isAutoBitContext===false ? " /reg:64" : ""' + END +            
+            TAB + 'var regQuery = "REG QUERY \\"" + key + "\\"" + '
+                    'valSearch + bitContext + '
+                    '" 1>null 2>&1 && echo " + existsOutput + "\\n"' + END + 
+            TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("Registry query failed.")' + END +
+            TAB + 'var output' + END +
+            TAB + TRY +
+            (2*TAB) + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
+            (2*TAB) + 'output = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+            TAB + CATCH + 'output = null;' + EBLK +
+            TAB + 'var exists = output==existsOutput' + END +                            
+            TAB + _QtIfwScript.log( '"Registry value exists: " + exists', isAutoQuote=False ) + 
+            TAB + 'return exists' + END +                  
+            EBLK + NEW +
+            'function registryEntryExistsLike( key, valueNameContains, isAutoBitContext, '
+                'isCaseSensitive, isRecursive ) ' + SBLK +            
+            TAB + _QtIfwScript.log( "Registry entry exists query" ) + 
+            TAB + _QtIfwScript.log( '"    key: " + key', isAutoQuote=False ) +
+            TAB + _QtIfwScript.log( '"    valueNameContains: " + valueNameContains', isAutoQuote=False ) +
+            TAB + _QtIfwScript.log( '"    isAutoBitContext: " + isAutoBitContext', isAutoQuote=False ) +            
+            TAB + _QtIfwScript.log( '"    isCaseSensitive: " + isCaseSensitive', isAutoQuote=False ) +
+            TAB + _QtIfwScript.log( '"    isRecursive: " + isRecursive', isAutoQuote=False ) +                                    
+            TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
+            (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +            
+            TAB + 'var existsOutput = "exists"' + END +
+            TAB + 'var valSearch = " /F \\"" + valueNameContains + "\\""' + END +        
+            TAB + 'var bitContext = isAutoBitContext===false ? " /reg:64" : ""' + END +            
+            TAB + 'var caseSens = isCaseSensitive ? " /C" : ""' + END +
+            TAB + 'var subSearch = isRecursive ? " /S" : ""' + END +                        
+            TAB + 'var regQuery = "REG QUERY \\"%key%\\"" + valSearch + bitContext + '
+                    'caseSens + subSearch + '
+                    '" 1>null 2>&1 && echo " + existsOutput + "\\n"' + END + 
+            TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("Registry query failed.")' + END +
+            TAB + 'var output' + END +
+            TAB + TRY +
+            (2*TAB) + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
+            (2*TAB) + 'output = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+            TAB + CATCH + 'output = null;' + EBLK +
+            TAB + 'var exists = output==existsOutput' + END +                            
+            TAB + _QtIfwScript.log( '"Registry value exists: " + exists', isAutoQuote=False ) + 
+            TAB + 'return exists' + END +                  
+            EBLK + NEW +
+            'function registryKeyExists( key, isAutoBitContext ) ' + SBLK +            
+            TAB + _QtIfwScript.log( "Registry key exists query" ) + 
+            TAB + _QtIfwScript.log( '"    key: " + key', isAutoQuote=False ) +
+            TAB + _QtIfwScript.log( '"    isAutoBitContext: " + isAutoBitContext', isAutoQuote=False ) +            
+            TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
+            (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +            
+            TAB + 'var existsOutput = "exists"' + END +
+            TAB + 'var keySearch = " /F \\"" + keyNameContains + "\\""' + END +        
+            TAB + 'var bitContext = isAutoBitContext===false ? " /reg:64" : ""' + END +            
+            TAB + 'var regQuery = "REG QUERY " + keySearch + " /K /C /E" + bitContext + '
+                    '" 1>null 2>&1 && echo " + existsOutput + "\\n"' + END + 
+            TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("Registry query failed.")' + END +
+            TAB + 'var output' + END +
+            TAB + TRY +
+            (2*TAB) + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
+            (2*TAB) + 'output = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+            TAB + CATCH + 'output = null;' + EBLK +
+            TAB + 'var exists = output==existsOutput' + END +                            
+            TAB + _QtIfwScript.log( '"Registry key exists: " + exists', isAutoQuote=False ) + 
+            TAB + 'return exists' + END +                  
+            EBLK + NEW +
+            'function registryKeyExistsLike( keyNameContains, isAutoBitContext, '
+                'isCaseSensitive, isRecursive ) ' + SBLK +            
+            TAB + _QtIfwScript.log( "Registry entry exists query" ) + 
+            TAB + _QtIfwScript.log( '"    keyNameContains: " + keyNameContains', isAutoQuote=False ) +            
+            TAB + _QtIfwScript.log( '"    isAutoBitContext: " + isAutoBitContext', isAutoQuote=False ) +
+            TAB + _QtIfwScript.log( '"    isCaseSensitive: " + isCaseSensitive', isAutoQuote=False ) +
+            TAB + _QtIfwScript.log( '"    isRecursive: " + isRecursive', isAutoQuote=False ) +            
+            TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
+            (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +            
+            TAB + 'var existsOutput = "exists"' + END +
+            TAB + 'var keySearch = " /F \\"" + keyNameContains + "\\""' + END +        
+            TAB + 'var bitContext = isAutoBitContext===false ? " /reg:64" : ""' + END +            
+            TAB + 'var caseSens = isCaseSensitive ? " /C" : ""' + END +
+            TAB + 'var subSearch = isRecursive ? " /S" : ""' + END +                        
+            TAB + 'var regQuery = "REG QUERY " + keySearch + " /K " + bitContext + '
+                    'caseSens + subSearch + '
+                    '" 1>null 2>&1 && echo " + existsOutput + "\\n"' + END + 
+            TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("Registry query failed.")' + END +
+            TAB + 'var output' + END +
+            TAB + TRY +
+            (2*TAB) + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
+            (2*TAB) + 'output = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+            TAB + CATCH + 'output = null;' + EBLK +
+            TAB + 'var exists = output==existsOutput' + END +                            
+            TAB + _QtIfwScript.log( '"Registry key exists: " + exists', isAutoQuote=False ) + 
+            TAB + 'return exists' + END +                  
+            EBLK + NEW +
             '// returns null if no installation is registered OR an array,' + NEW +
             '// accounting for the fact that, while unlikely,' + NEW +
             '// it is possible to have multiple installations of the product' + NEW +

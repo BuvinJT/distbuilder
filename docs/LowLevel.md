@@ -406,7 +406,9 @@ for QtIfw script generation. With these classes you can achieve a great many cus
 behaviors, driven by scripts, without having to learn too much about Qt Script, and the
 QtIFW specifics. 
 
-Both of the distbuilder script classes provide the following **PYTHON** helpers:
+#### Python Qt Script Builders
+
+Both of the distbuilder script classes (QtIfwControlScript / QtIfwPackageScript) provide the following **PYTHON** helpers:
 
 Static Constants :
 
@@ -559,6 +561,45 @@ Static Functions:
     disableQuitPrompt()         
 	
     log( msg, isAutoQuote=True )            
+
+	<Windows Only>   
+        
+        registryEntryValue( key, valueName, isAutoBitContext=True,
+                            isAutoQuote=True )                           
+        assignRegistryEntryVar( key, valueName, isAutoBitContext=True,
+                                varName="regValue", isAutoQuote=True ) 
+        setValueFromRegistryEntry( key, 
+                                   regKey, valueName, isAutoBitContext=True,                                    
+                                   isAutoQuote=True )                              
+                            
+        registryEntryExists( key, valueName, isAutoBitContext=True,
+                             isAutoQuote=True ) 
+        ifRegistryEntryExists( key, valueName, isAutoBitContext=True,
+                               isNegated=False, 
+                               isAutoQuote=True, isMultiLine=False )       
+        registryEntryExistsLike( key, valueNameContains, 
+                                 isAutoBitContext=True, 
+                                 isCaseSensitive=False, isRecursive=False,
+                                 isAutoQuote=True )
+        ifRegistryEntryExistsLike( key, valueNameContains, 
+                                   isAutoBitContext=True, 
+                                   isCaseSensitive=False, isRecursive=False,
+                                   isNegated=False, 
+                                   isAutoQuote=True, isMultiLine=False )
+
+        registryKeyExists( key, isAutoBitContext=True,
+                           isAutoQuote=True ): pass        
+        ifRegistryKeyExists( key, isAutoBitContext=True, isNegated=False, 
+                             isAutoQuote=True, isMultiLine=False )  
+        registryKeyExistsLike( keyNameContains, isAutoBitContext=True, 
+                               isCaseSensitive=False, isRecursive=False,
+                               isAutoQuote=True )
+        ifRegistryKeyExistsLike( keyNameContains, isAutoBitContext=True, 
+                                 isCaseSensitive=False, isRecursive=False,
+                                 isNegated=False, 
+                                 isAutoQuote=True, isMultiLine=False )        
+
+#### Python QtIfwControlScript Exclusive Builders 
         
 In addition, **QtIfwControlScript** provides: 
 
@@ -643,6 +684,8 @@ Static Functions:
 
 See [QtIfwUiPage](ConfigClasses.md#qtifwuipage)
 
+#### Raw Qt Script Helpers
+
 If writing scripts directly for distbulder integration, you may also employ the 
 following add-on **QT SCRIPT** functions:
 
@@ -702,6 +745,17 @@ following add-on **QT SCRIPT** functions:
 	<Windows Only>   
 		maintenanceToolPaths()	<resolves via registry lookups>
 		isOsRegisteredProgram()	
+
+		registryKeyExists( key, isAutoBitContext )
+        registryKeyExistsLike( keyNameContains, isAutoBitContext, 
+                               isCaseSensitive, isRecursive )             
+
+        registryEntryValue( key, valueName, isAutoBitContext )
+        registryEntryExists( key, valueName, isAutoBitContext )				
+		
+		registryEntryExistsLike( key, valueNameContains, isAutoBitContext, 
+                                 isCaseSensitive, isRecursive )
+		
 		executeBatchDetached( scriptPath, bat, args )
 		executeVbScript( vbs )
 		executeVbScriptDetached( scriptPath, vbs )
@@ -1647,7 +1701,8 @@ new download will overwrite the prior file.
     
     PY2
     PY3
-    
+
+	<Python build context - NOT TARGET RUNTIME context!>    
     BIT_CONTEXT
     IS_32_BIT_CONTEXT
     IS_64_BIT_CONTEXT
