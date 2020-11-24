@@ -863,7 +863,7 @@ class _QtIfwScript:
     if IS_WINDOWS:
 
         __REG_KEY_EXISTS_TMPL = "registryKeyExists( %s, %s )"        
-        __REG_KEY_EXISTS_LIKE_TMPL = "registryKeyExistsLike( %s, %s, %s, %s )"             
+        __REG_KEY_EXISTS_LIKE_TMPL = "registryKeyExistsLike( %s, %s, %s, %s, %s )"             
 
         __REG_ENTRY_VALUE_TMPL = "registryEntryValue( %s, %s, %s )"
         __ASSIGN_REG_ENTRY_VALUE_TMPL = "var %s = %s;\n"
@@ -899,6 +899,10 @@ class _QtIfwScript:
     @staticmethod        
     def _autoQuote( value, isAutoQuote ):                  
         return '"%s"' % (value,) if isAutoQuote else value 
+
+    @staticmethod        
+    def _autoEscapeBackSlash( value, isAutoEscape ):                  
+        return value.replace( "\\", "\\\\" ) if isAutoEscape else value 
 
     @staticmethod
     def embedResources( embeddedResources ):
@@ -1366,7 +1370,9 @@ class _QtIfwScript:
         def registryKeyExists( key, isAutoBitContext=True,
                                isAutoQuote=True ): 
             return _QtIfwScript.__REG_KEY_EXISTS_TMPL % (
-                _QtIfwScript._autoQuote( key, isAutoQuote ), 
+                _QtIfwScript._autoEscapeBackSlash( 
+                    _QtIfwScript._autoQuote( key, isAutoQuote ), 
+                    isAutoQuote ).replace(":",""), 
                 _QtIfwScript.toBool( isAutoBitContext ) )
         
         @staticmethod
@@ -1379,23 +1385,31 @@ class _QtIfwScript:
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
         
         @staticmethod
-        def registryKeyExistsLike( keyNameContains, isAutoBitContext=True, 
+        def registryKeyExistsLike( parentKey, childKeyNameContains, 
+                                   isAutoBitContext=True, 
                                    isCaseSensitive=False, isRecursive=False,
                                    isAutoQuote=True ): 
-            return _QtIfwScript.__REG_KEY_EXISTS_TMPL % (
-                _QtIfwScript._autoQuote( keyNameContains, isAutoQuote ), 
+            return _QtIfwScript.__REG_KEY_EXISTS_LIKE_TMPL % (
+                _QtIfwScript._autoEscapeBackSlash( 
+                    _QtIfwScript._autoQuote( parentKey, isAutoQuote ), 
+                    isAutoQuote ).replace(":",""),
+                _QtIfwScript._autoEscapeBackSlash( 
+                    _QtIfwScript._autoQuote( childKeyNameContains, isAutoQuote ), 
+                    isAutoQuote ).replace(":",""),                  
                 _QtIfwScript.toBool( isAutoBitContext ), 
                 _QtIfwScript.toBool( isCaseSensitive ),
                 _QtIfwScript.toBool( isRecursive ) )
                 
         @staticmethod
-        def ifRegistryKeyExistsLike( keyNameContains, isAutoBitContext=True, 
+        def ifRegistryKeyExistsLike( parentKey, childKeyNameContains, 
+                                     isAutoBitContext=True, 
                                      isCaseSensitive=False, isRecursive=False,
                                      isNegated=False, 
                                      isAutoQuote=True, isMultiLine=False ): 
             return 'if( %s%s )%s\n%s' % (
             "!" if isNegated else "", 
-            _QtIfwScript.registryKeyExistsLike( keyNameContains,                                                   
+            _QtIfwScript.registryKeyExistsLike( 
+                parentKey, childKeyNameContains,                                                   
                 isAutoBitContext=isAutoBitContext,
                 isCaseSensitive=isCaseSensitive, isRecursive=isRecursive, 
                 isAutoQuote=isAutoQuote ),
@@ -1405,7 +1419,9 @@ class _QtIfwScript:
         def registryEntryValue( key, valueName, isAutoBitContext=True,
                                 isAutoQuote=True ): 
             return _QtIfwScript.__REG_ENTRY_VALUE_TMPL % (
-                _QtIfwScript._autoQuote( key, isAutoQuote ),
+                _QtIfwScript._autoEscapeBackSlash( 
+                    _QtIfwScript._autoQuote( key, isAutoQuote ), 
+                    isAutoQuote ).replace(":",""), 
                 _QtIfwScript._autoQuote( valueName, isAutoQuote ),
                 _QtIfwScript.toBool( isAutoBitContext )  )                                
 
@@ -1413,8 +1429,7 @@ class _QtIfwScript:
         def assignRegistryEntryVar( key, valueName, isAutoBitContext=True,
                                     varName="regValue", isAutoQuote=True ): 
             return _QtIfwScript.__ASSIGN_REG_ENTRY_VALUE_TMPL % (
-                _QtIfwScript._autoQuote( varName, isAutoQuote ),
-                _QtIfwScript.registryEntryValue( 
+                varName, _QtIfwScript.registryEntryValue( 
                     key, valueName, isAutoBitContext=isAutoBitContext,
                     isAutoQuote=isAutoQuote ) ) 
 
@@ -1431,8 +1446,10 @@ class _QtIfwScript:
         @staticmethod
         def registryEntryExists( key, valueName, isAutoBitContext=True,
                                  isAutoQuote=True ):         
-            return _QtIfwScript.__REG_ENTRY_EXISTS_TMPL % (
-                _QtIfwScript._autoQuote( key, isAutoQuote ),
+            return _QtIfwScript.__REG_ENTRY_EXISTS_TMPL % (                
+                _QtIfwScript._autoEscapeBackSlash( 
+                    _QtIfwScript._autoQuote( key, isAutoQuote ), 
+                    isAutoQuote ).replace(":",""),                 
                 _QtIfwScript._autoQuote( valueName, isAutoQuote ),
                 _QtIfwScript.toBool( isAutoBitContext )  ) 
                                          
@@ -1453,7 +1470,9 @@ class _QtIfwScript:
                                      isCaseSensitive=False, isRecursive=False,
                                      isAutoQuote=True ): 
             return _QtIfwScript.__REG_ENTRY_EXISTS_LIKE_TMPL % ( 
-                _QtIfwScript._autoQuote( key, isAutoQuote ),
+                _QtIfwScript._autoEscapeBackSlash( 
+                    _QtIfwScript._autoQuote( key, isAutoQuote ), 
+                    isAutoQuote ).replace(":",""), 
                 _QtIfwScript._autoQuote( valueNameContains, isAutoQuote ),
                 _QtIfwScript.toBool( isAutoBitContext ), 
                 _QtIfwScript.toBool( isCaseSensitive ),
@@ -2210,19 +2229,20 @@ class _QtIfwScript:
             TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
             (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +
             TAB + 'if( !registryEntryExists( key, valueName, isAutoBitContext ) )' + NEW +
-            (2*TAB) + 'return null' + END +                
+            (2*TAB) + 'return null' + END +         
+            TAB + 'var keySearch = " \\"" + key + "\\""' + END +       
             TAB + 'var valSearch = valueName==null ? " /VE " : '
                 '" /V \\"" + valueName + "\\""' + END +        
             TAB + 'var bitContext = isAutoBitContext===false ? " /reg:64" : ""' + END +            
             TAB + 'var regQuery = "for /f \\"tokens=2*\\" %a in '
-                '(\'REG QUERY \\"" + key + "\\"" + valSearch + bitContext + '
+                '(\'REG QUERY" + keySearch + valSearch + bitContext + '
                     '" ^| FINDSTR \\"REG_\\"\') do @echo %b\\n"' + END +
             TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
             TAB + 'if( result[1] != 0 ) ' + NEW +
             (2*TAB) + 'throw new Error("Registry query failed.")' + END +
             TAB + TRY +
             (2*TAB) + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
-            (2*TAB) + 'value = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+            (2*TAB) + 'value = cmdOutLns[1].trim()' + END + EBLK + 
             TAB + CATCH + 'value = null;' + EBLK +                
             TAB + _QtIfwScript.log( '"Registry value: " + value', isAutoQuote=False ) + 
             TAB + 'return value' + END +                  
@@ -2235,11 +2255,12 @@ class _QtIfwScript:
             TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
             (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +            
             TAB + 'var existsOutput = "exists"' + END +
+            TAB + 'var keySearch = " \\"" + key + "\\""' + END +
             TAB + 'var valSearch = valueName==null ? " /VE " : '
                 '" /V \\"" + valueName + "\\""' + END +        
             TAB + 'var bitContext = isAutoBitContext===false ? " /reg:64" : ""' + END +            
-            TAB + 'var regQuery = "REG QUERY \\"" + key + "\\"" + '
-                    'valSearch + bitContext + '
+            TAB + 'var regQuery = "@echo off & REG QUERY" + keySearch + valSearch + '
+                    'bitContext + '
                     '" 1>null 2>&1 && echo " + existsOutput + "\\n"' + END + 
             TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
             TAB + 'if( result[1] != 0 ) ' + NEW +
@@ -2247,7 +2268,7 @@ class _QtIfwScript:
             TAB + 'var output' + END +
             TAB + TRY +
             (2*TAB) + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
-            (2*TAB) + 'output = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+            (2*TAB) + 'output = cmdOutLns[1].trim()' + END + EBLK + 
             TAB + CATCH + 'output = null;' + EBLK +
             TAB + 'var exists = output==existsOutput' + END +                            
             TAB + _QtIfwScript.log( '"Registry value exists: " + exists', isAutoQuote=False ) + 
@@ -2264,12 +2285,13 @@ class _QtIfwScript:
             TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
             (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +            
             TAB + 'var existsOutput = "exists"' + END +
+            TAB + 'var keySearch = " \\"" + key + "\\""' + END +
             TAB + 'var valSearch = " /F \\"" + valueNameContains + "\\""' + END +        
             TAB + 'var bitContext = isAutoBitContext===false ? " /reg:64" : ""' + END +            
             TAB + 'var caseSens = isCaseSensitive ? " /C" : ""' + END +
             TAB + 'var subSearch = isRecursive ? " /S" : ""' + END +                        
-            TAB + 'var regQuery = "REG QUERY \\"%key%\\"" + valSearch + bitContext + '
-                    'caseSens + subSearch + '
+            TAB + 'var regQuery = "@echo off & REG QUERY" + keySearch + valSearch + '
+                    'bitContext + caseSens + subSearch + '
                     '" 1>null 2>&1 && echo " + existsOutput + "\\n"' + END + 
             TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
             TAB + 'if( result[1] != 0 ) ' + NEW +
@@ -2277,7 +2299,7 @@ class _QtIfwScript:
             TAB + 'var output' + END +
             TAB + TRY +
             (2*TAB) + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
-            (2*TAB) + 'output = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+            (2*TAB) + 'output = cmdOutLns[1].trim()' + END + EBLK + 
             TAB + CATCH + 'output = null;' + EBLK +
             TAB + 'var exists = output==existsOutput' + END +                            
             TAB + _QtIfwScript.log( '"Registry value exists: " + exists', isAutoQuote=False ) + 
@@ -2290,37 +2312,38 @@ class _QtIfwScript:
             TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
             (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +            
             TAB + 'var existsOutput = "exists"' + END +
-            TAB + 'var keySearch = " /F \\"" + keyNameContains + "\\""' + END +        
-            TAB + 'var bitContext = isAutoBitContext===false ? " /reg:64" : ""' + END +            
-            TAB + 'var regQuery = "REG QUERY " + keySearch + " /K /C /E" + bitContext + '
+            TAB + 'var keySearch = " \\"" + key + "\\" /VE"' + END +        
+            TAB + 'var bitContext = isAutoBitContext===false ? " /reg:64" : ""' + END +
+             TAB + 'var regQuery = "@echo off & REG QUERY" + keySearch + bitContext + '                
                     '" 1>null 2>&1 && echo " + existsOutput + "\\n"' + END + 
-            TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
+            TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +
             TAB + 'if( result[1] != 0 ) ' + NEW +
             (2*TAB) + 'throw new Error("Registry query failed.")' + END +
             TAB + 'var output' + END +
             TAB + TRY +
             (2*TAB) + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
-            (2*TAB) + 'output = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+            (2*TAB) + 'output = cmdOutLns[1].trim()' + END + EBLK + 
             TAB + CATCH + 'output = null;' + EBLK +
             TAB + 'var exists = output==existsOutput' + END +                            
             TAB + _QtIfwScript.log( '"Registry key exists: " + exists', isAutoQuote=False ) + 
             TAB + 'return exists' + END +                  
             EBLK + NEW +
-            'function registryKeyExistsLike( keyNameContains, isAutoBitContext, '
-                'isCaseSensitive, isRecursive ) ' + SBLK +            
+            'function registryKeyExistsLike( parentKey, childKeyNameContains, '
+                'isAutoBitContext, isCaseSensitive, isRecursive ) ' + SBLK +            
             TAB + _QtIfwScript.log( "Registry entry exists query" ) + 
-            TAB + _QtIfwScript.log( '"    keyNameContains: " + keyNameContains', isAutoQuote=False ) +            
+            TAB + _QtIfwScript.log( '"    parentKey: " + parentKey', isAutoQuote=False ) +            
+            TAB + _QtIfwScript.log( '"    childKeyNameContains: " + childKeyNameContains', isAutoQuote=False ) +            
             TAB + _QtIfwScript.log( '"    isAutoBitContext: " + isAutoBitContext', isAutoQuote=False ) +
             TAB + _QtIfwScript.log( '"    isCaseSensitive: " + isCaseSensitive', isAutoQuote=False ) +
             TAB + _QtIfwScript.log( '"    isRecursive: " + isRecursive', isAutoQuote=False ) +            
             TAB + 'if( !installer.gainAdminRights() ) ' + NEW +
             (2*TAB) + 'throw new Error("Elevated privileges required.")' + END +            
             TAB + 'var existsOutput = "exists"' + END +
-            TAB + 'var keySearch = " /F \\"" + keyNameContains + "\\""' + END +        
+            TAB + 'var keySearch = " \\"" + parentKey + "\\" /K /F \\"" + childKeyNameContains + "\\""' + END +        
             TAB + 'var bitContext = isAutoBitContext===false ? " /reg:64" : ""' + END +            
             TAB + 'var caseSens = isCaseSensitive ? " /C" : ""' + END +
             TAB + 'var subSearch = isRecursive ? " /S" : ""' + END +                        
-            TAB + 'var regQuery = "REG QUERY " + keySearch + " /K " + bitContext + '
+            TAB + 'var regQuery = "@echo off & REG QUERY" + keySearch + bitContext + '
                     'caseSens + subSearch + '
                     '" 1>null 2>&1 && echo " + existsOutput + "\\n"' + END + 
             TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
@@ -2329,7 +2352,7 @@ class _QtIfwScript:
             TAB + 'var output' + END +
             TAB + TRY +
             (2*TAB) + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
-            (2*TAB) + 'output = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
+            (2*TAB) + 'output = cmdOutLns[1].trim()' + END + EBLK + 
             TAB + CATCH + 'output = null;' + EBLK +
             TAB + 'var exists = output==existsOutput' + END +                            
             TAB + _QtIfwScript.log( '"Registry key exists: " + exists', isAutoQuote=False ) + 
@@ -2931,6 +2954,8 @@ Controller.prototype.Dynamic%sCallback = function() {
             
         self.isIntroductionPageVisible = True                                                                    
         self.introductionPageCallbackBody = None
+        self.introductionPageOnInstall = None
+        self.introductionPageOnMaintain = None
         self.isAutoIntroductionPageCallback = True
 
         self.isTargetDirectoryPageVisible = True
@@ -3479,8 +3504,14 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.introductionPageCallbackBody = (
             _QtIfwScript.log("IntroductionPageCallback") +            
             _QtIfwScript.ifInstalling( isMultiLine=True ) +
-                _QtIfwScript.elevate() +                
+                _QtIfwScript.elevate() +
+                (self.introductionPageOnInstall if
+                 self.introductionPageOnInstall else "") +               
             _QtIfwScript.END_BLOCK +   
+            _QtIfwScript.ELSE + _QtIfwScript.START_BLOCK +   
+                (self.introductionPageOnMaintain if
+                 self.introductionPageOnMaintain else "") +
+            _QtIfwScript.END_BLOCK +               
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 

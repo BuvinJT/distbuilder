@@ -478,6 +478,7 @@ Static Functions:
                                                    
 	quote( value )
     _autoQuote( value, isAutoQuote )
+    _autoEscapeBackSlash( value, isAutoEscape )
 
 	toNull( v )         <convert Python None to QtScript null, else pass through>
 	
@@ -591,10 +592,12 @@ Static Functions:
                            isAutoQuote=True ): pass        
         ifRegistryKeyExists( key, isAutoBitContext=True, isNegated=False, 
                              isAutoQuote=True, isMultiLine=False )  
-        registryKeyExistsLike( keyNameContains, isAutoBitContext=True, 
+        registryKeyExistsLike( parentKey, childKeyNameContains, 
+                               isAutoBitContext=True,
                                isCaseSensitive=False, isRecursive=False,
                                isAutoQuote=True )
-        ifRegistryKeyExistsLike( keyNameContains, isAutoBitContext=True, 
+        ifRegistryKeyExistsLike( parentKey, childKeyNameContains, 
+                                 isAutoBitContext=True, 
                                  isCaseSensitive=False, isRecursive=False,
                                  isNegated=False, 
                                  isAutoQuote=True, isMultiLine=False )        
@@ -747,14 +750,14 @@ following add-on **QT SCRIPT** functions:
 		isOsRegisteredProgram()	
 
 		registryKeyExists( key, isAutoBitContext )
-        registryKeyExistsLike( keyNameContains, isAutoBitContext, 
-                               isCaseSensitive, isRecursive )             
+        registryKeyExistsLike( parentKey, childKeyNameContains, 
+                               isAutoBitContext, isCaseSensitive, isRecursive )             
 
         registryEntryValue( key, valueName, isAutoBitContext )
         registryEntryExists( key, valueName, isAutoBitContext )				
 		
-		registryEntryExistsLike( key, valueNameContains, isAutoBitContext, 
-                                 isCaseSensitive, isRecursive )
+		registryEntryExistsLike( key, valueNameContains, 
+		                         isAutoBitContext, isCaseSensitive, isRecursive )
 		
 		executeBatchDetached( scriptPath, bat, args )
 		executeVbScript( vbs )

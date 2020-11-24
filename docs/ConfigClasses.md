@@ -406,6 +406,8 @@ Attributes & default values:
                                         
     isIntroductionPageVisible = True                                                                                                                                
     introductionPageCallbackBody = None
+    introductionPageOnInstall = None
+    introductionPageOnMaintain = None    
     isAutoIntroductionPageCallback = True
 
     isTargetDirectoryPageVisible = True
