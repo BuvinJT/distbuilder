@@ -624,6 +624,7 @@ Attributes & default values:
     externalOps      = []
     installResources = []
     killOps          = []
+    preOpSupport     = None
     customOperations = None
     
     uiPages = []
@@ -818,6 +819,26 @@ program from the installer's 32 bit context.
                          isSynchronous=True, isHidden=True, 
                          isAutoBitContext=True )
 
+#### QtIfwExternalOp.CreateRegistryKey
+	
+	**WINDOWS ONLY**
+
+    CreateRegistryKey( event, key, isAutoBitContext=True )
+
+Set `isAutoBitContext=False` if you need to access 64 bit entries
+from the installer's 32 bit context, and/or wish to be explicit in the
+use of SysWow64 nodes.
+
+#### QtIfwExternalOp.RemoveRegistryKey
+	
+	**WINDOWS ONLY**
+ 
+    RemoveRegistryKey( event, key, isAutoBitContext=True )        
+
+Set `isAutoBitContext=False` if you need to access 64 bit entries
+from the installer's 32 bit context, and/or wish to be explicit in the
+use of SysWow64 nodes.
+
 #### QtIfwExternalOp.CreateRegistryEntry
 	
 	**WINDOWS ONLY**
@@ -871,20 +892,36 @@ rather embedded within it.
                                isSynchronous=True, isHidden=True, 
                                isAutoBitContext=True )
                 
+### QtIfwExternalOp.CreateRegistryKeyScript
+
+	**WINDOWS ONLY**
+ 
+    CreateRegistryKeyScript( key, isAutoBitContext=True, 
+                             replacements=None )
+                               
+### QtIfwExternalOp.RemoveRegistryKeyScript
+
+	**WINDOWS ONLY**
+
+    RemoveRegistryKeyScript( key, isAutoBitContext=True, 
+                             replacements=None ) 
+
 ### QtIfwExternalOp.CreateRegistryEntryScript
 
 	**WINDOWS ONLY**
  
     CreateRegistryEntryScript( key, valueName=None, 
                                value="", valueType="String",
-                               isAutoBitContext=True, replacements=None )
+                               isAutoBitContext=True,
+                               replacements=None )
                                
 ### QtIfwExternalOp.RemoveRegistryEntryScript
 
 	**WINDOWS ONLY**
 
     RemoveRegistryEntryScript( key, valueName=None, 
-                               isAutoBitContext=True, replacements=None ) 
+                               isAutoBitContext=True, 
+                               replacements=None ) 
                                                                                         
 #### QtIfwExternalOp.CreateExeFromScript
 	

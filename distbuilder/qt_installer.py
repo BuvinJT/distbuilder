@@ -1418,11 +1418,13 @@ class _QtIfwScript:
         @staticmethod
         def registryEntryValue( key, valueName, isAutoBitContext=True,
                                 isAutoQuote=True ): 
+            valueName =( _QtIfwScript.toNull( valueName ) if valueName is None
+                else _QtIfwScript._autoQuote( valueName, isAutoQuote ) )
             return _QtIfwScript.__REG_ENTRY_VALUE_TMPL % (
                 _QtIfwScript._autoEscapeBackSlash( 
                     _QtIfwScript._autoQuote( key, isAutoQuote ), 
                     isAutoQuote ).replace(":",""), 
-                _QtIfwScript._autoQuote( valueName, isAutoQuote ),
+                valueName,
                 _QtIfwScript.toBool( isAutoBitContext )  )                                
 
         @staticmethod            
@@ -1437,20 +1439,23 @@ class _QtIfwScript:
         def setValueFromRegistryEntry( key, 
                                        regKey, valueName, isAutoBitContext=True,                                    
                                        isAutoQuote=True ):                                    
-            return _QtIfwScript.setValue( key, 
+            return _QtIfwScript.setValue( 
+                _QtIfwScript._autoQuote( key, isAutoQuote ), 
                 _QtIfwScript.registryEntryValue( 
                     regKey, valueName, isAutoBitContext=isAutoBitContext,
                     isAutoQuote=isAutoQuote ), 
-                isAutoQuote=isAutoQuote )
+                isAutoQuote=False )
         
         @staticmethod
         def registryEntryExists( key, valueName, isAutoBitContext=True,
-                                 isAutoQuote=True ):         
+                                 isAutoQuote=True ):       
+            valueName =( _QtIfwScript.toNull( valueName ) if valueName is None
+                else _QtIfwScript._autoQuote( valueName, isAutoQuote ) )              
             return _QtIfwScript.__REG_ENTRY_EXISTS_TMPL % (                
                 _QtIfwScript._autoEscapeBackSlash( 
                     _QtIfwScript._autoQuote( key, isAutoQuote ), 
                     isAutoQuote ).replace(":",""),                 
-                _QtIfwScript._autoQuote( valueName, isAutoQuote ),
+                valueName,
                 _QtIfwScript.toBool( isAutoBitContext )  ) 
                                          
         @staticmethod
@@ -3884,6 +3889,7 @@ Component.prototype.%s = function(){
         self.shortcuts        = shortcuts if shortcuts else [] 
         self.externalOps      = externalOps if externalOps else []
         self.killOps          = []
+        self.preOpSupport     = None
         self.customOperations = None        
         self.bundledScripts   = bundledScripts if bundledScripts else []
         self.installResources = installResources if installResources else []
@@ -4135,6 +4141,10 @@ Component.prototype.%s = function(){
         EBLK = _QtIfwScript.END_BLOCK
         
         self.componentCreateOperationsBody = "try " + SBLK
+        
+        if self.preOpSupport:
+            self.componentCreateOperationsBody += (
+                "\n%s\n" % (self.preOpSupport,) )            
 
         if self.customOperations:
             self.componentCreateOperationsBody += (
@@ -5030,6 +5040,22 @@ class QtIfwExternalOp:
                 isReversible=False, isElevated=True )
                 
         @staticmethod
+        def CreateRegistryKey( event, key, isAutoBitContext=True ):
+            return QtIfwExternalOp.__genScriptOp( event, 
+                script=QtIfwExternalOp.CreateRegistryKeyScript( 
+                    key, isAutoBitContext ), 
+                uninstScript=QtIfwExternalOp.RemoveRegistryKeyScript( 
+                    key, isAutoBitContext ), 
+                isElevated=True )
+
+        @staticmethod
+        def RemoveRegistryKey( event, key, isAutoBitContext=True ):
+            return QtIfwExternalOp.__genScriptOp( event, 
+                script=QtIfwExternalOp.RemoveRegistryKeyScript( 
+                    key, isAutoBitContext ), 
+                isReversible=False, isElevated=True )
+
+        @staticmethod
         def CreateRegistryEntry( event, key, valueName=None, 
                                  value="", valueType="String",
                                  isAutoBitContext=True ):
@@ -5315,32 +5341,85 @@ Start-Process $prog {wait}{hide}-ArgumentList $args
                     , "hide": ("-WindowStyle Hidden " if isHidden else "")  
                 } )
 
-        # See
-        # https://blog.netwrix.com/2018/09/11/how-to-get-edit-create-and-delete-registry-keys-with-powershell/
-        # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-itemproperty?view=powershell-7
+        # Creates the key, if it does not exists.
+        # Recursively creates the parent key, if that does not yet exist.
+        @staticmethod
+        def CreateRegistryKeyScript( key, isAutoBitContext=True,
+                                     replacements=None ):
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "createRegKey" ), extension="ps1", script=([
+                QtIfwExternalOp.__psSetBitContext( isAutoBitContext ),                
+                "$key='%s'" % (key,),
+                "Try{ Get-Item -Path $key -ErrorAction Stop | Out-Null }",
+                "Catch{ New-Item -Force -Path $key }",
+                ]), 
+                replacements=replacements )
+
+        # Removes the key, if it exists.
+        @staticmethod
+        def RemoveRegistryKeyScript( key, isAutoBitContext=True,
+                                     replacements=None ):
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "removeRegKey" ), extension="ps1", script=([
+                QtIfwExternalOp.__psSetBitContext( isAutoBitContext ),                
+                "$key='%s'" % (key,),
+                "Try{ ",
+                "    Get-Item -Path $key -ErrorAction Stop | Out-Null }",
+                "    Remove-Item -Path $key }",
+                "Catch{}"
+                ]),                 
+                replacements=replacements )
+        
+        # Creates the entry, if it does not exists.
+        # Overwrites any prior value, if it already exists.
+        # Recursively creates the parent key, if that does not yet exist.
+        # valueName=None = Default key value
         @staticmethod
         def CreateRegistryEntryScript( key, valueName=None, 
                                        value="", valueType="String",
                                        isAutoBitContext=True,
                                        replacements=None ):
-            valueName = "-Name '%s' " % (valueName,) if valueName else ""
+            valueName = "-Name '%s'" % (valueName,) if valueName else ""
             if value is None: value=""
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "createRegEntry" ), extension="ps1", script=([
-                QtIfwExternalOp.__psSetBitContext( isAutoBitContext ),
-                "New-ItemProperty -Path '%s' %s-Value '%s' -PropertyType '%s'" 
-                    % (key, valueName, value, valueType)] ), 
+                QtIfwExternalOp.__psSetBitContext( isAutoBitContext ),                
+                "$key='%s'" % (key,),
+                "$value='%s'" % (value,),
+                "$type='%s'" % (valueType,),
+                "Try{",
+                "    Get-ItemPropertyValue -Path $key %s -ErrorAction Stop | Out-Null"
+                    % (valueName,), 
+                "    Set-ItemProperty -Path $key %s -Value $value -Type $type"
+                    % (valueName,), 
+                "}",
+                "Catch{",
+                "    Try{ Get-Item -Path $key -ErrorAction Stop | Out-Null }",
+                "    Catch{ New-Item -Force -Path $key }",
+                "    New-ItemProperty -Path $key %s -Value $value -PropertyType $type"
+                    % (valueName,), 
+                "}"
+                ]), 
                 replacements=replacements )
-        
+
+        # Removes the entry, if it exists.
+        # valueName=None = Default key value
         @staticmethod
         def RemoveRegistryEntryScript( key, valueName=None, 
                                        isAutoBitContext=True,
                                        replacements=None ):
-            valueName = "-Name '%s' " % (valueName,) if valueName else ""            
+            valueName = "-Name '%s'" % (valueName,) if valueName else ""            
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "removeRegEntry" ), extension="ps1", script=([
                 QtIfwExternalOp.__psSetBitContext( isAutoBitContext ),                
-                "Remove-ItemProperty -Path '%s' %s" % (key, valueName) ]),
+                "$key='%s'" % (key,),
+                "Try{",
+                "    Get-ItemPropertyValue -Path $key %s -ErrorAction Stop | Out-Null"
+                    % (valueName,), 
+                "    Remove-ItemProperty -Path $key %s" % (valueName,), 
+                "}",
+                "Catch{}"
+                ]),                 
                 replacements=replacements )
  
         @staticmethod

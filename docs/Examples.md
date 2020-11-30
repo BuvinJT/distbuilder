@@ -317,11 +317,15 @@ If desired, you may also wish to test running these demo programs post installat
 
 TODO: FILL IN!
 
-### Embedded Script Operations Example
+### High Level Convenience Operations Example
 
 TODO: FILL IN!
 
-### Embedded Convenience Operations Example
+### Low Level Embedded Script Operations Example
+
+TODO: FILL IN!
+
+### Windows Registry Interactions Example
 
 TODO: FILL IN!
 
