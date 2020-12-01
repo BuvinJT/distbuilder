@@ -2671,6 +2671,11 @@ Controller.prototype.Dynamic%sCallback = function() {
     CUSTOM_BUTTON_2 = "buttons.CustomButton2"
     CUSTOM_BUTTON_3 = "buttons.CustomButton3"
     
+    # Don't seem to exist!?
+    #ADD_REMOVE_RADIO_BUTTON = "PackageManagerRadioButton"
+    #UPDATE_RADIO_BUTTON     = "UpdaterRadioButton"
+    #UNINSTALL_RADIO_BUTTON  = "UninstallerRadioButton"
+
     TARGET_DIR_EDITBOX       = "TargetDirectoryLineEdit"
     START_MENU_DIR_EDITBOX   = "StartMenuPathLineEdit"
     ACCEPT_EULA_RADIO_BUTTON = "AcceptLicenseRadioButton"
@@ -2921,6 +2926,7 @@ Controller.prototype.Dynamic%sCallback = function() {
                   script=None, scriptPath=None ) :
         _QtIfwScript.__init__( self, fileName, script, scriptPath )
 
+        self.isLimitedMaintenance = True        
         self.virtualArgs = None
 
         self.uiPages = []
@@ -3343,9 +3349,15 @@ Controller.prototype.Dynamic%sCallback = function() {
         END = _QtIfwScript.END_LINE
         TAB = _QtIfwScript.TAB
         SBLK =_QtIfwScript.START_BLOCK
-        EBLK =_QtIfwScript.END_BLOCK        
-                              
-        self.controllerConstructorBody = (            
+        EBLK =_QtIfwScript.END_BLOCK     
+        self.controllerConstructorBody=""   
+        if self.isLimitedMaintenance:
+            self.controllerConstructorBody += (
+                _QtIfwScript.ifMaintenanceTool() +
+                    _QtIfwScript.setValue( _QtIfwScript.MAINTAIN_MODE_CMD_ARG,
+                        _QtIfwScript.MAINTAIN_MODE_OPT_REMOVE_ALL ) 
+            )
+        self.controllerConstructorBody += (            
             TAB + 'installer.setValue( ' + 
                 ('"%s"' % (_QT_IFW_SCRIPTS_DIR,)) + ', "" )' + END + 
             TAB + 'installer.setValue( ' + 
@@ -3505,7 +3517,7 @@ Controller.prototype.Dynamic%sCallback = function() {
                 TAB + EBLK +    
             EBLK )        
                                  
-    def __genIntroductionPageCallbackBody( self ):
+    def __genIntroductionPageCallbackBody( self ):        
         self.introductionPageCallbackBody = (
             _QtIfwScript.log("IntroductionPageCallback") +            
             _QtIfwScript.ifInstalling( isMultiLine=True ) +
@@ -3515,7 +3527,10 @@ Controller.prototype.Dynamic%sCallback = function() {
             _QtIfwScript.END_BLOCK +   
             _QtIfwScript.ELSE + _QtIfwScript.START_BLOCK +   
                 (self.introductionPageOnMaintain if
-                 self.introductionPageOnMaintain else "") +
+                 self.introductionPageOnMaintain else "") +                
+                (QtIfwControlScript.clickButton( 
+                    QtIfwControlScript.NEXT_BUTTON )
+                if self.isLimitedMaintenance else "") +                     
             _QtIfwScript.END_BLOCK +               
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 

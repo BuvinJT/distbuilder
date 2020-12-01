@@ -65,6 +65,7 @@ Attributes & default values:
 	    ifwDefDirPath    = None
 	    ifwPackages      = None
 	
+		isLimitedMaintenance = True
 	    replaceTarget = False
 	
 	    licensePath = None    
@@ -307,10 +308,24 @@ For more information refer to:
 - [RobustInstallerProcess](#robustinstallerprocess)
 - [QtIfwPackage list manipulation](LowLevel.md#qtifwpackage-list-manipulation) 
 
+#### isLimitedMaintenance
+
+When producing a QtIFW installer, when this attribute is set to `True` (the 
+default) the "maintenance tool" included with the distribution will not display
+an introduction page with the options to add, remove, or update components.
+It will only allow for uninstallation.  The extended options are only naturally
+functional within QtIFW in the context of an **online** installer, which is 
+not the default product of this library, and thus the selection of these radio 
+buttons only produce errors.  Further, having this limitation imposed 
+simplifies both the end user workflow and the developer's coding / testing tasks.  
+
+When building an online installer, you may wish to enable the extended 
+features, by disabling this switch.    
+
 #### replaceTarget
 
 When producing a QtIFW installer, switch this attribute to `True` if you wish for the
-installer to automatically replace a prior installation.  On Windows, this will referrence
+installer to automatically replace a prior installation.  On Windows, this will reference
 the applications registered in the OS, and run the uninstallation for the prior install
 via that mechanism.  On other platforms, this uses the QtIFW Maintenance Tool directly to 
 "silently" uninstall a prior install found at the target location.

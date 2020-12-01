@@ -79,6 +79,7 @@ class ConfigFactory:
         self.ifwDefDirPath = None        
         self.ifwPackages   = None
          
+        self.isLimitedMaintenance = True
         self.replaceTarget = False # TODO: Fix this, or drop it!
                 
         self.licensePath = None        
@@ -187,6 +188,8 @@ class ConfigFactory:
                 fileName=self.ifwCntrlScriptName,
                 script=self.ifwCntrlScriptText, 
                 scriptPath=self.ifwCntrlScriptPath )
+        
+        script.isLimitedMaintenance = self.isLimitedMaintenance 
         
         # TODO: Fix this, as it is no longer respected!
         if self.replaceTarget:

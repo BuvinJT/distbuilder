@@ -372,6 +372,7 @@ Constructor:
 
 Attributes & default values:                                               
     
+    isLimitedMaintenance = True
     virtualArgs = virtualArgs
     
     uiPages = []
