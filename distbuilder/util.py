@@ -979,7 +979,7 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
     def __formated( self ):
         script = self.script     
         for k,v in iteritems( self.replacements ):
-            script = script.replace( self.__PLACEHOLDER_TMPLT % (k,), v )
+            script = script.replace( self.__PLACEHOLDER_TMPLT % (k,), str(v) )
         return script    
                 
     def debug( self ): 

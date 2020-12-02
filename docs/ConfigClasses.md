@@ -818,7 +818,8 @@ program from the installer's 32 bit context.
  	
     UninstallWindowsApp( appName, arguments=None,
                          isSynchronous=True, isHidden=True, 
-                         isAutoBitContext=True )
+                         isAutoBitContext=True,
+                         isSuccessOnNotFound=True )
 
 #### QtIfwExternalOp.CreateRegistryKey
 	

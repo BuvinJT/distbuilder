@@ -2096,6 +2096,7 @@ class _QtIfwScript:
             'function quit( msg, isError, isSilent ) ' + SBLK +
             TAB + 'if( msg ) console.log( msg )' + END +
             TAB + 'if( msg && isError ) writeErrorLog( msg )' + END +
+            TAB + _QtIfwScript.ifAutoPilot() + TAB + 'isSilent=true' + END +            
             TAB + 'if( !isSilent ) ' +  SBLK +
             (2*TAB) + 'msg = (msg==null || msg=="" ? "Click \\"OK\\" to quit..." : msg)' + END +
             (2*TAB) + 'QMessageBox.warning("warnbox", "Installation canceled", msg, QMessageBox.Ok)' + END +
@@ -4978,6 +4979,8 @@ class QtIfwExternalOp:
 
     __AUTO_SCRIPT_COUNT=0
     __SCRIPT_ROOT_NAME_TMPLT = "%s_%d"
+
+    __NOT_FOUND_EXIT_CODE = 100
     
     @staticmethod
     def RemoveFile( event, filePath, isElevated=True ): # TODO: Test in NIX/MAC            
@@ -5048,11 +5051,16 @@ class QtIfwExternalOp:
         @staticmethod
         def UninstallWindowsApp( event, appName, arguments=None,
                                  isSynchronous=True, isHidden=True, 
-                                 isAutoBitContext=True ):
-            return QtIfwExternalOp.__genScriptOp( event, 
+                                 isAutoBitContext=True, 
+                                 isSuccessOnNotFound=True ):
+            op = QtIfwExternalOp.__genScriptOp( event, 
                 script=QtIfwExternalOp.UninstallWindowsAppScript( appName,
                     arguments, isSynchronous, isHidden, isAutoBitContext ),
                 isReversible=False, isElevated=True )
+            if isSuccessOnNotFound:
+                op.successRetCodes=[ 0, QtIfwExternalOp.__NOT_FOUND_EXIT_CODE ]
+                op.uninstRetCodes =[ 0, QtIfwExternalOp.__NOT_FOUND_EXIT_CODE ]
+            return op
                 
         @staticmethod
         def CreateRegistryKey( event, key, isAutoBitContext=True ):
@@ -5269,7 +5277,7 @@ if( $env:PROCESSOR_ARCHITEW6432 -eq "AMD64" ) {
         @staticmethod
         def UninstallWindowsAppScript( appName, arguments=None,
                                        isSynchronous=True, isHidden=True, 
-                                       isAutoBitContext=True ):
+                                       isAutoBitContext=True ):            
             psScriptTemplate=(
 r"""
 {setBitContext}
@@ -5300,7 +5308,7 @@ if( !$UninstallCmd ){
 # Exit with error if no command found
 if( !$UninstallCmd ){ 
     Write-Error "Uninstall command not found for: $APP_NAME"
-    exit 1 
+    exit {NOT_FOUND_EXIT_CODE} 
 }
 
 Write-Host "OS registered uninstall command: $UninstallCmd"
@@ -5354,6 +5362,8 @@ Start-Process $prog {wait}{hide}-ArgumentList $args
                     , "addArgs": addArgs
                     , "wait": ("-Wait " if isSynchronous else "")
                     , "hide": ("-WindowStyle Hidden " if isHidden else "")  
+                    , "__NOT_FOUND_EXIT_CODE": 
+                        QtIfwExternalOp.__NOT_FOUND_EXIT_CODE
                 } )
 
         # Creates the key, if it does not exists.
@@ -7185,8 +7195,8 @@ def __silentQtIfwScript( exeName, componentList=None,
             (companyLegalName[:-1] if companyLegalName.endswith(".") else
              companyLegalName) )
     
-    componentsRepr     = "[]"
-    componentsReqRepr  = "[]"
+    componentsRepr     = ""
+    componentsReqRepr  = ""
     componentsEpilogue = "" 
     componentsPrefix   = ""    
     if len(componentList) > 1 :
@@ -7213,14 +7223,16 @@ def __silentQtIfwScript( exeName, componentList=None,
         lnFormat = '{0:>%s}{1:<%s}{2:<%s}\n' % ( flagLen, idLen, nameLen )
         componentsEpilogue = ( "components:\n" + 
             lnFormat.format("  ", "id", "name\n" ) )
-        REQ_SYM = "! "  
-        DEF_SYM = "* "
+        REQ_SYM = "* "  
+        DEF_SYM = "+ "
         for (isReq, isDef, compId, name, _) in componentList :
             req = REQ_SYM if isReq else DEF_SYM if isDef else ""
             if componentsPrefixLen : compId = compId[componentsPrefixLen:]
             componentsEpilogue += lnFormat.format( req, compId, name ) 
         componentsEpilogue+="\n%s= Required   %s= Default" % (REQ_SYM,DEF_SYM)        
-    if componentsPrefix is None: componentsPrefix = ""  
+    if componentsPrefix is None: componentsPrefix = ""
+    if componentsRepr == "": componentsRepr = "[]" 
+    if componentsReqRepr == "": componentsReqRepr = "[]"  
     licensesRepr = str(licenses)   
         
     if IS_WINDOWS: 
