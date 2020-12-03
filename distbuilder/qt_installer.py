@@ -766,6 +766,26 @@ class _QtIfwScript:
     MAINTAIN_MODE_OPT_UPDATE     = "update"    
     MAINTAIN_MODE_OPT_REMOVE_ALL = "removeall"
 
+    _IS_CMD_ARGS_TEMP_KEY = "__tmp_sv"
+    _CMD_ARGS_TEMP_PREFIX = "__tmp_"
+    _CMD_ARGS = { 
+          ERR_LOG_PATH_CMD_ARG      : ERR_LOG_DEFAULT_PATH      
+        , OUT_LOG_PATH_CMD_ARG      : OUT_LOG_DEFAULT_PATH     
+        , TARGET_DIR_CMD_ARG        : ""       
+        , START_MENU_DIR_CMD_ARG    : ""        
+        , ACCEPT_EULA_CMD_ARG       : ""      
+        , INSTALL_LIST_CMD_ARG      : ""     
+        , INCLUDE_LIST_CMD_ARG      : ""     
+        , EXCLUDE_LIST_CMD_ARG      : ""   
+        , RUN_PROGRAM_CMD_ARG       : ""   
+        , REBOOT_CMD_ARG            : ""   
+        , AUTO_PILOT_CMD_ARG        : "" 
+        , TARGET_EXISTS_OPT_CMD_ARG : "" 
+        , MAINTAIN_MODE_CMD_ARG     : ""
+        , _KEEP_ALIVE_PATH_CMD_ARG  : ""
+        , _KEEP_TEMP_SWITCH         : ""           
+    }
+
     _GUI_OBJ       = "gui"
     _INSTALLER_OBJ = "installer"
     
@@ -1201,6 +1221,17 @@ class _QtIfwScript:
             arg, default, delimiter="," )
 
     @staticmethod
+    def isInstalling( isNegated=False ):
+        return '( %s%s )' % ( "!" if isNegated else "", 
+                              _QtIfwScript.__IS_INSTALLER )
+    @staticmethod        
+    def ifInstalling( isNegated=False, isMultiLine=False ):
+        return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "", 
+            _QtIfwScript.__IS_INSTALLER,
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+
+    @staticmethod
     def isMaintenanceTool( isNegated=False ):
         return '( %s%s )' % ( "!" if isNegated else "", 
                               _QtIfwScript.__IS_MAINTENANCE_TOOL )
@@ -1212,21 +1243,25 @@ class _QtIfwScript:
             _QtIfwScript.__IS_MAINTENANCE_TOOL,
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
-    @staticmethod        
-    def ifInstalling( isMultiLine=False ):
-        return 'if( %s )%s\n%s' % (
-            _QtIfwScript.__IS_INSTALLER,
-            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
-
     @staticmethod
     def isAutoPilot( isNegated=False ):
-        return _QtIfwScript.lookupBoolValue( _QtIfwScript.AUTO_PILOT_CMD_ARG,
-                    isNegated=isNegated ) 
-
+        return '( %s%s )' % ( "!" if isNegated else "", 
+            _QtIfwScript.orList([
+                _QtIfwScript.cmdLineSwitchArg( 
+                    _QtIfwScript.AUTO_PILOT_CMD_ARG ),
+                _QtIfwScript.andList([
+                    _QtIfwScript.isInstalling(), 
+                    _QtIfwScript.cmdLineSwitchArg(    
+                        _QtIfwScript._CMD_ARGS_TEMP_PREFIX + 
+                        _QtIfwScript.AUTO_PILOT_CMD_ARG )
+                ])
+            ])
+        )
+    
     @staticmethod
     def ifAutoPilot( isNegated=False, isMultiLine=False ):
-        return _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG,
-                    isNegated=isNegated, isMultiLine=isMultiLine ) 
+        return _QtIfwScript.ifCondition( _QtIfwScript.isAutoPilot( 
+            isNegated=isNegated ), isMultiLine=isMultiLine ) 
 
     @staticmethod        
     def yesNoPopup( msg, title="Question", resultVar="result" ):                  
@@ -3628,7 +3663,24 @@ Controller.prototype.Dynamic%sCallback = function() {
     def __genReadyForInstallationPageCallbackBody( self ):
         self.readyForInstallationPageCallbackBody = (
             _QtIfwScript.log("ReadyForInstallationPageCallback") +            
-            _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
+            _QtIfwScript.ifBoolValue( 
+                _QtIfwScript._IS_CMD_ARGS_TEMP_KEY, isNegated=True,
+                isMultiLine=True ) 
+        )
+        # Ensure the volatile cmd args are not persisted during the install 
+        # process, and thus carried forward into the maintenance tool context!
+        for arg, defValue in iteritems( _QtIfwScript._CMD_ARGS ):
+            self.readyForInstallationPageCallbackBody += (
+                _QtIfwScript.setValue( '"%s"' % 
+                    (_QtIfwScript._CMD_ARGS_TEMP_PREFIX + arg,), 
+                    _QtIfwScript.lookupValue( arg, defValue ), isAutoQuote=False ) +
+                _QtIfwScript.setValue( arg, defValue )                    
+            )                
+        self.readyForInstallationPageCallbackBody += (
+                _QtIfwScript.setBoolValue( 
+                    _QtIfwScript._IS_CMD_ARGS_TEMP_KEY, True ) +
+            _QtIfwScript.END_BLOCK +                                    
+            _QtIfwScript.ifAutoPilot() +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON )  
         )                
@@ -3636,7 +3688,7 @@ Controller.prototype.Dynamic%sCallback = function() {
     def __genPerformInstallationPageCallbackBody( self ):
         self.performInstallationPageCallbackBody = (
             _QtIfwScript.log("PerformInstallationPageCallback") +
-            _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
+            _QtIfwScript.ifAutoPilot() +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
         )
@@ -3649,6 +3701,20 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.finishedPageCallbackBody = (                
             TAB + _QtIfwScript.log("FinishedPageCallback") )
 
+        # restore args from temp 
+        for arg, defValue in iteritems( _QtIfwScript._CMD_ARGS ):
+            self.finishedPageCallbackBody += (
+                _QtIfwScript.setValue( '"%s"' % (arg,), 
+                    _QtIfwScript.lookupValue( 
+                        _QtIfwScript._CMD_ARGS_TEMP_PREFIX + arg,
+                        defValue ), 
+                    isAutoQuote=False ) +
+                _QtIfwScript.setValue(  
+                   _QtIfwScript._CMD_ARGS_TEMP_PREFIX + arg, "" )                    
+            )         
+        self.finishedPageCallbackBody += _QtIfwScript.setBoolValue( 
+                _QtIfwScript._IS_CMD_ARGS_TEMP_KEY, False ) 
+                    
         finshedCheckboxes = [ w for w in self.widgets 
                              if isinstance( w, QtIfwOnFinishedCheckbox ) ]        
         # on interrupt

@@ -502,10 +502,11 @@ Static Functions:
     cmdLineListArg( arg, default=[] )
     ifCmdLineArg( arg, isNegated=False, isMultiLine=False, )  
     ifCmdLineSwitch( arg, isNegated=False, isHardFalse=False, isMultiLine=False )
-                      
+
+    isInstalling( isNegated=False, isMultiLine=False )
+    ifInstalling( isMultiLine=False )                      
     isMaintenanceTool( isNegated=False )
     ifMaintenanceTool( isNegated=False, isMultiLine=False )
-    ifInstalling( isMultiLine=False )
     
     isAutoPilot( isNegated=False )
     ifAutoPilot( isNegated=False, isMultiLine=False )
