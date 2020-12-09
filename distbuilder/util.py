@@ -487,7 +487,7 @@ def sitePackagePath( packageName ):
 def importFromPath( path, memberName=None ):
     scriptDir, scriptName = splitPath( path )
     moduleName = rootFileName( scriptName )
-    sysPath.append( scriptDir )    
+    sysPath.insert( 0, scriptDir ) 
     if memberName is None : exec( __IMPORT_TMPLT % (moduleName,) )
     else: exec( __FROM_IMPORT_TMPLT % (moduleName, memberName) )
     sysPath.remove( scriptDir )
