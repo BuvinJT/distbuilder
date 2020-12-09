@@ -77,6 +77,11 @@ _WINDOWS_ICON_EXT = ".ico"
 _MACOS_ICON_EXT   = ".icns" 
 _LINUX_ICON_EXT   = ".png" 
 
+# library types across the platforms
+_WINDOWS_LIB_EXT = ".dll" 
+_MACOS_LIB_EXT   = ".so" 
+_LINUX_LIB_EXT   = ".so" 
+
 __NOT_SUPPORTED_MSG = ( "Sorry this operation is not supported " +
                         "this for this platform!" )
 
@@ -534,6 +539,16 @@ def normIconName( path, isPathPreserved=False ):
     if IS_WINDOWS: return "%s%s" % (base, _WINDOWS_ICON_EXT) 
     elif IS_MACOS: return "%s%s" % (base, _MACOS_ICON_EXT) 
     elif IS_LINUX: return "%s%s" % (base, _LINUX_ICON_EXT) 
+    raise Exception( __NOT_SUPPORTED_MSG )
+    return base 
+
+def normLibName( path, isPathPreserved=False ):
+    if path is None : return None    
+    if not isPathPreserved : path = fileBaseName( path )
+    base, _ = splitExt( path )
+    if IS_WINDOWS: return "%s%s" % (base, _WINDOWS_LIB_EXT) 
+    elif IS_MACOS: return "%s%s" % (base, _MACOS_LIB_EXT) 
+    elif IS_LINUX: return "%s%s" % (base, _LINUX_LIB_EXT) 
     raise Exception( __NOT_SUPPORTED_MSG )
     return base 
                         

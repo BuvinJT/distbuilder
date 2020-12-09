@@ -154,12 +154,16 @@ class QtCppConfig:
         head, tail = splitPath( qtDir )
         if tail=="bin" : qtDir=head
         return qtDir 
+
+    def toQtPath( self, relativePath ):
+        return absPath( relativePath, self.qtDirPath() )
         
     def validate( self ):
-        if self.qtBinDirPath is None:
-            self.qtBinDirPath = getEnv( QT_BIN_DIR_ENV_VAR )    
-        if self.qtBinDirPath is None or not isDir( self.qtBinDirPath ):        
-            raise Exception( "Valid Qt Bin directory path required" )
+        if IS_WINDOWS or ( IS_LINUX and _isCqtdeployerInstalled() ):
+            if self.qtBinDirPath is None:
+                self.qtBinDirPath = getEnv( QT_BIN_DIR_ENV_VAR )    
+            if self.qtBinDirPath is None or not isDir(self.qtBinDirPath):        
+                raise Exception( "Valid Qt Bin directory path required" )
     
     # Refer to: https://doc.qt.io/qt-5/deployment.html
     def addDependencies( self, package ) :
@@ -169,8 +173,6 @@ class QtCppConfig:
         exePath = joinPath( destDirPath, package.exeName )
         if IS_WINDOWS :
             self.__useWindeployqt( destDirPath, exePath )
-        elif IS_MACOS :
-            self.__useMacdeployqt( destDirPath, exePath )    
         elif IS_LINUX:       
             if _isCqtdeployerInstalled():
                 exePath = self.__useCqtdeployer( destDirPath, exePath )
@@ -197,18 +199,26 @@ class QtCppConfig:
                 copyToDir( joinPath( self.qtBinDirPath, fileName ), 
                            destDirPath=destDirPath )
 
-    def __useMacdeployqt( self, destDirPath, exePath ):             
-        # collect required dependencies via the Qt deploy utility for MacOS
-        qtUtilityPath =  normpath( joinPath( 
-            self.qtBinDirPath, QtCppConfig.__QT_MACOS_DEPLOY_EXE_NAME ) )                                
-        cmdList = [qtUtilityPath, exePath]
-        cmd = list2cmdline( cmdList )
-        # optionally detect and bundle QML resources
-        if self.qmlScrDirPath is not None:
-            cmd = '%s %s="%s"' % (cmd, QtCppConfig.__QT_MACOS_DEPLOY_QML_SWITCH,
-                                  normpath( self.qmlScrDirPath ))
-        util._system( cmd )
-
+    # This a fallback (limited) option to attempt on Linux systems which don't
+    # have the cqtdeploy utility installed.  
+    # TODO: continue to develop this, so it more closely revivals cqtdeploy...    
+    def __useLdd( self, destDirPath, exePath ):             
+        # get the list of .so libraries the binary links against within the 
+        # local environment, via the standard Linux utility for this.  
+        # Parse that output and collect the files. 
+        cmdList = [QtCppConfig.__LDD_CMD, 
+                   exePath]            
+        lddLines = util._subProcessStdOut( cmdList, asCleanLines=True )
+        for line in lddLines:
+            try :
+                src = line.split( QtCppConfig.__LDD_DELIMITER_SRC )[1].strip()
+                path = src.split( QtCppConfig.__LDD_DELIMITER_PATH )[0].strip()
+                if isFile( path ): 
+                    copyToDir( path, destDirPath=destDirPath )                        
+            except: pass
+        # The Qt produced binary does not have execute permissions automatically!
+        chmod( exePath, 0o755 )
+                
     def __useCqtdeployer( self, destDirPath, exePath ):             
         # collect required dependencies via the third party cqtdeployer utility
         qmakePath = normpath( joinPath( 
@@ -242,36 +252,33 @@ class QtCppConfig:
                 src  = joinPath( qmlSrcDirPath,  subDir )
                 dest = joinPath( qmlDestDirPath, subDir )
                 print( "Copying %s to %s..." % (src, dest) )
-                copyDir( src, dest )    
+                copyDir( src, dest )                
+        # inject missing dependencies
+        if cfg and len(cfg.hiddenDependencies) > 0:                        
+            for depend in cfg.hiddenDependencies:
+                src, dest = util._toSrcDestPair( depend, destDir=destDirPath )
+                print( 'Copying "%s" to "%s"...' % ( src, dest ) )
+                if isFile( src ) :
+                    destDir = dirPath( dest )
+                    if not exists( destDir ): makeDir( destDir )
+                    try: copyFile( src, dest ) 
+                    except Exception as e: printExc( e )
+                elif isDir( src ):
+                    try: copyDir( src, dest ) 
+                    except Exception as e: printExc( e )
+                else:
+                    printErr( 'Invalid path: "%s"' % (src,) )                            
+            
         # return the path to the exe produced  
         return exePath
 
-    # This a fallback (limited) option to attempt on Linux systems which don't
-    # have the cqtdeploy utility installed.  
-    # TODO: continue to develop this, so it more closely revivals cqtdeploy...    
-    def __useLdd( self, destDirPath, exePath ):             
-        # get the list of .so libraries the binary links against within the 
-        # local environment, via the standard Linux utility for this.  
-        # Parse that output and collect the files. 
-        cmdList = [QtCppConfig.__LDD_CMD, 
-                   exePath]            
-        lddLines = util._subProcessStdOut( cmdList, asCleanLines=True )
-        for line in lddLines:
-            try :
-                src = line.split( QtCppConfig.__LDD_DELIMITER_SRC )[1].strip()
-                path = src.split( QtCppConfig.__LDD_DELIMITER_PATH )[0].strip()
-                if isFile( path ): 
-                    copyToDir( path, destDirPath=destDirPath )                        
-            except: pass
-        # The Qt produced binary does not have execute permissions automatically!
-        chmod( exePath, 0o755 )
-                
     class CQtDeployerConfig:
             
         def __init__( self ):            
-            self.libDirs    = []
-            self.plugins    = []           
-            self.hiddenQml  = []
+            self.libDirs            = []
+            self.plugins            = []           
+            self.hiddenQml          = []
+            self.hiddenDependencies = []            
             
             self.ignoreLibs = [] 
             self.ignoreEnv  = [] 
@@ -336,9 +343,6 @@ class QtCppConfig:
             
     __QT_WINDOWS_DEPLOY_EXE_NAME   = "windeployqt.exe"
     __QT_WINDOWS_DEPLOY_QML_SWITCH = "--qmldir"
-
-    __QT_MACOS_DEPLOY_EXE_NAME   = "macdeployqt"
-    __QT_MACOS_DEPLOY_QML_SWITCH = "-qmldir"
     
     #TODO: Add more of these dlls?  
     #TODO: Add additional logic to determine the need for this...
@@ -357,6 +361,7 @@ class QtCppConfig:
     __C_QT_DEPLOYER_TARGET_SWITCH  = "-targetDir"
     __C_QT_DEPLOYER_TARGET_BIN_DIR = "bin"
     __C_QT_DEPLOYER_TARGET_QML_DIR = "qml"
+    __C_QT_DEPLOYER_TARGET_PLUGINS_DIR = "plugins"
     __C_QT_DEPLOYER_QML_SWITCH     = "-qmlDir"    
 
     __LDD_CMD            = "ldd"
