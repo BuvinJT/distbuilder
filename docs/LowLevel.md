@@ -1525,6 +1525,17 @@ When `isPathPreserved` is `True`, the entire path is returned rather
 than only the file name. When `False` (the default) a full path 
 is stripped down to the base name.
 
+### normLibName
+
+    normLibName( path, isPathPreserved=False )
+
+The "normalized" name of a library file, resolving such for
+cross platform contexts.  On Windows, "library" files end 
+in a ".dll" extension, where on macOS and Linux ".so" is employed. 
+When `isPathPreserved` is `True`, the entire path is returned rather 
+than only the file name. When `False` (the default) a full path 
+is stripped down to the base name.
+
 ### getEnv, setEnv, delEnv
 
 	getEnv( varName, default=None )

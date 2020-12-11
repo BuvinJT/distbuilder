@@ -139,6 +139,7 @@ Attributes:
 Object Functions:
     
     qtDirPath()
+    toQtPath( relativePath )
     validate()
     addDependencies( package )
 
@@ -166,6 +167,9 @@ Attributes:
     
     <custom addition, use package names>           
     hiddenQml = []
+
+    <custom addition, open ended - works like distResources...>           
+    hiddenDependencies = []             
             
     ignoreLibs = [] 
     ignoreEnv  = [] 
