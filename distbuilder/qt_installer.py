@@ -301,7 +301,16 @@ class QtIfwConfig:
 
     def addLicense( self, licensePath, name="End User License Agreement" ): 
         try:
-            if licensePath is not None: self.packages[0].licenses[name] = licensePath
+            if licensePath is not None:
+                injectIndex=None 
+                for i, p in enumerate( self.packages ):
+                    if p.pkgXml.Virtual or p.pkgXml.ForcedInstallation:
+                        injectIndex = i
+                        break    
+                    elif p.pkgXml.Default: 
+                        if not injectIndex: injectIndex = i              
+                if not injectIndex: injectIndex=0 
+                self.packages[injectIndex].licenses[name] = licensePath                    
         except: pass
         try:        
             for p in self.packages:
