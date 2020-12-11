@@ -154,7 +154,10 @@ class QtCppConfig:
         head, tail = splitPath( qtDir )
         if tail=="bin" : qtDir=head
         return qtDir 
-        
+
+    def toQtPath( self, relativePath ):
+        return absPath( relativePath, self.qtDirPath() )
+         
     def validate( self ):
         if self.qtBinDirPath is None:
             self.qtBinDirPath = getEnv( QT_BIN_DIR_ENV_VAR )    
@@ -243,6 +246,21 @@ class QtCppConfig:
                 dest = joinPath( qmlDestDirPath, subDir )
                 print( "Copying %s to %s..." % (src, dest) )
                 copyDir( src, dest )    
+        # inject any other missing dependencies
+        if cfg and len(cfg.hiddenDependencies) > 0:                        
+            for depend in cfg.hiddenDependencies:
+                src, dest = util._toSrcDestPair( depend, destDir=destDirPath )
+                print( 'Copying "%s" to "%s"...' % ( src, dest ) )
+                if isFile( src ) :
+                    destDir = dirPath( dest )
+                    if not exists( destDir ): makeDir( destDir )
+                    try: copyFile( src, dest ) 
+                    except Exception as e: printExc( e )
+                elif isDir( src ):
+                    try: copyDir( src, dest ) 
+                    except Exception as e: printExc( e )
+                else:
+                    printErr( 'Invalid path: "%s"' % (src,) )                     
         # return the path to the exe produced  
         return exePath
 
@@ -269,10 +287,11 @@ class QtCppConfig:
     class CQtDeployerConfig:
             
         def __init__( self ):            
-            self.libDirs    = []
-            self.plugins    = []           
-            self.hiddenQml  = []
-            
+            self.libDirs            = []
+            self.plugins            = []           
+            self.hiddenQml          = []
+            self.hiddenDependencies = []            
+                        
             self.ignoreLibs = [] 
             self.ignoreEnv  = [] 
             
