@@ -113,6 +113,7 @@ from distbuilder.util import \
     , rootFileName \
     , normBinaryName \
     , normIconName \
+    , normLibName \
     , copyToDir \
     , moveToDir \
     , removeFromDir \
