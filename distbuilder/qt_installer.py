@@ -3436,6 +3436,12 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + 'makeDir( Dir.temp() )' + END +
             TAB + 'installer.setValue( ' + 
                 ('"%s"' % (_QT_IFW_SCRIPTS_DIR,)) + ', Dir.temp() )' + END + 
+            # TODO: Negate this "patch" by eliminating the redundant command line arg!
+            _QtIfwScript.ifCmdLineArg( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
+                _QtIfwScript.TAB + _QtIfwScript.setValue(
+                    '"%s"' % (_QtIfwScript.TARGET_DIR_KEY,),                     
+                    _QtIfwScript.cmdLineArg( _QtIfwScript.TARGET_DIR_CMD_ARG ), 
+                    isAutoQuote=False ) +                
             # currently the entire point of the watchdog is purge temp files,
             # so when _keeptemp is enabled, just drop that entire mechanism!
             TAB + _QtIfwScript.ifCmdLineSwitch( _KEEP_TEMP_SWITCH, 
@@ -7336,14 +7342,14 @@ import glob
     keepAliveFilePath = tempfile.mktemp( suffix='.keep' )
     with open( keepAliveFilePath, 'w' ) as f: pass
     
-    keepAliveArg  = "{0}=%s" % (keepAliveFilePath,)
+    keepAliveArg  = '{0}="%s"' % (keepAliveFilePath,)
     installerArgs = (ARGS if len(ARGS) > 0 else []) + [keepAliveArg]
-    installerArgs = ",".join( [ '"%s"' % (a,) for a in installerArgs ] )         
+    installerArgs = ",".join( [ '"%s"' % (a.replace('"','`"'),) for a in installerArgs ] )         
 
     psArgs = [PS, PS_START, PS_PATH_SWITCH, EXE_PATH, 
               PS_WAIT_SWITCH, PS_WIN_STYLE_SWITCH, PS_WIN_STYLE_HIDDEN,
               PS_ARGS_SWITCH, installerArgs]
-    #print( list2cmdline( psArgs ) )                                    
+    print( list2cmdline( psArgs ) )                                    
     processStartupInfo = STARTUPINFO()
     processStartupInfo.dwFlags |= STARTF_USESHOWWINDOW 
     process = Popen( psArgs, cwd=WORK_DIR, 
@@ -7776,8 +7782,8 @@ def toIwfArgs( wrapperArgs ):
     #     auto pilot mode
     #     client defined error log path    
     args = ["{1}", 
-            "{2}=%s" % (IFW_ERR_LOG_NAME,), 
-            "{30}=%s" % (IFW_OUT_LOG_NAME,) ]
+            '{2}="%s"' % (IFW_ERR_LOG_NAME,), 
+            '{30}="%s"' % (IFW_OUT_LOG_NAME,) ]
     
     if wrapperArgs.debug: args.append( VERBOSE_SWITCH )        
     
@@ -7785,10 +7791,10 @@ def toIwfArgs( wrapperArgs ):
     else: args.append( "{5}={6}" if wrapperArgs.force else "{5}={7}" )
 
     if wrapperArgs.target is not None : 
-        args.append( "{8}=%s" % (wrapperArgs.target.replace("\\\\","/"),) )    
+        args.append( '{8}="%s"' % (wrapperArgs.target.replace("\\\\","/"),) )    
     if IS_WINDOWS :      
         if wrapperArgs.startmenu is not None : 
-            args.append( "{9}=%s" % (wrapperArgs.startmenu.replace("\\\\","/"),) )
+            args.append( '{9}="%s"' % (wrapperArgs.startmenu.replace("\\\\","/"),) )
     
     if len(components) > 0 : 
         def appendComponentArg( wrapperArg, ifwArg, isExclude=False ):                
