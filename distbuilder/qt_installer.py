@@ -7349,7 +7349,7 @@ import glob
     psArgs = [PS, PS_START, PS_PATH_SWITCH, EXE_PATH, 
               PS_WAIT_SWITCH, PS_WIN_STYLE_SWITCH, PS_WIN_STYLE_HIDDEN,
               PS_ARGS_SWITCH, installerArgs]
-    print( list2cmdline( psArgs ) )                                    
+    #print( list2cmdline( psArgs ) )                                    
     processStartupInfo = STARTUPINFO()
     processStartupInfo.dwFlags |= STARTF_USESHOWWINDOW 
     process = Popen( psArgs, cwd=WORK_DIR, 
@@ -7685,13 +7685,16 @@ VERSION_INFO = "{26}"
 
 IS_WINDOWS = {10}
 
-WORK_DIR         = sys._MEIPASS
-EXE_NAME         = "{0}"
-EXE_PATH         = os.path.join( WORK_DIR, EXE_NAME )
-IFW_OUT_LOG_NAME = "installer.out"
-IFW_OUT_LOG_PATH = os.path.join( WORK_DIR, IFW_OUT_LOG_NAME )
-IFW_ERR_LOG_NAME = "installer.err"
-IFW_ERR_LOG_PATH = os.path.join( WORK_DIR, IFW_ERR_LOG_NAME )
+WORK_DIR = sys._MEIPASS
+EXE_NAME = "{0}"
+EXE_PATH = os.path.join( WORK_DIR, EXE_NAME )
+
+IFW_OUT_LOG_NAME     = "installer.out"
+IFW_OUT_LOG_PATH     = os.path.join( WORK_DIR, IFW_OUT_LOG_NAME )
+IS_IFW_OUT_LOG_PURGE = True
+IFW_ERR_LOG_NAME     = "installer.err"
+IFW_ERR_LOG_PATH     = os.path.join( WORK_DIR, IFW_ERR_LOG_NAME )
+IS_IFW_ERR_LOG_PURGE = True
 
 VERBOSE_SWITCH = "{4}"
 IS_RUN_SWITCH  = {22}
@@ -7771,6 +7774,11 @@ def wrapperArgs():
                              help='allow post installation reboot (if required)', 
                              action='store_true' )
 
+    parser.add_argument( '-o', '--outfile', default=None,
+                         help='output messages file path' )               
+    parser.add_argument( '-e', '--errfile', default=None,
+                         help='error messages file path' )               
+                         
     parser.add_argument( '-d', '--debug', default=False,
                          help='show debugging information', 
                          action='store_true' )
@@ -7778,12 +7786,24 @@ def wrapperArgs():
     return parser.parse_args()
 
 def toIwfArgs( wrapperArgs ):
+    global IFW_OUT_LOG_PATH, IS_IFW_OUT_LOG_PURGE 
+    global IFW_ERR_LOG_PATH, IS_IFW_ERR_LOG_PURGE                          
+
+    # Note: if allowing these paths to be overridden, ensure they are passed to
+    # QtIWF as absolutes, relative to the client's current working directory         
+    if wrapperArgs.outfile:
+        IFW_OUT_LOG_PATH = os.path.realpath( wrapperArgs.outfile )
+        IS_IFW_OUT_LOG_PURGE = False             
+    if wrapperArgs.errfile:               
+        IFW_ERR_LOG_PATH = os.path.realpath( wrapperArgs.errfile )
+        IS_IFW_ERR_LOG_PURGE = False                         
+                         
     # silent install always uses:
     #     auto pilot mode
-    #     client defined error log path    
-    args = ["{1}", 
-            '{2}="%s"' % (IFW_ERR_LOG_NAME,), 
-            '{30}="%s"' % (IFW_OUT_LOG_NAME,) ]
+    #     client defined out/err log paths    
+    args = ['{1}', 
+            '{2}="%s"' % (IFW_ERR_LOG_PATH.replace("\\\\","/"),), 
+            '{30}="%s"' % (IFW_OUT_LOG_PATH.replace("\\\\","/"),) ]
     
     if wrapperArgs.debug: args.append( VERBOSE_SWITCH )        
     
@@ -7841,9 +7861,9 @@ def cleanUp():
 {21}
 
 def removeIfwLogs(): 
-    if os.path.exists( IFW_OUT_LOG_PATH ):
+    if IS_IFW_OUT_LOG_PURGE and os.path.exists( IFW_OUT_LOG_PATH ):
         os.remove( IFW_OUT_LOG_PATH )
-    if os.path.exists( IFW_ERR_LOG_PATH ):
+    if IS_IFW_ERR_LOG_PURGE and os.path.exists( IFW_ERR_LOG_PATH ):
         os.remove( IFW_ERR_LOG_PATH )
 
 def showVersion():        
