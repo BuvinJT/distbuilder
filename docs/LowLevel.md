@@ -215,9 +215,10 @@ built-in default Control Script additions are preserved).  Unfortunately,
 there does not appear to be a way to add these to the QtIFW help!  Note these differ from the 
 [Silent Installer Arguments](#silent-installer-arguments).
 **The following custom arguments must be passed in the format "Key=Value"**: 
+
+**outlog=[path]**: The path where you would like (custom) output details written to.  The default is `<temp dir>/installer.out`.
     
-**errlog=[path]**: The path where you would like (custom) error details written to for installation 
-debugging.  The default is `<temp dir>/installer.err`.
+**errlog=[path]**: The path where you would like (custom) error details written to.  The default is `<temp dir>/installer.err`.
 
 **target=[path]**: The target directory for the installation.
 
@@ -338,6 +339,18 @@ available when the installer naturally provides the option to choose this at run
 here.  When available, this is **disabled** by default.  You must explicitly
 opt to allow a reboot by including this switch.
 
+**-o / --outfile**: The path where you would like output messages 
+written to.  If using this, it is up to you to purge the file.  An "output" 
+file is only produced for "notable" messages.  It does not contain debug 
+output, nor a simple success message.  Most of the time, such a file will 
+not be produced despite specifying this argument.  It is only created to
+pass back information such as a need to reboot your machine.  
+    
+**-e / --errfile**: The path where you would like error details 
+written to.  If using this, it is up to you to purge the file.  The 
+creation of this file by the installer indicates an error occurred 
+(in addition to a non-zero exit code from the process).
+
 **-d / --debug**: Enable debugging output. 
 
 **_keeptemp=true**: DEBUGGING feature: Leave scripts in a temp 
@@ -347,7 +360,7 @@ as `_keeptemp=true`.
 
 ### Installer Variables
 
-The following constants have been provided, which correspond to dynamic variables
+The following constants have been provided, which correspond to dynamic variables   
 resolved at *runtime* by QtIFW.  Note these are applicable for **BOTH** direct 
 [Installer Script](#installer-scripting) generation, and as parameters
 and attributes for many higher level functions and objects in this library.   
