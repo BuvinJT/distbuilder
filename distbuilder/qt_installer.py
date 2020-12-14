@@ -7761,7 +7761,7 @@ def wrapperArgs():
                              help='component ids to install (space delimited list)' )
         parser.add_argument( '-i', '--include', nargs='*', default=[],
                              help='component ids to include (space delimited list)' )
-        parser.add_argument( '-e', '--exclude', nargs='*', default=[],
+        parser.add_argument( '-x', '--exclude', nargs='*', default=[],
                              help='component ids to exclude (space delimited list)' )  
                          
     if IS_RUN_SWITCH is None:                     

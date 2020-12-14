@@ -315,7 +315,7 @@ priority over any `include` or `exclude` arguments.
 represented as a space delimited list of package ids.  Required/Default components do NOT need to be listed
 here, as they are already included implicitly. 
 
-**-e / --exclude [ids]**: The components to exclude from in the installation, 
+**-x / --exclude [ids]**: The components to exclude from in the installation, 
 represented as a space delimited list of package ids.  Only default components need to be listed
 here, as those which not automatically included are implicitly excluded by default.  Attempts exclude a required package will produce an error .  
 
