@@ -7337,21 +7337,25 @@ import glob
     PS_WAIT_SWITCH      = "-Wait"
     PS_WIN_STYLE_SWITCH = "-WindowStyle"
     PS_WIN_STYLE_HIDDEN = "Hidden"
-    PS_ARGS_SWITCH      = "-ArgumentList"
 
-    keepAliveFilePath = tempfile.mktemp( suffix='.keep' )
+    psArgs = [PS, PS_START, PS_PATH_SWITCH, EXE_PATH, 
+              PS_WAIT_SWITCH, PS_WIN_STYLE_SWITCH, PS_WIN_STYLE_HIDDEN]
+    psArgs = list2cmdline( psArgs ) 
+
+    keepAliveFilePath = tempfile.mktemp( suffix='.keep' ).replace( "\\\\","/" )
     with open( keepAliveFilePath, 'w' ) as f: pass
     
     keepAliveArg  = '{0}="%s"' % (keepAliveFilePath,)
     installerArgs = (ARGS if len(ARGS) > 0 else []) + [keepAliveArg]
-    installerArgs = ",".join( [ '"%s"' % (a.replace('"','`"'),) for a in installerArgs ] )         
-
-    psArgs = [PS, PS_START, PS_PATH_SWITCH, EXE_PATH, 
-              PS_WAIT_SWITCH, PS_WIN_STYLE_SWITCH, PS_WIN_STYLE_HIDDEN,
-              PS_ARGS_SWITCH, installerArgs]
-    #print( list2cmdline( psArgs ) )                                    
+    psArgs +=( " -ArgumentList " + 
+        ",".join( [ '"%s"' % (a.replace('"','\\\\"'),) 
+                    for a in installerArgs ] ) 
+    )
+                                        
     processStartupInfo = STARTUPINFO()
-    processStartupInfo.dwFlags |= STARTF_USESHOWWINDOW 
+    processStartupInfo.dwFlags |= STARTF_USESHOWWINDOW
+    # passing psArgs as a string vs list prevents more auto escape nonsense!
+    print( psArgs )
     process = Popen( psArgs, cwd=WORK_DIR, 
                      shell=False, universal_newlines=True,
                      stdin=DEVNULL, # Prevent PS blocking encountered in special contexts
@@ -7674,7 +7678,7 @@ sys.exit( main() )
     else:
         return (
 """
-import os, sys, time, argparse, subprocess
+import os, sys, shlex, time, argparse, subprocess
 from subprocess import Popen, PIPE, list2cmdline
 {17}
 
@@ -7684,6 +7688,7 @@ FAILURE=1
 VERSION_INFO = "{26}"
 
 IS_WINDOWS = {10}
+IS_FROZEN = True
 
 WORK_DIR = sys._MEIPASS
 EXE_NAME = "{0}"
@@ -7714,6 +7719,26 @@ IS_VERBOSE = False
 
 {18}
 
+class CustomArgumentParser( argparse.ArgumentParser ):
+    if IS_WINDOWS:
+        # override
+        def parse_args( self ):
+            def rawCommandLine():
+                from ctypes.wintypes import LPWSTR
+                from ctypes import windll
+                Kernel32 = windll.Kernel32
+                GetCommandLineW = Kernel32.GetCommandLineW
+                GetCommandLineW.argtypes = ()
+                GetCommandLineW.restype  = LPWSTR
+                return GetCommandLineW()                
+            WINDOWS_PATH_DELIMITER = '\\\\'
+            NIX_PATH_DELIMITER = '/'                
+            commandLine = rawCommandLine().replace( 
+                WINDOWS_PATH_DELIMITER, NIX_PATH_DELIMITER )
+            skipArgCount = 1 if IS_FROZEN else 2
+            args = shlex.split( commandLine )[skipArgCount:]        
+            return argparse.ArgumentParser.parse_args( self, args )
+
 def main():        
     global ARGS, IS_VERBOSE    
     ARGS = wrapperArgs() 
@@ -7731,7 +7756,7 @@ def main():
     return exitCode
 
 def wrapperArgs():
-    parser = argparse.ArgumentParser( epilog=componentsEpilogue,
+    parser = CustomArgumentParser( epilog=componentsEpilogue,
         formatter_class=argparse.RawTextHelpFormatter )
 
     parser.add_argument( '-v', '--version', default=False,
@@ -7810,7 +7835,8 @@ def toIwfArgs( wrapperArgs ):
     if wrapperArgs.uninstall: args.append( "{24}={25}" )        
     else: args.append( "{5}={6}" if wrapperArgs.force else "{5}={7}" )
 
-    if wrapperArgs.target is not None : 
+    if wrapperArgs.target is not None :
+        print("target",wrapperArgs.target)
         args.append( '{8}="%s"' % (wrapperArgs.target.replace("\\\\","/"),) )    
     if IS_WINDOWS :      
         if wrapperArgs.startmenu is not None : 
