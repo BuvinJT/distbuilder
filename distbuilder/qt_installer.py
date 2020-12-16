@@ -7348,14 +7348,14 @@ import glob
     keepAliveArg  = '{0}="%s"' % (keepAliveFilePath,)
     installerArgs = (ARGS if len(ARGS) > 0 else []) + [keepAliveArg]
     psArgs +=( " -ArgumentList " + 
-        ",".join( [ '"%s"' % (a.replace('"','\\\\"'),) 
+        ",".join( [ "'%s'" % (a.replace('"','\\\\"'),) 
                     for a in installerArgs ] ) 
     )
                                         
     processStartupInfo = STARTUPINFO()
     processStartupInfo.dwFlags |= STARTF_USESHOWWINDOW
     # passing psArgs as a string vs list prevents more auto escape nonsense!
-    print( psArgs )
+    #print( psArgs )
     process = Popen( psArgs, cwd=WORK_DIR, 
                      shell=False, universal_newlines=True,
                      stdin=DEVNULL, # Prevent PS blocking encountered in special contexts
@@ -7836,7 +7836,6 @@ def toIwfArgs( wrapperArgs ):
     else: args.append( "{5}={6}" if wrapperArgs.force else "{5}={7}" )
 
     if wrapperArgs.target is not None :
-        print("target",wrapperArgs.target)
         args.append( '{8}="%s"' % (wrapperArgs.target.replace("\\\\","/"),) )    
     if IS_WINDOWS :      
         if wrapperArgs.startmenu is not None : 
