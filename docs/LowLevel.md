@@ -257,6 +257,19 @@ the user so chooses explicitly.
 installation like a [Silent Installer](#silent-installers), and is in fact at the heart
 of how that works. Unlike a silent installer, GUI suppression is involved, however,
 and some of the extended features are not available e.g. error return codes.                                                      
+
+**dryrun=[true/false]**: This performs a "dry run" installation, where no
+core installation or uninstallation operations are performed,
+but Control Scripts are executed.  The wizard quits upon loading the ReadyForInstallation page. This allows for custom coding to 
+detect and report error conditions to be fired off, returning their 
+results to the client program / shell prior to attempting to use the \
+installer. Note: This feature enables "Auto pilot" implicitly.  
+Example use cases for this would include having logic embedded in 
+the Introduction page to automatically abort the installer if a required 
+reboot where detected.  Or, the TargetDirectory page could abort the
+installer when in dry run mode if logic were embedded to validate the 
+target path (vs displaying a non-fatal error dialog to the user when run 
+in the normal interactive mode).  Many other examples could be cited. 
  
 **_keeptemp=[true/false]**: DEBUGGING feature: Enable to leave scripts in a temp 
 directory, post any dynamic modifications, allowing them to scrutinized / 
@@ -294,6 +307,13 @@ this type of distbuilder installer. Note these differ from the
 **-v / --version**: Display version information.
 
 **-l / --license**: Display license agreement(s).
+
+**-y / --dryrun**: Perform a "dry run" installation, where no
+core installation or uninstallation operations are performed,
+but Control Scripts are executed.  This allows for custom coding to 
+detect and report error conditions to be fired off, returning their 
+results to the client program / shell prior to attempting to use the \
+installer.     
              
 **-u / --uninstall**: Uninstall an existing installation (if found) and exit.
 
@@ -454,6 +474,8 @@ Static Constants :
     OR  
 
     CONCAT 
+    
+    EXIT_FUNCTION <I.e.: return;>
         
     PATH_SEP   
     
@@ -473,7 +495,8 @@ Static Constants :
     INCLUDE_LIST_CMD_ARG      
     EXCLUDE_LIST_CMD_ARG      
     RUN_PROGRAM_CMD_ARG       
-    AUTO_PILOT_CMD_ARG        
+    AUTO_PILOT_CMD_ARG
+    DRYRUN_CMD_ARG                
     
     TARGET_EXISTS_OPT_CMD_ARG 
     TARGET_EXISTS_OPT_FAIL    
@@ -530,6 +553,9 @@ Static Functions:
     
     isAutoPilot( isNegated=False )
     ifAutoPilot( isNegated=False, isMultiLine=False )
+
+    isDryRun( isNegated=False )
+    ifDryRun( isNegated=False, isMultiLine=False )
 
     isElevated()
     ifElevated( isNegated=False, isMultiLine=False )    

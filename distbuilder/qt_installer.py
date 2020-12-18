@@ -735,6 +735,8 @@ class _QtIfwScript:
 
     CONCAT = " + "
     
+    EXIT_FUNCTION = "\n    return;\n"
+    
     PATH_SEP = '"\\\\"' if IS_WINDOWS else '"/"'  
         
     MAINTENANCE_TOOL_NAME  = util.normBinaryName( 
@@ -764,6 +766,7 @@ class _QtIfwScript:
     RUN_PROGRAM_CMD_ARG       = "run"
     REBOOT_CMD_ARG            = "reboot"
     AUTO_PILOT_CMD_ARG        = "auto"
+    DRYRUN_CMD_ARG            = "dryrun"
     _KEEP_ALIVE_PATH_CMD_ARG  = "__keepalive"
     TARGET_EXISTS_OPT_CMD_ARG = "onexist"
     TARGET_EXISTS_OPT_FAIL    = "fail"
@@ -789,6 +792,7 @@ class _QtIfwScript:
         , RUN_PROGRAM_CMD_ARG       : ""   
         , REBOOT_CMD_ARG            : ""   
         , AUTO_PILOT_CMD_ARG        : "" 
+        , DRYRUN_CMD_ARG            : ""
         , TARGET_EXISTS_OPT_CMD_ARG : "" 
         , MAINTAIN_MODE_CMD_ARG     : ""
         , _KEEP_ALIVE_PATH_CMD_ARG  : ""
@@ -1270,6 +1274,17 @@ class _QtIfwScript:
     @staticmethod
     def ifAutoPilot( isNegated=False, isMultiLine=False ):
         return _QtIfwScript.ifCondition( _QtIfwScript.isAutoPilot( 
+            isNegated=isNegated ), isMultiLine=isMultiLine ) 
+
+    @staticmethod
+    def isDryRun( isNegated=False ):
+        return '( %s%s )' % ( "!" if isNegated else "", 
+                _QtIfwScript.cmdLineSwitchArg( 
+                    _QtIfwScript.DRYRUN_CMD_ARG ), )
+    
+    @staticmethod
+    def ifDryRun( isNegated=False, isMultiLine=False ):
+        return _QtIfwScript.ifCondition( _QtIfwScript.isDryRun( 
             isNegated=isNegated ), isMultiLine=isMultiLine ) 
 
     @staticmethod        
@@ -1772,6 +1787,8 @@ class _QtIfwScript:
                 ', "' + _QtIfwScript.MAINTAIN_MODE_CMD_ARG + '=' + 
                 _QtIfwScript.MAINTAIN_MODE_OPT_REMOVE_ALL + '" ' 
                 "]" + END +
+            TAB + _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.DRYRUN_CMD_ARG ) +
+                'args.push( "' + _QtIfwScript.DRYRUN_CMD_ARG + '=true" )' + END +                     
             TAB + _QtIfwScript.ifCmdLineSwitch( _KEEP_TEMP_SWITCH ) +
                 'args.push( "' + _KEEP_TEMP_SWITCH + '=true" )' + END +                     
             TAB + 'var exeResult' + END +
@@ -1791,6 +1808,7 @@ class _QtIfwScript:
             TAB + 'else ' + NEW +                        
             (2*TAB) + 'executeHidden( toMaintenanceToolPath( ' +
                     _QtIfwScript.targetDir() + ' ), args, isElevated )' + END +
+            TAB + _QtIfwScript.ifDryRun() + 'return true' + END +            
             TAB + '// The MaintenanceTool is not removed until a moment\n' + 
             TAB + '// or two has elapsed after it was closed...' + NEW +
             TAB + _QtIfwScript.log('Verifying uninstall...') +    
@@ -3076,12 +3094,15 @@ Controller.prototype.Dynamic%sCallback = function() {
                                                                                    
         self.registerAutoPilotEventHandler( 
             'installationFinished', 'onAutoInstallFinished',
+            _QtIfwScript.log("onAutoInstallFinished") +
             QtIfwControlScript.clickButton( QtIfwControlScript.NEXT_BUTTON ) );                                                                 
         self.registerAutoPilotEventHandler( 
             'uninstallationFinished', 'onAutoUninstallFinished',
+            _QtIfwScript.log("onAutoUninstallFinished") +
             QtIfwControlScript.clickButton( QtIfwControlScript.NEXT_BUTTON ) );                                                                 
         self.registerAutoPilotEventHandler( 
             'updateFinished', 'onAutoUpdateFinished',
+            _QtIfwScript.log("onAutoUpdateFinished") +
             QtIfwControlScript.clickButton( QtIfwControlScript.NEXT_BUTTON ) );                                                                 
             
     def registerStandardEventHandler( self, signalName, slotName, slotBody ) :
@@ -3418,12 +3439,16 @@ Controller.prototype.Dynamic%sCallback = function() {
             (2*TAB) + _QtIfwScript.setBoolValue( _KEEP_TEMP_SWITCH, True ) +
             TAB + 'clearOutLog()' + END +
             TAB + 'clearErrorLog()' + END +
+            TAB + _QtIfwScript.ifDryRun() + _QtIfwScript.setBoolValue( 
+                _QtIfwScript.AUTO_PILOT_CMD_ARG, True ) +            
             TAB + _QtIfwScript.logValue( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +                                                 
+            TAB + _QtIfwScript.logValue( _QtIfwScript.DRYRUN_CMD_ARG ) +            
             TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.START_MENU_DIR_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.ACCEPT_EULA_CMD_ARG ) +
-            TAB + _QtIfwScript.logValue( _QtIfwScript.INSTALL_LIST_CMD_ARG ) +
+            TAB + _QtIfwScript.logValue( _QtIfwScript.INSTALL_LIST_CMD_ARG ) +            
+            TAB + _QtIfwScript.logValue( _QtIfwScript.INCLUDE_LIST_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.EXCLUDE_LIST_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.RUN_PROGRAM_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.REBOOT_CMD_ARG ) +
@@ -3579,8 +3604,9 @@ Controller.prototype.Dynamic%sCallback = function() {
             _QtIfwScript.ELSE + _QtIfwScript.START_BLOCK +   
                 (self.introductionPageOnMaintain if
                  self.introductionPageOnMaintain else "") +                
-                (QtIfwControlScript.clickButton( 
-                    QtIfwControlScript.NEXT_BUTTON )
+                ((QtIfwControlScript.clickButton( 
+                    QtIfwControlScript.NEXT_BUTTON ) +
+                    _QtIfwScript.EXIT_FUNCTION)
                 if self.isLimitedMaintenance else "") +                     
             _QtIfwScript.END_BLOCK +               
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
@@ -3677,7 +3703,13 @@ Controller.prototype.Dynamic%sCallback = function() {
 
     def __genReadyForInstallationPageCallbackBody( self ):
         self.readyForInstallationPageCallbackBody = (
-            _QtIfwScript.log("ReadyForInstallationPageCallback") +            
+            _QtIfwScript.log("ReadyForInstallationPageCallback") +    
+            _QtIfwScript.ifDryRun( isMultiLine=True ) + 
+                _QtIfwScript.log( "Dry run completed." ) +
+                (2*_QtIfwScript.TAB) + 
+                    _QtIfwScript.quit( "", isError=False, isSilent=True ) +
+                (2*_QtIfwScript.TAB) + " return;" +
+            _QtIfwScript.END_BLOCK +              
             _QtIfwScript.ifBoolValue( 
                 _QtIfwScript._IS_CMD_ARGS_TEMP_KEY, isNegated=True,
                 isMultiLine=True ) 
@@ -7767,7 +7799,10 @@ def wrapperArgs():
         parser.add_argument( '-l', '--license', default=False,
                              help='show license agreement(s) and exit', 
                              action='store_true' )                                        
-                        
+
+    parser.add_argument( '-y', '--dryrun', default=False,
+                         help='perform a dry run (to detect error conditions)',
+                         action='store_true' )                        
     parser.add_argument( '-u', '--uninstall', default=False, 
                          help='uninstall existing installation', 
                          action='store_true' )                         
@@ -7831,6 +7866,8 @@ def toIwfArgs( wrapperArgs ):
             '{30}="%s"' % (IFW_OUT_LOG_PATH.replace("\\\\","/"),) ]
     
     if wrapperArgs.debug: args.append( VERBOSE_SWITCH )        
+    
+    if wrapperArgs.dryrun: args.append( "{31}" )
     
     if wrapperArgs.uninstall: args.append( "{24}={25}" )        
     else: args.append( "{5}={6}" if wrapperArgs.force else "{5}={7}" )
@@ -7938,6 +7975,7 @@ sys.exit( main() )
     , str(isRebootSwitch)                                   # {28}
     , _QtIfwScript.REBOOT_CMD_ARG                           # {29}
     , _QtIfwScript.OUT_LOG_PATH_CMD_ARG                     # {30}
+    , ("%s=true" % (_QtIfwScript.DRYRUN_CMD_ARG,))          # {31}
 )
 
 def __generateQtIfwInstallPyScript( installerPath, ifwScriptPath, 
