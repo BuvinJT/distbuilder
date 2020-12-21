@@ -565,10 +565,9 @@ Static Functions:
     getEnv( varName, isAutoQuote=True )
     
     pathExists( path, isAutoQuote=True )
-    ifPathExists( path, isAutoQuote=True, isMultiLine=False )   
-    ifNotPathExists( path, isAutoQuote=True, isMultiLine=False )
+    ifPathExists( path, isNegated=False, sAutoQuote=True, isMultiLine=False )   
     
-    makeDir( path )            <path can include native env vars> 
+    makeDir( path )            <recursive, path can include native env vars> 
     removeDir( path ) 		   <path can include native env vars>
     	
     writeFile( path, content ) <path can include native env vars>
@@ -762,12 +761,13 @@ following add-on **QT SCRIPT** functions:
     
     getEnv( varName )
     
+    parentDir( path ) <null if no parent, e.g. path is root>    
     fileName( filePath )
     rootFileName( filePath )
 	
 	dirList( path, isSortedByTime ) <path can include native env vars, and wild cards>
 		
-    makeDir( path )
+    makeDir( path ) <recursive>
     removeDir( path )
     	
     writeFile( path, content ) <path can include native env vars>

@@ -1348,14 +1348,10 @@ class _QtIfwScript:
             _QtIfwScript._autoQuote( path, isAutoQuote ),) 
 
     @staticmethod        
-    def ifPathExists( path, isAutoQuote=True, isMultiLine=False ):   
-        return 'if( %s )%s\n%s' % (
-            _QtIfwScript.pathExists( path, isAutoQuote ),
-            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
-
-    @staticmethod
-    def ifNotPathExists( path, isAutoQuote=True, isMultiLine=False ):   
-        return 'if( ! %s )%s\n%s' % (
+    def ifPathExists( path, isNegated=False, 
+                      isAutoQuote=True, isMultiLine=False ):   
+        return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "",
             _QtIfwScript.pathExists( path, isAutoQuote ),
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
@@ -1868,6 +1864,12 @@ class _QtIfwScript:
             'function getEnv( varName ) ' + SBLK +
             TAB + 'return installer.environmentVariable( varName )' + END +
             EBLK + NEW +
+            'function parentDir( path ) ' + SBLK +
+            TAB + 'var pathParts = Dir.fromNativeSeparator( path ).split("/")' + END +
+            TAB + 'if( pathParts.length <= 1 ) return null' + END +
+            TAB + 'return Dir.toNativeSeparator( ' +
+                'pathParts.slice(0, pathParts.length-1).join("/") )' + END +
+            EBLK + NEW +            
             'function fileName( filePath ) ' + SBLK +
             TAB + 'var pathParts = Dir.fromNativeSeparator( filePath ).split("/")' + END +
             TAB + 'return pathParts[pathParts.length-1]' + END +
@@ -1928,15 +1930,16 @@ class _QtIfwScript:
             TAB + 'return retList' + END +                                                                                                               
             EBLK + NEW +                        
             'function makeDir( path ) ' + SBLK +      # TODO: Test in NIX/MAC
+            TAB + 'if( path==null ) return' + END +
             TAB + 'path = resolveNativePath( path )' + END +
             TAB + _QtIfwScript.ifPathExists( 'path', isAutoQuote=False ) + 
             (2*TAB) + 'return path' + END +                    
             TAB + 'var mkDirCmd = "' +
                 ('echo off\\n'                     
-                 'md \\"" + path + "\\"\\n'
+                 'md \\"" + path + "\\"\\n' # implicitly recursive
                  'echo " + path + "\\n' 
                  if IS_WINDOWS else
-                 'mkdir -p \\"" + path + "\\"; '
+                 'mkdir -p \\"" + path + "\\"; ' # -p = recursive
                  'echo \\"" + path + "\\"' ) + '"' + END +      
             TAB + 'var result = installer.execute( ' +
                 ('"cmd.exe", ["/k"], mkDirCmd' if IS_WINDOWS else
@@ -1953,9 +1956,10 @@ class _QtIfwScript:
             TAB + _QtIfwScript.log( '"made dir: " + path', isAutoQuote=False ) + 
             TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                
-            'function removeDir( path ) ' + SBLK +        # TODO: Test in NIX/MAC                  
+            'function removeDir( path ) ' + SBLK +        # TODO: Test in NIX/MAC
+            TAB + 'if( path==null ) return' + END +                  
             TAB + 'path = resolveNativePath( path )' + END +
-            TAB + _QtIfwScript.ifNotPathExists( 'path', isAutoQuote=False ) + 
+            TAB + _QtIfwScript.ifPathExists( 'path', isNegated=True, isAutoQuote=False ) + 
             (2*TAB) + 'return path' + END +                    
             TAB + 'var rmDirCmd = "' +
                 ('echo off\\n'                     
@@ -2072,8 +2076,12 @@ class _QtIfwScript:
             TAB + 'var escaped = echo' + END +                      
             TAB + 'return " " + escaped' + END +                                                                                          
             EBLK + NEW +      
-            'function writeFile( path, content ) ' + SBLK +            
-            TAB + 'path = resolveNativePath( path )' + END +           
+            'function writeFile( path, content ) ' + SBLK +    
+            TAB + 'if( path==null ) return' + END +        
+            TAB + 'path = resolveNativePath( path )' + END +
+            TAB + 'var dirPath = parentDir( path )' + END +
+            TAB + _QtIfwScript.ifPathExists( 'dirPath', isNegated=True, isAutoQuote=False ) + 
+                (2*TAB) + _QtIfwScript.makeDir( 'dirPath', isAutoQuote=False ) +                    
             TAB + 'var lines = content.split(\"\\n\")' + END +                                             
             TAB + 'var redirect = " >"' + END +      
             TAB + 'var writeCmd = ""' + END +
@@ -2101,7 +2109,10 @@ class _QtIfwScript:
             TAB + 'return path' + END +
             EBLK + NEW +                   
             'function deleteFile( path ) ' + SBLK +
-            TAB + 'path = resolveNativePath( path )' + END +           
+            TAB + 'if( path==null ) return' + END +
+            TAB + 'path = resolveNativePath( path )' + END +      
+            TAB + _QtIfwScript.ifPathExists( 'path', isNegated=True, isAutoQuote=False ) +
+                'return' + END +                  
             TAB + 'var deleteCmd = "' +                    
                 ('echo off && del \\"" + path + "\\" /q\\necho " + path + "\\n"' 
                  if IS_WINDOWS else
@@ -3442,7 +3453,8 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + _QtIfwScript.ifDryRun() + _QtIfwScript.setBoolValue( 
                 _QtIfwScript.AUTO_PILOT_CMD_ARG, True ) +            
             TAB + _QtIfwScript.logValue( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +                                                 
-            TAB + _QtIfwScript.logValue( _QtIfwScript.DRYRUN_CMD_ARG ) +            
+            TAB + _QtIfwScript.logValue( _QtIfwScript.DRYRUN_CMD_ARG ) +  
+            TAB + _QtIfwScript.logValue( _QtIfwScript.MAINTAIN_MODE_CMD_ARG ) +          
             TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.START_MENU_DIR_CMD_ARG ) +
