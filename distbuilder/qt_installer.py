@@ -5360,7 +5360,7 @@ class QtIfwExternalOp:
         if isHidden: 
             if IS_WINDOWS :
                 waitSwitch = " -Wait" if isSynchronous else ""
-                hiddenStyle = "-WindowStyle Hidden"         
+                hiddenStyle = " -WindowStyle Hidden"         
                 argList =( (" -ArgumentList " +
                     ",".join( ['"%s"' % (a,) for a in arguments]) )         
                     if len(arguments) > 0 else "" )               
