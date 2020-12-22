@@ -792,7 +792,8 @@ Event constants for convenience methods.
 #### QtIfwExternalOp.RunProgram
 
     RunProgram( event, path, arguments=None, isAutoQuote=True,  
-                isHidden=False, isElevated=True, isAutoBitContext=True )
+                isHidden=False, isSynchronous=True, isElevated=True, 
+                isAutoBitContext=True )
 
 On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
 program from the installer's 32 bit context.
@@ -869,7 +870,8 @@ use of SysWow64 nodes.
 #### QtIfwExternalOp.RunProgramScript
 
     RunProgramScript( path, arguments=None, isAutoQuote=True, 
-    				  isHidden=False, isAutoBitContext=True, 
+    				  isHidden=False, isSynchronous=True,
+    				  isAutoBitContext=True, 
     				  replacements=None )
     
 On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit

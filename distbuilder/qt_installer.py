@@ -3721,24 +3721,26 @@ Controller.prototype.Dynamic%sCallback = function() {
                 (2*_QtIfwScript.TAB) + 
                     _QtIfwScript.quit( "", isError=False, isSilent=True ) +
                 (2*_QtIfwScript.TAB) + " return;" +
-            _QtIfwScript.END_BLOCK +              
-            _QtIfwScript.ifBoolValue( 
-                _QtIfwScript._IS_CMD_ARGS_TEMP_KEY, isNegated=True,
-                isMultiLine=True ) 
+            _QtIfwScript.END_BLOCK +
+            _QtIfwScript.ifInstalling( isMultiLine=True ) +              
+                (2*_QtIfwScript.TAB) + _QtIfwScript.ifBoolValue( 
+                    _QtIfwScript._IS_CMD_ARGS_TEMP_KEY, isNegated=True,
+                    isMultiLine=True ) 
         )
         # Ensure the volatile cmd args are not persisted during the install 
         # process, and thus carried forward into the maintenance tool context!
         for arg, defValue in iteritems( _QtIfwScript._CMD_ARGS ):
             self.readyForInstallationPageCallbackBody += (
-                _QtIfwScript.setValue( '"%s"' % 
+                (2*_QtIfwScript.TAB) + _QtIfwScript.setValue( '"%s"' % 
                     (_QtIfwScript._CMD_ARGS_TEMP_PREFIX + arg,), 
                     _QtIfwScript.lookupValue( arg, defValue ), isAutoQuote=False ) +
-                _QtIfwScript.setValue( arg, defValue )                    
+                (2*_QtIfwScript.TAB) + _QtIfwScript.setValue( arg, defValue )                    
             )                
         self.readyForInstallationPageCallbackBody += (
-                _QtIfwScript.setBoolValue( 
+                (2*_QtIfwScript.TAB) + _QtIfwScript.setBoolValue( 
                     _QtIfwScript._IS_CMD_ARGS_TEMP_KEY, True ) +
-            _QtIfwScript.END_BLOCK +                                    
+            (2*_QtIfwScript.TAB) + _QtIfwScript.END_BLOCK +
+            _QtIfwScript.END_BLOCK +                                          
             _QtIfwScript.ifAutoPilot() +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON )  
@@ -3758,8 +3760,9 @@ Controller.prototype.Dynamic%sCallback = function() {
         EBLK = _QtIfwScript.END_BLOCK
         ELSE = _QtIfwScript.ELSE        
         self.finishedPageCallbackBody = (                
-            TAB + _QtIfwScript.log("FinishedPageCallback") )
-
+            TAB + _QtIfwScript.log("FinishedPageCallback") + 
+            TAB + _QtIfwScript.ifInstalling( isMultiLine=True )             
+        )
         # restore args from temp 
         for arg, defValue in iteritems( _QtIfwScript._CMD_ARGS ):
             self.finishedPageCallbackBody += (
@@ -3771,8 +3774,10 @@ Controller.prototype.Dynamic%sCallback = function() {
                 _QtIfwScript.setValue(  
                    _QtIfwScript._CMD_ARGS_TEMP_PREFIX + arg, "" )                    
             )         
-        self.finishedPageCallbackBody += _QtIfwScript.setBoolValue( 
-                _QtIfwScript._IS_CMD_ARGS_TEMP_KEY, False ) 
+        self.finishedPageCallbackBody +=( 
+                _QtIfwScript.setBoolValue( 
+                    _QtIfwScript._IS_CMD_ARGS_TEMP_KEY, False ) +
+            EBLK )
                     
         finshedCheckboxes = [ w for w in self.widgets 
                              if isinstance( w, QtIfwOnFinishedCheckbox ) ]        
@@ -5120,13 +5125,14 @@ class QtIfwExternalOp:
                 isElevated=isElevated )
      
     # TODO: Test in NIX/MAC 
-    # TODO: Add isSynchronous=True
     @staticmethod
     def RunProgram( event, path, arguments=None, isAutoQuote=True,  
-                    isHidden=False, isElevated=True, isAutoBitContext=True ):           
+                    isHidden=False, isSynchronous=True, isElevated=True, 
+                    isAutoBitContext=True ): # Windows Only           
         return QtIfwExternalOp.__genScriptOp( event, 
             script=QtIfwExternalOp.RunProgramScript( 
-                path, arguments, isAutoQuote, isHidden, isAutoBitContext ), 
+                path, arguments, isAutoQuote, 
+                isHidden, isSynchronous, isAutoBitContext ), 
             isElevated=isElevated )
     
     @staticmethod
@@ -5344,22 +5350,25 @@ class QtIfwExternalOp:
             'rd /q /s "{dirPath}"' if IS_WINDOWS else 'rm -r "{dirPath}"'  ), 
             replacements={ "dirPath": dirPath } )
 
-    # TODO: Add isSynchronous=True
+    # TODO: Test in NIX/MAC       
     @staticmethod
     def RunProgramScript( path, arguments=None, isAutoQuote=True, 
-                          isHidden=False, isAutoBitContext=True,
+                          isHidden=False, isSynchronous=True,
+                          isAutoBitContext=True,
                           replacements=None  ):
         if arguments is None: arguments =[] 
         if isHidden: 
-            if IS_WINDOWS :        
+            if IS_WINDOWS :
+                waitSwitch = " -Wait" if isSynchronous else ""
+                hiddenStyle = "-WindowStyle Hidden"         
                 argList =( (" -ArgumentList " +
                     ",".join( ['"%s"' % (a,) for a in arguments]) )         
                     if len(arguments) > 0 else "" )               
                 return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                     "runHiddenProgram" ), extension="ps1", script=([
                     QtIfwExternalOp.__psSetBitContext( isAutoBitContext ),   
-                    'Start-Process -FilePath "%s" -Wait -WindowStyle Hidden%s'
-                         % (path, argList), 
+                    'Start-Process -FilePath "%s" %s%s%s'
+                         % (path, waitSwitch, hiddenStyle, argList), 
                     'exit $LastExitCode']), replacements=replacements )
             else: 
                 # TODO: Fill-in on NIX/MAC
@@ -5370,7 +5379,10 @@ class QtIfwExternalOp:
                 tokens = [('"%s"' % (t,) if (" " in t or "@" in t) else t) 
                           for t in tokens]
             
-            runCmd = " ".join( tokens ) 
+            runCmd = " ".join( tokens )             
+            if not isSynchronous: 
+                if IS_WINDOWS: runCmd = 'start "" ' + runCmd 
+                else: runCmd += " &"                    
             if IS_WINDOWS and not isAutoBitContext:
                 script=([
                     'set "RUN_CMD=%s"' % (runCmd,),

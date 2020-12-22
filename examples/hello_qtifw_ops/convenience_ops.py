@@ -1,6 +1,6 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
-        QtIfwExternalOp, QtIfwKillOp, ExecutableScript, IS_WINDOWS, \
-        QT_IFW_DESKTOP_DIR
+        QtIfwExternalOp, QtIfwKillOp, ExecutableScript, \
+        IS_WINDOWS, IS_MACOS, QT_IFW_DESKTOP_DIR
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Installer Conveniences Example"
@@ -10,6 +10,7 @@ f.companyLegalName = "Some Company Inc."
 f.binaryName       = "RunConditionsTest"
 f.isGui            = True
 f.entryPointPy     = "../run_conditions_app/hello_gui.py"  
+f.distResources    = ["../hello_world/LICENSE.TXT"]
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
 f.version          = (1,0,0,0)
 f.setupName        = "HelloIfwConveniencesSetup"
@@ -51,13 +52,34 @@ class BuildProcess( PyToBinInstallerProcess ):
                     'Set oShell = Nothing'
                 ])  
         
+        def addRunProgramOp( pkg ):
+            if IS_WINDOWS: progPath = "notepad"                
+            elif IS_MACOS: progPath = "TextEdit"                  
+            else         : progPath = "gedit"                                                
+            args = [ "@TargetDir@\LICENSE.TXT" ]
+            pkg.pkgScript.externalOps += [
+                QtIfwExternalOp.RunProgram(
+                    QtIfwExternalOp.ON_INSTALL,
+                    progPath, args,
+                    # note: if you hide this, you'll need to kill the process
+                    # manually in this demo context via kill commands, or the
+                    # Windows task manger etc.!                      
+                    isHidden=False,
+                    # note: if isSynchronous is True, the installer will block 
+                    # mid install operations in this demo until you close the 
+                    # text viewer... 
+                    isSynchronous=False, 
+                    isElevated=False )
+                ]    
+        
         pkg = cfg.packages[0]
         addKillOps( pkg ) 
         if IS_WINDOWS:            
             addCreateExeFromBatch( pkg )
             addCreateExeFromPowerShell( pkg )
             addCreateExeFromVbs( pkg )               
-    
+        addRunProgramOp( pkg )
+            
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True
 p.run()       
