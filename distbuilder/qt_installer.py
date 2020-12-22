@@ -6863,7 +6863,6 @@ def buildInstaller( qtIfwConfig, isSilent ):
 
 def _stageInstallerPackages( qtIfwConfig, isSilent ):
     __validateConfig( qtIfwConfig )        
-    if isSilent: __toSilentConfig( qtIfwConfig )
     __initBuild( qtIfwConfig )    
     __addInstallerResources( qtIfwConfig )     
 
@@ -7186,17 +7185,6 @@ def __postBuild( qtIfwConfig ):  # @UnusedVariable
         if not p.isTempSrc : continue
         if   p.srcDirPath and isDir(  p.srcDirPath): removeDir(  p.srcDirPath )
         elif p.srcExePath and isFile( p.srcExePath): removeFile( p.srcExePath )                    
-
-def __toSilentConfig( qtIfwConfig ):
-    # Minimum visible pages required for functionality
-    qtIfwConfig.controlScript.isIntroductionPageVisible         = True  # required to install                                                                   
-    qtIfwConfig.controlScript.isTargetDirectoryPageVisible      = False
-    qtIfwConfig.controlScript.isComponentSelectionPageVisible   = True  # need for component auto select
-    qtIfwConfig.controlScript.isLicenseAgreementPageVisible     = False
-    qtIfwConfig.controlScript.isStartMenuDirectoryPageVisible   = False
-    qtIfwConfig.controlScript.isReadyForInstallationPageVisible = True  # required to install
-    qtIfwConfig.controlScript.isPerformInstallationPageVisible  = True  # required to install
-    qtIfwConfig.controlScript.isFinishedPageVisible             = True  # breaks auto pilot logic if missing  
     
 def __buildSilentWrapper( qtIfwConfig ) :
     print( "Building silent wrapper executable...\n" )
