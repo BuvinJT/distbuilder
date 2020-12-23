@@ -102,18 +102,24 @@ QT_IFW_OS            = "@os@"
 QT_IFW_APPS_X86_DIR  = "@ApplicationsDirX86@"
 QT_IFW_APPS_X64_DIR  = "@ApplicationsDirX64@"
 
+
 QT_IFW_INTRO_PAGE      = "Introduction"
 QT_IFW_TARGET_DIR_PAGE = "TargetDirectory"
 QT_IFW_COMPONENTS_PAGE = "ComponentSelection"
-QT_IFW_LICENSE_PAGE    = "LicenseAgreement"
-QT_IFW_START_MENU_PAGE = "StartMenuDirectory"
+QT_IFW_LICENSE_PAGE    = "LicenseCheck"
+QT_IFW_START_MENU_PAGE = "StartMenuSelection"
 QT_IFW_READY_PAGE      = "ReadyForInstallation"
 QT_IFW_INSTALL_PAGE    = "PerformInstallation"
 QT_IFW_FINISHED_PAGE   = "InstallationFinished"
 
-# Unlike every other page with an id constant, the callback name
-# for this one is slightly different! 
-_QT_IFW_FINISHED_PAGE_CALLBACK_NAME = "Finished"
+_QT_IFW_INTRO_PAGE_CALLBACK_NAME      = "Introduction"
+_QT_IFW_TARGET_DIR_PAGE_CALLBACK_NAME = "TargetDirectory"
+_QT_IFW_COMPONENTS_PAGE_CALLBACK_NAME = "ComponentSelection"
+_QT_IFW_LICENSE_PAGE_CALLBACK_NAME    = "LicenseAgreement"
+_QT_IFW_START_MENU_PAGE_CALLBACK_NAME = "StartMenuDirectory"
+_QT_IFW_READY_PAGE_CALLBACK_NAME      = "ReadyForInstallation"
+_QT_IFW_INSTALL_PAGE_CALLBACK_NAME    = "PerformInstallation"
+_QT_IFW_FINISHED_PAGE_CALLBACK_NAME   = "Finished"
 
 QT_IFW_REPLACE_PAGE_PREFIX="Replace"
 
@@ -3196,49 +3202,56 @@ Controller.prototype.Dynamic%sCallback = function() {
             self.__genIntroductionPageCallbackBody()
         if self.introductionPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                (QT_IFW_INTRO_PAGE, self.introductionPageCallbackBody) )
+                (_QT_IFW_INTRO_PAGE_CALLBACK_NAME, self.introductionPageCallbackBody) )
                         
         if self.isAutoTargetDirectoryPageCallback:
             self.__genTargetDirectoryPageCallbackBody()
         if self.targetDirectoryPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                (QT_IFW_TARGET_DIR_PAGE, self.targetDirectoryPageCallbackBody) )
+                (_QT_IFW_TARGET_DIR_PAGE_CALLBACK_NAME, 
+                 self.targetDirectoryPageCallbackBody) )
 
         if self.isAutoComponentSelectionPageCallback:
             self.__genComponentSelectionPageCallbackBody()
         if self.componentSelectionPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                (QT_IFW_COMPONENTS_PAGE, self.componentSelectionPageCallbackBody) )
+                (_QT_IFW_COMPONENTS_PAGE_CALLBACK_NAME, 
+                 self.componentSelectionPageCallbackBody) )
 
         if self.isAutoLicenseAgreementPageCallback:
             self.__genLicenseAgreementPageCallbackBody()
         if self.licenseAgreementPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                (QT_IFW_LICENSE_PAGE, self.licenseAgreementPageCallbackBody) )
+                (_QT_IFW_LICENSE_PAGE_CALLBACK_NAME, 
+                 self.licenseAgreementPageCallbackBody) )
 
         if self.isAutoStartMenuDirectoryPageCallback:
             self.__genStartMenuDirectoryPageCallbackBody()
         if self.startMenuDirectoryPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                (QT_IFW_START_MENU_PAGE, self.startMenuDirectoryPageCallbackBody) )
+                (_QT_IFW_START_MENU_PAGE_CALLBACK_NAME, 
+                 self.startMenuDirectoryPageCallbackBody) )
 
         if self.isAutoReadyForInstallationPageCallback:
             self.__genReadyForInstallationPageCallbackBody()
         if self.readyForInstallationPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                (QT_IFW_READY_PAGE, self.readyForInstallationPageCallbackBody) )
+                (_QT_IFW_READY_PAGE_CALLBACK_NAME, 
+                 self.readyForInstallationPageCallbackBody) )
 
         if self.isAutoPerformInstallationPageCallback:
             self.__genPerformInstallationPageCallbackBody()
         if self.performInstallationPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                (QT_IFW_INSTALL_PAGE, self.performInstallationPageCallbackBody) )
+                (_QT_IFW_INSTALL_PAGE_CALLBACK_NAME, 
+                 self.performInstallationPageCallbackBody) )
 
         if self.isAutoFinishedPageCallback:
             self.__genFinishedPageCallbackBody()
         if self.finishedPageCallbackBody:
             self.script += ( QtIfwControlScript.__PAGE_CALLBACK_FUNC_TMPLT %
-                (_QT_IFW_FINISHED_PAGE_CALLBACK_NAME, self.finishedPageCallbackBody) )
+                (_QT_IFW_FINISHED_PAGE_CALLBACK_NAME, 
+                 self.finishedPageCallbackBody) )
 
         for (funcName, funcBody) in six.itervalues( self.__standardEventSlots ):    
             self.script += ( 
@@ -7018,6 +7031,21 @@ def __genQtIfwCntrlRes( qtIfwConfig ) :
         # when there are not multiple packages to begin with
         if len(qtIfwConfig.packages) < 2:
             ctrlScript.isComponentSelectionPageVisible=False 
+        # Allow start menu target to be explicitly disabled, but force that
+        # when there are no shortcuts being installed there to begin with        # 
+        if IS_WINDOWS:  
+            isStartMenuUpdated = False  
+            for p in qtIfwConfig.packages :
+                try:                    
+                    for shortcut in p.pkgScript.shortcuts:
+                        isStartMenuUpdated = ( shortcut.exeName is not None 
+                                               and shortcut.isAppShortcut )
+                        if isStartMenuUpdated: break
+                    if isStartMenuUpdated: break
+                except: pass            
+            if not isStartMenuUpdated:    
+                ctrlScript.isStartMenuDirectoryPageVisible=False
+
         print( "%s installer control script..." 
                % ( "Regenerating" if ctrlScript.exists() else "Adding" ) )       
         if ctrlScript.script: ctrlScript._generate() 
@@ -7232,7 +7260,8 @@ def __buildSilentWrapper( qtIfwConfig ) :
             
     wrapperScript = __silentQtIfwScript( nestedExeName, componentList,
         isRunSwitch=isRunSwitch, isRebootSwitch=isRebootSwitch, 
-        licenses=licenses,
+        licenses=licenses, 
+        isStartMenu=ctrlScrpt.isStartMenuDirectoryPageVisible,
         productName=cfgXml.Name, version=cfgXml.Version,
         companyLegalName=cfgXml.Publisher )
                                                
@@ -7297,7 +7326,7 @@ def __silentQtIfwScript( exeName, componentList=None,
                          scriptPath=None,
                          wrkDir=None, targetDir=None,
                          isRunSwitch=None, isRebootSwitch=None,
-                         licenses=None,
+                         licenses=None, isStartMenu=True,
                          productName=None, version=None, 
                          companyLegalName=None ) :
     """
@@ -7748,6 +7777,7 @@ IS_IFW_ERR_LOG_PURGE = True
 VERBOSE_SWITCH = "{4}"
 IS_RUN_SWITCH  = {22}
 IS_REBOOT_SWITCH = {28}
+IS_STARTMENU_SWITCH = {32}
 
 components = {14}
 componentsRequired = {27}
@@ -7824,7 +7854,8 @@ def wrapperArgs():
 
     parser.add_argument( '-t', '--target', default=None,
                          help='target directory' )                         
-    if IS_WINDOWS :                          
+    
+    if IS_WINDOWS and IS_STARTMENU_SWITCH:                          
         parser.add_argument( '-m', '--startmenu', default=None,  
                              help='start menu directory' )
                              
@@ -7988,6 +8019,7 @@ sys.exit( main() )
     , _QtIfwScript.REBOOT_CMD_ARG                           # {29}
     , _QtIfwScript.OUT_LOG_PATH_CMD_ARG                     # {30}
     , ("%s=true" % (_QtIfwScript.DRYRUN_CMD_ARG,))          # {31}
+    , str(isStartMenu)                                      # {32}
 )
 
 def __generateQtIfwInstallPyScript( installerPath, ifwScriptPath, 
