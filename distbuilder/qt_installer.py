@@ -7916,10 +7916,10 @@ def toIwfArgs( wrapperArgs ):
     else: args.append( "{5}={6}" if wrapperArgs.force else "{5}={7}" )
 
     if wrapperArgs.target is not None :
-        args.append( '{8}="%s"' % (wrapperArgs.target.replace("\\\\","/"),) )    
-    if IS_WINDOWS :      
-        if wrapperArgs.startmenu is not None : 
-            args.append( '{9}="%s"' % (wrapperArgs.startmenu.replace("\\\\","/"),) )
+        args.append( '{8}="%s"' % (wrapperArgs.target.replace("\\\\","/"),) )
+            
+    if IS_WINDOWS and IS_STARTMENU_SWITCH and wrapperArgs.startmenu is not None: 
+        args.append( '{9}="%s"' % (wrapperArgs.startmenu.replace("\\\\","/"),) )
     
     if len(components) > 0 : 
         def appendComponentArg( wrapperArg, ifwArg, isExclude=False ):                
