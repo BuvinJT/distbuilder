@@ -5789,7 +5789,7 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
                     '(\'dir ' + iconDirPath + '\*.ico /b /o-n\') '
                     'do set iconName=%%F' )
             else:            
-                setIconName = 'set "iconName=%s"' % (joinPath( iconDirPath, iconName ),)                  
+                setIconName = 'set "iconName=%s"' % ( iconName, )                  
             removeIconDir =( 'rd /q /s "%s"' % (iconDirPath,) 
                              if isIconDirRemoved else "" )  
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
