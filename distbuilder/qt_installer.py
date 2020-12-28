@@ -5496,8 +5496,10 @@ else{ $args=@{} }
 
 # Run the uninstaller with window hidden (if it respects that request!)
 Write-Host "Running: $prog"
-Write-Host "With arguments: $args"
+if( $args.Count -gt 0 ){ Write-Host "With arguments: $args" }
 Start-Process $prog {wait}{hide}-ArgumentList $args
+Write-Host "Launched..."
+exit 0
 """)                                    
             if arguments:
                 ADD_ARG_TMPL = '$args.Add("%s")\n'

@@ -52,6 +52,18 @@ class BuildProcess( PyToBinInstallerProcess ):
                     'Set oShell = Nothing'
                 ])  
         
+            def addUninstallWindowsApp( pkg ):
+                # This example app must be installed to truly test this!                
+                APP_NAME = "Hello World Tk Example"
+                pkg.pkgScript.externalOps += [ 
+                    QtIfwExternalOp.UninstallWindowsApp( 
+                        QtIfwExternalOp.ON_INSTALL,
+                        APP_NAME, arguments=[], 
+                        isHidden=True, 
+                        isSynchronous=False,
+                        isAutoBitContext=False,
+                        isSuccessOnNotFound=True ) ]
+
         def addRunProgramOp( pkg ):
             if IS_WINDOWS: progPath = "notepad"                
             elif IS_MACOS: progPath = "TextEdit"                  
@@ -77,7 +89,8 @@ class BuildProcess( PyToBinInstallerProcess ):
         if IS_WINDOWS:            
             addCreateExeFromBatch( pkg )
             addCreateExeFromPowerShell( pkg )
-            addCreateExeFromVbs( pkg )               
+            addCreateExeFromVbs( pkg )       
+            addUninstallWindowsApp( pkg )        
         addRunProgramOp( pkg )
             
 p = BuildProcess( configFactory, isDesktopTarget=True )
