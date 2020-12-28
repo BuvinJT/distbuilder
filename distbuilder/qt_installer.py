@@ -5512,8 +5512,8 @@ Start-Process $prog {wait}{hide}-ArgumentList $args
                     , "addArgs": addArgs
                     , "wait": ("-Wait " if isSynchronous else "")
                     , "hide": ("-WindowStyle Hidden " if isHidden else "")  
-                    , "__NOT_FOUND_EXIT_CODE": 
-                        QtIfwExternalOp.__NOT_FOUND_EXIT_CODE
+                    , "NOT_FOUND_EXIT_CODE": 
+                        str( QtIfwExternalOp.__NOT_FOUND_EXIT_CODE )
                 } )
 
         # Creates the key, if it does not exists.
