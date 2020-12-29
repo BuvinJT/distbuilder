@@ -65,6 +65,7 @@ class ConfigFactory:
         # PyInstaller
         self.entryPointPy  = None               
         self.specFilePath  = None
+        self.isOneFile     = True # this differs from the PyInstaller default
         self.distResources = []
 
         # Python Obfuscation
@@ -123,9 +124,10 @@ class ConfigFactory:
         cfg = PyInstallerConfig()        
         cfg.name          = self.binaryName
         cfg.sourceDir     = self.sourceDir
-        cfg.entryPointPy  = self.entryPointPy 
+        cfg.entryPointPy  = self.entryPointPy
+        cfg.isOneFile     = self.isOneFile 
         cfg.isGui         = self.isGui
-        cfg.iconFilePath  = self.iconFilePath
+        cfg.iconFilePath  = self.iconFilePath        
         cfg.distResources = self.distResources 
         if self.specFilePath :
             cfg.pyInstSpec = PyInstSpec( self.specFilePath )

@@ -50,6 +50,7 @@ Attributes & default values:
     
 	    entryPointPy  = None               
 	    specFilePath  = None
+	    isOneFile     = True (note this differs from PyInstaller default)
 	    distResources = []
          
     <Python Obfuscation>
@@ -99,8 +100,10 @@ Attributes & default values:
 	    pkgExeWrapper = None
 	
 		startOnBoot   = False <CURRENT_USER, ALL_USERS>    
-	        
-	    qtCppConfig      = None
+
+	<"Special" Contexts>
+		        
+	    qtCppConfig = None
  
 Object creation functions:
      
@@ -220,6 +223,20 @@ files and configurations.  Also, many of the process classes which employ a
 config factory provide an `onMakeSpec( spec )` function.  And, if writing your 
 own low level equivalents of the process class operations, the library provides
 an [makePyInstSpec](LowLevel.md#makePyInstSpec) function.
+
+#### isOneFile     
+
+This switch controls a notable PyInstaller feature, i.e. bundling dependencies
+into a single (compressed) exe when creating a 
+[Stand Alone Executable](LowLevel.md#stand-alone-executables) vs leaving the 
+dependencies outside of the exe.  Unlike PyInstaller, this library wrapper 
+defaults to employing the single file feature. That produces a more "clean", streamlined, product which appears (on the surface) nearly identical across 
+build environments - including cross platform.  But, this comes at the expense
+of slowing down the launching of an executable.  
+
+We recommend using the one file option for "small" programs, or ones which will
+not likely be opened very often.  Set this to `False`, however, to boost 
+a program's performance as far as load time is concerned. 
 
 #### iconFilePath
 
