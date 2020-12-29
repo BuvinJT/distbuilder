@@ -5458,7 +5458,7 @@ if( !$UninstallCmd ){
 # Exit with error if no command found
 if( !$UninstallCmd ){ 
     Write-Error "Uninstall command not found for: $APP_NAME"
-    exit {NOT_FOUND_EXIT_CODE} 
+    [Environment]::Exit( {NOT_FOUND_EXIT_CODE} ) 
 }
 
 Write-Host "OS registered uninstall command: $UninstallCmd"
@@ -5498,8 +5498,7 @@ else{ $args=@{} }
 Write-Host "Running: $prog"
 if( $args.Count -gt 0 ){ Write-Host "With arguments: $args" }
 Start-Process $prog {wait}{hide}-ArgumentList $args
-Write-Host "Launched..."
-exit 0
+[Environment]::Exit( 0 )
 """)                                    
             if arguments:
                 ADD_ARG_TMPL = '$args.Add("%s")\n'
