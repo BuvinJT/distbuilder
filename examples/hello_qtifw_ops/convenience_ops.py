@@ -16,17 +16,23 @@ f.version          = (1,0,0,0)
 f.setupName        = "HelloIfwConveniencesSetup"
  
 class BuildProcess( PyToBinInstallerProcess ):
-    def onQtIfwConfig( self, cfg ):            
 
-        # TO TEST KILL OPS, THE TARGET PROGRAM MUST BE 
-        # RUNNING WHEN INSTALL/UNINSTALL PROCESS IS BEGUN            
+    def onQtIfwConfig( self, cfg ):            
+        
+        def customizeFinishedPage( cfg ):
+            # Disable the run program check box by default, for this example. 
+            cfg.controlScript.isRunProgChecked = False
+            
+        # To test "kill operations" the target program must be running before  
+        # the install or uninstall process has been initiated.             
         def addKillOps( pkg ):
             pkg.pkgScript.killOps += [ QtIfwKillOp( pkg ) ]
 
         if IS_WINDOWS:
-            # These exes are created on the fly, by the installer!  
-            # This feature is currently only supported on the Windows 
-            # implementation of the library.
+            # The following creates EXEs *on the fly*, through the installer,
+            # from either either Batch, PowerShell, or VBScript sources! 
+            # (This feature is currently only supported on the Windows 
+            # implementation of the library.)
             
             def addCreateExeFromScript( pkg, name, ext, script ):
                 pkg.pkgScript.externalOps += [
@@ -51,13 +57,18 @@ class BuildProcess( PyToBinInstallerProcess ):
                     'oShell.Run "notepad ""@TargetDir@\InstallationLog.txt"""',
                     'Set oShell = Nothing'
                 ])  
-        
+
+            # The "Hello World Tk Example" app must be installed to test this.
+            # (By default, however, it should NOT cause an error if it is not).
+            # Note this operation is being done on both install and uninstall 
+            # and may therefore be tested during either.
+            # Note that the program's installation path is dynamically resolved
+            # within the client environment, which is only possible on Windows.                                        
             def addUninstallWindowsApp( pkg ):
-                # This example app must be installed to truly test this!                
                 APP_NAME = "Hello World Tk Example"
                 pkg.pkgScript.externalOps += [ 
                     QtIfwExternalOp.UninstallWindowsApp( 
-                        QtIfwExternalOp.ON_INSTALL,
+                        QtIfwExternalOp.ON_BOTH,
                         APP_NAME, arguments=[], 
                         isHidden=True, 
                         isSynchronous=False,
@@ -83,8 +94,9 @@ class BuildProcess( PyToBinInstallerProcess ):
                     isSynchronous=False, 
                     isElevated=False )
                 ]    
-        
+                
         pkg = cfg.packages[0]
+        customizeFinishedPage( cfg )
         addKillOps( pkg ) 
         if IS_WINDOWS:            
             addCreateExeFromBatch( pkg )
