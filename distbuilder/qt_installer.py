@@ -77,13 +77,13 @@ QT_IFW_APPS_DIR      = "@ApplicationsDir@"
 QT_IFW_INSTALLER_DIR      = "@InstallerDirPath@"
 QT_IFW_INTALLER_PATH      = "@InstallerFilePath@"   
 
-_QT_IFW_SCRIPTS_DIR          = "ScriptsDir"
+_QT_IFW_SCRIPTS_DIR          = "ScriptsDir"         # CUSTOM!
 _QT_IFW_INSTALLER_TEMP_DIR   = "InstallerTempDir"   # CUSTOM!
 _QT_IFW_MAINTENANCE_TEMP_DIR = "MaintenanceTempDir" # CUSTOM!
 
 _QT_IFW_VAR_TMPLT = "@%s@"
 
-QT_IFW_SCRIPTS_DIR          = _QT_IFW_VAR_TMPLT % (_QT_IFW_SCRIPTS_DIR,)   # CUSTOM! 
+QT_IFW_SCRIPTS_DIR          = _QT_IFW_VAR_TMPLT % (_QT_IFW_SCRIPTS_DIR,)          # CUSTOM! 
 QT_IFW_INSTALLER_TEMP_DIR   = _QT_IFW_VAR_TMPLT % (_QT_IFW_INSTALLER_TEMP_DIR,)   # CUSTOM!
 QT_IFW_MAINTENANCE_TEMP_DIR = _QT_IFW_VAR_TMPLT % (_QT_IFW_MAINTENANCE_TEMP_DIR,) # CUSTOM!
 
@@ -101,7 +101,6 @@ QT_IFW_OS            = "@os@"
 
 QT_IFW_APPS_X86_DIR  = "@ApplicationsDirX86@"
 QT_IFW_APPS_X64_DIR  = "@ApplicationsDirX64@"
-
 
 QT_IFW_INTRO_PAGE      = "Introduction"
 QT_IFW_TARGET_DIR_PAGE = "TargetDirectory"
@@ -147,6 +146,8 @@ _REMOVE_TARGET_KEY = "__removeTarget"
 _QT_IFW_WATCH_DOG_SUFFIX = "-watchdog"
 _QT_IFW_WATCH_DOG_EXT    = ".vbs" if IS_WINDOWS else ""
 
+_QT_IFW_TEMP_DATA_EXT = ".dat"
+
 QT_IFW_DYNAMIC_PATH_VARS = [
       "TargetDir"
     , "RootDir" 
@@ -186,6 +187,10 @@ _REBOOT_MSG = "Please reboot now to complete the installation."
 def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
 
 def qtIfwDynamicValue( name ): return "@%s@" % (name,)
+    
+def qtIfwTempDataFilePath( rootFileName ): 
+    return joinExt( joinPath( QT_IFW_SCRIPTS_DIR, rootFileName ), 
+                    _QT_IFW_TEMP_DATA_EXT )
 
 # -----------------------------------------------------------------------------
 class QtIfwConfig:   
@@ -5124,18 +5129,30 @@ class QtIfwExternalOp:
     __SCRIPT_ROOT_NAME_TMPLT = "%s_%d"
 
     __NOT_FOUND_EXIT_CODE = 100
-    
+        
+    @staticmethod
+    def CreateTempDataFile( event, fileName, isElevated=True ):    
+        return QtIfwExternalOp.__genScriptOp( event, 
+            script=QtIfwExternalOp.WriteTempDataFileScript( fileName ), 
+            isElevated=isElevated )
+        
+    @staticmethod
+    def WriteTempDataFile( event, fileName, data, isElevated=True ):    
+        return QtIfwExternalOp.__genScriptOp( event, 
+            script=QtIfwExternalOp.WriteTempDataFileScript( fileName, data ), 
+            isElevated=isElevated )
+        
     @staticmethod
     def RemoveFile( event, filePath, isElevated=True ): # TODO: Test in NIX/MAC            
         return QtIfwExternalOp.__genScriptOp( event, 
-                script=QtIfwExternalOp.RemoveFileScript( filePath ), 
-                isElevated=isElevated )
+            script=QtIfwExternalOp.RemoveFileScript( filePath ), 
+            isElevated=isElevated )
     
     @staticmethod
     def RemoveDir( event, dirPath, isElevated=True ): # TODO: Test in NIX/MAC           
         return QtIfwExternalOp.__genScriptOp( event, 
-                script=QtIfwExternalOp.RemoveDirScript( dirPath ), 
-                isElevated=isElevated )
+            script=QtIfwExternalOp.RemoveDirScript( dirPath ), 
+            isElevated=isElevated )
      
     # TODO: Test in NIX/MAC 
     @staticmethod
@@ -5349,6 +5366,21 @@ class QtIfwExternalOp:
                 isElevated=isElevated, 
                 externalRes=externalRes if externalRes else [] ) 
 
+    # TODO: Auto handle escape sequences?
+    @staticmethod
+    def WriteTempDataFileScript( fileName, data=None ): # TODO: Test in NIX/MAC            
+        filePath = qtIfwTempDataFilePath( fileName )
+        if data is None:                    
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "touchTempDataFile" ), script=(
+                'echo. > "%s"' % (filePath,) if IS_WINDOWS else
+                'touch "%s"'  % (filePath,) ) )
+        else:
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "writeTempDataFile" ), script=(
+                'echo %s > "%s"' % (data, filePath,) if IS_WINDOWS else
+                'echo "%s" > "%s"' % (data, filePath,) ) )
+                    
     @staticmethod
     def RemoveFileScript( filePath ): # TODO: Test in NIX/MAC            
         return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
