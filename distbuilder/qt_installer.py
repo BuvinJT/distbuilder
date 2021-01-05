@@ -5210,6 +5210,14 @@ class QtIfwExternalOp:
         # https://stackoverflow.com/questions/630382/how-to-access-the-64-bit-registry-from-a-32-bit-powershell-instance
         
         @staticmethod
+        def CreateWindowsAppFoundTempFile( event, appName, fileName, 
+                                           isAutoBitContext=True ):
+            return QtIfwExternalOp.__genScriptOp( event, 
+                script=QtIfwExternalOp.CreateWindowsAppFoundTempFileScript( 
+                    appName, fileName, isAutoBitContext ), 
+                isReversible=False, isElevated=True )
+        
+        @staticmethod
         def UninstallWindowsApp( event, appName, arguments=None,
                                  isSynchronous=True, isHidden=True, 
                                  isAutoBitContext=True, 
@@ -5457,9 +5465,8 @@ if( $env:PROCESSOR_ARCHITEW6432 -eq "AMD64" ) {
                     QtIfwExternalOp.__PS_32_TO_64_BIT_CONTEXT_HEADER )
             
         @staticmethod
-        def UninstallWindowsAppScript( appName, arguments=None,
-                                       isSynchronous=True, isHidden=True, 
-                                       isAutoBitContext=True ):            
+        def __psFindWindowsAppUninstallCmd( appName, isAutoBitContext,
+                                            isExitOnNotFound=False ):            
             psScriptTemplate=(
 r"""
 {setBitContext}
@@ -5487,14 +5494,51 @@ if( !$UninstallCmd ){
     if( $app.UninstallString ){ $UninstallCmd = $app.UninstallString }    
 }
 
-# Exit with error if no command found
+# Log command found / optionally exit with error 
 if( !$UninstallCmd ){ 
-    Write-Error "Uninstall command not found for: $APP_NAME"
-    [Environment]::Exit( {NOT_FOUND_EXIT_CODE} ) 
+    Write-Error "Uninstall command not found for {appName}"
+    {exitOnNotFound}
 }
+else{
+    Write-Host "OS registered uninstall command for {appName}: $UninstallCmd"
+}
+""") 
+            exitOnNotFound =( "[Environment]::Exit( %d )" % 
+                              (QtIfwExternalOp.__NOT_FOUND_EXIT_CODE,)
+                              if isExitOnNotFound else "" ) 
+            return str( ExecutableScript( "", script=psScriptTemplate,
+                replacements={
+                      "setBitContext": QtIfwExternalOp.__psSetBitContext( 
+                                            isAutoBitContext )
+                    , "appName" : appName
+                    , "exitOnNotFound": exitOnNotFound                                            
+                } ) )
 
-Write-Host "OS registered uninstall command: $UninstallCmd"
+        @staticmethod
+        def CreateWindowsAppFoundTempFileScript( appName, fileName, 
+                                                 isAutoBitContext=True ):            
+            psScriptTemplate=(
+                QtIfwExternalOp.__psFindWindowsAppUninstallCmd( 
+                    appName, isAutoBitContext ) +                 
+r"""
+if( $UninstallCmd ){ Out-File -FilePath "{tempFilePath}" } 
+              else { Remove-Item "{tempFilePath}" }
+[Environment]::Exit( 0 )
+""")                                    
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "createAppFoundFile" ), extension="ps1", 
+                script=psScriptTemplate, replacements={ 
+                    "tempFilePath": qtIfwTempDataFilePath( fileName ) 
+                })
 
+        @staticmethod
+        def UninstallWindowsAppScript( appName, arguments=None,
+                                       isSynchronous=True, isHidden=True, 
+                                       isAutoBitContext=True ):            
+            psScriptTemplate=(
+                QtIfwExternalOp.__psFindWindowsAppUninstallCmd( 
+                    appName, isAutoBitContext, isExitOnNotFound=True ) +                 
+r"""
 # Tweak QtIFW / Distbuilder commands
 if( $UninstallCmd.tolower().Contains( "maintenancetool.exe" ) ){
     # Run in QtIFW verbose mode, in case distbuilder built - specify auto pilot / removeall
@@ -5538,15 +5582,10 @@ Start-Process $prog {wait}{hide}-ArgumentList $args
             else: addArgs = ""
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "uninstallApp" ), extension="ps1", script=psScriptTemplate,
-                replacements={
-                      "setBitContext": QtIfwExternalOp.__psSetBitContext( 
-                                            isAutoBitContext )
-                    , "appName" : appName
-                    , "addArgs": addArgs
+                replacements={                   
+                      "addArgs": addArgs
                     , "wait": ("-Wait " if isSynchronous else "")
-                    , "hide": ("-WindowStyle Hidden " if isHidden else "")  
-                    , "NOT_FOUND_EXIT_CODE": 
-                        str( QtIfwExternalOp.__NOT_FOUND_EXIT_CODE )
+                    , "hide": ("-WindowStyle Hidden " if isHidden else "")                      
                 } )
 
         # Creates the key, if it does not exists.

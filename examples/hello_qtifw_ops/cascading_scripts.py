@@ -87,6 +87,12 @@ class BuildProcess( PyToBinInstallerProcess ):
             return QtIfwExternalOp( script=createFileScript, 
                 uninstScript=QtIfwExternalOp.RemoveFileScript( destFilePath ) )
 
+        if IS_WINDOWS:
+            def setAppFoundFileOp( appName, is32Bit, fileName ):
+                return QtIfwExternalOp.CreateWindowsAppFoundTempFile( 
+                    QtIfwExternalOp.ON_BOTH, 
+                    appName, fileName, isAutoBitContext=(not is32Bit) )                                        
+
         BOOL_FILE_NAME         = "boolData"
         BOOL_EVAL_FILE_NAME    = "cascadingBool.txt"
         VAR_NAME               = "myDynamicPath"
@@ -112,6 +118,14 @@ class BuildProcess( PyToBinInstallerProcess ):
             getVaribaleCascadeOp( TIME_FILE_NAME,
                 joinPath( QT_IFW_DESKTOP_DIR, TIME_FETCH_FILE_NAME ) ),
         ]         
+
+        if IS_WINDOWS:
+            APP_NAME = "Hello World Tk Example"
+            IS_32BIT_APP = True
+            APP_FOUND_FILENAME = "HelloWorldTkInstalled"
+            pkg.pkgScript.externalOps += [
+                setAppFoundFileOp( APP_NAME, IS_32BIT_APP, APP_FOUND_FILENAME )                
+            ] 
     
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True

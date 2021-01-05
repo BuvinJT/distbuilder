@@ -58,7 +58,8 @@ class BuildProcess( PyToBinInstallerProcess ):
                     'Set oShell = Nothing'
                 ])  
 
-            # The "Hello World Tk Example" app must be installed to test this.
+            # In order to actually test the uninstall operation, the
+            # "Hello World Tk Example" app must be installed first!
             # (By default, however, it should NOT cause an error if it is not).
             # Note this operation is being done on both install and uninstall 
             # and may therefore be tested during either.
@@ -107,4 +108,6 @@ class BuildProcess( PyToBinInstallerProcess ):
             
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True
+# uncomment to leave scripts in temp directory, post any dynamic modifications 
+# p.isScriptDebugInstallTest = True   
 p.run()       
