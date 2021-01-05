@@ -1457,12 +1457,24 @@ a distribution.
 
 ### qtIfwDynamicValue
 
-Use this produce the resolution of dynamic substitution variables 
-utilized by QtIFW scripts (directly or indirectly) on a target machine.
-These are often paths to files or directories on the target, or embedded 
-resources in the installer, but may in fact be used for strings containing
-any content, which the installer knows how to resolve.  
+    qtIfwDynamicValue( name )
 
+Use this function produce the resolution of dynamic substitution variables 
+at runtime, which are utilized by QtIFW scripts (directly or indirectly) 
+on a target machine.
+
+These values are often paths to files or directories on the target, or 
+embedded resources in the installer, but may in fact be used for strings 
+containing *any* content, which the installer knows how to resolve.  
+
+### qtIfwTempDataFilePath
+
+	qtIfwTempDataFilePath( rootFileName )
+
+Use this function produce the resolution of dynamic temp paths  
+at runtime, which are utilized by QtIFW scripts (directly or indirectly) 
+on a target machine.
+	
 ### isParentDir 
 
     isParentDir( parent, child, basePath=None ):

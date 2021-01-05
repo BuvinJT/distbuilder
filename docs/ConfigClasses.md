@@ -798,6 +798,14 @@ Event constants for convenience methods.
 On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
 program from the installer's 32 bit context.
 
+####  QtIfwExternalOp.CreateTempDataFile
+
+    CreateTempDataFile( event, fileName, isElevated=True )
+
+#### QtIfwExternalOp.WriteTempDataFile
+
+    WriteTempDataFile( event, fileName, data, isElevated=True )
+
 #### QtIfwExternalOp.RemoveFile
 
     RemoveFile( event, filePath, isElevated=True )
@@ -815,7 +823,7 @@ program from the installer's 32 bit context.
 
 #### QtIfwExternalOp.UninstallWindowsApp
 
-	**WINDOWS ONLY**
+**WINDOWS ONLY**
  	
     UninstallWindowsApp( appName, arguments=None,
                          isSynchronous=True, isHidden=True, 
@@ -824,7 +832,7 @@ program from the installer's 32 bit context.
 
 #### QtIfwExternalOp.CreateRegistryKey
 	
-	**WINDOWS ONLY**
+**WINDOWS ONLY**
 
     CreateRegistryKey( event, key, isAutoBitContext=True )
 
@@ -834,7 +842,7 @@ use of SysWow64 nodes.
 
 #### QtIfwExternalOp.RemoveRegistryKey
 	
-	**WINDOWS ONLY**
+**WINDOWS ONLY**
  
     RemoveRegistryKey( event, key, isAutoBitContext=True )        
 
@@ -844,7 +852,7 @@ use of SysWow64 nodes.
 
 #### QtIfwExternalOp.CreateRegistryEntry
 	
-	**WINDOWS ONLY**
+**WINDOWS ONLY**
 
     CreateRegistryEntry( event, 
     	key, valueName=None, value="", valueType="String",
@@ -856,7 +864,7 @@ use of SysWow64 nodes.
 
 #### QtIfwExternalOp.RemoveRegistryEntry
 	
-	**WINDOWS ONLY**
+**WINDOWS ONLY**
  
     RemoveRegistryEntry( event, 
     	key, valueName=None, isAutoBitContext=True )        
@@ -864,6 +872,30 @@ use of SysWow64 nodes.
 Set `isAutoBitContext=False` if you need to access 64 bit entries
 from the installer's 32 bit context, and/or wish to be explicit in the
 use of SysWow64 nodes.
+
+#### QtIfwExternalOp.CreateExeFromScript
+	
+**WINDOWS ONLY**
+
+    CreateExeFromScript( script, brandingInfo, srcIconPath,
+                         targetDir=QT_IFW_TARGET_DIR )
+
+**script**: [ExecutableScripts](LowLevel.md#executablescript)
+                                 
+#### QtIfwExternalOp.WrapperScript2Exe
+	
+**WINDOWS ONLY**
+
+    Script2Exe( scriptPath, exePath, brandingInfo,
+                iconDirPath, iconName, 
+                isScriptRemoved=False, isIconDirRemoved=False )
+                        
+#### QtIfwExternalOp.WrapperScript2Exe
+	
+**WINDOWS ONLY**
+
+    WrapperScript2Exe( scriptPath, exePath, 
+                       targetPath, brandingInfo, iconName="0.ico" )
 
 ### QtIfwExternalOp Convenience Scripts
     
@@ -873,6 +905,9 @@ use of SysWow64 nodes.
     				  isHidden=False, isSynchronous=True,
     				  isAutoBitContext=True, 
     				  replacements=None )
+
+**Windows Type**: Batch or PowerShell (determined by options employed)
+**Mac/Linux Type**: ShellScript 
     
 On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
 program from the installer's 32 bit context.
@@ -880,77 +915,87 @@ program from the installer's 32 bit context.
 Note: Elevation is controlled via the operation executing the script 
 rather embedded within it.
 
-#### QtIfwExternalOp.RemoveFileScript( filePath )
+#### QtIfwExternalOp.WriteTempDataFileScript
+
+    WriteTempDataFileScript( fileName, data=None )
+
+**Windows Type**: Batch 
+**Mac/Linux Type**: ShellScript 
+
+#### QtIfwExternalOp.RemoveFileScript
 
 	RemoveFileScript( filePath )
+
+**Windows Type**: Batch 
+**Mac/Linux Type**: ShellScript 
  
-#### QtIfwExternalOp.RemoveDirScript( dirPath )
+#### QtIfwExternalOp.RemoveDirScript
 
 	RemoveDirScript( dirPath )
 
+**Windows Type**: Batch 
+**Mac/Linux Type**: ShellScript 
+
 #### QtIfwExternalOp.UninstallWindowsAppScript
 
-	**WINDOWS ONLY**
+**WINDOWS ONLY**
  	
     UninstallWindowsAppScript( appName, arguments=None,
                                isSynchronous=True, isHidden=True, 
                                isAutoBitContext=True )
-                
-### QtIfwExternalOp.CreateRegistryKeyScript
 
-	**WINDOWS ONLY**
+**Type**: PowerShell 
+                
+#### QtIfwExternalOp.CreateRegistryKeyScript
+
+**WINDOWS ONLY**
  
     CreateRegistryKeyScript( key, isAutoBitContext=True, 
                              replacements=None )
-                               
-### QtIfwExternalOp.RemoveRegistryKeyScript
 
-	**WINDOWS ONLY**
+**Type**: PowerShell 
+                               
+#### QtIfwExternalOp.RemoveRegistryKeyScript
+
+**WINDOWS ONLY**
 
     RemoveRegistryKeyScript( key, isAutoBitContext=True, 
                              replacements=None ) 
 
-### QtIfwExternalOp.CreateRegistryEntryScript
+**Type**: PowerShell 
 
-	**WINDOWS ONLY**
+#### QtIfwExternalOp.CreateRegistryEntryScript
+
+**WINDOWS ONLY**
  
     CreateRegistryEntryScript( key, valueName=None, 
                                value="", valueType="String",
                                isAutoBitContext=True,
                                replacements=None )
-                               
-### QtIfwExternalOp.RemoveRegistryEntryScript
 
-	**WINDOWS ONLY**
+**Type**: PowerShell 
+                               
+#### QtIfwExternalOp.RemoveRegistryEntryScript
+
+**WINDOWS ONLY**
 
     RemoveRegistryEntryScript( key, valueName=None, 
                                isAutoBitContext=True, 
                                replacements=None ) 
+
+**Type**: PowerShell 
+   
+#### QtIfwExternalOp.UninstallWindowsAppScript
+                  
+**WINDOWS ONLY**
                                                                                         
-#### QtIfwExternalOp.CreateExeFromScript
-	
-	**WINDOWS ONLY**
+    UninstallWindowsAppScript( appName, arguments=None,
+                               isSynchronous=True,
+                               isHidden=True,
+                               isAutoBitContext=True )            
+                                                                                        
+**Type**: PowerShell 
 
-    CreateExeFromScript( script, brandingInfo, srcIconPath,
-                         targetDir=QT_IFW_TARGET_DIR )
-
-**script**: [ExecutableScripts](LowLevel.md#executablescript)
-                                 
-#### QtIfwExternalOp.WrapperScript2Exe
-	
-	**WINDOWS ONLY**
-
-    Script2Exe( scriptPath, exePath, brandingInfo,
-                iconDirPath, iconName, 
-                isScriptRemoved=False, isIconDirRemoved=False )
-                        
-#### QtIfwExternalOp.WrapperScript2Exe
-	
-	**WINDOWS ONLY**
-
-    WrapperScript2Exe( scriptPath, exePath, 
-                       targetPath, brandingInfo, iconName="0.ico" )
-                                                           
 ## QtIfwKillOp
 
 This class is used to drive process killing operations. Such actions are frequently 
