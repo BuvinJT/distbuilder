@@ -5155,6 +5155,18 @@ class QtIfwExternalOp:
             isElevated=isElevated )
      
     # TODO: Test in NIX/MAC 
+    #
+    # TODO: Fix a glitch on Windows with employing isHidden.  This is a problem
+    # throughout the library - the PS -WindowStlye Hidden is not respected
+    # by all applications - including our basic demos with PyInstaller / Tk!
+    # (not sure which is to blame - but it's probably Tk?)
+    #
+    # TODO: Fix a glitch on Windows with setting isSynchronous to False. 
+    # In the context of running one of our uninstallers as a sub process 
+    # from one of our installers, an asynchronous program launch will still
+    # produce a blocking condition because the installer launches using
+    # a PowerShell StartProcess -Wait which sees the asynch program as a child
+    # process it must wait for.   
     @staticmethod
     def RunProgram( event, path, arguments=None, isAutoQuote=True,  
                     isHidden=False, isSynchronous=True, isElevated=True,

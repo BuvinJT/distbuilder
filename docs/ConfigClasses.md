@@ -793,6 +793,7 @@ Event constants for convenience methods.
 
     RunProgram( event, path, arguments=None, isAutoQuote=True,  
                 isHidden=False, isSynchronous=True, isElevated=True, 
+                runConditionFileName=None, isRunConditionNegated=False,
                 isAutoBitContext=True )
 
 On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
@@ -903,6 +904,7 @@ use of SysWow64 nodes.
 
     RunProgramScript( path, arguments=None, isAutoQuote=True, 
     				  isHidden=False, isSynchronous=True,
+    				  runConditionFileName=None, isRunConditionNegated=False,
     				  isAutoBitContext=True, 
     				  replacements=None )
 

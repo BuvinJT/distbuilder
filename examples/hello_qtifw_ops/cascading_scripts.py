@@ -138,6 +138,12 @@ class BuildProcess( PyToBinInstallerProcess ):
             APP_FOUND_FILENAME = "ConveniencesAppInstalled"
             EXE_PATH = joinPath( QT_IFW_APPS_X86_DIR, COMPANY_NAME, APP_NAME, 
                                  EXE_NAME )
+            # This demos conditionally launching an app on BOTH install and 
+            # uninstall.  Since operations are executed in REVERSE order during 
+            # uninstallation, for cascading scripts to flow into each other 
+            # correctly, we need to account for that nuance.  As such, this
+            # example shows a setAppFoundFileOp call in the list both before
+            # and after the launchAppIfFound.    
             pkg.pkgScript.externalOps += [
                 setAppFoundFileOp( QtIfwExternalOp.ON_INSTALL,
                                    APP_NAME, IS_32BIT_REG, APP_FOUND_FILENAME ),
