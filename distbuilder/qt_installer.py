@@ -5157,12 +5157,15 @@ class QtIfwExternalOp:
     # TODO: Test in NIX/MAC 
     @staticmethod
     def RunProgram( event, path, arguments=None, isAutoQuote=True,  
-                    isHidden=False, isSynchronous=True, isElevated=True, 
+                    isHidden=False, isSynchronous=True, isElevated=True,
+                    runConditionFileName=None, isRunConditionNegated=False,  
                     isAutoBitContext=True ): # Windows Only           
         return QtIfwExternalOp.__genScriptOp( event, 
             script=QtIfwExternalOp.RunProgramScript( 
                 path, arguments, isAutoQuote, 
-                isHidden, isSynchronous, isAutoBitContext ), 
+                isHidden, isSynchronous,
+                runConditionFileName, isRunConditionNegated, 
+                isAutoBitContext ), 
             isElevated=isElevated )
     
     @staticmethod
@@ -5407,6 +5410,7 @@ class QtIfwExternalOp:
     @staticmethod
     def RunProgramScript( path, arguments=None, isAutoQuote=True, 
                           isHidden=False, isSynchronous=True,
+                          runConditionFileName=None, isRunConditionNegated=False,
                           isAutoBitContext=True,
                           replacements=None  ):
         if arguments is None: arguments =[] 
@@ -5414,11 +5418,15 @@ class QtIfwExternalOp:
             if IS_WINDOWS :
                 waitSwitch = " -Wait" if isSynchronous else ""
                 hiddenStyle = " -WindowStyle Hidden"         
+                argList = [('"%s"' % (a,) if (" " in a or "@" in a) else a) 
+                           for a in arguments]            
                 argList =( (" -ArgumentList " +
-                    ",".join( ['"%s"' % (a,) for a in arguments]) )         
-                    if len(arguments) > 0 else "" )               
+                    ",".join( ["'%s'" % (a,) for a in argList]) )         
+                    if len(arguments) > 0 else "" )                
                 return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                     "runHiddenProgram" ), extension="ps1", script=([
+                    QtIfwExternalOp.__psExitIfFileMissing(
+                        runConditionFileName, isRunConditionNegated ),    
                     QtIfwExternalOp.__psSetBitContext( isAutoBitContext ),   
                     'Start-Process -FilePath "%s" %s%s%s'
                          % (path, waitSwitch, hiddenStyle, argList), 
@@ -5430,22 +5438,51 @@ class QtIfwExternalOp:
             tokens = [path] + arguments            
             if isAutoQuote:
                 tokens = [('"%s"' % (t,) if (" " in t or "@" in t) else t) 
-                          for t in tokens]
-            
-            runCmd = " ".join( tokens )             
+                          for t in tokens]            
+            runCmd = " ".join( tokens )
+            exitSnippet =(
+                QtIfwExternalOp.__batExitIfFileMissing(
+                    runConditionFileName, isRunConditionNegated )
+                if IS_WINDOWS else
+                QtIfwExternalOp.__shExitIfFileMissing(
+                    runConditionFileName, isRunConditionNegated )                
+            )                                     
             if not isSynchronous: 
                 if IS_WINDOWS: runCmd = 'start "" ' + runCmd 
                 else: runCmd += " &"                    
             if IS_WINDOWS and not isAutoBitContext:
                 script=([
+                    exitSnippet,
                     'set "RUN_CMD=%s"' % (runCmd,),
                     'if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%RUN_CMD%" ) else ( %RUN_CMD% )',
                     runCmd])  
-            else: script=runCmd
+            else: script=[exitSnippet, runCmd ]
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "runProgram" ), script=script )
                      
     if IS_WINDOWS:
+
+        @staticmethod
+        def __batExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):            
+            return str( ExecutableScript( "", script=([               
+                'if {negate}exist "{filePath}" exit /b {errorCode}'   
+            ]), replacements={
+                  'negate' : ('' if isNegated else 'not ')  
+                , 'filePath' : qtIfwTempDataFilePath( fileName )
+                , 'errorCode': errorCode
+            }) )
+
+        @staticmethod
+        def __psExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):            
+            return str( ExecutableScript( "", script=([               
+                  'if( {negate}(Test-Path "{filePath}" -PathType Leaf) ) {'
+                , '    [Environment]::Exit( {errorCode} )'
+                , '}'   
+            ]), replacements={
+                  'negate' : ('' if isNegated else '! ')  
+                , 'filePath' : qtIfwTempDataFilePath( fileName )
+                , 'errorCode': errorCode
+            }) )
         
         __PS_32_TO_64_BIT_CONTEXT_HEADER=(
 """                
@@ -5463,7 +5500,7 @@ if( $env:PROCESSOR_ARCHITEW6432 -eq "AMD64" ) {
         def __psSetBitContext( isAutoBitContext ): 
             return( "" if isAutoBitContext else 
                     QtIfwExternalOp.__PS_32_TO_64_BIT_CONTEXT_HEADER )
-            
+                    
         @staticmethod
         def __psFindWindowsAppUninstallCmd( appName, isAutoBitContext,
                                             isExitOnNotFound=False ):            
@@ -5868,6 +5905,19 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
                 "iconDir": iconDirPath, "setIconName": setIconName, 
                 "removeIconDir": removeIconDir } )
  
+    if IS_MACOS or IS_LINUX:
+         
+        @staticmethod
+        def __shExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):
+            if not fileName: return ""            
+            return str( ExecutableScript( "", script=([               
+                '[ {negate}-f "{filePath}" ] && exit {errorCode}'   
+            ]), replacements={
+                  'negate' : ('' if isNegated else '! ')  
+                , 'filePath' : qtIfwTempDataFilePath( fileName )
+                , 'errorCode': errorCode
+            }) )
+
     # QtIfwExternalOp
     def __init__( self,                                                       # [0]
               script=None,       exePath=None,       args=None, successRetCodes=None,  

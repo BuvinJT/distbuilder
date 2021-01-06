@@ -1,7 +1,8 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
     QtIfwExternalOp, QtIfwPackageScript, ExecutableScript, \
     joinPath, qtIfwDynamicValue, qtIfwTempDataFilePath, \
-    IS_WINDOWS, QT_IFW_DESKTOP_DIR, QT_IFW_HOME_DIR
+    QT_IFW_DESKTOP_DIR, QT_IFW_HOME_DIR, \
+    IS_WINDOWS, QT_IFW_APPS_X86_DIR
     
 ON_INSTALL = QtIfwExternalOp.ON_INSTALL
 
@@ -87,11 +88,21 @@ class BuildProcess( PyToBinInstallerProcess ):
             return QtIfwExternalOp( script=createFileScript, 
                 uninstScript=QtIfwExternalOp.RemoveFileScript( destFilePath ) )
 
+        # Assorted "convenience" operations in the library have built-in 
+        # options to pivot on the state of a given "run condition file".
+        # I.e. the "boolean" temp file concept (previously shown in an explicit
+        # manner) maybe applied via these abstractions.        
         if IS_WINDOWS:
-            def setAppFoundFileOp( appName, is32Bit, fileName ):
-                return QtIfwExternalOp.CreateWindowsAppFoundTempFile( 
-                    QtIfwExternalOp.ON_BOTH, 
-                    appName, fileName, isAutoBitContext=(not is32Bit) )                                        
+            def setAppFoundFileOp( event, appName, is32BitRegistration, fileName ):
+                return QtIfwExternalOp.CreateWindowsAppFoundTempFile( event, 
+                    appName, fileName, isAutoBitContext=is32BitRegistration )                                        
+
+            def launchAppIfFound( event, exePath, appFoundFileName ):               
+                return QtIfwExternalOp.RunProgram( event, 
+                    exePath, arguments=["Launched By Cascading Scripts"], 
+                    isHidden=False, isSynchronous=False, 
+                    runConditionFileName=appFoundFileName, 
+                    isRunConditionNegated=False )                                   
 
         BOOL_FILE_NAME         = "boolData"
         BOOL_EVAL_FILE_NAME    = "cascadingBool.txt"
@@ -120,11 +131,19 @@ class BuildProcess( PyToBinInstallerProcess ):
         ]         
 
         if IS_WINDOWS:
-            APP_NAME = "Hello World Tk Example"
-            IS_32BIT_APP = True
-            APP_FOUND_FILENAME = "HelloWorldTkInstalled"
+            APP_NAME     = "Hello Installer Conveniences Example"
+            COMPANY_NAME = "Some Company"
+            EXE_NAME     = "RunConditionsTest.exe"            
+            IS_32BIT_REG = False
+            APP_FOUND_FILENAME = "ConveniencesAppInstalled"
+            EXE_PATH = joinPath( QT_IFW_APPS_X86_DIR, COMPANY_NAME, APP_NAME, 
+                                 EXE_NAME )
             pkg.pkgScript.externalOps += [
-                setAppFoundFileOp( APP_NAME, IS_32BIT_APP, APP_FOUND_FILENAME )                
+                setAppFoundFileOp( QtIfwExternalOp.ON_INSTALL,
+                                   APP_NAME, IS_32BIT_REG, APP_FOUND_FILENAME ),
+                launchAppIfFound( QtIfwExternalOp.ON_BOTH, EXE_PATH, APP_FOUND_FILENAME ),
+                setAppFoundFileOp( QtIfwExternalOp.ON_UNINSTALL,
+                                   APP_NAME, IS_32BIT_REG, APP_FOUND_FILENAME ),                                
             ] 
     
 p = BuildProcess( configFactory, isDesktopTarget=True )
