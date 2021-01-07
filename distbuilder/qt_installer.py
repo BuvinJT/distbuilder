@@ -880,7 +880,7 @@ class _QtIfwScript:
 
     __GET_ENV_VAR_TMPL = "installer.environmentVariable( %s )"
 
-    __PATH_EXISTS_TMPL = "%sinstaller.fileExists( %s )"
+    __PATH_EXISTS_TMPL = "%sinstaller.fileExists( resolveQtIfwPath( %s ) )"
     
     __RESOLVE_DYNAMIC_VARS_TMPL = "resolveDynamicVars( %s, %s )"
 
