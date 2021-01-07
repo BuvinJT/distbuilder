@@ -564,7 +564,7 @@ Static Functions:
                           
     getEnv( varName, isAutoQuote=True )
     
-    pathExists( path, isAutoQuote=True )
+    pathExists( path, isNegated=False, isAutoQuote=True )
     ifPathExists( path, isNegated=False, sAutoQuote=True, isMultiLine=False )   
     
     makeDir( path )            <recursive, path can include native env vars> 

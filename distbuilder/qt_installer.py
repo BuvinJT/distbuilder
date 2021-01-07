@@ -880,7 +880,7 @@ class _QtIfwScript:
 
     __GET_ENV_VAR_TMPL = "installer.environmentVariable( %s )"
 
-    __PATH_EXISTS_TMPL = "installer.fileExists( %s )"
+    __PATH_EXISTS_TMPL = "%sinstaller.fileExists( %s )"
     
     __RESOLVE_DYNAMIC_VARS_TMPL = "resolveDynamicVars( %s, %s )"
 
@@ -1354,16 +1354,16 @@ class _QtIfwScript:
             _QtIfwScript.QUIT_MSGBOX_ID, _QtIfwScript.YES )
 
     @staticmethod        
-    def pathExists( path, isAutoQuote=True ):                  
+    def pathExists( path, isNegated=False, isAutoQuote=True ):                  
         return _QtIfwScript.__PATH_EXISTS_TMPL % (
+            "!" if isNegated else "",
             _QtIfwScript._autoQuote( path, isAutoQuote ),) 
 
     @staticmethod        
     def ifPathExists( path, isNegated=False, 
                       isAutoQuote=True, isMultiLine=False ):   
-        return 'if( %s%s )%s\n%s' % (
-            "!" if isNegated else "",
-            _QtIfwScript.pathExists( path, isAutoQuote ),
+        return 'if( %s )%s\n%s' % (            
+            _QtIfwScript.pathExists( path, isNegated, isAutoQuote ),
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
     @staticmethod        
