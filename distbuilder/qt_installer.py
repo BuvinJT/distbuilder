@@ -188,8 +188,8 @@ def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
 
 def qtIfwDynamicValue( name ): return "@%s@" % (name,)
     
-def qtIfwTempDataFilePath( rootFileName ): 
-    return joinExt( joinPath( QT_IFW_SCRIPTS_DIR, rootFileName ), 
+def qtIfwOpDataPath( rootFileName ): 
+    return joinExt( joinPathQtIfw( QT_IFW_SCRIPTS_DIR, rootFileName ), 
                     _QT_IFW_TEMP_DATA_EXT )
 
 # -----------------------------------------------------------------------------
@@ -5129,17 +5129,37 @@ class QtIfwExternalOp:
     __SCRIPT_ROOT_NAME_TMPLT = "%s_%d"
 
     __NOT_FOUND_EXIT_CODE = 100
+
+    __WIN_PATH_SEP = "\\"
+    __NIX_PATH_SEP = "/"
+    __NATIVE_PATH_SEP  = __WIN_PATH_SEP if IS_WINDOWS else __NIX_PATH_SEP
+    __FOREIGN_PATH_SEP = __NIX_PATH_SEP if IS_WINDOWS else __WIN_PATH_SEP
+    
+    @staticmethod
+    def opDataPath( rootFileName, isNative=True, 
+                    quotes=None, isDoubleBackslash=False ): 
+        path = joinExt( joinPath( QT_IFW_SCRIPTS_DIR, rootFileName ), 
+                        _QT_IFW_TEMP_DATA_EXT )
+        if isNative:
+            path = path.replace( QtIfwExternalOp.__FOREIGN_PATH_SEP, 
+                                 QtIfwExternalOp.__NATIVE_PATH_SEP )
+            if IS_WINDOWS and isDoubleBackslash:
+                path = path.replace( QtIfwExternalOp.__WIN_PATH_SEP,
+                                     QtIfwExternalOp.__WIN_PATH_SEP+
+                                     QtIfwExternalOp.__WIN_PATH_SEP )
+        if quotes: path = "%s%s%s" % (quotes, path, quotes) 
+        return path
         
     @staticmethod
-    def CreateTempDataFile( event, fileName, isElevated=True ):    
+    def CreateOpFlagFile( event, fileName, isElevated=True ):    
         return QtIfwExternalOp.__genScriptOp( event, 
-            script=QtIfwExternalOp.WriteTempDataFileScript( fileName ), 
+            script=QtIfwExternalOp.WriteOpDataFileScript( fileName ), 
             isElevated=isElevated )
         
     @staticmethod
-    def WriteTempDataFile( event, fileName, data, isElevated=True ):    
+    def WriteOpDataFile( event, fileName, data, isElevated=True ):    
         return QtIfwExternalOp.__genScriptOp( event, 
-            script=QtIfwExternalOp.WriteTempDataFileScript( fileName, data ), 
+            script=QtIfwExternalOp.WriteOpDataFileScript( fileName, data ), 
             isElevated=isElevated )
         
     @staticmethod
@@ -5391,16 +5411,16 @@ class QtIfwExternalOp:
 
     # TODO: Auto handle escape sequences?
     @staticmethod
-    def WriteTempDataFileScript( fileName, data=None ): # TODO: Test in NIX/MAC            
-        filePath = qtIfwTempDataFilePath( fileName )
+    def WriteOpDataFileScript( fileName, data=None ): # TODO: Test in NIX/MAC            
+        filePath = QtIfwExternalOp.opDataPath( fileName )
         if data is None:                    
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "touchTempDataFile" ), script=(
+                "touchOpDataFile" ), script=(
                 'echo. > "%s"' % (filePath,) if IS_WINDOWS else
                 'touch "%s"'  % (filePath,) ) )
         else:
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "writeTempDataFile" ), script=(
+                "writeOpDataFile" ), script=(
                 'echo %s > "%s"' % (data, filePath,) if IS_WINDOWS else
                 'echo "%s" > "%s"' % (data, filePath,) ) )
                     
@@ -5480,7 +5500,7 @@ class QtIfwExternalOp:
                 'if {negate}exist "{filePath}" exit /b {errorCode}'   
             ]), replacements={
                   'negate' : ('' if isNegated else 'not ')  
-                , 'filePath' : qtIfwTempDataFilePath( fileName )
+                , 'filePath' : QtIfwExternalOp.opDataPath( fileName )
                 , 'errorCode': errorCode
             }) )
 
@@ -5492,7 +5512,7 @@ class QtIfwExternalOp:
                 , '}'   
             ]), replacements={
                   'negate' : ('' if isNegated else '! ')  
-                , 'filePath' : qtIfwTempDataFilePath( fileName )
+                , 'filePath' : QtIfwExternalOp.opDataPath( fileName )
                 , 'errorCode': errorCode
             }) )
         
@@ -5577,7 +5597,7 @@ if( $UninstallCmd ){ Out-File -FilePath "{tempFilePath}" }
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "createAppFoundFile" ), extension="ps1", 
                 script=psScriptTemplate, replacements={ 
-                    "tempFilePath": qtIfwTempDataFilePath( fileName ) 
+                    "tempFilePath": QtIfwExternalOp.opDataPath( fileName ) 
                 })
 
         @staticmethod
@@ -5926,7 +5946,7 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
                 '[ {negate}-f "{filePath}" ] && exit {errorCode}'   
             ]), replacements={
                   'negate' : ('' if isNegated else '! ')  
-                , 'filePath' : qtIfwTempDataFilePath( fileName )
+                , 'filePath' : QtIfwExternalOp.opDataPath( fileName )
                 , 'errorCode': errorCode
             }) )
 

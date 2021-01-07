@@ -1,10 +1,15 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
-    QtIfwExternalOp, QtIfwPackageScript, ExecutableScript, \
-    joinPath, qtIfwDynamicValue, qtIfwTempDataFilePath, \
-    QT_IFW_DESKTOP_DIR, QT_IFW_HOME_DIR, \
-    IS_WINDOWS, QT_IFW_APPS_X86_DIR
+    QtIfwControlScript, QtIfwPackageScript, \
+    QtIfwExternalOp, ExecutableScript, \
+    qtIfwOpDataPath, qtIfwDynamicValue, \
+    IS_WINDOWS, QT_IFW_DESKTOP_DIR, QT_IFW_HOME_DIR, QT_IFW_APPS_X86_DIR, \
+    joinPath 
     
 ON_INSTALL = QtIfwExternalOp.ON_INSTALL
+opDataPath = QtIfwExternalOp.opDataPath
+
+if IS_WINDOWS:
+    APP_FOUND_FILENAME = "AppFound"
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Cascading Scripts Example"
@@ -25,10 +30,18 @@ class BuildProcess( PyToBinInstallerProcess ):
             # Disable the run program check box by default, for this example. 
             cfg.controlScript.isRunProgChecked = False
 
+            if IS_WINDOWS:
+                Script = QtIfwControlScript
+                cfg.controlScript.finishedPageOnInstall =(
+                    Script.log( '"App found: " + ' + Script.pathExists( 
+                                    qtIfwOpDataPath( APP_FOUND_FILENAME ) ), 
+                                isAutoQuote=False ) 
+                )
+    
         # A boolean state may be represented via a file's existence,
         # created (or not) during an installer operation...                     
         def setBoolCascadeOp( fileName ):
-            return QtIfwExternalOp.CreateTempDataFile( ON_INSTALL, fileName )
+            return QtIfwExternalOp.CreateOpFlagFile( ON_INSTALL, fileName )
 
         # A boolean state may be evaluated via a file's existence,
         # during a subsequent installer operation...                      
@@ -42,7 +55,7 @@ class BuildProcess( PyToBinInstallerProcess ):
                 , '[ -f "{srcFilePath}" ] && msg="TRUE"'   
                 , 'echo "${msg}" > "{destFilePath}"' 
             ]), replacements={ 
-                  'srcFilePath' : qtIfwTempDataFilePath( fileName )
+                  'srcFilePath' : opDataPath( fileName )
                 , 'destFilePath': destFilePath  
             })
             return QtIfwExternalOp( script=createFileScript, 
@@ -57,7 +70,7 @@ class BuildProcess( PyToBinInstallerProcess ):
  
         # An installer variable can be written to a data file...                     
         def setVaribaleCascadeOp( fileName, varName ):
-            return QtIfwExternalOp.WriteTempDataFile( ON_INSTALL, fileName, 
+            return QtIfwExternalOp.WriteOpDataFile( ON_INSTALL, fileName, 
                         qtIfwDynamicValue( varName ) )
 
         # Or a dynamic value may be determined in a script and then written 
@@ -68,7 +81,7 @@ class BuildProcess( PyToBinInstallerProcess ):
             ] if IS_WINDOWS else [
                 'echo $(date +"%T") > "{timeFilePath}"' 
             ]), replacements={ 
-                'timeFilePath': qtIfwTempDataFilePath( fileName )  
+                'timeFilePath': opDataPath( fileName )  
             })
             return QtIfwExternalOp( script=passTimeScript ) 
                         
@@ -82,7 +95,7 @@ class BuildProcess( PyToBinInstallerProcess ):
                   'msg=$(cat "{srcFilePath}")'
                 , 'echo "${msg}" > "{destFilePath}"' 
             ]), replacements={ 
-                  'srcFilePath' : qtIfwTempDataFilePath( fileName ) 
+                  'srcFilePath' : opDataPath( fileName ) 
                 , 'destFilePath': destFilePath  
             })
             return QtIfwExternalOp( script=createFileScript, 
@@ -135,7 +148,6 @@ class BuildProcess( PyToBinInstallerProcess ):
             COMPANY_NAME = "Some Company"
             EXE_NAME     = "RunConditionsTest.exe"            
             IS_32BIT_REG = False
-            APP_FOUND_FILENAME = "ConveniencesAppInstalled"
             EXE_PATH = joinPath( QT_IFW_APPS_X86_DIR, COMPANY_NAME, APP_NAME, 
                                  EXE_NAME )
             # This demos conditionally launching an app on BOTH install and 

@@ -45,7 +45,7 @@ from distbuilder.qt_installer import \
     , nestQtIfwPackage \
     , joinPathQtIfw \
     , qtIfwDynamicValue \
-    , qtIfwTempDataFilePath \
+    , qtIfwOpDataPath \
     , QT_IFW_VERBOSE_SWITCH \
     , QT_IFW_DYNAMIC_VARS \
     , QT_IFW_TARGET_DIR \

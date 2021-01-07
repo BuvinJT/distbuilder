@@ -1447,33 +1447,31 @@ is not specified, the path is re resolved relative to `THIS_DIR`
 
 ### joinPathQtIfw
 
-Use this to build paths which will be utilized by QtIFW scripts
-(directly or indirectly) on a target machine.  The paths will be 
-joined (and used) in a platform agnostic manner.  
+Use this function to build paths within QtScript building contexts 
+and to supply arguments for QtIFW operations.  
+The paths will be joined in a *platform agnostic* manner.  
 
-Note, use `joinPath` to build paths in a platform specific manner,
-applicable to where a build script will be employing it to *create* 
-a distribution.    
+Note, use `joinPath` to build paths in a *platform specific* manner,
+resolved at build time.    
 
 ### qtIfwDynamicValue
 
     qtIfwDynamicValue( name )
 
-Use this function produce the resolution of dynamic substitution variables 
-at runtime, which are utilized by QtIFW scripts (directly or indirectly) 
-on a target machine.
+Use this function to produce the resolution of dynamic substitution variables 
+at runtime, which are utilized by QtIFW operations and scripts in all contexts 
+(directly or indirectly) on a target machine.
 
-These values are often paths to files or directories on the target, or 
+These values are *often* paths to files or directories on the target, or 
 embedded resources in the installer, but may in fact be used for strings 
 containing *any* content, which the installer knows how to resolve.  
 
-### qtIfwTempDataFilePath
+### qtIfwOpDataPath
 
-	qtIfwTempDataFilePath( rootFileName )
+	qtIfwOpDataPath( rootFileName )
 
-Use this function produce the resolution of dynamic temp paths  
-at runtime, which are utilized by QtIFW scripts (directly or indirectly) 
-on a target machine.
+Use this function, within QtScript building contexts, to produce the resolution 
+of dynamic temp paths at runtime, which are utilized by installer operations.
 	
 ### isParentDir 
 

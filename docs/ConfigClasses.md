@@ -787,7 +787,26 @@ object.
 
 #### ON_INSTALL, ON_UNINSTALL, ON_BOTH, AUTO_UNDO
 
-Event constants for convenience methods.
+**Event** constants for convenience methods.
+
+#### opDataPath
+
+	opDataPath( rootFileName, isNative=True,
+				quotes=None, isDoubleBackslash=False )
+
+Dynamically resolve paths to temp data files used by the operations,
+or to embed in custom scripts.  
+
+**rootFileName**: A simple ("data key") identifier (with no file extension).
+
+**isNative**: By default, paths are returned in a native format, i.e. 
+with backslashes vs forward slashes as applicable.
+
+**quotes**: Optionally, you may provide quote strings (e.g. `"` or `'`, or some 
+escaped version of them) to wrap the returned path in such.  
+
+**isDoubleBackslash**: Optionally, use this on Windows, to escape backslashes 
+doubling them up.
 
 #### QtIfwExternalOp.RunProgram
 
@@ -799,13 +818,13 @@ Event constants for convenience methods.
 On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
 program from the installer's 32 bit context.
 
-####  QtIfwExternalOp.CreateTempDataFile
+####  QtIfwExternalOp.CreateOpFlagFile
 
-    CreateTempDataFile( event, fileName, isElevated=True )
+    CreateOpFlagFile( event, fileName, isElevated=True )
 
-#### QtIfwExternalOp.WriteTempDataFile
+#### QtIfwExternalOp.WriteOpDataFile
 
-    WriteTempDataFile( event, fileName, data, isElevated=True )
+    WriteOpDataFile( event, fileName, data, isElevated=True )
 
 #### QtIfwExternalOp.RemoveFile
 
@@ -917,9 +936,9 @@ program from the installer's 32 bit context.
 Note: Elevation is controlled via the operation executing the script 
 rather embedded within it.
 
-#### QtIfwExternalOp.WriteTempDataFileScript
+#### QtIfwExternalOp.WriteOpDataFileScript
 
-    WriteTempDataFileScript( fileName, data=None )
+    WriteOpDataFileScript( fileName, data=None )
 
 **Windows Type**: Batch 
 **Mac/Linux Type**: ShellScript 
