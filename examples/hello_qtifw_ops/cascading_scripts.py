@@ -39,14 +39,18 @@ class BuildProcess( PyToBinInstallerProcess ):
                 )
     
         # A boolean state may be represented via a file's existence,
-        # created (or not) during an installer operation...                     
-        def setBoolCascadeOp( fileName ):
-            return QtIfwExternalOp.CreateOpFlagFile( ON_INSTALL, fileName )
+        # created (or not) during an installer operation...
+        # If optionally passing a variable name to CreateOpFlagFile, the 
+        # operation will pivot upon the boolean evaluation of that variable                      
+        def setBoolCascadeOp( fileName, varName=None ):
+            return QtIfwExternalOp.CreateOpFlagFile( ON_INSTALL, 
+                    fileName, varName )
 
         # A boolean state may be evaluated via a file's existence,
         # during a subsequent installer operation...                      
         def getBoolCascadeOp( fileName, destFilePath ):            
-            createFileScript = ExecutableScript( "createBoolEvalFile", script=([               
+            createFileScript = ExecutableScript( "%sEvalFile" % (fileName,),  
+                script=([               
                   'set "msg=FALSE"'  
                 , 'if exist "{srcFilePath}" set "msg=TRUE"'
                 , 'echo %msg% > "{destFilePath}"' 
@@ -62,11 +66,11 @@ class BuildProcess( PyToBinInstallerProcess ):
                 uninstScript=QtIfwExternalOp.RemoveFileScript( destFilePath ) )
 
         # An installer variable may be set somewhere in the QtScript...
-        def setInstallerVaribale( pkgScript, varName ):
+        def setInstallerVaribale( pkgScript, varName, value ):
             # Package Script preOpSupport is a convenient place to test this
             # Change the value assigned to test the results...
             pkgScript.preOpSupport = QtIfwPackageScript.setValue( 
-                varName, QT_IFW_HOME_DIR )  
+                varName, value )  
  
         # An installer variable can be written to a data file...                     
         def setVaribaleCascadeOp( fileName, varName ):
@@ -107,7 +111,7 @@ class BuildProcess( PyToBinInstallerProcess ):
         # manner) maybe applied via these abstractions.        
         if IS_WINDOWS:
             def setAppFoundFileOp( event, appName, is32BitRegistration, fileName ):
-                return QtIfwExternalOp.CreateWindowsAppFoundTempFile( event, 
+                return QtIfwExternalOp.CreateWindowsAppFoundFlagFile( event, 
                     appName, fileName, isAutoBitContext=is32BitRegistration )                                        
 
             def launchAppIfFound( event, exePath, appFoundFileName ):               
@@ -117,23 +121,35 @@ class BuildProcess( PyToBinInstallerProcess ):
                     runConditionFileName=appFoundFileName, 
                     isRunConditionNegated=False )                                   
 
-        BOOL_FILE_NAME         = "boolData"
-        BOOL_EVAL_FILE_NAME    = "cascadingBool.txt"
-        VAR_NAME               = "myDynamicPath"
-        VAR_FILE_NAME          = "varData"        
-        VAR_FETCH_FILE_NAME    = "cascadingVar.txt"
-        TIME_FILE_NAME         = "timeData"
-        TIME_FETCH_FILE_NAME   = "cascadingTime.txt"
+        STATIC_BOOL_FILE_NAME       = "staticBoolData"
+        STATIC_BOOL_EVAL_FILE_NAME  = "staticCascadingBool.txt"
+        DYNAMIC_BOOL_FILE_NAME      = "dynamicBoolData"
+        DYNAMIC_BOOL_EVAL_FILE_NAME = "dynamicCascadingBool.txt"
+        VAR_NAME                    = "myDynamicPath"
+        VAR_FILE_NAME               = "varData"                
+        VAR_FETCH_FILE_NAME         = "cascadingVar.txt"
+        TIME_FILE_NAME              = "timeData"
+        TIME_FETCH_FILE_NAME        = "cascadingTime.txt"
 
         customizeFinishedPage( cfg )                                
         pkg = cfg.packages[0]
-        setInstallerVaribale( pkg.pkgScript, VAR_NAME )    
+
+        # comment any / all of these out to test!
+        setInstallerVaribale( pkg.pkgScript, VAR_NAME, QT_IFW_HOME_DIR )   
+        #setInstallerVaribale( pkg.pkgScript, VAR_NAME, 
+        #                      QtIfwControlScript.toBool( True ) )
+        #setInstallerVaribale( pkg.pkgScript, VAR_NAME, 
+        #                      QtIfwControlScript.toBool( False ) )
                         
         pkg.pkgScript.externalOps += [ 
-            setBoolCascadeOp( BOOL_FILE_NAME ), # comment this out to test!    
-            getBoolCascadeOp( BOOL_FILE_NAME,
-                joinPath( QT_IFW_DESKTOP_DIR, BOOL_EVAL_FILE_NAME ) ),            
+            setBoolCascadeOp( STATIC_BOOL_FILE_NAME ), # comment this out to test!    
+            getBoolCascadeOp( STATIC_BOOL_FILE_NAME,
+                joinPath( QT_IFW_DESKTOP_DIR, STATIC_BOOL_EVAL_FILE_NAME ) ),            
             
+            setBoolCascadeOp( DYNAMIC_BOOL_FILE_NAME, VAR_NAME ),      
+            getBoolCascadeOp( DYNAMIC_BOOL_FILE_NAME,
+                joinPath( QT_IFW_DESKTOP_DIR, DYNAMIC_BOOL_EVAL_FILE_NAME ) ),            
+
             setVaribaleCascadeOp( VAR_FILE_NAME, VAR_NAME ),
             getVaribaleCascadeOp( VAR_FILE_NAME,
                 joinPath( QT_IFW_DESKTOP_DIR, VAR_FETCH_FILE_NAME ) ),

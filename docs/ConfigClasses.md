@@ -818,9 +818,17 @@ doubling them up.
 On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
 program from the installer's 32 bit context.
 
-####  QtIfwExternalOp.CreateOpFlagFile
+#### QtIfwExternalOp.CreateOpFlagFile
 
-    CreateOpFlagFile( event, fileName, isElevated=True )
+    CreateOpFlagFile( event, fileName, dynamicVar=None, isElevated=True )
+    
+**dynamicVar**: Control the creation of this file via a dynamic installer 
+variable. Note that a "false" condition will be met when a boolean variable is
+explicitly set to `false`, or if the variable is undefined, or it contains no 
+content, or if it is set to `0`. The opposing `true` condition, required to 
+create the flag file, is simply the inverse of that. By default, this argument 
+is set to `None`, and therefore the file will be created without any logical 
+controls.       
 
 #### QtIfwExternalOp.WriteOpDataFile
 
@@ -935,6 +943,21 @@ program from the installer's 32 bit context.
 
 Note: Elevation is controlled via the operation executing the script 
 rather embedded within it.
+
+#### QtIfwExternalOp.CreateOpFlagFileScript
+
+    CreateOpFlagFile( fileName, dynamicVar=None )
+    
+**dynamicVar**: Control the creation of the flag file via a dynamic installer 
+variable. Note that a "false" condition will be met when a boolean variable is
+explicitly set to `false`, or if the variable is **undefined**, or it contains **no content**, or if it is set to `0`. The opposing `true` condition, required 
+to create the flag file, is simply the inverse of that.  So notably, the flag 
+can be raised by having a value in the dynamic variable, to then just simply 
+"true". By default, this argument is set to `None`, and therefore the file will be created without any logical 
+controls.  
+
+Note that the flag is either raised by this function or not. This function **does 
+not remove** a file that already exists.        
 
 #### QtIfwExternalOp.WriteOpDataFileScript
 

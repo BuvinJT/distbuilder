@@ -65,6 +65,8 @@ QT_IFW_ASKPASS_KEY = "askpass"
 QT_IFW_ASKPASS_PLACEHOLDER = "[%s]" % (QT_IFW_ASKPASS_KEY,)
 QT_IFW_ASKPASS_TEMP_FILE_PATH = "/tmp/{0}.path".format( QT_IFW_ASKPASS_KEY )
 
+QT_IFW_UNDEF_VAR_VALUE = "undef"
+
 QT_IFW_DYNAMIC_SYMBOL = "@"
 
 QT_IFW_ROOT_DIR      = "@RootDir@"
@@ -1740,7 +1742,8 @@ class _QtIfwScript:
             TAB + 'if( !varNames ) varNames = dynamicVars' + END +                 
             TAB + 'for( var i=0; i != varNames.length; ++i ) ' + SBLK +                                    
             (2*TAB) + 'var varName = varNames[i]' + END +
-            (2*TAB) + 'var varVal = installer.value( varName, "?" )' + END +
+            (2*TAB) + 'var varVal = installer.value( varName, "' + 
+                                        QT_IFW_UNDEF_VAR_VALUE + '" )' + END +
             (2*TAB) + 'ret = ret.split( "@" + varName + "@" ).join( varVal )' + END +
             (2*TAB) + EBLK +             
             TAB + 'return ret' + END +                                                                                                                          
@@ -2046,7 +2049,8 @@ class _QtIfwScript:
             (2*TAB) + '"oFile.Close\\n" ' + END +
             TAB + 'for( var i=0; i != varNames.length; ++i ) ' + SBLK +                                    
             (2*TAB) + 'var varName = varNames[i]' + END +
-            (2*TAB) + 'var varVal = Dir.toNativeSeparator( installer.value( varName, "?" ) )' + END +
+            (2*TAB) + 'var varVal = Dir.toNativeSeparator( installer.value( varName, "' + 
+                                        QT_IFW_UNDEF_VAR_VALUE + '" ) )' + END +
             (2*TAB) + 'if( isDoubleBackslash ) varVal = varVal.replace(/\\\\/g, \'\\\\\\\\\')' + END +
             (2*TAB) + 'vbs += "sText = Replace(sText, Amp + \\"" + varName + "\\" + Amp, \\"" + varVal + "\\")\\n"' + NEW +
             TAB + EBLK +
@@ -5151,9 +5155,11 @@ class QtIfwExternalOp:
         return path
         
     @staticmethod
-    def CreateOpFlagFile( event, fileName, isElevated=True ):    
+    def CreateOpFlagFile( event, fileName, dynamicVar=None,
+                          isElevated=True ):    
         return QtIfwExternalOp.__genScriptOp( event, 
-            script=QtIfwExternalOp.WriteOpDataFileScript( fileName ), 
+            script=QtIfwExternalOp.CreateOpFlagFileScript( 
+                fileName, dynamicVar ), 
             isElevated=isElevated )
         
     @staticmethod
@@ -5237,18 +5243,12 @@ class QtIfwExternalOp:
             util._onPlatformErr()
 
     if IS_WINDOWS:
-        # TODO: Expand upon registry functions
-        
-        # TODO: Deal with 64 bit vs 32 bit registry contexts
-        # Allow the use of either literal paths or implicit wow64 resolution
-        # Some thoughts:     
-        # https://stackoverflow.com/questions/630382/how-to-access-the-64-bit-registry-from-a-32-bit-powershell-instance
-        
+
         @staticmethod
-        def CreateWindowsAppFoundTempFile( event, appName, fileName, 
+        def CreateWindowsAppFoundFlagFile( event, appName, fileName, 
                                            isAutoBitContext=True ):
             return QtIfwExternalOp.__genScriptOp( event, 
-                script=QtIfwExternalOp.CreateWindowsAppFoundTempFileScript( 
+                script=QtIfwExternalOp.CreateWindowsAppFoundFlagFileScript( 
                     appName, fileName, isAutoBitContext ), 
                 isReversible=False, isElevated=True )
         
@@ -5265,7 +5265,8 @@ class QtIfwExternalOp:
                 op.successRetCodes=[ 0, QtIfwExternalOp.__NOT_FOUND_EXIT_CODE ]
                 op.uninstRetCodes =[ 0, QtIfwExternalOp.__NOT_FOUND_EXIT_CODE ]
             return op
-                
+        
+        # TODO: Expand upon registry functions (notably with cascading scripts)
         @staticmethod
         def CreateRegistryKey( event, key, isAutoBitContext=True ):
             return QtIfwExternalOp.__genScriptOp( event, 
@@ -5409,6 +5410,19 @@ class QtIfwExternalOp:
                 isElevated=isElevated, 
                 externalRes=externalRes if externalRes else [] ) 
 
+
+    @staticmethod
+    def CreateOpFlagFileScript( fileName, dynamicVar=None ): # TODO: Test in NIX/MAC            
+        return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "createOpFlagFile" ), script=(
+                ("" if dynamicVar is None else
+                 QtIfwExternalOp.__batExitIfFalseVar( dynamicVar )
+                 if IS_WINDOWS else
+                 QtIfwExternalOp.__shExitIfFalseVar( dynamicVar ) ) + 
+                str( QtIfwExternalOp.WriteOpDataFileScript( 
+                     fileName, data=None ) )         
+        ))
+        
     # TODO: Auto handle escape sequences?
     @staticmethod
     def WriteOpDataFileScript( fileName, data=None ): # TODO: Test in NIX/MAC            
@@ -5495,13 +5509,46 @@ class QtIfwExternalOp:
     if IS_WINDOWS:
 
         @staticmethod
-        def __batExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):            
+        def __batExitIfFalseVar( varName, isNegated=False, errorCode=0 ):
             return str( ExecutableScript( "", script=([               
+                  'set "reqFlag={varName}"'               
+                , 'if "%reqFlag%"=="{undef}" set "reqFlag=false"'
+                , 'if "%reqFlag%"=="" set "reqFlag=false"'
+                , 'if "%reqFlag%"=="0" set "reqFlag=false"'
+                , 'if {negate}"%reqFlag%"=="false" exit /b {errorCode}'
+            ]), replacements={
+                  'negate' : ('' if isNegated else 'not ')  
+                , 'varName' : qtIfwDynamicValue( varName )
+                , 'errorCode': errorCode
+                , 'undef' : QT_IFW_UNDEF_VAR_VALUE
+            }) )
+
+        @staticmethod
+        def __batExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):            
+            return str( ExecutableScript( "", script=([                               
                 'if {negate}exist "{filePath}" exit /b {errorCode}'   
             ]), replacements={
                   'negate' : ('' if isNegated else 'not ')  
                 , 'filePath' : QtIfwExternalOp.opDataPath( fileName )
                 , 'errorCode': errorCode
+            }) )
+
+        # TODO: TEST
+        @staticmethod
+        def __psExitIfFalseVar( varName, isNegated=False, errorCode=0 ):
+            return str( ExecutableScript( "", script=([    
+                  '$reqFlag="{varName}"'
+                , 'if( $reqFlag -eq "{undef}" ) { $reqFlag="false" }'
+                , 'if( $reqFlag -eq "" ) { $reqFlag="false" }'
+                , 'if( $reqFlag -eq "0" ) { $reqFlag="false" }'
+                , 'if( {negate}($reqFlag -eq "false") ) {'
+                , '    [Environment]::Exit( {errorCode} )'
+                , '}'   
+            ]), replacements={
+                  'negate' : ('' if isNegated else '! ')  
+                , 'varName' : qtIfwDynamicValue( varName )
+                , 'errorCode': errorCode
+                , 'undef' : QT_IFW_UNDEF_VAR_VALUE
             }) )
 
         @staticmethod
@@ -5584,7 +5631,7 @@ else{
                 } ) )
 
         @staticmethod
-        def CreateWindowsAppFoundTempFileScript( appName, fileName, 
+        def CreateWindowsAppFoundFlagFileScript( appName, fileName, 
                                                  isAutoBitContext=True ):            
             psScriptTemplate=(
                 QtIfwExternalOp.__psFindWindowsAppUninstallCmd( 
@@ -5939,6 +5986,23 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
  
     if IS_MACOS or IS_LINUX:
          
+        # TODO: TEST
+        @staticmethod
+        def __shExitIfFalseVar( varName, isNegated=False, errorCode=0 ):
+            return str( ExecutableScript( "", script=([
+                  'reqFlag="{varName}"'               
+                , '[ "{reqFlag}"=="{undef}" ] && reqFlag="false"'
+                , '[ "{reqFlag}"=="" ] && reqFlag="false"'
+                , '[ "{reqFlag}"=="0" ] && reqFlag="false"'
+                , '[ {negate}"{reqFlag}"=="false" ] && exit {errorCode}'   
+            ]), replacements={
+                  'negate' : ('' if isNegated else '! ')  
+                , 'varName' : qtIfwDynamicValue( varName )
+                , 'errorCode': errorCode
+                , 'undef' : QT_IFW_UNDEF_VAR_VALUE
+            }) )
+
+        # TODO: TEST         
         @staticmethod
         def __shExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):
             if not fileName: return ""            
