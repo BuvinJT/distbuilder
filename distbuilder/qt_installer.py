@@ -3300,6 +3300,7 @@ Controller.prototype.Dynamic%sCallback = function() {
 
     def __genFinishedClickedCallbackBody( self ):
         TAB  = _QtIfwScript.TAB
+        SBLK = _QtIfwScript.START_BLOCK
         EBLK = _QtIfwScript.END_BLOCK
         ELSE = _QtIfwScript.ELSE
    
@@ -6696,8 +6697,118 @@ class QtIfwWidget( _QtIfwInterface ):
         return _QtIfwInterface._toFileName( 
             self.name + QtIfwWidget.__FILE_ROOT_SUFFIX )  
 
+# -----------------------------------------------------------------------------
+class QtIfwOnFinishedAction:
+
+    ON_INSTALL, ON_UNINSTALL, ON_BOTH = range(3) 
+
+    __EXEC_DETACHED_TMPLT=(
+        'executeDetached( resolveQtIfwPath( "%s" ), %s );\n' )
+    __EXEC_CMD_DETACHED_TMPLT=(
+        'executeShellCmdDetached( resolveDynamicVars( "%s" ) );\n' ) 
+    __EXEC_BAT_DETACHED_TMPLT=(
+        'executeBatchDetached( resolveNativePath( "%s" ), null, %s );\n' )
+    __EXEC_VBS_DETACHED_TMPLT=(
+        'executeVbScriptDetached( resolveNativePath( "%s" ), null, %s );\n' )
+    __EXEC_PS_DETACHED_TMPLT=(
+        'executePowerShellDetached( resolveNativePath( "%s" ), null, %s );\n' )
+    
+    __SCRIPT_TMPLTS = { 
+          "bat" : __EXEC_BAT_DETACHED_TMPLT 
+        , "vbs" : __EXEC_VBS_DETACHED_TMPLT
+        , "ps1" : __EXEC_PS_DETACHED_TMPLT
+    }
+        
+    # TODO: Test in NIX/MAC - handle elevation ?
+    __REBOOT_CMD =( "shutdown /r -t %d" if IS_WINDOWS else 
+                    "sleep %d; sudo reboot" )
+    
+    # QtIfwOnFinishedAction
+    def __init__( self, name, event=None,   
+                  ifwPackage=None, 
+                  runProgram=None, argList=None,
+                  shellCmd=None, script=None,
+                  openViaOsPath=None,                 
+                  isReboot=False, rebootDelaySecs=2 ):
+        
+        self.name       = name
+        self.event      =( QtIfwOnFinishedAction.ON_INSTALL if event is None
+                           else event )        
+        self.runProgram = None
+        self.argList    = None
+        self.script     = None 
+        self.isReboot   = isReboot
+        self._action    = None                            
+                
+        if isReboot: self.__setAsReboot( rebootDelaySecs )
+        elif isinstance( ifwPackage, QtIfwPackage ): 
+            self.__setFromPackage( ifwPackage, argList )
+        elif isinstance( script, ExecutableScript ):
+            self.__setFromScript( script, argList )
+        elif openViaOsPath:
+            self._action = QtIfwControlScript.openViaOs( openViaOsPath )                    
+        elif shellCmd:   
+            # TODO: Figure out how to use quotes in the commands here!
+            # It seems they never work - around paths in the command 
+            # or around entire commands.
+            # Escape quotes & backslashes for the QScript literal. 
+            shellCmd = shellCmd.replace('\\','\\\\').replace('"','\\"')
+            self._action =( QtIfwOnFinishedAction.__EXEC_CMD_DETACHED_TMPLT 
+                            % (shellCmd,) )
+        else :
+            self.runProgram = runProgram
+            self.argList    = argList                     
+            self.__setSimpleExecDetachedAction()
+        
+    # TODO: Bind this logic with that in QtIfwConfigXml         
+    # TODO: Test implementation of QtIfwExeWrapper
+    def __setFromPackage( self, ifwPackage, argList ) :
+        if ifwPackage.exeWrapper:
+            self.runProgram = ifwPackage.exeWrapper._runProgram 
+            self.argList    = ifwPackage.exeWrapper._runProgArgs                        
+        elif ifwPackage.exeName:        
+            exeName = util.normBinaryName( ifwPackage.exeName, 
+                                           isGui=ifwPackage.isGui )            
+            programPath = joinPathQtIfw( QT_IFW_TARGET_DIR, exeName )
+            self.argList = argList    
+            if util._isMacApp( exeName ):   
+                self.runProgram = util._LAUNCH_MACOS_APP_CMD 
+                if not isinstance( self.argList, list ): self.argList = []
+                else: self.argList.insert( 0, util._LAUNCH_MACOS_APP_ARGS_SWITCH )     
+                self.argList.insert( 0, programPath )
+            else: self.runProgram = programPath                                    
+        self.__setSimpleExecDetachedAction()
+
+    # TODO: Finish testing and filling in the use of arguments in each script
+    # type context
+    def __setFromScript( self, script, argList ):         
+        self.script = script
+        self.runProgram = joinPathQtIfw( _ENV_TEMP_DIR, script.fileName() )
+        self.argList = argList
+        args =( '[%s]' % (",".join( ['"%s"' % (a,) for a in self.argList ] ),) 
+                if self.argList else _QtIfwScript.NULL )        
+        execTemplate = QtIfwOnFinishedAction.__SCRIPT_TMPLTS.get( 
+            script.extension )
+        if execTemplate is None: raise Exception("Script type not supported")
+        self._action =( 
+            _QtIfwScript.genResources( [script], isTempRootTarget=True ) +
+            execTemplate % ( self.runProgram, args ) 
+        )
+                                                        
+    def __setAsReboot( self, rebootDelaySecs ):
+        self.isReboot = True
+        cmd = QtIfwOnFinishedAction.__REBOOT_CMD % (rebootDelaySecs,)
+        self._action =( 
+            QtIfwOnFinishedAction.__EXEC_CMD_DETACHED_TMPLT % (cmd,) )
+
+    def __setSimpleExecDetachedAction( self ):
+        args = self.argList if self.argList else []        
+        args = '[%s]' % (",".join( ['"%s"' % (a,) for a in args] ),)            
+        self._action = QtIfwOnFinishedAction.__EXEC_DETACHED_TMPLT % (
+            self.runProgram, args ) 
+
 # -----------------------------------------------------------------------------    
-class QtIfwOnFinishedCheckbox( QtIfwWidget ):
+class QtIfwOnFinishedCheckbox( QtIfwWidget, QtIfwOnFinishedAction ):
 
     __AUTO_POSITION = 0
     
@@ -6729,30 +6840,9 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
 """)
     
     __RUN_PROG_DESCR_TMPLT = "Run %s now."
-    
-    __EXEC_DETACHED_TMPLT=(
-        'executeDetached( resolveQtIfwPath( "%s" ), %s );\n' )
-    __EXEC_CMD_DETACHED_TMPLT=(
-        'executeShellCmdDetached( resolveDynamicVars( "%s" ) );\n' ) 
-    __EXEC_BAT_DETACHED_TMPLT=(
-        'executeBatchDetached( resolveNativePath( "%s" ), null, %s );\n' )
-    __EXEC_VBS_DETACHED_TMPLT=(
-        'executeVbScriptDetached( resolveNativePath( "%s" ), null, %s );\n' )
-    __EXEC_PS_DETACHED_TMPLT=(
-        'executePowerShellDetached( resolveNativePath( "%s" ), null, %s );\n' )
-    
-    __SCRIPT_TMPLTS = { 
-          "bat" : __EXEC_BAT_DETACHED_TMPLT 
-        , "vbs" : __EXEC_VBS_DETACHED_TMPLT
-        , "ps1" : __EXEC_PS_DETACHED_TMPLT
-    }
-    
+        
     __REBOOT_TEXT = "REBOOT NOW."
-    
-    # TODO: Test in NIX/MAC - handle elevation ?
-    __REBOOT_CMD =( "shutdown /r -t %d" if IS_WINDOWS else 
-                    "sleep %d; sudo reboot" )
-    
+        
     # QtIfwOnFinishedCheckbox
     def __init__( self, name, text=None, position=None,  
                   ifwPackage=None, 
@@ -6765,40 +6855,23 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
             position=( position if position else 
                        QtIfwOnFinishedCheckbox.__AUTO_POSITION ),             
             sourcePath=QtIfwOnFinishedCheckbox.__SRC )
-
-        QtIfwOnFinishedCheckbox.__AUTO_POSITION += 1
+        QtIfwOnFinishedAction.__init__( self, name,
+            event=QtIfwOnFinishedAction.ON_INSTALL,   
+            ifwPackage=ifwPackage, 
+            runProgram=runProgram, argList=argList,
+            shellCmd=shellCmd, script=script,
+            openViaOsPath=openViaOsPath,                 
+            isReboot=isReboot, rebootDelaySecs=rebootDelaySecs )                            
+        
+        QtIfwOnFinishedCheckbox.__AUTO_POSITION += 1                    
         checkboxName = name + self.__CHECKBOX_SUFFIX
         self.checkboxName = "%s.%s" % ( self.name, checkboxName )
         
-        self.text       = None
-        self.runProgram = None
-        self.argList    = None
-        self.script     = None 
-        self.isReboot   = isReboot
-        self._action    = None                            
-                
-        if isReboot: self.__setAsReboot( rebootDelaySecs )
+        self.text = None                
+        if isReboot: self.__setAsReboot()
         elif isinstance( ifwPackage, QtIfwPackage ): 
-            self.__setFromPackage( ifwPackage, argList )
-        elif isinstance( script, ExecutableScript ):
-            self.__setFromScript( script, argList )
-        elif openViaOsPath:
-            self._action = QtIfwControlScript.openViaOs( openViaOsPath )                    
-        elif shellCmd:   
-            # TODO: Figure out how to use quotes in the commands here!
-            # It seems they never work - around paths in the command 
-            # or around entire commands.
-            # Escape quotes & backslashes for the QScript literal. 
-            shellCmd = shellCmd.replace('\\','\\\\').replace('"','\\"')
-            self._action =( QtIfwOnFinishedCheckbox.__EXEC_CMD_DETACHED_TMPLT 
-                            % (shellCmd,) )
-        else :
-            self.runProgram = runProgram
-            self.argList    = argList                     
-            self.__setSimpleExecDetachedAction()
-        
-        # allows override from package default    
-        if text: self.text = text 
+            self.__setFromPackage( ifwPackage )            
+        if text: self.text = text # allows override from prior set defaults
             
         self.replacements.update({ 
               self.__CHECKBOX_NAME_PLACEHOLDER: checkboxName 
@@ -6810,47 +6883,12 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
         
     # TODO: Bind this logic with that in QtIfwConfigXml         
     # TODO: Test implementation of QtIfwExeWrapper
-    def __setFromPackage( self, ifwPackage, argList ) :
+    def __setFromPackage( self, ifwPackage ) :
         self.text =( QtIfwOnFinishedCheckbox.__RUN_PROG_DESCR_TMPLT
                        % (ifwPackage.pkgXml.DisplayName,) )
-        if ifwPackage.exeWrapper:
-            self.runProgram = ifwPackage.exeWrapper._runProgram 
-            self.argList    = ifwPackage.exeWrapper._runProgArgs                        
-        elif ifwPackage.exeName:        
-            exeName = util.normBinaryName( ifwPackage.exeName, 
-                                           isGui=ifwPackage.isGui )            
-            programPath = joinPathQtIfw( QT_IFW_TARGET_DIR, exeName )
-            self.argList = argList    
-            if util._isMacApp( exeName ):   
-                self.runProgram = util._LAUNCH_MACOS_APP_CMD 
-                if not isinstance( self.argList, list ): self.argList = []
-                else: self.argList.insert( 0, util._LAUNCH_MACOS_APP_ARGS_SWITCH )     
-                self.argList.insert( 0, programPath )
-            else: self.runProgram = programPath                                    
-        self.__setSimpleExecDetachedAction()
-
-    # TODO: Finish testing and filling in the use of arguments in each script
-    # type context
-    def __setFromScript( self, script, argList ):         
-        self.script = script
-        self.runProgram = joinPathQtIfw( _ENV_TEMP_DIR, script.fileName() )
-        self.argList = argList
-        args =( '[%s]' % (",".join( ['"%s"' % (a,) for a in self.argList ] ),) 
-                if self.argList else _QtIfwScript.NULL )        
-        execTemplate = QtIfwOnFinishedCheckbox.__SCRIPT_TMPLTS.get( 
-            script.extension )
-        if execTemplate is None: raise Exception("Script type not supported")
-        self._action =( 
-            _QtIfwScript.genResources( [script], isTempRootTarget=True ) +
-            execTemplate % ( self.runProgram, args ) 
-        )
                                                         
-    def __setAsReboot( self, rebootDelaySecs ):
-        self.isReboot = True
+    def __setAsReboot( self ):
         self.text =  QtIfwOnFinishedCheckbox.__REBOOT_TEXT   
-        cmd = QtIfwOnFinishedCheckbox.__REBOOT_CMD % (rebootDelaySecs,)
-        self._action =( 
-            QtIfwOnFinishedCheckbox.__EXEC_CMD_DETACHED_TMPLT % (cmd,) )
         self.onEnter =(
             _QtIfwScript.ifInstalling( isMultiLine=True ) +
                 _QtIfwScript.ifCmdLineArg( _QtIfwScript.REBOOT_CMD_ARG ) +               
@@ -6859,13 +6897,7 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
                             _QtIfwScript.REBOOT_CMD_ARG ) ) +
             _QtIfwScript.END_BLOCK                                
             )                                                                 
-                                                        
-    def __setSimpleExecDetachedAction( self ):
-        args = self.argList if self.argList else []        
-        args = '[%s]' % (",".join( ['"%s"' % (a,) for a in args] ),)            
-        self._action = QtIfwOnFinishedCheckbox.__EXEC_DETACHED_TMPLT % (
-            self.runProgram, args ) 
-        
+                                                                                                            
     def _onLoadSnippet( self ):
         snippet = _QtIfwScript.TAB + _QtIfwScript.log( 
                     "%s Widget Loaded" % (self.name,) )              
@@ -6887,7 +6919,7 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget ):
 
     def setVisible( self, isVisible=True ): 
         return QtIfwControlScript.setVisible( self.checkboxName, isVisible )
-                    
+                            
 # -----------------------------------------------------------------------------    
 def installQtIfw( installerPath=None, version=None, targetPath=None ):    
     if installerPath is None :        
