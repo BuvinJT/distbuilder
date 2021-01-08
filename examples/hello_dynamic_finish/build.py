@@ -1,5 +1,6 @@
 from distbuilder import( RobustInstallerProcess, ConfigFactory,
-    QtIfwControlScript, QtIfwOnFinishedCheckbox, ExecutableScript,
+    QtIfwOnFinishedCheckbox, QtIfwOnFinishedDetachedExec, \
+    QtIfwControlScript, ExecutableScript, \
     findQtIfwPackage, joinPathQtIfw, 
     IS_WINDOWS, IS_MACOS, QT_IFW_TARGET_DIR )
   
@@ -205,6 +206,16 @@ class BuildProcess( RobustInstallerProcess ):
                 rebootCheckbox.setChecked( False ) +
                 rebootCheckbox.setVisible( True )
             )        
+            
+            # Add detached executions invoked unconditionally upon the 
+            # completion of the uninstaller.  
+            openPyPiPageViaOsExec = QtIfwOnFinishedDetachedExec( 
+                "openPyPiPageViaOs",  QtIfwOnFinishedDetachedExec.ON_UNINSTALL,
+                openViaOsPath="https://pypi.org/project/distbuilder/" )             
+            
+            cfg.controlScript.onFinishedDetachedExecutions = [
+                openPyPiPageViaOsExec
+            ]            
 
         pkgs   = cfg.packages
         tkPkg  = findQtIfwPackage( pkgs, TK_CONFIG_KEY )            

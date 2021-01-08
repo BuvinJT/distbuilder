@@ -35,6 +35,7 @@ from distbuilder.qt_installer import \
     , QtIfwTargetDirPage \
     , QtIfwSimpleTextPage \
     , QtIfwWidget \
+    , QtIfwOnFinishedDetachedExec \
     , QtIfwOnFinishedCheckbox \
     , installQtIfw \
     , unInstallQtIfw \

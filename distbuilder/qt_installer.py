@@ -3050,6 +3050,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         
         self.onFinishedClickedCallbackBody     = None
         self.onFinishedClickedCallbackInjection = None
+        self.onFinishedDetachedExecutions = []
         self.isAutoFinishedClickedCallbackBody = True
             
         self.isIntroductionPageVisible = True                                                                    
@@ -3306,7 +3307,7 @@ Controller.prototype.Dynamic%sCallback = function() {
    
         prepend = _QtIfwScript.log( "finish clicked" )
         
-        # Execute custom on wizard finished/exited actions
+        # Execute ui bound (user controlled) finished actions
         finshedCheckboxes = [ w for w in self.widgets 
                               if isinstance( w, QtIfwOnFinishedCheckbox ) ]
         if len(finshedCheckboxes) > 0:   
@@ -3322,6 +3323,26 @@ Controller.prototype.Dynamic%sCallback = function() {
                         checkbox._action + 
                     EBLK ) 
             prepend += EBLK + EBLK
+
+        # Execute other finished actions                
+        finshedDetachedExecs=[e for e in self.onFinishedDetachedExecutions 
+                              if isinstance( e, QtIfwOnFinishedDetachedExec )]
+        if len(finshedDetachedExecs) > 0:   
+            prepend +=( TAB + 
+                _QtIfwScript.ifBoolValue( _QtIfwScript.INTERUPTED_KEY, 
+                                          isNegated=True, isMultiLine=True ) 
+            )
+            for ex in finshedDetachedExecs:
+                prepend += ( 
+                    (2*TAB) + 
+                    (SBLK 
+                     if ex.event == QtIfwOnFinishedCheckbox.ON_BOTH 
+                     else _QtIfwScript.ifInstalling( isNegated =
+                        ex.event==QtIfwOnFinishedCheckbox.ON_UNINSTALL,
+                        isMultiLine=True ) ) + 
+                        ex._action +    
+                    (2*TAB) + EBLK ) 
+            prepend += EBLK 
         
         # Remove keep alive file     
         append =( 
@@ -6698,7 +6719,7 @@ class QtIfwWidget( _QtIfwInterface ):
             self.name + QtIfwWidget.__FILE_ROOT_SUFFIX )  
 
 # -----------------------------------------------------------------------------
-class QtIfwOnFinishedAction:
+class QtIfwOnFinishedDetachedExec:
 
     ON_INSTALL, ON_UNINSTALL, ON_BOTH = range(3) 
 
@@ -6723,7 +6744,7 @@ class QtIfwOnFinishedAction:
     __REBOOT_CMD =( "shutdown /r -t %d" if IS_WINDOWS else 
                     "sleep %d; sudo reboot" )
     
-    # QtIfwOnFinishedAction
+    # QtIfwOnFinishedDetachedExec
     def __init__( self, name, event=None,   
                   ifwPackage=None, 
                   runProgram=None, argList=None,
@@ -6732,7 +6753,7 @@ class QtIfwOnFinishedAction:
                   isReboot=False, rebootDelaySecs=2 ):
         
         self.name       = name
-        self.event      =( QtIfwOnFinishedAction.ON_INSTALL if event is None
+        self.event      =( QtIfwOnFinishedDetachedExec.ON_INSTALL if event is None
                            else event )        
         self.runProgram = None
         self.argList    = None
@@ -6753,7 +6774,7 @@ class QtIfwOnFinishedAction:
             # or around entire commands.
             # Escape quotes & backslashes for the QScript literal. 
             shellCmd = shellCmd.replace('\\','\\\\').replace('"','\\"')
-            self._action =( QtIfwOnFinishedAction.__EXEC_CMD_DETACHED_TMPLT 
+            self._action =( QtIfwOnFinishedDetachedExec.__EXEC_CMD_DETACHED_TMPLT 
                             % (shellCmd,) )
         else :
             self.runProgram = runProgram
@@ -6787,7 +6808,7 @@ class QtIfwOnFinishedAction:
         self.argList = argList
         args =( '[%s]' % (",".join( ['"%s"' % (a,) for a in self.argList ] ),) 
                 if self.argList else _QtIfwScript.NULL )        
-        execTemplate = QtIfwOnFinishedAction.__SCRIPT_TMPLTS.get( 
+        execTemplate = QtIfwOnFinishedDetachedExec.__SCRIPT_TMPLTS.get( 
             script.extension )
         if execTemplate is None: raise Exception("Script type not supported")
         self._action =( 
@@ -6797,18 +6818,18 @@ class QtIfwOnFinishedAction:
                                                         
     def __setAsReboot( self, rebootDelaySecs ):
         self.isReboot = True
-        cmd = QtIfwOnFinishedAction.__REBOOT_CMD % (rebootDelaySecs,)
+        cmd = QtIfwOnFinishedDetachedExec.__REBOOT_CMD % (rebootDelaySecs,)
         self._action =( 
-            QtIfwOnFinishedAction.__EXEC_CMD_DETACHED_TMPLT % (cmd,) )
+            QtIfwOnFinishedDetachedExec.__EXEC_CMD_DETACHED_TMPLT % (cmd,) )
 
     def __setSimpleExecDetachedAction( self ):
         args = self.argList if self.argList else []        
         args = '[%s]' % (",".join( ['"%s"' % (a,) for a in args] ),)            
-        self._action = QtIfwOnFinishedAction.__EXEC_DETACHED_TMPLT % (
+        self._action = QtIfwOnFinishedDetachedExec.__EXEC_DETACHED_TMPLT % (
             self.runProgram, args ) 
 
 # -----------------------------------------------------------------------------    
-class QtIfwOnFinishedCheckbox( QtIfwWidget, QtIfwOnFinishedAction ):
+class QtIfwOnFinishedCheckbox( QtIfwWidget, QtIfwOnFinishedDetachedExec ):
 
     __AUTO_POSITION = 0
     
@@ -6855,8 +6876,8 @@ class QtIfwOnFinishedCheckbox( QtIfwWidget, QtIfwOnFinishedAction ):
             position=( position if position else 
                        QtIfwOnFinishedCheckbox.__AUTO_POSITION ),             
             sourcePath=QtIfwOnFinishedCheckbox.__SRC )
-        QtIfwOnFinishedAction.__init__( self, name,
-            event=QtIfwOnFinishedAction.ON_INSTALL,   
+        QtIfwOnFinishedDetachedExec.__init__( self, name,
+            event=QtIfwOnFinishedDetachedExec.ON_INSTALL,   
             ifwPackage=ifwPackage, 
             runProgram=runProgram, argList=argList,
             shellCmd=shellCmd, script=script,
