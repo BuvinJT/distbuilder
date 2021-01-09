@@ -1247,6 +1247,50 @@ Attributes & default values:
 Functions:
       
         refresh()
+
+## QtIfwOnFinishedDetachedExec
+
+This class defines an action to be invoked upon completing the wizard.
+It will launch a detached / asynchronous process when the user clicks 
+the "Finished" button (which may occur virtually within a silent installer).
+Such actions may be invoked on installation, uninstallation, or both. 
+
+While working independently from it, this class is closely related to 
+[QtIfwOnFinishedCheckbox](#qtifwonfinishedcheckbox).  This class provides the 
+framework for the core functionally, while that one contributes UI dimensions.    
+
+Constructor:
+
+    QtIfwOnFinishedDetachedExec( name, event=None,   
+                                 ifwPackage=None, 
+                                 runProgram=None, argList=None,
+                                 shellCmd=None, script=None,
+                                 openViaOsPath=None,                 
+                                 isReboot=False, rebootDelaySecs=2,
+                                 ifCondition=None )
+                                 onLoad=None, onEnter=None ) 
+        
+Attributes:   
+
+	name  = name
+    
+    	<QtIfwOnFinishedDetachedExec.ON_INSTALL / ON_UNINSTALL / ON_BOTH>
+    event = ON_INSTALL  
+                
+    runProgram  = None
+    argList     = None
+    script      = None 
+    isReboot    = isReboot
+        
+    ifCondition = None <QtScript snippet>
+    
+    _action     = <auto defined>               
+
+Details:
+
+**ifCondition**: Controls whether to invoke this action via QtScript.
+Note, this feature is not applied by the derived class QtIfwOnFinishedCheckbox.
+That class invokes the corresponding action if the checkbox is selected.     
              
 ## QtIfwUiPage
 
@@ -1580,6 +1624,17 @@ the action associated with that will be executed in a "detached" manner
 (i.e. a process which is spawned by the installer, but not bound to it,
 so that it may live on after the installer process no longer exists).   
 
+In addition to inheriting from class QtIfwWidget, this class is also
+a decedent of [QtIfwOnFinishedDetachedExec](#qtifwonfinisheddetachedexec).     
+That class provides the framework for the core functionally, while this
+one contributes UI dimensions.
+
+Note: This class only adds checkboxes to the **installer** finished page.
+It is not possible to add custom widgets to the **uninstaller** finished page,
+because widgets are bundled and loaded via components (i.e. packages), and the 
+QtIFW uninstaller does not load components!  For comparable functionality, you 
+may employ QtIfwOnFinishedDetachedExec.      
+    
 Constructor:
 
     QtIfwOnFinishedCheckbox( name, text=None, position=None,  
@@ -1597,9 +1652,7 @@ Attributes & default values:
     position     = None <automatic, per object instantiation order>     
     
     isReboot     = False
-    
-    _action      = None
-        
+            
 Functions:
 
 	<These return QScript snippets>
