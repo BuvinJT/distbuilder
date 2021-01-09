@@ -583,8 +583,9 @@ Static Functions:
                 
     getComponent( name, isAutoQuote=True )	   
     getPageOwner( pageName, isAutoQuote=True ) <returns Component>
-
-		<package parameters here can be passed aa QtIfwPackage, 
+		
+		<the following are NOT functional in an uninstaller!
+		package parameters here can be passed as QtIfwPackage, 
 		or the name of such as raw string ...>
 	isComponentInstalled( package )
     isComponentSelected( package )
@@ -827,8 +828,8 @@ following add-on **QT SCRIPT** functions:
 	    isYumInstalled()
 	    isRpmInstalled()
 	    
-    getComponent( name ) <throws on invalid name>
-
+		<the following are NOT functional in an uninstaller!>	    
+    getComponent( name ) <throws on invalid name, or in any uninstall context>
 	isComponentInstalled( name ) 
     isComponentSelected( name ) 
 

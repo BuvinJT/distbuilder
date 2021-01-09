@@ -429,6 +429,8 @@ Attributes & default values:
 
     isReadyForInstallationPageVisible = True
     readyForInstallationPageCallbackBody = None
+    readyForInstallationPageOnInstall = None
+    readyForInstallationPageOnMaintain = None            
     isAutoReadyForInstallationPageCallback = True
 
     isPerformInstallationPageVisible = True
@@ -438,6 +440,7 @@ Attributes & default values:
     isFinishedPageVisible = True        
     finishedPageCallbackBody = None
     finishedPageOnInstall = None
+    finishedPageOnMaintain = None
     isAutoFinishedPageCallback = True        
 
     isRunProgVisible = True

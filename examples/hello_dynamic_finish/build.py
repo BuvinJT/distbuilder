@@ -142,6 +142,7 @@ class BuildProcess( RobustInstallerProcess ):
                 "openLicViaProg", text="Open License w/ Program now.", 
                 runProgram=textViewer, # on system path, else use full path here
                 argList=[joinPathQtIfw( QT_IFW_TARGET_DIR, licenseName )] )
+            # TODO: Fix this!  (It's broken on Windows at least...)
             openLicViaCmdCheckbox = QtIfwOnFinishedCheckbox( 
                 "openLicViaCommand", text="Open License w/ Command now.", 
                 shellCmd=openLicCommand )
@@ -173,7 +174,7 @@ class BuildProcess( RobustInstallerProcess ):
                 '<br /><br />Thank you installing the <b>Tk Example</b>!' )
             CLI_INSTALLED_MSG = Script.quote(
                 '<br /><br />Thank you installing the <b>CLI Example</b>!' )
-            LAUNCH_PY_PI_KEY = "launchPyPi"
+            IS_TK_APP_INSTALLED_KEY = "isTkAppInstalled"
             
             # helper function
             def showIfInstalled( checkbox, pkg, isChecked=True ):
@@ -192,9 +193,7 @@ class BuildProcess( RobustInstallerProcess ):
                 Script.ifComponentInstalled( cliPkg ) +
                     Script.setText( MSG_LBL, Script.getText( MSG_LBL ) + 
                         CONCAT + CLI_INSTALLED_MSG,
-                        varNames=False, isAutoQuote=False ) +
-                Script.setBoolValue( 
-                    LAUNCH_PY_PI_KEY, Script.isComponentInstalled( tkPkg ) ) +                    
+                        varNames=False, isAutoQuote=False ) +                                  
                 showIfInstalled( runTkCheckbox, tkPkg ) +
                 showIfInstalled( runCliCheckbox, cliPkg ) +
                 openOnlineManualViaOsCheckbox.setChecked( True ) +
@@ -210,14 +209,26 @@ class BuildProcess( RobustInstallerProcess ):
                 rebootCheckbox.setVisible( True )
             )        
             
-            # Add an automatic, but conditional, detached execution 
-            # invoked post uninstallation.  
+            # Unfortunately, there is no built-in QtIFW means to determine 
+            # which components were installed via QtScript from an uninstaller. 
+            # To work around that: Set an installer variable indicating  
+            # component (i.e. package) selection just prior to the installation 
+            # process,  so that such will be persisted, and thus available, in  
+            # the uninstaller.              
+            cfg.controlScript.readyForInstallationPageOnInstall =(
+                Script.setBoolValue( IS_TK_APP_INSTALLED_KEY, 
+                                     Script.isComponentSelected( tkPkg ) )
+            )
+            
+            # Define a detached execution action, to be invoked post  
+            # uninstallation, conditionally controlled by the persisted 
+            # variable stored during installation.  
             openPyPiPageViaOsExec = QtIfwOnFinishedDetachedExec( 
                 "openPyPiPageViaOs",  QtIfwOnFinishedDetachedExec.ON_UNINSTALL,
                 openViaOsPath="https://pypi.org/project/distbuilder/",
-                #ifCondition=Script.lookupBoolValue( LAUNCH_PY_PI_KEY ),
-                ifCondition=Script.toBool(True) )             
+                ifCondition=Script.lookupBoolValue( IS_TK_APP_INSTALLED_KEY ) )                        
             
+            # Add on finished detached executions (not bound to gui controls)
             cfg.controlScript.onFinishedDetachedExecutions = [
                 openPyPiPageViaOsExec
             ]            

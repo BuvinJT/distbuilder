@@ -2207,7 +2207,7 @@ class _QtIfwScript:
             TAB + 'return false' + END +
             EBLK + NEW +            
             'function isComponentSelected( name ) ' + SBLK +
-            TAB + 'try{ return getComponent( name ).enabled; }' + NEW +
+            TAB + 'try{ return getComponent( name ).installationRequested(); }' + NEW +
             TAB + 'catch(e){ console.log("Component not found: " + name ); }' + NEW +
             TAB + 'return false' + END +
             EBLK + NEW +                        
@@ -3077,6 +3077,8 @@ Controller.prototype.Dynamic%sCallback = function() {
 
         self.isReadyForInstallationPageVisible = True
         self.readyForInstallationPageCallbackBody = None
+        self.readyForInstallationPageOnInstall = None
+        self.readyForInstallationPageOnMaintain = None        
         self.isAutoReadyForInstallationPageCallback = True
 
         self.isPerformInstallationPageVisible = True
@@ -3086,6 +3088,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.isFinishedPageVisible = True
         self.finishedPageCallbackBody = None
         self.finishedPageOnInstall = None
+        self.finishedPageOnMaintain = None
         self.isAutoFinishedPageCallback = True        
 
         self.isRunProgVisible = True
@@ -3721,7 +3724,7 @@ Controller.prototype.Dynamic%sCallback = function() {
                             _QtIfwScript.EXCLUDE_LIST_CMD_ARG ) + ';\n' +
             '        for( i=0; i < excludes.length; i++ ) \n' +
             '            page.deselectComponent( excludes[i].trim() );\n' +
-            '    }\n' +
+            '    }\n' +            
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
@@ -3764,16 +3767,28 @@ Controller.prototype.Dynamic%sCallback = function() {
         )
 
     def __genReadyForInstallationPageCallbackBody( self ):
+        TAB = _QtIfwScript.TAB
+        SBLK =_QtIfwScript.START_BLOCK
+        EBLK =_QtIfwScript.END_BLOCK             
+        ELSE = _QtIfwScript.ELSE
         self.readyForInstallationPageCallbackBody = (
             _QtIfwScript.log("ReadyForInstallationPageCallback") +    
             _QtIfwScript.ifDryRun( isMultiLine=True ) + 
                 _QtIfwScript.log( "Dry run completed." ) +
-                (2*_QtIfwScript.TAB) + 
+                (2*TAB) + 
                     _QtIfwScript.quit( "", isError=False, isSilent=True ) +
-                (2*_QtIfwScript.TAB) + " return;" +
-            _QtIfwScript.END_BLOCK +
+                (2*TAB) + " return;" +
+            EBLK +
+            _QtIfwScript.ifInstalling( isMultiLine=True ) +
+                ("" if self.readyForInstallationPageOnInstall is None else
+                 (2*TAB) + self.readyForInstallationPageOnInstall) +        
+            EBLK +
+            ELSE + SBLK +
+                ("" if self.readyForInstallationPageOnMaintain is None else
+                 (2*_QtIfwScript.TAB) + self.readyForInstallationPageOnMaintain) +       
+            EBLK +            
             _QtIfwScript.ifInstalling( isMultiLine=True ) +              
-                (2*_QtIfwScript.TAB) + _QtIfwScript.ifBoolValue( 
+                (2*TAB) + _QtIfwScript.ifBoolValue( 
                     _QtIfwScript._IS_CMD_ARGS_TEMP_KEY, isNegated=True,
                     isMultiLine=True ) 
         )
@@ -3781,16 +3796,16 @@ Controller.prototype.Dynamic%sCallback = function() {
         # process, and thus carried forward into the maintenance tool context!
         for arg, defValue in iteritems( _QtIfwScript._CMD_ARGS ):
             self.readyForInstallationPageCallbackBody += (
-                (2*_QtIfwScript.TAB) + _QtIfwScript.setValue( '"%s"' % 
+                (2*TAB) + _QtIfwScript.setValue( '"%s"' % 
                     (_QtIfwScript._CMD_ARGS_TEMP_PREFIX + arg,), 
                     _QtIfwScript.lookupValue( arg, defValue ), isAutoQuote=False ) +
-                (2*_QtIfwScript.TAB) + _QtIfwScript.setValue( arg, defValue )                    
+                (2*TAB) + _QtIfwScript.setValue( arg, defValue )                    
             )                
         self.readyForInstallationPageCallbackBody += (
-                (2*_QtIfwScript.TAB) + _QtIfwScript.setBoolValue( 
+                (2*TAB) + _QtIfwScript.setBoolValue( 
                     _QtIfwScript._IS_CMD_ARGS_TEMP_KEY, True ) +
-            (2*_QtIfwScript.TAB) + _QtIfwScript.END_BLOCK +
-            _QtIfwScript.END_BLOCK +                                          
+            (2*TAB) + EBLK +
+            EBLK +                                          
             _QtIfwScript.ifAutoPilot() +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON )  
@@ -3878,7 +3893,11 @@ Controller.prototype.Dynamic%sCallback = function() {
                                                             _REBOOT_MSG )                      
             )             
         self.finishedPageCallbackBody += (                                                                
-                (2*TAB) + EBLK +                                 
+                (2*TAB) + EBLK +
+                (2*TAB) + ELSE + SBLK +                 
+                    ("" if self.finishedPageOnMaintain is None else
+                    (2*TAB) + self.finishedPageOnMaintain) +                         
+                (2*TAB) + EBLK +
             TAB + EBLK +                 
             TAB + _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 TAB + QtIfwControlScript.clickButton( 
