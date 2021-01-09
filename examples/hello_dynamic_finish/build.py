@@ -173,6 +173,7 @@ class BuildProcess( RobustInstallerProcess ):
                 '<br /><br />Thank you installing the <b>Tk Example</b>!' )
             CLI_INSTALLED_MSG = Script.quote(
                 '<br /><br />Thank you installing the <b>CLI Example</b>!' )
+            LAUNCH_PY_PI_KEY = "launchPyPi"
             
             # helper function
             def showIfInstalled( checkbox, pkg, isChecked=True ):
@@ -192,6 +193,8 @@ class BuildProcess( RobustInstallerProcess ):
                     Script.setText( MSG_LBL, Script.getText( MSG_LBL ) + 
                         CONCAT + CLI_INSTALLED_MSG,
                         varNames=False, isAutoQuote=False ) +
+                Script.setBoolValue( 
+                    LAUNCH_PY_PI_KEY, Script.isComponentInstalled( tkPkg ) ) +                    
                 showIfInstalled( runTkCheckbox, tkPkg ) +
                 showIfInstalled( runCliCheckbox, cliPkg ) +
                 openOnlineManualViaOsCheckbox.setChecked( True ) +
@@ -207,11 +210,13 @@ class BuildProcess( RobustInstallerProcess ):
                 rebootCheckbox.setVisible( True )
             )        
             
-            # Add detached executions invoked unconditionally upon the 
-            # completion of the uninstaller.  
+            # Add an automatic, but conditional, detached execution 
+            # invoked post uninstallation.  
             openPyPiPageViaOsExec = QtIfwOnFinishedDetachedExec( 
                 "openPyPiPageViaOs",  QtIfwOnFinishedDetachedExec.ON_UNINSTALL,
-                openViaOsPath="https://pypi.org/project/distbuilder/" )             
+                openViaOsPath="https://pypi.org/project/distbuilder/",
+                #ifCondition=Script.lookupBoolValue( LAUNCH_PY_PI_KEY ),
+                ifCondition=Script.toBool(True) )             
             
             cfg.controlScript.onFinishedDetachedExecutions = [
                 openPyPiPageViaOsExec

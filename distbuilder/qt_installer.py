@@ -3336,11 +3336,17 @@ Controller.prototype.Dynamic%sCallback = function() {
                 prepend += ( 
                     (2*TAB) + 
                     (SBLK 
-                     if ex.event == QtIfwOnFinishedCheckbox.ON_BOTH 
+                     if ex.event == QtIfwOnFinishedDetachedExec.ON_BOTH 
                      else _QtIfwScript.ifInstalling( isNegated =
-                        ex.event==QtIfwOnFinishedCheckbox.ON_UNINSTALL,
+                        ex.event==QtIfwOnFinishedDetachedExec.ON_UNINSTALL,
                         isMultiLine=True ) ) + 
-                        ex._action +    
+                        (3*TAB) +
+                        (SBLK 
+                         if ex.ifCondition is None 
+                         else _QtIfwScript.ifCondition( ex.ifCondition,
+                            isMultiLine=True ) ) + 
+                            ex._action +    
+                        (3*TAB) + EBLK +                     
                     (2*TAB) + EBLK ) 
             prepend += EBLK 
         
@@ -6750,16 +6756,20 @@ class QtIfwOnFinishedDetachedExec:
                   runProgram=None, argList=None,
                   shellCmd=None, script=None,
                   openViaOsPath=None,                 
-                  isReboot=False, rebootDelaySecs=2 ):
+                  isReboot=False, rebootDelaySecs=2,
+                  ifCondition=None ):
         
-        self.name       = name
-        self.event      =( QtIfwOnFinishedDetachedExec.ON_INSTALL if event is None
-                           else event )        
-        self.runProgram = None
-        self.argList    = None
-        self.script     = None 
-        self.isReboot   = isReboot
-        self._action    = None                            
+        self.name  = name
+        self.event =( QtIfwOnFinishedDetachedExec.ON_INSTALL if event is None
+                      else event )
+                
+        self.runProgram  = None
+        self.argList     = None
+        self.script      = None 
+        self.isReboot    = isReboot
+        
+        self.ifCondition = ifCondition
+        self._action     = None                            
                 
         if isReboot: self.__setAsReboot( rebootDelaySecs )
         elif isinstance( ifwPackage, QtIfwPackage ): 
