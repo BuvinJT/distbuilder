@@ -1393,6 +1393,11 @@ Functions:
     fromBase64( data )
     
     debug()        
+
+Static Functions:
+
+    strToLines( s )
+    linesToStr( lines )    
         
 Details:
 

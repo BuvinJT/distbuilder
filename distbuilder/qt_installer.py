@@ -3310,7 +3310,6 @@ Controller.prototype.Dynamic%sCallback = function() {
         TAB  = _QtIfwScript.TAB
         SBLK = _QtIfwScript.START_BLOCK
         EBLK = _QtIfwScript.END_BLOCK
-        ELSE = _QtIfwScript.ELSE
    
         prepend = _QtIfwScript.log( "finish clicked" )
         
@@ -5428,6 +5427,32 @@ class QtIfwExternalOp:
                     externalRes=[QtIfwExternalResource.BuiltIn(
                         QtIfwExternalResource.RESOURCE_HACKER ) ] )                            
             ]
+
+    # Script Builders
+    # -----------------
+    @staticmethod
+    def batchSelfDestructSnippet(): 
+        return '(goto) 2>nul & del "%~f0"'
+
+    @staticmethod
+    def powerShellSelfDestructSnippet(): 
+        return 'Remove-Item $script:MyInvocation.MyCommand.Path -Force'
+
+    @staticmethod
+    def vbScriptSelfDestructSnippet(): 
+        return ExecutableScript.linesToStr([
+             'Set oFSO = CreateObject("Scripting.FileSystemObject")'                        
+            ,'oFSO.DeleteFile WScript.ScriptFullName'         
+            ,'Set oFSO = Nothing'
+        ])
+
+    @staticmethod
+    def shellScriptSelfDestructSnippet(): 
+        return "" #TODO: Fill in NIX/MAC
+
+    @staticmethod
+    def appleScriptSelfDestructSnippet(): 
+        return "" #TODO: Fill in NIX/MAC
 
     @staticmethod
     def __scriptRootName( prefix ):

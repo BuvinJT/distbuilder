@@ -961,7 +961,14 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
     __SHEBANG_TEMPLATE = "%s\n%s"
 
     __PLACEHOLDER_TMPLT = "{%s}" 
+    
+    @staticmethod
+    def strToLines( s ): return s.split( _NEWLINE  ) if s else []
+    
+    @staticmethod
+    def linesToStr( lines ): return _NEWLINE.join( lines )    
 
+    # ExecutableScript
     def __init__( self, rootName, 
                   extension=True, # True==auto assign, str==what to use, or None
                   shebang=True, # True==auto assign, str==what to use, or None                  
@@ -1016,10 +1023,10 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         filePath = joinPath( dirPath, self.fileName() )
         with open( filePath, 'r' ) as f : self.script = f.read() 
                 
-    def toLines( self ):        
-        return self.script.split( _NEWLINE  ) if self.script else []
+    def toLines( self ): return ExecutableScript.strToLines( self.script )
     
-    def fromLines( self, lines ): self.script = _NEWLINE.join( lines )
+    def fromLines( self, lines ): 
+        self.script = ExecutableScript.linesToStr( lines )
 
     def injectLine( self, injection, lineNo ):               
         lines = self.toLines()            

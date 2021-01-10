@@ -1,6 +1,6 @@
 from distbuilder import( RobustInstallerProcess, ConfigFactory,
-    QtIfwOnFinishedCheckbox, QtIfwOnFinishedDetachedExec, \
-    QtIfwControlScript, ExecutableScript, \
+    QtIfwOnFinishedCheckbox, QtIfwOnFinishedDetachedExec, 
+    QtIfwControlScript, QtIfwExternalOp, ExecutableScript, 
     findQtIfwPackage, joinPathQtIfw, joinPath, 
     IS_WINDOWS, IS_MACOS, QT_IFW_TARGET_DIR, QT_IFW_DESKTOP_DIR )
   
@@ -85,6 +85,8 @@ class BuildProcess( RobustInstallerProcess ):
             # remain in your system temp folder until otherwise purged. 
             # This self destruction is a *best practice*, but it's not a
             # major calamity if you forget, or it fails...              
+            # To this end, QtIfwExternalOp provides a collection of helper
+            # script snippet functions
                                         
             scripts = {}                      
             if  IS_WINDOWS:
@@ -95,22 +97,20 @@ class BuildProcess( RobustInstallerProcess ):
                     'start "" {textViewer} "@TargetDir@\{licenseName}"' )
                 openLicBatchScript = ExecutableScript( "openLic", script=([ # as line list
                     'start "" {textViewer} "@TargetDir@\{licenseName}"',
-                    '(goto) 2>nul & del "%~f0"'                               # SELF DESTRUCT
+                    QtIfwExternalOp.batchSelfDestructSnippet()
                 ]) )                     
                 openLicPowerShellScript = ExecutableScript( 
                     "openLic", extension="ps1", script=([ # as line list
                     'Start-Process -FilePath "{textViewer}" '
                         '-ArgumentList "@TargetDir@\{licenseName}"',
-                    'Remove-Item $script:MyInvocation.MyCommand.Path -Force'  # SELF DESTRUCT
+                    QtIfwExternalOp.powerShellSelfDestructSnippet()
                 ]) )
                 openLicVbScript = ExecutableScript( 
                     "openLic", extension="vbs", script=([ # as line list
                     'Set oShell = WScript.CreateObject("WScript.Shell")',
                     'oShell.Run "{textViewer} ""@TargetDir@\{licenseName}"""',                    
                     'Set oShell = Nothing',
-                    'Set oFSO = CreateObject("Scripting.FileSystemObject")',  # SELF DESTRUCT                      
-                    'oFSO.DeleteFile WScript.ScriptFullName',                 #       |      
-                    'Set oFSO = Nothing'                                      #       V
+                    QtIfwExternalOp.vbScriptSelfDestructSnippet()             #       V
                 ]) )  
                 scripts.update( { SHELL:      openLicBatchScript,  
                                   POWERSHELL: openLicPowerShellScript,
@@ -163,7 +163,7 @@ class BuildProcess( RobustInstallerProcess ):
                 argList=[joinPathQtIfw( QT_IFW_TARGET_DIR, licenseName )] )
             # TODO: Fix this!  (It's broken on Windows at least...)
             openLicViaCmdCheckbox = QtIfwOnFinishedCheckbox( 
-                "openLicViaCommand", text="Open License w/ Command now.", 
+                "openLicViaCommand", text="Open License w/ Command now. (broken!)", 
                 shellCmd=openLicCommand )
             openLicViaScriptCheckbox = QtIfwOnFinishedCheckbox( 
                 "openLicViaScript", text="Open License w/ Script now.", 
@@ -236,7 +236,7 @@ class BuildProcess( RobustInstallerProcess ):
                 "createExampleFile",  QtIfwOnFinishedDetachedExec.ON_INSTALL,
                 script = ExecutableScript( "createFile", script=(
                     ['echo. > "%s"' % (EXAMPLE_FILE_PATH,)
-                    ,'(goto) 2>nul & del "%~f0"']
+                    ,QtIfwExternalOp.batchSelfDestructSnippet()]
                     if IS_WINDOWS else
                     ['touch "%s"'  % (EXAMPLE_FILE_PATH,) 
                     ,'']) # TODO: Add self-destruction 
@@ -246,7 +246,7 @@ class BuildProcess( RobustInstallerProcess ):
                 "removeExampleFile",  QtIfwOnFinishedDetachedExec.ON_UNINSTALL,
                 script = ExecutableScript( "removeFile", script=(
                     ['del /q "%s"' % (EXAMPLE_FILE_PATH,)
-                    ,'(goto) 2>nul & del "%~f0"']
+                    ,QtIfwExternalOp.batchSelfDestructSnippet()]
                     if IS_WINDOWS else
                     ['rm "%s"'  % (EXAMPLE_FILE_PATH,)
                     ,'']) # TODO: Add self-destruction

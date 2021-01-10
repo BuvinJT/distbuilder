@@ -929,7 +929,27 @@ use of SysWow64 nodes.
                        targetPath, brandingInfo, iconName="0.ico" )
 
 ### QtIfwExternalOp Convenience Scripts
-    
+
+#### Self-destruct Script Snippets
+
+In some circumstances, e.g. when using scripts with 
+[QtIfwOnFinishedDetachedExec](#qtifwonfinisheddetachedexec) or 
+[QtIfwOnFinishedCheckbox](#qtifwonfinishedcheckbox), you may wish for your
+scripts to "self-desctruct" (i.e. delete themselves).
+
+The following functions return strings that you can append to / weave into
+your custom scripts. 
+
+##### QtIfwExternalOp.batchSelfDestructSnippet 
+
+##### QtIfwExternalOp.powerShellSelfDestructSnippet 
+
+##### QtIfwExternalOp.vbScriptSelfDestructSnippet 
+
+##### QtIfwExternalOp.shellScriptSelfDestructSnippet 
+
+##### QtIfwExternalOp.appleScriptSelfDestructSnippet 
+        
 #### QtIfwExternalOp.RunProgramScript
 
     RunProgramScript( path, arguments=None, isAutoQuote=True, 
