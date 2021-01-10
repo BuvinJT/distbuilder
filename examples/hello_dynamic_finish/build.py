@@ -1,8 +1,8 @@
 from distbuilder import( RobustInstallerProcess, ConfigFactory,
     QtIfwOnFinishedCheckbox, QtIfwOnFinishedDetachedExec, \
     QtIfwControlScript, ExecutableScript, \
-    findQtIfwPackage, joinPathQtIfw, 
-    IS_WINDOWS, IS_MACOS, QT_IFW_TARGET_DIR )
+    findQtIfwPackage, joinPathQtIfw, joinPath, 
+    IS_WINDOWS, IS_MACOS, QT_IFW_TARGET_DIR, QT_IFW_DESKTOP_DIR )
   
 f = masterConfigFactory = ConfigFactory()
 f.productName      = "Hello Dynamic Finish Example"
@@ -51,6 +51,23 @@ class BuildProcess( RobustInstallerProcess ):
             f.distResources    = [licenseName]
             
     def onQtIfwConfig( self, cfg ):     
+
+        IS_CLI_APP_INSTALLED_KEY = "isCliAppInstalled"
+        IS_TK_APP_INSTALLED_KEY  = "isTkAppInstalled"
+
+        def customizeReadyForInstallPage( cfg, tkPkg, cliPkg ):
+            # Unfortunately, there is no built-in QtIFW means to determine 
+            # which components were installed via QtScript from an uninstaller. 
+            # To work around that: Set an installer variable(s) indicating  
+            # component (i.e. package) selection just prior to the installation 
+            # process,  so that such will be persisted, and thus available, in  
+            # the uninstaller.              
+            cfg.controlScript.readyForInstallationPageOnInstall =(
+                QtIfwControlScript.setBoolValue( IS_TK_APP_INSTALLED_KEY, 
+                    QtIfwControlScript.isComponentSelected( tkPkg ) ) +
+                QtIfwControlScript.setBoolValue( IS_CLI_APP_INSTALLED_KEY, 
+                    QtIfwControlScript.isComponentSelected( cliPkg ) )                           
+            )
             
         def customizeFinishedPage( cfg, tkPkg, cliPkg ):
                         
@@ -101,7 +118,8 @@ class BuildProcess( RobustInstallerProcess ):
             elif IS_MACOS :
                 textViewer = "TextEdit"                 
                 openLicCommand=( 
-                    'open -a {textViewer} "@TargetDir@/{licenseName}"' )            
+                    'open -a {textViewer} "@TargetDir@/{licenseName}"' )  
+                # TODO: Add self-destruction          
                 openLicShellScript = ExecutableScript( "openLic", script=(
                     'open -a {textViewer} "@TargetDir@/{licenseName}"' ) )     
                 scripts.update( { SHELL: openLicShellScript } )                
@@ -109,6 +127,7 @@ class BuildProcess( RobustInstallerProcess ):
                 textViewer = "gedit" # distro specific...                                
                 openLicCommand=( 
                     'screen -d -m {textViewer} "@TargetDir@/{licenseName}"' )
+                # TODO: Add self-destruction
                 openLicShellScript = ExecutableScript( "openLic", script=(
                     'screen -d -m {textViewer} "@TargetDir@/{licenseName}"' ) )                     
                 scripts.update( { SHELL: openLicShellScript } )
@@ -174,7 +193,6 @@ class BuildProcess( RobustInstallerProcess ):
                 '<br /><br />Thank you installing the <b>Tk Example</b>!' )
             CLI_INSTALLED_MSG = Script.quote(
                 '<br /><br />Thank you installing the <b>CLI Example</b>!' )
-            IS_TK_APP_INSTALLED_KEY = "isTkAppInstalled"
             
             # helper function
             def showIfInstalled( checkbox, pkg, isChecked=True ):
@@ -208,18 +226,33 @@ class BuildProcess( RobustInstallerProcess ):
                 rebootCheckbox.setChecked( False ) +
                 rebootCheckbox.setVisible( True )
             )        
-            
-            # Unfortunately, there is no built-in QtIFW means to determine 
-            # which components were installed via QtScript from an uninstaller. 
-            # To work around that: Set an installer variable indicating  
-            # component (i.e. package) selection just prior to the installation 
-            # process,  so that such will be persisted, and thus available, in  
-            # the uninstaller.              
-            cfg.controlScript.readyForInstallationPageOnInstall =(
-                Script.setBoolValue( IS_TK_APP_INSTALLED_KEY, 
-                                     Script.isComponentSelected( tkPkg ) )
-            )
-            
+
+            # Add onFinishedDetachedExecutions (not directly bound to gui)
+            # -----------------------------------------------------------------
+            # Define a detached execution scripts, to be invoked post 
+            # installation and uninstallation, unconditionally.  
+            EXAMPLE_FILE_PATH = joinPath( QT_IFW_DESKTOP_DIR, "detached" )
+            createExampleFileExec = QtIfwOnFinishedDetachedExec( 
+                "createExampleFile",  QtIfwOnFinishedDetachedExec.ON_INSTALL,
+                script = ExecutableScript( "createFile", script=(
+                    ['echo. > "%s"' % (EXAMPLE_FILE_PATH,)
+                    ,'(goto) 2>nul & del "%~f0"']
+                    if IS_WINDOWS else
+                    ['touch "%s"'  % (EXAMPLE_FILE_PATH,) 
+                    ,'']) # TODO: Add self-destruction 
+                )  
+            )                         
+            removeExampleFileExec = QtIfwOnFinishedDetachedExec( 
+                "removeExampleFile",  QtIfwOnFinishedDetachedExec.ON_UNINSTALL,
+                script = ExecutableScript( "removeFile", script=(
+                    ['del /q "%s"' % (EXAMPLE_FILE_PATH,)
+                    ,'(goto) 2>nul & del "%~f0"']
+                    if IS_WINDOWS else
+                    ['rm "%s"'  % (EXAMPLE_FILE_PATH,)
+                    ,'']) # TODO: Add self-destruction
+                ) 
+            )                        
+                            
             # Define a detached execution action, to be invoked post  
             # uninstallation, conditionally controlled by the persisted 
             # variable stored during installation.  
@@ -228,14 +261,16 @@ class BuildProcess( RobustInstallerProcess ):
                 openViaOsPath="https://pypi.org/project/distbuilder/",
                 ifCondition=Script.lookupBoolValue( IS_TK_APP_INSTALLED_KEY ) )                        
             
-            # Add on finished detached executions (not bound to gui controls)
             cfg.controlScript.onFinishedDetachedExecutions = [
-                openPyPiPageViaOsExec
+                  createExampleFileExec
+                , removeExampleFileExec
+                , openPyPiPageViaOsExec
             ]            
 
         pkgs   = cfg.packages
         tkPkg  = findQtIfwPackage( pkgs, TK_CONFIG_KEY )            
-        cliPkg = findQtIfwPackage( pkgs, CLI_CONFIG_KEY )        
+        cliPkg = findQtIfwPackage( pkgs, CLI_CONFIG_KEY )     
+        customizeReadyForInstallPage( cfg, tkPkg, cliPkg )   
         customizeFinishedPage( cfg, tkPkg, cliPkg )
             
 p = BuildProcess( masterConfigFactory, pyPkgConfigFactoryDict=pkgFactories, 

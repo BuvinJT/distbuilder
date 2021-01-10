@@ -3163,7 +3163,11 @@ Controller.prototype.Dynamic%sCallback = function() {
         for w in self.widgets: 
             if( isinstance( w, QtIfwOnFinishedCheckbox ) and 
                 isinstance( w.script, ExecutableScript ) ):
-                controlScripts.append( w.script )                                    
+                controlScripts.append( w.script )                                                    
+        for ex in self.onFinishedDetachedExecutions:
+            if( isinstance( ex, QtIfwOnFinishedDetachedExec ) and 
+                isinstance( ex.script, ExecutableScript ) ):
+                controlScripts.append( ex.script )                                                                
         self.script += _QtIfwScript.embedResources( controlScripts )
 
         if self.isAutoGlobals: self.__genGlobals()
