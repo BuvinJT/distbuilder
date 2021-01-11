@@ -5658,7 +5658,8 @@ if( $env:PROCESSOR_ARCHITEW6432 -eq "AMD64" ) {
                     
         @staticmethod
         def __psFindWindowsAppUninstallCmd( appName, isAutoBitContext,
-                                            isExitOnNotFound=False ):            
+                                            isExitOnNotFound=False,
+                                            isSelfDestruct=False ):            
             psScriptTemplate=(
 r"""
 {setBitContext}
@@ -5689,6 +5690,7 @@ if( !$UninstallCmd ){
 # Log command found / optionally exit with error 
 if( !$UninstallCmd ){ 
     Write-Error "Uninstall command not found for {appName}"
+    {selfDestructOnNotFound}
     {exitOnNotFound}
 }
 else{
@@ -5703,33 +5705,43 @@ else{
                       "setBitContext": QtIfwExternalOp.__psSetBitContext( 
                                             isAutoBitContext )
                     , "appName" : appName
-                    , "exitOnNotFound": exitOnNotFound                                            
+                    , "exitOnNotFound": exitOnNotFound     
+                    , "selfDestructOnNotFound" : (
+                        QtIfwExternalOp.powerShellSelfDestructSnippet()
+                        if isSelfDestruct and exitOnNotFound else "" )                                                             
                 } ) )
 
         @staticmethod
         def CreateWindowsAppFoundFlagFileScript( appName, fileName, 
-                                                 isAutoBitContext=True ):            
+                                                 isAutoBitContext=True,
+                                                 isSelfDestruct=False ):            
             psScriptTemplate=(
                 QtIfwExternalOp.__psFindWindowsAppUninstallCmd( 
                     appName, isAutoBitContext ) +                 
 r"""
 if( $UninstallCmd ){ Out-File -FilePath "{tempFilePath}" } 
               else { Remove-Item "{tempFilePath}" }
+{selfDestruct}
 [Environment]::Exit( 0 )
 """)                                    
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "createAppFoundFile" ), extension="ps1", 
                 script=psScriptTemplate, replacements={ 
-                    "tempFilePath": QtIfwExternalOp.opDataPath( fileName ) 
+                      "tempFilePath": QtIfwExternalOp.opDataPath( fileName )
+                    , "selfDestruct" : (
+                        QtIfwExternalOp.powerShellSelfDestructSnippet()
+                        if isSelfDestruct else "" )       
                 })
 
         @staticmethod
         def UninstallWindowsAppScript( appName, arguments=None,
                                        isSynchronous=True, isHidden=True, 
-                                       isAutoBitContext=True ):            
+                                       isAutoBitContext=True,
+                                       isSelfDestruct=False ):            
             psScriptTemplate=(
                 QtIfwExternalOp.__psFindWindowsAppUninstallCmd( 
-                    appName, isAutoBitContext, isExitOnNotFound=True ) +                 
+                    appName, isAutoBitContext, isExitOnNotFound=True,
+                    isSelfDestruct=isSelfDestruct ) +                 
 r"""
 # Tweak QtIFW / Distbuilder commands
 if( $UninstallCmd.tolower().Contains( "maintenancetool.exe" ) ){
@@ -5766,6 +5778,7 @@ else{ $args=@{} }
 Write-Host "Running: $prog"
 if( $args.Count -gt 0 ){ Write-Host "With arguments: $args" }
 Start-Process $prog {wait}{hide}-ArgumentList $args
+{selfDestruct}
 [Environment]::Exit( 0 )
 """)                                    
             if arguments:
@@ -5777,7 +5790,10 @@ Start-Process $prog {wait}{hide}-ArgumentList $args
                 replacements={                   
                       "addArgs": addArgs
                     , "wait": ("-Wait " if isSynchronous else "")
-                    , "hide": ("-WindowStyle Hidden " if isHidden else "")                      
+                    , "hide": ("-WindowStyle Hidden " if isHidden else "")
+                    , "selfDestruct" : (
+                        QtIfwExternalOp.powerShellSelfDestructSnippet()
+                        if isSelfDestruct else "" )                      
                 } )
 
         # Creates the key, if it does not exists.

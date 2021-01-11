@@ -852,6 +852,13 @@ controls.
 
 	TODO: Add Linux & macOS implementations
 
+#### QtIfwExternalOp.CreateWindowsAppFoundFlagFile
+
+**WINDOWS ONLY**
+
+    CreateWindowsAppFoundFlagFile( event, appName, fileName, 
+                                   isAutoBitContext=True )
+                                           
 #### QtIfwExternalOp.UninstallWindowsApp
 
 **WINDOWS ONLY**
@@ -930,15 +937,15 @@ use of SysWow64 nodes.
 
 ### QtIfwExternalOp Convenience Scripts
 
-#### Self-destruct Script Snippets
+#### Self-Destructing Script Snippets
 
 In some circumstances, e.g. when using scripts with 
 [QtIfwOnFinishedDetachedExec](#qtifwonfinisheddetachedexec) or 
 [QtIfwOnFinishedCheckbox](#qtifwonfinishedcheckbox), you may wish for your
-scripts to "self-desctruct" (i.e. delete themselves).
+scripts to "self-destruct" (i.e. delete themselves).
 
-The following functions return strings that you can append to / weave into
-your custom scripts. 
+The following functions return strings that you may append to / weave into
+your custom scripts to serve this purpose. 
 
 ##### QtIfwExternalOp.batchSelfDestructSnippet 
 
@@ -1002,16 +1009,6 @@ not remove** a file that already exists.
 
 **Windows Type**: Batch 
 **Mac/Linux Type**: ShellScript 
-
-#### QtIfwExternalOp.UninstallWindowsAppScript
-
-**WINDOWS ONLY**
- 	
-    UninstallWindowsAppScript( appName, arguments=None,
-                               isSynchronous=True, isHidden=True, 
-                               isAutoBitContext=True )
-
-**Type**: PowerShell 
                 
 #### QtIfwExternalOp.CreateRegistryKeyScript
 
@@ -1051,6 +1048,16 @@ not remove** a file that already exists.
                                replacements=None ) 
 
 **Type**: PowerShell 
+
+#### QtIfwExternalOp.CreateWindowsAppFoundFlagFileScript
+
+**WINDOWS ONLY** 
+	
+    CreateWindowsAppFoundFlagFileScript( appName, fileName,
+                                         isAutoBitContext=True,
+                                         isSelfDestruct=False )
+
+**Type**: PowerShell 
    
 #### QtIfwExternalOp.UninstallWindowsAppScript
                   
@@ -1059,7 +1066,8 @@ not remove** a file that already exists.
     UninstallWindowsAppScript( appName, arguments=None,
                                isSynchronous=True,
                                isHidden=True,
-                               isAutoBitContext=True )            
+                               isAutoBitContext=True,
+                               isSelfDestruct=False )            
                                                                                         
 **Type**: PowerShell 
 

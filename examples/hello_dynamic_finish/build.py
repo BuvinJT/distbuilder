@@ -120,16 +120,20 @@ class BuildProcess( RobustInstallerProcess ):
                 openLicCommand=( 
                     'open -a {textViewer} "@TargetDir@/{licenseName}"' )  
                 # TODO: Add self-destruction          
-                openLicShellScript = ExecutableScript( "openLic", script=(
-                    'open -a {textViewer} "@TargetDir@/{licenseName}"' ) )     
+                openLicShellScript = ExecutableScript( "openLic", script=([
+                    'open -a {textViewer} "@TargetDir@/{licenseName}"' 
+                    ,QtIfwExternalOp.shellScriptSelfDestructSnippet()
+                ]) )     
                 scripts.update( { SHELL: openLicShellScript } )                
             else: # IS_LINUX 
                 textViewer = "gedit" # distro specific...                                
                 openLicCommand=( 
                     'screen -d -m {textViewer} "@TargetDir@/{licenseName}"' )
                 # TODO: Add self-destruction
-                openLicShellScript = ExecutableScript( "openLic", script=(
-                    'screen -d -m {textViewer} "@TargetDir@/{licenseName}"' ) )                     
+                openLicShellScript = ExecutableScript( "openLic", script=([
+                    'screen -d -m {textViewer} "@TargetDir@/{licenseName}"'
+                    ,QtIfwExternalOp.shellScriptSelfDestructSnippet()
+                ]) )                     
                 scripts.update( { SHELL: openLicShellScript } )
             openLicScript = scripts[ DEMO_OPTION ]
                             
@@ -239,7 +243,7 @@ class BuildProcess( RobustInstallerProcess ):
                     ,QtIfwExternalOp.batchSelfDestructSnippet()]
                     if IS_WINDOWS else
                     ['touch "%s"'  % (EXAMPLE_FILE_PATH,) 
-                    ,'']) # TODO: Add self-destruction 
+                    ,QtIfwExternalOp.shellScriptSelfDestructSnippet()]) 
                 )  
             )                         
             removeExampleFileExec = QtIfwOnFinishedDetachedExec( 
@@ -249,7 +253,7 @@ class BuildProcess( RobustInstallerProcess ):
                     ,QtIfwExternalOp.batchSelfDestructSnippet()]
                     if IS_WINDOWS else
                     ['rm "%s"'  % (EXAMPLE_FILE_PATH,)
-                    ,'']) # TODO: Add self-destruction
+                    ,QtIfwExternalOp.shellScriptSelfDestructSnippet()])
                 ) 
             )                        
                             
