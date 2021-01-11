@@ -3532,6 +3532,7 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + _QtIfwScript.logValue( _QtIfwScript.MAINTAIN_MODE_CMD_ARG ) +          
             TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
+            TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_DIR_KEY ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.START_MENU_DIR_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.ACCEPT_EULA_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.INSTALL_LIST_CMD_ARG ) +            
@@ -8258,6 +8259,9 @@ def wrapperArgs():
                          help='output messages file path' )               
     parser.add_argument( '-e', '--errfile', default=None,
                          help='error messages file path' )               
+
+    parser.add_argument( '-p', '--passthru', default=None,
+                         help='QtIFW arguments (k/v ex: "a=\\'1\\' b=\\'2\\'")' )
                          
     parser.add_argument( '-d', '--debug', default=False,
                          help='show debugging information', 
@@ -8320,6 +8324,9 @@ def toIwfArgs( wrapperArgs ):
     if IS_REBOOT_SWITCH is not None:         
         args.append( "{29}=%s" % str( wrapperArgs.reboot ).lower() )
 
+    if wrapperArgs.passthru: 
+        args.append( wrapperArgs.passthru.replace("'",'"').replace("\\\\","/") )
+        
     return args
 
 def runInstaller():
