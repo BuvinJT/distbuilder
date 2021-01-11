@@ -79,12 +79,14 @@ QT_IFW_APPS_DIR      = "@ApplicationsDir@"
 QT_IFW_INSTALLER_DIR      = "@InstallerDirPath@"
 QT_IFW_INTALLER_PATH      = "@InstallerFilePath@"   
 
+_QT_IFW_DEFAULT_TARGET_DIR   = "DefaultTargetDir"   # CUSTOM!
 _QT_IFW_SCRIPTS_DIR          = "ScriptsDir"         # CUSTOM!
 _QT_IFW_INSTALLER_TEMP_DIR   = "InstallerTempDir"   # CUSTOM!
 _QT_IFW_MAINTENANCE_TEMP_DIR = "MaintenanceTempDir" # CUSTOM!
 
 _QT_IFW_VAR_TMPLT = "@%s@"
 
+QT_IFW_DEFAULT_TARGET_DIR   = _QT_IFW_VAR_TMPLT % (_QT_IFW_DEFAULT_TARGET_DIR,)   # CUSTOM!
 QT_IFW_SCRIPTS_DIR          = _QT_IFW_VAR_TMPLT % (_QT_IFW_SCRIPTS_DIR,)          # CUSTOM! 
 QT_IFW_INSTALLER_TEMP_DIR   = _QT_IFW_VAR_TMPLT % (_QT_IFW_INSTALLER_TEMP_DIR,)   # CUSTOM!
 QT_IFW_MAINTENANCE_TEMP_DIR = _QT_IFW_VAR_TMPLT % (_QT_IFW_MAINTENANCE_TEMP_DIR,) # CUSTOM!
@@ -152,6 +154,7 @@ _QT_IFW_TEMP_DATA_EXT = ".dat"
 
 QT_IFW_DYNAMIC_PATH_VARS = [
       "TargetDir"
+    , "DefaultTargetDir"
     , "RootDir" 
     , "HomeDir"  
     , "DesktopDir" 
@@ -756,6 +759,7 @@ class _QtIfwScript:
         "maintenancetool", isGui=True )
     
     VERBOSE_CMD_SWITCH_ARG = "-v"    
+    DEFAULT_TARGET_DIR_KEY = "DefaultTargetDir"
     TARGET_DIR_KEY         = "TargetDir"
     STARTMENU_DIR_KEY      = "StartMenuDir"
     PRODUCT_NAME_KEY       = "ProductName"
@@ -3382,6 +3386,11 @@ Controller.prototype.Dynamic%sCallback = function() {
         prepend =(
             TAB + _QtIfwScript.log( '"page changed to id: " + pageId', isAutoQuote=False ) +
             TAB + _QtIfwScript.ifInstalling( isMultiLine=True ) +
+            (2*TAB) + _QtIfwScript.ifCondition( _QtIfwScript.lookupValue( 
+                _QtIfwScript.TARGET_DIR_KEY ) + '==""' ) +
+            (3*TAB) + _QtIfwScript.setValue( '"%s"' % (_QtIfwScript.TARGET_DIR_KEY,),                     
+                    _QtIfwScript.lookupValue( _QtIfwScript.DEFAULT_TARGET_DIR_KEY ), 
+                    isAutoQuote=False ) +                                    
             (2*TAB) + ('if( pageId == %s )' % (
                 QtIfwControlScript.toDefaultPageId( 
                     QT_IFW_INTRO_PAGE),)) + SBLK +              
@@ -3539,12 +3548,17 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + 'makeDir( Dir.temp() )' + END +
             TAB + 'installer.setValue( ' + 
                 ('"%s"' % (_QT_IFW_SCRIPTS_DIR,)) + ', Dir.temp() )' + END + 
-            # TODO: Negate this "patch" by eliminating the redundant command line arg!
-            _QtIfwScript.ifCmdLineArg( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
-                _QtIfwScript.TAB + _QtIfwScript.setValue(
-                    '"%s"' % (_QtIfwScript.TARGET_DIR_KEY,),                     
-                    _QtIfwScript.cmdLineArg( _QtIfwScript.TARGET_DIR_CMD_ARG ), 
-                    isAutoQuote=False ) +                
+            _QtIfwScript.ifInstalling( isMultiLine=True ) +
+                _QtIfwScript.setValue( '"%s"' % (_QT_IFW_DEFAULT_TARGET_DIR,),                     
+                    _QtIfwScript.lookupValue( _QtIfwScript.TARGET_DIR_KEY ), 
+                    isAutoQuote=False ) +                                    
+                TAB + _QtIfwScript.ifCmdLineArg( 
+                        _QtIfwScript.TARGET_DIR_CMD_ARG ) +
+                    (2*TAB) + _QtIfwScript.setValue(
+                        '"%s"' % (_QtIfwScript.TARGET_DIR_KEY,),                     
+                        _QtIfwScript.cmdLineArg( _QtIfwScript.TARGET_DIR_CMD_ARG ), 
+                        isAutoQuote=False ) +
+            EBLK +                        
             # currently the entire point of the watchdog is purge temp files,
             # so when _keeptemp is enabled, just drop that entire mechanism!
             TAB + _QtIfwScript.ifCmdLineSwitch( _KEEP_TEMP_SWITCH, 
@@ -6606,8 +6620,15 @@ class QtIfwTargetDirPage( QtIfwUiPage ):
     page.targetChooser.released.connect(this, this.%s);
 """) % ( ON_TARGET_CHANGED_NAME, ON_TARGET_BROWSE_CLICKED_NAME )
         
+        ON_ENTER = (
+"""            
+    page.targetDirectory.setText(
+        Dir.toNativeSeparator(installer.value("TargetDir")));
+""")
+                
         QtIfwUiPage.__init__( self, QtIfwTargetDirPage.NAME,
-            sourcePath=QtIfwTargetDirPage.__SRC, onLoad=ON_LOAD )
+            sourcePath=QtIfwTargetDirPage.__SRC, 
+            onLoad=ON_LOAD, onEnter=ON_ENTER  )
         
         self.eventHandlers.update({ 
               ON_TARGET_CHANGED_NAME: ON_TARGET_CHANGED

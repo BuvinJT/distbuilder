@@ -50,6 +50,7 @@ from distbuilder.qt_installer import \
     , QT_IFW_VERBOSE_SWITCH \
     , QT_IFW_DYNAMIC_VARS \
     , QT_IFW_TARGET_DIR \
+    , QT_IFW_DEFAULT_TARGET_DIR \
     , QT_IFW_HOME_DIR \
     , QT_IFW_DESKTOP_DIR  \
     , QT_IFW_APPS_DIR \

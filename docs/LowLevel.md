@@ -394,7 +394,8 @@ and attributes for many higher level functions and objects in this library.
 
     QT_IFW_DYNAMIC_VARS <LIST CONTAINING ALL OF THESE>
 
-    QT_IFW_TARGET_DIR 
+    QT_IFW_TARGET_DIR
+    QT_IFW_DEFAULT_TARGET_DIR 
 
     QT_IFW_ROOT_DIR 
     
@@ -482,7 +483,8 @@ Static Constants :
     MAINTENANCE_TOOL_NAME  
     
     VERBOSE_CMD_SWITCH_ARG     
-    TARGET_DIR_KEY         
+    TARGET_DIR_KEY
+    DEFAULT_TARGET_DIR_KEY         
     PRODUCT_NAME_KEY       
     
     ERR_LOG_PATH_CMD_ARG   
