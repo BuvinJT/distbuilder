@@ -3377,7 +3377,8 @@ Controller.prototype.Dynamic%sCallback = function() {
         NEW  = _QtIfwScript.NEW_LINE 
         SBLK = _QtIfwScript.START_BLOCK
         EBLK = _QtIfwScript.END_BLOCK                                    
-
+        ELSE = _QtIfwScript.ELSE
+        
         prepend =(
             TAB + _QtIfwScript.log( '"page changed to id: " + pageId', isAutoQuote=False ) +
             TAB + _QtIfwScript.ifInstalling( isMultiLine=True ) +
@@ -3397,7 +3398,16 @@ Controller.prototype.Dynamic%sCallback = function() {
                 (2*TAB) + EBLK
             if self._isLicenseRequired else ""      
             ) +                                   
-            EBLK         
+            TAB + EBLK +         
+            TAB + ELSE + SBLK + 
+            (2*TAB) + ('if( pageId == %s )' % (
+                QtIfwControlScript.toDefaultPageId( 
+                    QT_IFW_READY_PAGE),)) + SBLK +              
+                    TAB + _QtIfwScript.ifElevated( isNegated=True ) +
+                        _QtIfwScript.quit( "Elevated privileges required!", 
+                                           isError=True, isSilent=True ) +
+                (2*TAB) + EBLK +            
+                TAB + EBLK
             )                 
         append  = ""
 
@@ -3786,7 +3796,8 @@ Controller.prototype.Dynamic%sCallback = function() {
                 ("" if self.readyForInstallationPageOnInstall is None else
                  (2*TAB) + self.readyForInstallationPageOnInstall) +        
             EBLK +
-            ELSE + SBLK +
+            ELSE + SBLK +            
+                _QtIfwScript.elevate() +            
                 ("" if self.readyForInstallationPageOnMaintain is None else
                  (2*_QtIfwScript.TAB) + self.readyForInstallationPageOnMaintain) +       
             EBLK +            

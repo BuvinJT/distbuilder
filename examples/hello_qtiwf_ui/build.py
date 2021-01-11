@@ -1,5 +1,5 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
-    QtIfwSimpleTextPage, QT_IFW_TARGET_DIR_PAGE, QtIfwControlScript as script
+    QtIfwSimpleTextPage, QT_IFW_TARGET_DIR_PAGE, QtIfwControlScript as Script
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Custom Installer UI Example"
@@ -16,8 +16,8 @@ f.setupName        = "HelloIfwUiSetup"
 f.ifwUiPages = QtIfwSimpleTextPage( "Example", QT_IFW_TARGET_DIR_PAGE, 
     title="Custom Page",
     text="This is a custom page for the @ProductName@ wizard!", 
-    onEnter=( script.assignCustomPageWidgetVar( "Example" ) +
-        script.ifYesNoPopup( "Would you like to perform a dynamic action?" ) +            
+    onEnter=( Script.assignCustomPageWidgetVar( "Example" ) +
+        Script.ifYesNoPopup( "Would you like to perform a dynamic action?" ) +            
             'page.description.setText( ' +
                 '"<p style=\\"color: red\\">" + page.description.text + "</p>");'
     ) 
