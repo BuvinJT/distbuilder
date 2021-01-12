@@ -794,6 +794,7 @@ class _QtIfwScript:
     MAINTAIN_MODE_OPT_ADD_REMOVE = "addremove"
     MAINTAIN_MODE_OPT_UPDATE     = "update"    
     MAINTAIN_MODE_OPT_REMOVE_ALL = "removeall"
+    MAINTAIN_PASSTHRU_CMD_ARG    = "maintpassthru"
 
     _IS_CMD_ARGS_TEMP_KEY = "__tmp_sv"
     _CMD_ARGS_TEMP_PREFIX = "__tmp_"
@@ -812,6 +813,7 @@ class _QtIfwScript:
         , DRYRUN_CMD_ARG            : ""
         , TARGET_EXISTS_OPT_CMD_ARG : "" 
         , MAINTAIN_MODE_CMD_ARG     : ""
+        , MAINTAIN_PASSTHRU_CMD_ARG : ""
         , _KEEP_ALIVE_PATH_CMD_ARG  : ""
         , _KEEP_TEMP_SWITCH         : ""           
     }
@@ -1800,11 +1802,21 @@ class _QtIfwScript:
                 _QtIfwScript.TRUE + '" ' + 
                 ', "' + _QtIfwScript.MAINTAIN_MODE_CMD_ARG + '=' + 
                 _QtIfwScript.MAINTAIN_MODE_OPT_REMOVE_ALL + '" ' 
-                "]" + END +
+                "]" + END +                
             TAB + _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.DRYRUN_CMD_ARG ) +
                 'args.push( "' + _QtIfwScript.DRYRUN_CMD_ARG + '=true" )' + END +                     
             TAB + _QtIfwScript.ifCmdLineSwitch( _KEEP_TEMP_SWITCH ) +
-                'args.push( "' + _KEEP_TEMP_SWITCH + '=true" )' + END +                     
+                'args.push( "' + _KEEP_TEMP_SWITCH + '=true" )' + END +                
+            TAB + 'var passthru=' + _QtIfwScript.cmdLineArg( 
+                _QtIfwScript.MAINTAIN_PASSTHRU_CMD_ARG ) + END +
+            TAB + 'if( passthru != \"\" ) {' + NEW +
+            (2*TAB) + 'passthru=Dir.fromNativeSeparator(passthru)' + END +
+            (2*TAB) + 'passthru=passthru.replace(/`/g, \'\\"\')' + END +
+            (2*TAB) + 'passthru=passthru.replace(/#/g, \'=\')' + END +
+            (2*TAB) + 'passthru=passthru.split(\",\")' + END +            
+            (2*TAB) + 'for( i=0; i < passthru.length; i++ )' + NEW +
+                (3*TAB) + 'args.push( passthru[i] )' + END +            
+            TAB + '}' + NEW +
             TAB + 'var exeResult' + END +
             (TAB + 'var regPaths = maintenanceToolPaths()' + END + 
              TAB + 'if( regPaths != null )' + SBLK +
@@ -1844,7 +1856,7 @@ class _QtIfwScript:
             TAB + 'return true' + END +
             EBLK + NEW +
             'function __autoManagePriorInstallation() ' + SBLK +
-            TAB + "if( targetExists() ) " + SBLK +
+            TAB + "if( targetExists() ) " + SBLK +            
             (2*TAB) + 'switch (' + _QtIfwScript.cmdLineArg( 
                 _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) + ')' + SBLK +
             (2*TAB) + 'case "' + _QtIfwScript.TARGET_EXISTS_OPT_FAIL + '":' + NEW +
@@ -2286,7 +2298,7 @@ class _QtIfwScript:
                             '-Wait -WindowStyle Hidden"' + END +
             TAB + 'if( isElevated ) ps += " -Verb RunAs"' + END +
             TAB + 'if( args ) ' + NEW +  
-            (2*TAB) + 'ps += " -ArgumentList " + "\\"" + args.join("\\",\\"") + "\\""' + END +            
+            (2*TAB) + 'ps += " -ArgumentList " + "\'" + args.join("\',\'") + "\'"' + END +            
             TAB + 'executePowerShell( ps )' + END ) 
             if IS_WINDOWS else 
             (TAB + 'var shell = ""' + END)# TODO: Fill in! 
@@ -3529,8 +3541,9 @@ Controller.prototype.Dynamic%sCallback = function() {
                 _QtIfwScript.AUTO_PILOT_CMD_ARG, True ) +            
             TAB + _QtIfwScript.logValue( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +                                                 
             TAB + _QtIfwScript.logValue( _QtIfwScript.DRYRUN_CMD_ARG ) +  
-            TAB + _QtIfwScript.logValue( _QtIfwScript.MAINTAIN_MODE_CMD_ARG ) +          
+            TAB + _QtIfwScript.logValue( _QtIfwScript.MAINTAIN_MODE_CMD_ARG ) +                    
             TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG ) +
+            TAB + _QtIfwScript.logValue( _QtIfwScript.MAINTAIN_PASSTHRU_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_DIR_CMD_ARG ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.TARGET_DIR_KEY ) +
             TAB + _QtIfwScript.logValue( _QtIfwScript.START_MENU_DIR_CMD_ARG ) +
@@ -8262,7 +8275,10 @@ def wrapperArgs():
 
     parser.add_argument( '-p', '--passthru', default=None,
                          help='QtIFW arguments (k/v ex: "a=\\'1\\' b=\\'2\\'")' )
-                         
+
+    parser.add_argument( '-a', '--unpassthru', default=None,
+                         help='uninstall arguments (k/v ex: "a=\\'1\\' b=\\'2\\'")' )
+                                                  
     parser.add_argument( '-d', '--debug', default=False,
                          help='show debugging information', 
                          action='store_true' )
@@ -8325,7 +8341,21 @@ def toIwfArgs( wrapperArgs ):
         args.append( "{29}=%s" % str( wrapperArgs.reboot ).lower() )
 
     if wrapperArgs.passthru: 
-        args.append( wrapperArgs.passthru.replace("'",'"').replace("\\\\","/") )
+        args.append( wrapperArgs.passthru.replace("\\\\","/").replace("'",'"') )
+
+    if wrapperArgs.unpassthru:
+        unpassthru = wrapperArgs.unpassthru.replace("\\\\","/")
+        delimited = ""
+        inQuotes=False
+        for c in unpassthru:            
+            if c==" ":
+                if not inQuotes: 
+                    delimited += ","
+                    continue
+            elif c=="'": inQuotes = not inQuotes            
+            delimited += c                           
+        unpassthru = delimited.replace("'","`").replace("=","#")            
+        args.append( '{33}="%s"' % (unpassthru,) )
         
     return args
 
@@ -8404,6 +8434,7 @@ sys.exit( main() )
     , _QtIfwScript.OUT_LOG_PATH_CMD_ARG                     # {30}
     , ("%s=true" % (_QtIfwScript.DRYRUN_CMD_ARG,))          # {31}
     , str(isStartMenu)                                      # {32}
+    , _QtIfwScript.MAINTAIN_PASSTHRU_CMD_ARG                # {33}
 )
 
 def __generateQtIfwInstallPyScript( installerPath, ifwScriptPath, 
