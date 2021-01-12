@@ -378,6 +378,16 @@ Conversely, if the installer completed without creating this file, it
 was successful.  Such as also indicated via an exit code, where zero 
 equals success, and any non-zero is an failure. 
 
+**-p / --passthru**: Pass arguments through the silent installer wrapper to the 
+QtIFW nested installer core.  To pass key/value pairs, 
+use the following example format: 
+`MySilentSetup -p "key1='some value' key2='/some/path'"`
+
+**-a / --unpassthru**: Like `--passthru`, but for use with `--uninstall`.  
+Pass direct QtIFW arguments to the nested uninstaller launched by the installer.  
+Note, if used with `--passthru`, that set of arguments still applies to the 
+*installer*, while `--unpassthru` independently applies to the *uninstaller*.   
+
 **-d / --debug**: Enable debugging output. 
 
 **_keeptemp=true**: DEBUGGING feature: Leave scripts in a temp 
