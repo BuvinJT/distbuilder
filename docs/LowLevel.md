@@ -619,6 +619,7 @@ Static Functions:
     enableComponent( package, enable=True, isAutoQuote=True )
         
     debugPopup( msg, isAutoQuote=True )
+    warningPopup( msg, isAutoQuote=True )
     errorPopup( msg, isAutoQuote=True )    
     yesNoPopup( msg, title="Question", resultVar="result" )             
     yesNoCancelPopup( msg, title="Question", resultVar="result" )                  

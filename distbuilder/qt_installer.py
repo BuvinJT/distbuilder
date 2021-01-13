@@ -859,12 +859,15 @@ class _QtIfwScript:
 
     __LOG_TMPL = "console.log(%s);\n"
     __MSG_WRAPPER_TMPL = 'writeOutLog( %s );\n'
+    
     __DEBUG_POPUP_TMPL = ( 
         'QMessageBox.information("debugbox", "Debug", ' +
+            '%s, QMessageBox.Ok );\n' )    
+    __WARN_POPUP_TMPL = ( 
+        'QMessageBox.warning("warningbox", "Warning", ' +
             '%s, QMessageBox.Ok );\n' )
-    
     __ERROR_POPUP_TMPL = ( 
-        'QMessageBox. critical("errorbox", "Error", ' +
+        'QMessageBox.critical("errorbox", "Error", ' +
             '%s, QMessageBox.Ok );\n' )
 
     __YES_NO_POPUP_TMPL = ( 
@@ -1097,6 +1100,11 @@ class _QtIfwScript:
     @staticmethod        
     def debugPopup( msg, isAutoQuote=True ):                  
         return _QtIfwScript.__DEBUG_POPUP_TMPL % (
+             _QtIfwScript._autoQuote( msg, isAutoQuote ),) 
+        
+    @staticmethod        
+    def warningPopup( msg, isAutoQuote=True ):                  
+        return _QtIfwScript.__WARN_POPUP_TMPL % (
              _QtIfwScript._autoQuote( msg, isAutoQuote ),) 
         
     @staticmethod        
