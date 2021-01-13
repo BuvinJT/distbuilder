@@ -585,7 +585,7 @@ Static Functions:
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
 
-    assertInternetConnected( isRefresh=False, errMsg=None )
+    assertInternetConnected( isRefresh=False, errMsg=None, isAutoQuote=True )
     isInternetConnected( isRefresh=False ) 
     ifInternetConnected( isRefresh=False, isNegated=False, isMultiLine=False )
        
@@ -606,7 +606,7 @@ Static Functions:
 		
 		<the following are NOT functional in an uninstaller!
 		package parameters here can be passed as QtIfwPackage, 
-		or the name of such as raw string ...>
+		or the name of such as a raw string ...>
 	isComponentInstalled( package )
     ifComponentInstalled( package, isNegated=False, 
                           isAutoQuote=True, isMultiLine=False )   
@@ -617,7 +617,7 @@ Static Functions:
     ifComponentEnabled( package, isNegated=False, 
                         isAutoQuote=True, isMultiLine=False )
     enableComponent( package, enable=True, isAutoQuote=True )
-    
+        
     debugPopup( msg, isAutoQuote=True )
     errorPopup( msg, isAutoQuote=True )    
     yesNoPopup( msg, title="Question", resultVar="result" )             
@@ -689,6 +689,13 @@ Static Constants :
     ACCEPT_EULA_RADIO_BUTTON 
     RUN_PROGRAM_CHECKBOX     
     FINISHED_MESSAGE_LABEL
+    
+    	< Applicable / functional on Component Selection Page ONLY!
+    	  package parameters here can be passed as QtIfwPackage, 
+		  or the name of such as a raw string ... >    	
+    selectComponent( package, isSelect=True, isAutoQuote=True )
+    selectAllComponents( isSelect=True )
+    selectDefaultComponents()
 
 Static Functions:      
 

@@ -1405,10 +1405,12 @@ class _QtIfwScript:
             _QtIfwScript._autoQuote( path, isAutoQuote ),) 
 
     @staticmethod        
-    def assertInternetConnected( isRefresh=False, errMsg=None ): 
+    def assertInternetConnected( isRefresh=False, errMsg=None, 
+                                 isAutoQuote=True ): 
         return _QtIfwScript.__ASSERT_INTERNET_TMPL % (
             _QtIfwScript.toBool( isRefresh ),
-            _QtIfwScript.toNull( errMsg ) ) 
+            _QtIfwScript.toNull( errMsg ) if errMsg is None else
+            _QtIfwScript._autoQuote( errMsg, isAutoQuote ) ) 
 
     @staticmethod        
     def isInternetConnected( isRefresh=False ): 
@@ -2885,6 +2887,12 @@ Controller.prototype.Dynamic%sCallback = function() {
 """    )
 
     __OPEN_VIA_OS_TMPL = "QDesktopServices.openUrl( resolveDynamicVars( %s ) );\n"
+        
+    __SELECT_ALL_COMPONENTS_TMPL     = "page.selectAll();\n"
+    __DESELECT_ALL_COMPONENTS_TMPL   = "page.deselectAll();\n"    
+    __SELECT_DEFAULT_COMPONENTS_TMPL = "page.selectDefault();\n"
+    __SELECT_COMPONENT_TMPL          = "page.selectComponent( %s );\n"
+    __DESELECT_COMPONENT_TMPL        = "page.deselectComponent( %s );\n"
                   
     BACK_BUTTON     = "buttons.BackButton"
     NEXT_BUTTON     = "buttons.NextButton"
@@ -3140,6 +3148,29 @@ Controller.prototype.Dynamic%sCallback = function() {
     def getCustomText( controlName, pageVar="page" ):                
         return QtIfwControlScript.__GET_CUSTPAGE_TEXT_TMPL % (pageVar, controlName)   
 
+    # componentSelectionPage ONLY
+    @staticmethod        
+    def selectComponent( package, isSelect=True, isAutoQuote=True ):
+        name = package.name if isinstance( package, QtIfwPackage ) else package                      
+        return( (QtIfwControlScript.__SELECT_COMPONENT_TMPL % (
+                 _QtIfwScript._autoQuote( name, isAutoQuote ),)) 
+                 if isSelect else
+                 (QtIfwControlScript.__DESELECT_COMPONENT_TMPL % (
+                 _QtIfwScript._autoQuote( name, isAutoQuote ),))                  
+        )
+
+    # componentSelectionPage ONLY
+    @staticmethod        
+    def selectAllComponents( isSelect=True ):
+        return( QtIfwControlScript.__SELECT_ALL_COMPONENTS_TMPL  
+                if isSelect else
+                QtIfwControlScript.__SELECT_ALL_COMPONENTS_TMPL )                  
+
+    # componentSelectionPage ONLY
+    @staticmethod        
+    def selectDefaultComponents():
+        return QtIfwControlScript.__SELECT_DEFAULT_COMPONENTS_TMPL  
+            
     @staticmethod        
     def openViaOs( path, isAutoQuote=True ):                
         return QtIfwControlScript.__OPEN_VIA_OS_TMPL % ( 
