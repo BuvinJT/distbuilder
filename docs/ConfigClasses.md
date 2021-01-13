@@ -417,6 +417,7 @@ Attributes & default values:
 
     isComponentSelectionPageVisible = True
     componentSelectionPageCallbackBody = None
+    componentSelectionPageInjection = None
     isAutoComponentSelectionPageCallback = True
 
     isLicenseAgreementPageVisible = True

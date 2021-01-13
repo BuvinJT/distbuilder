@@ -3168,6 +3168,7 @@ Controller.prototype.Dynamic%sCallback = function() {
 
         self.isComponentSelectionPageVisible = True
         self.componentSelectionPageCallbackBody = None
+        self.componentSelectionPageInjection = None
         self.isAutoComponentSelectionPageCallback = True
 
         self.isLicenseAgreementPageVisible = True
@@ -3855,6 +3856,10 @@ Controller.prototype.Dynamic%sCallback = function() {
             '        for( i=0; i < excludes.length; i++ ) \n' +
             '            page.deselectComponent( excludes[i].trim() );\n' +
             '    }\n' +            
+            _QtIfwScript.START_BLOCK +   
+                (self.componentSelectionPageInjection if
+                 self.componentSelectionPageInjection else "") +                
+            _QtIfwScript.END_BLOCK +               
             _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +
                 QtIfwControlScript.clickButton( 
                     QtIfwControlScript.NEXT_BUTTON ) 
