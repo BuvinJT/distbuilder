@@ -2389,7 +2389,8 @@ class _QtIfwScript:
             # TODO: Test in NIX/MAC                              
             'function assertInternetConnected( isRefresh, errMsg ) ' + SBLK +
             TAB + 'if( !isInternetConnected( isRefresh ) )' + NEW +
-            (2*TAB) + 'quit( errMsg ? errMsg : "An internet connection is required!" )' + END +
+            (2*TAB) + 'quit( errMsg ? errMsg : ' +
+                            '"An internet connection is required!", true )' + END +
             EBLK + NEW +           
             # TODO: Test in NIX/MAC                              
             'function isInternetConnected( isRefresh ) ' + SBLK +
