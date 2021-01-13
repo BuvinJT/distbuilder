@@ -608,11 +608,15 @@ Static Functions:
 		package parameters here can be passed as QtIfwPackage, 
 		or the name of such as raw string ...>
 	isComponentInstalled( package )
-    isComponentSelected( package )
     ifComponentInstalled( package, isNegated=False, 
                           isAutoQuote=True, isMultiLine=False )   
+    isComponentSelected( package )
     ifComponentSelected( package, isNegated=False, 
-                         isAutoQuote=True, isMultiLine=False )       
+                         isAutoQuote=True, isMultiLine=False )           
+    isComponentEnabled( package, isAutoQuote=True )
+    ifComponentEnabled( package, isNegated=False, 
+                        isAutoQuote=True, isMultiLine=False )
+    enableComponent( package, enable=True, isAutoQuote=True )
     
     debugPopup( msg, isAutoQuote=True )
     errorPopup( msg, isAutoQuote=True )    
@@ -856,6 +860,8 @@ following add-on **QT SCRIPT** functions:
     getComponent( name ) <throws on invalid name, or in any uninstall context>
 	isComponentInstalled( name ) 
     isComponentSelected( name ) 
+	isComponentEnabled( name )
+    enableComponent( name, enable[=true] )
 
     getPageOwner( pageName ) <throws on invalid name>
 

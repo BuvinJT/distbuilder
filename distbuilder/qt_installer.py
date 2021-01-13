@@ -883,6 +883,9 @@ class _QtIfwScript:
 
     __IS_COMPONENT_INSTALLED = 'isComponentInstalled( %s )' 
     __IS_COMPONENT_SELECTED  = 'isComponentSelected( %s )'
+    __IS_COMPONENT_ENABLED   = 'isComponentEnabled( %s )' 
+        
+    __ENABLE_COMPONENT       = 'enableComponent( %s, %s )'
         
     __VALUE_TMPL      = "installer.value( %s, %s )"
     __VALUE_LIST_TMPL = "installer.values( %s, %s )"
@@ -1449,12 +1452,6 @@ class _QtIfwScript:
         return _QtIfwScript.__IS_COMPONENT_INSTALLED % (
             _QtIfwScript._autoQuote( name, isAutoQuote ),) 
 
-    @staticmethod        
-    def isComponentSelected( package, isAutoQuote=True ):
-        name = package.name if isinstance( package, QtIfwPackage ) else package                  
-        return _QtIfwScript.__IS_COMPONENT_SELECTED % (
-            _QtIfwScript._autoQuote( name, isAutoQuote ),) 
-
     @staticmethod
     def ifComponentInstalled( package, isNegated=False, 
                               isAutoQuote=True, isMultiLine=False ):
@@ -1463,6 +1460,12 @@ class _QtIfwScript:
             "!" if isNegated else "", 
             _QtIfwScript.isComponentInstalled( name, isAutoQuote ),
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+                       
+    @staticmethod        
+    def isComponentSelected( package, isAutoQuote=True ):
+        name = package.name if isinstance( package, QtIfwPackage ) else package                  
+        return _QtIfwScript.__IS_COMPONENT_SELECTED % (
+            _QtIfwScript._autoQuote( name, isAutoQuote ),) 
 
     @staticmethod
     def ifComponentSelected( package, isNegated=False, 
@@ -1472,7 +1475,28 @@ class _QtIfwScript:
             "!" if isNegated else "", 
             _QtIfwScript.isComponentSelected( name, isAutoQuote ),
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
-                       
+
+    @staticmethod        
+    def isComponentEnabled( package, isAutoQuote=True ):
+        name = package.name if isinstance( package, QtIfwPackage ) else package                  
+        return _QtIfwScript.__IS_COMPONENT_ENABLED % (
+            _QtIfwScript._autoQuote( name, isAutoQuote ),) 
+
+    @staticmethod
+    def ifComponentEnabled( package, isNegated=False, 
+                              isAutoQuote=True, isMultiLine=False ):
+        name = package.name if isinstance( package, QtIfwPackage ) else package
+        return 'if( %s%s )%s\n%s' % (
+            "!" if isNegated else "", 
+            _QtIfwScript.isComponentEnabled( name, isAutoQuote ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+
+    @staticmethod        
+    def enableComponent( package, enable=True, isAutoQuote=True ):
+        name = package.name if isinstance( package, QtIfwPackage ) else package                  
+        return _QtIfwScript.__ENABLE_COMPONENT % (
+            _QtIfwScript._autoQuote( name, isAutoQuote ),
+            _QtIfwScript.toBool( enable ) ) 
 
     if IS_WINDOWS:
         
@@ -2257,12 +2281,21 @@ class _QtIfwScript:
             TAB + 'try{ return getComponent( name ).installed; }' + NEW +
             TAB + 'catch(e){ console.log("Component not found: " + name ); }' + NEW +
             TAB + 'return false' + END +
-            EBLK + NEW +            
+            EBLK + NEW +
+            'function isComponentEnabled( name ) ' + SBLK +
+            TAB + 'try{ return getComponent( name ).enabled; }' + NEW +
+            TAB + 'catch(e){ console.log("Component not found: " + name ); }' + NEW +
+            TAB + 'return false' + END +
+            EBLK + NEW +                        
+            'function enableComponent( name, isEnable ) ' + SBLK +
+            TAB + 'try{ getComponent( name ).enabled =( isEnable==null ? false : isEnable ); }' + NEW +
+            TAB + 'catch(e){ console.log("Component not found: " + name ); }' + NEW +
+            EBLK + NEW +                                                
             'function isComponentSelected( name ) ' + SBLK +
             TAB + 'try{ return getComponent( name ).installationRequested(); }' + NEW +
             TAB + 'catch(e){ console.log("Component not found: " + name ); }' + NEW +
             TAB + 'return false' + END +
-            EBLK + NEW +                        
+            EBLK + NEW +                                   
             'function getPageOwner( pageName ) ' + SBLK +
             TAB + 'var comps=installer.components()' + END +
             TAB + 'for( i=0; i < comps.length; i++ ) ' + SBLK +
