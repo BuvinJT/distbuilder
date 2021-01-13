@@ -7786,14 +7786,17 @@ def __buildSilentWrapper( qtIfwConfig ) :
     wrapperExeName    = __WRAPPER_INSTALLER_NAME
     wrapperPyName     = __WRAPPER_SCRIPT_NAME    
     componentList     = [] 
+    MIN_SORT_PRIORITY = 9999999999
     for p in qtIfwConfig.packages:
         if p.pkgXml.Virtual: continue  # package never shown to the user      
         isRequired = p.pkgXml.ForcedInstallation 
         isDefault = p.pkgXml.Default   
+        sortPriority = p.pkgXml.SortingPriority
+        if sortPriority is None: sortPriority = MIN_SORT_PRIORITY  
         componentList.append( (isRequired, isDefault, 
-            p.pkgXml.pkgName, p.pkgXml.DisplayName, p.pkgXml.SortingPriority) )
+            p.pkgXml.pkgName, p.pkgXml.DisplayName, sortPriority) )
     componentList.sort( key=itemgetter(4), reverse=True ) 
-         
+
     licenses={}
     for p in qtIfwConfig.packages:
         pkgLics={}
