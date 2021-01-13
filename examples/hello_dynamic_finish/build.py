@@ -66,7 +66,7 @@ class BuildProcess( RobustInstallerProcess ):
                 QtIfwControlScript.setBoolValue( IS_TK_APP_INSTALLED_KEY, 
                     QtIfwControlScript.isComponentSelected( tkPkg ) ) +
                 QtIfwControlScript.setBoolValue( IS_CLI_APP_INSTALLED_KEY, 
-                    QtIfwControlScript.isComponentSelected( cliPkg ) )                           
+                    QtIfwControlScript.isComponentSelected( cliPkg ) )                                                            
             )
             
         def customizeFinishedPage( cfg, tkPkg, cliPkg ):
@@ -190,6 +190,9 @@ class BuildProcess( RobustInstallerProcess ):
             # message displayed, and to control when the checkboxes are visible  
             # and checked, etc.
             Script      = QtIfwControlScript
+            SBLK        = Script.START_BLOCK
+            EBLK        = Script.END_BLOCK
+            ELSE        = Script.ELSE
             CONCAT      = Script.CONCAT
             MSG_LBL     = Script.FINISHED_MESSAGE_LABEL
             DEFAULT_MSG = Script.DEFAULT_FINISHED_MESSAGE
@@ -218,8 +221,14 @@ class BuildProcess( RobustInstallerProcess ):
                         varNames=False, isAutoQuote=False ) +                                  
                 showIfInstalled( runTkCheckbox, tkPkg ) +
                 showIfInstalled( runCliCheckbox, cliPkg ) +
-                openOnlineManualViaOsCheckbox.setChecked( True ) +
-                openOnlineManualViaOsCheckbox.setVisible( True ) +                    
+                Script.ifInternetConnected( isMultiLine=True ) +
+                    openOnlineManualViaOsCheckbox.enable( True ) +
+                    openOnlineManualViaOsCheckbox.setChecked( True ) +
+                EBLK + ELSE + SBLK +
+                    openOnlineManualViaOsCheckbox.enable( False ) +
+                    openOnlineManualViaOsCheckbox.setChecked( False ) +                                    
+                EBLK +                                        
+                openOnlineManualViaOsCheckbox.setVisible( True ) +
                 showIfInstalled( openLicViaOsCheckbox, cliPkg ) +
                 showIfInstalled( openLicViaProgCheckbox, cliPkg,   
                                  isChecked=False ) +
@@ -263,7 +272,11 @@ class BuildProcess( RobustInstallerProcess ):
             openPyPiPageViaOsExec = QtIfwOnFinishedDetachedExec( 
                 "openPyPiPageViaOs",  QtIfwOnFinishedDetachedExec.ON_UNINSTALL,
                 openViaOsPath="https://pypi.org/project/distbuilder/",
-                ifCondition=Script.lookupBoolValue( IS_TK_APP_INSTALLED_KEY ) )                        
+                ifCondition=Script.andList([
+                      Script.isInternetConnected()
+                    , Script.lookupBoolValue( IS_TK_APP_INSTALLED_KEY )
+                ]) 
+            )                        
             
             cfg.controlScript.onFinishedDetachedExecutions = [
                   createExampleFileExec

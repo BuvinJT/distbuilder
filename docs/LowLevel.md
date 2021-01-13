@@ -519,7 +519,7 @@ Static Constants :
     MAINTAIN_MODE_OPT_ADD_REMOVE 
     MAINTAIN_MODE_OPT_UPDATE         
     MAINTAIN_MODE_OPT_REMOVE_ALL 
-        
+
     OK     
     YES     
     NO     
@@ -585,11 +585,11 @@ Static Functions:
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
 
-    isInternetConnected() 
-    ifInternetConnected( isNegated=False, isMultiLine=False )
+    isInternetConnected( isRefresh=False ) 
+    ifInternetConnected( isRefresh=False, isNegated=False, isMultiLine=False )
        
-    isPingable( uri, pings=5, totalMaxSecs=20, isAutoQuote=True )                  
-    ifPingable( uri, pings=5, totalMaxSecs=20, isAutoQuote=True,
+    isPingable( uri, pings=3, totalMaxSecs=12, isAutoQuote=True )                  
+    ifPingable( uri, pings=3, totalMaxSecs=12, isAutoQuote=True,
                 isNegated=False, isMultiLine=False )
                         	        
 	killAll( exeName, isAutoQuote=True )    
@@ -793,8 +793,8 @@ following add-on **QT SCRIPT** functions:
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
 	
-	isInternetConnected()
-	isPingable( uri, pings=5, totalMaxSecs=20 )
+	isInternetConnected( isRefresh=False )
+	isPingable( uri, pings=3, totalMaxSecs=12 )
 	
 	resolveDynamicVars( s, varNames )  <returns string>
     replaceDynamicVarsInFile( path, varNames, isDoubleBackslash )

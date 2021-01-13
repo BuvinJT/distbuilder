@@ -796,6 +796,8 @@ class _QtIfwScript:
     MAINTAIN_MODE_OPT_REMOVE_ALL = "removeall"
     MAINTAIN_PASSTHRU_CMD_ARG    = "maintpassthru"
 
+    IS_NET_CONNECTED_KEY         = "isNetConnected"
+
     _IS_CMD_ARGS_TEMP_KEY = "__tmp_sv"
     _CMD_ARGS_TEMP_PREFIX = "__tmp_"
     _CMD_ARGS = { 
@@ -833,7 +835,7 @@ class _QtIfwScript:
     __IS_UNINSTALLER = "installer.isUninstaller()"
 
     __IS_MAINTENANCE_TOOL = 'isMaintenanceTool()'
-        
+            
     # an example for use down the line...
     __LINUX_GET_DISTRIBUTION = ( 
 """
@@ -904,7 +906,7 @@ class _QtIfwScript:
     __SCRIPT_FROM_B64_TMPL  = '__writeScriptFromBase64( "%s", %s, %s, %s, %s, %s );\n'
     __REPLACE_VARS_FILE_TMPL = 'replaceDynamicVarsInFile( %s, %s, %s );\n' 
     
-    __IS_INTERNET_TMPL  = "isInternetConnected()"
+    __IS_INTERNET_TMPL  = "isInternetConnected( %s )"
     __IS_PINGABLE_TMPL  = "isPingable( %s, %d, %d )"
         
     # Note, there is in fact an installer.killProcess(string absoluteFilePath)
@@ -1399,22 +1401,24 @@ class _QtIfwScript:
             _QtIfwScript._autoQuote( path, isAutoQuote ),) 
 
     @staticmethod        
-    def isInternetConnected(): return _QtIfwScript.__IS_INTERNET_TMPL 
+    def isInternetConnected( isRefresh=False ): 
+        return _QtIfwScript.__IS_INTERNET_TMPL % (
+            _QtIfwScript.toBool( isRefresh ), ) 
 
     @staticmethod        
-    def ifInternetConnected( isNegated=False, isMultiLine=False ):   
+    def ifInternetConnected( isRefresh=False, isNegated=False, isMultiLine=False ):   
         return 'if( %s%s )%s\n%s' % ( "!" if isNegated else "",
-            _QtIfwScript.isInternetConnected(),            
+            _QtIfwScript.isInternetConnected( isRefresh ),            
             ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
         
     @staticmethod        
-    def isPingable( uri, pings=5, totalMaxSecs=20, isAutoQuote=True ):                  
+    def isPingable( uri, pings=3, totalMaxSecs=12, isAutoQuote=True ):                  
         return _QtIfwScript.__IS_PINGABLE_TMPL % (
             _QtIfwScript._autoQuote( uri, isAutoQuote ),
             pings, totalMaxSecs ) 
 
     @staticmethod
-    def ifPingable( uri, pings=5, totalMaxSecs=20, isAutoQuote=True,
+    def ifPingable( uri, pings=3, totalMaxSecs=12, isAutoQuote=True,
                     isNegated=False, isMultiLine=False  ):
         return 'if( %s%s )%s\n%s' % ( "!" if isNegated else "", 
             _QtIfwScript.isPingable( uri, pings, totalMaxSecs, isAutoQuote ),
@@ -2333,14 +2337,24 @@ class _QtIfwScript:
             ) +              
             EBLK + NEW +                                        
             # TODO: Test in NIX/MAC                              
-            'function isInternetConnected() ' + SBLK +
-                TAB + 'return isPingable( "www.google.com", 3, 9 )' + END +                                                                                                                                       
+            'function isInternetConnected( isRefresh ) ' + SBLK +
+            TAB + 'var isNet = installer.value( "' + 
+                _QtIfwScript.IS_NET_CONNECTED_KEY + '", "" )' + END +
+            TAB + 'if( isRefresh || isNet === "" ) ' + SBLK +                                    
+            (2*TAB) + 'isNet = "" + isPingable( "www.google.com", 1, 5 )' + END +
+            (2*TAB) + 'installer.setValue( "' + 
+                _QtIfwScript.IS_NET_CONNECTED_KEY + '", isNet )' + END + 
+            (2*TAB) + _QtIfwScript.log( 'isNet ? "connected to the internet" : ' +
+                                        '"NOT connected to the internet"', 
+                                        isAutoQuote=False ) +                             
+            TAB + EBLK +                
+            TAB + 'return isNet==="true";' + END +
             EBLK + NEW +           
             # TODO: Test in NIX/MAC                                                                   
             'function isPingable( uri, pings, totalMaxSecs ) ' + SBLK +
             TAB + 'if( uri==null ) return false' + END +
-            TAB + 'if( pings==null ) pings=5' + END +
-            TAB + 'if( totalMaxSecs==null ) totalMaxSecs=20' + END +
+            TAB + 'if( pings==null ) pings=3' + END +
+            TAB + 'if( totalMaxSecs==null ) totalMaxSecs=12' + END +
             TAB + _QtIfwScript.log( '"Pinging: " + uri + " ..."', isAutoQuote=False ) +
             TAB + 'var successOutput = "success"' + END +
             TAB + 'var pingCmd = "' +                    
@@ -2362,7 +2376,9 @@ class _QtIfwScript:
             (2*TAB) + 'output = cmdOutLns[1].trim()' + END + EBLK + 
             TAB + CATCH + 'output = null;' + EBLK +
             TAB + 'var isSuccess = output==successOutput' + END +                            
-            TAB + _QtIfwScript.log( '"Response received: " + isSuccess', isAutoQuote=False ) + 
+            TAB + _QtIfwScript.log( 'isSuccess ? "...response received" : ' +
+                                    '"... NO response received"', 
+                                    isAutoQuote=False ) + 
             TAB + 'return isSuccess' + END +                  
             EBLK + NEW                                                                      
         )         
@@ -3590,6 +3606,8 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + 'installer.setValue( "__isMaintenance", "" )' + END +            
             TAB + 'installer.setValue( "__lockFilePath", "" )' + END +
             TAB + 'installer.setValue( "__watchDogPath", "" )' + END +
+            TAB + 'installer.setValue( "' + 
+                _QtIfwScript.IS_NET_CONNECTED_KEY + '", "" )' + END +
             TAB + 'installer.setValue( ' +
                 ('"%s"' % (_REMOVE_TARGET_KEY,) ) + ', "" )' + END +        
             TAB + ('if( getEnv("%s")=="true" )' % (_KEEP_TEMP_SWITCH,)) + NEW +
