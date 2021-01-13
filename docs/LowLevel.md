@@ -584,7 +584,14 @@ Static Functions:
     	
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
-    	        
+
+    isInternetConnected() 
+    ifInternetConnected( isNegated=False, isMultiLine=False )
+       
+    isPingable( uri, pings=5, totalMaxSecs=20, isAutoQuote=True )                  
+    ifPingable( uri, pings=5, totalMaxSecs=20, isAutoQuote=True,
+                isNegated=False, isMultiLine=False )
+                        	        
 	killAll( exeName, isAutoQuote=True )    
         
     targetDir()
@@ -785,6 +792,9 @@ following add-on **QT SCRIPT** functions:
     	
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
+	
+	isInternetConnected()
+	isPingable( uri, pings=5, totalMaxSecs=20 )
 	
 	resolveDynamicVars( s, varNames )  <returns string>
     replaceDynamicVarsInFile( path, varNames, isDoubleBackslash )

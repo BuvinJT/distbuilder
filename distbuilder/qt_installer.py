@@ -904,6 +904,9 @@ class _QtIfwScript:
     __SCRIPT_FROM_B64_TMPL  = '__writeScriptFromBase64( "%s", %s, %s, %s, %s, %s );\n'
     __REPLACE_VARS_FILE_TMPL = 'replaceDynamicVarsInFile( %s, %s, %s );\n' 
     
+    __IS_INTERNET_TMPL  = "isInternetConnected()"
+    __IS_PINGABLE_TMPL  = "isPingable( %s, %d, %d )"
+        
     # Note, there is in fact an installer.killProcess(string absoluteFilePath)
     # this custom kill takes a process name, with no specific path
     # It also runs in parrellel with "install operation" kills
@@ -1394,6 +1397,28 @@ class _QtIfwScript:
     def deleteFile( path, isAutoQuote=True ):                  
         return _QtIfwScript.__DELETE_FILE_TMPL % (
             _QtIfwScript._autoQuote( path, isAutoQuote ),) 
+
+    @staticmethod        
+    def isInternetConnected(): return _QtIfwScript.__IS_INTERNET_TMPL 
+
+    @staticmethod        
+    def ifInternetConnected( isNegated=False, isMultiLine=False ):   
+        return 'if( %s%s )%s\n%s' % ( "!" if isNegated else "",
+            _QtIfwScript.isInternetConnected(),            
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
+        
+    @staticmethod        
+    def isPingable( uri, pings=5, totalMaxSecs=20, isAutoQuote=True ):                  
+        return _QtIfwScript.__IS_PINGABLE_TMPL % (
+            _QtIfwScript._autoQuote( uri, isAutoQuote ),
+            pings, totalMaxSecs ) 
+
+    @staticmethod
+    def ifPingable( uri, pings=5, totalMaxSecs=20, isAutoQuote=True,
+                    isNegated=False, isMultiLine=False  ):
+        return 'if( %s%s )%s\n%s' % ( "!" if isNegated else "", 
+            _QtIfwScript.isPingable( uri, pings, totalMaxSecs, isAutoQuote ),
+            ("{" if isMultiLine else ""), (2*_QtIfwScript.TAB) )
 
     @staticmethod        
     def getComponent( name, isAutoQuote=True ):
@@ -2306,8 +2331,42 @@ class _QtIfwScript:
             (TAB + '// The hidden feature is not yet supported on macOS!' + NEW +
             TAB + 'execute( binPath, args )' + END )
             ) +              
-            EBLK + NEW                                                                       
+            EBLK + NEW +                                        
+            # TODO: Test in NIX/MAC                              
+            'function isInternetConnected() ' + SBLK +
+                TAB + 'return isPingable( "www.google.com", 3, 9 )' + END +                                                                                                                                       
+            EBLK + NEW +           
+            # TODO: Test in NIX/MAC                                                                   
+            'function isPingable( uri, pings, totalMaxSecs ) ' + SBLK +
+            TAB + 'if( uri==null ) return false' + END +
+            TAB + 'if( pings==null ) pings=5' + END +
+            TAB + 'if( totalMaxSecs==null ) totalMaxSecs=20' + END +
+            TAB + _QtIfwScript.log( '"Pinging: " + uri + " ..."', isAutoQuote=False ) +
+            TAB + 'var successOutput = "success"' + END +
+            TAB + 'var pingCmd = "' +                    
+                ('echo off && ping -n " + pings + " ' +
+                 '-w " + ((1000 * totalMaxSecs)/pings) + " " +'
+                 'uri + " | find \\"TTL\\" > nul && ' +  # see https://ss64.com/nt/ping.html 
+                 'echo " + successOutput +"\\n"'         # regarding test for success
+                 if IS_WINDOWS else 
+                 'ping -n " + pings + " ' +              # TODO: check syntax in NIX/MAC
+                 '-w " + totalMaxSecs + " " +'  +        # see https://linux.die.net/man/8/ping
+                 'uri + " | grep \\"TTL\\" > nul && ' +
+                 'echo " + successOutput'  ) + END +                                                                                                
+            TAB + 'var result = installer.execute( ' +
+                ('"cmd.exe", ["/k"], pingCmd' if IS_WINDOWS else
+                 '"sh", ["-c", pingCmd]' ) + ' )' + END +             
+            TAB + 'var output' + END +
+            TAB + TRY +
+            (2*TAB) + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
+            (2*TAB) + 'output = cmdOutLns[1].trim()' + END + EBLK + 
+            TAB + CATCH + 'output = null;' + EBLK +
+            TAB + 'var isSuccess = output==successOutput' + END +                            
+            TAB + _QtIfwScript.log( '"Response received: " + isSuccess', isAutoQuote=False ) + 
+            TAB + 'return isSuccess' + END +                  
+            EBLK + NEW                                                                      
         )         
+        
         if IS_WINDOWS : 
             # To query to the Windows registry for uninstall strings registered by
             # QtIFW for a program of a given name, this example command works when 
