@@ -585,6 +585,7 @@ Static Functions:
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
 
+    assertInternetConnected( isRefresh=False, errMsg=None )
     isInternetConnected( isRefresh=False ) 
     ifInternetConnected( isRefresh=False, isNegated=False, isMultiLine=False )
        
@@ -793,8 +794,9 @@ following add-on **QT SCRIPT** functions:
     writeFile( path, content ) <path can include native env vars>
     deleteFile( path ) 	       <path can include native env vars>	
 	
-	isInternetConnected( isRefresh=False )
-	isPingable( uri, pings=3, totalMaxSecs=12 )
+	assertInternetConnected( isRefresh[=false], errMsg[=null] )
+	isInternetConnected( isRefresh[=false] )
+	isPingable( uri, pings[=3], totalMaxSecs[=12] )
 	
 	resolveDynamicVars( s, varNames )  <returns string>
     replaceDynamicVarsInFile( path, varNames, isDoubleBackslash )

@@ -906,8 +906,9 @@ class _QtIfwScript:
     __SCRIPT_FROM_B64_TMPL  = '__writeScriptFromBase64( "%s", %s, %s, %s, %s, %s );\n'
     __REPLACE_VARS_FILE_TMPL = 'replaceDynamicVarsInFile( %s, %s, %s );\n' 
     
-    __IS_INTERNET_TMPL  = "isInternetConnected( %s )"
-    __IS_PINGABLE_TMPL  = "isPingable( %s, %d, %d )"
+    __ASSERT_INTERNET_TMPL  = "assertInternetConnected( %s, %s );"
+    __IS_INTERNET_TMPL      = "isInternetConnected( %s )"
+    __IS_PINGABLE_TMPL      = "isPingable( %s, %d, %d )"
         
     # Note, there is in fact an installer.killProcess(string absoluteFilePath)
     # this custom kill takes a process name, with no specific path
@@ -1399,6 +1400,12 @@ class _QtIfwScript:
     def deleteFile( path, isAutoQuote=True ):                  
         return _QtIfwScript.__DELETE_FILE_TMPL % (
             _QtIfwScript._autoQuote( path, isAutoQuote ),) 
+
+    @staticmethod        
+    def assertInternetConnected( isRefresh=False, errMsg=None ): 
+        return _QtIfwScript.__ASSERT_INTERNET_TMPL % (
+            _QtIfwScript.toBool( isRefresh ),
+            _QtIfwScript.toNull( errMsg ) ) 
 
     @staticmethod        
     def isInternetConnected( isRefresh=False ): 
@@ -2335,7 +2342,12 @@ class _QtIfwScript:
             (TAB + '// The hidden feature is not yet supported on macOS!' + NEW +
             TAB + 'execute( binPath, args )' + END )
             ) +              
-            EBLK + NEW +                                        
+            EBLK + NEW +
+            # TODO: Test in NIX/MAC                              
+            'function assertInternetConnected( isRefresh, errMsg ) ' + SBLK +
+            TAB + 'if( !isInternetConnected( isRefresh ) )' + NEW +
+            (2*TAB) + 'quit( errMsg ? errMsg : "An internet connection is required!" )' + END +
+            EBLK + NEW +           
             # TODO: Test in NIX/MAC                              
             'function isInternetConnected( isRefresh ) ' + SBLK +
             TAB + 'var isNet = installer.value( "' + 
@@ -2344,7 +2356,7 @@ class _QtIfwScript:
             (2*TAB) + 'isNet = "" + isPingable( "www.google.com", 1, 5 )' + END +
             (2*TAB) + 'installer.setValue( "' + 
                 _QtIfwScript.IS_NET_CONNECTED_KEY + '", isNet )' + END + 
-            (2*TAB) + _QtIfwScript.log( 'isNet ? "connected to the internet" : ' +
+            (2*TAB) + _QtIfwScript.log( 'isNet==="true" ? "connected to the internet" : ' +
                                         '"NOT connected to the internet"', 
                                         isAutoQuote=False ) +                             
             TAB + EBLK +                
