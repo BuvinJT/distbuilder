@@ -746,6 +746,8 @@ class _QtIfwScript:
     TRUE  = "true"
     FALSE = "false"
 
+    ASSIGN = "=" # no spaces, to simplify use for argument building
+    
     NOT = "! "
     EQUAL_TO = " == "
     NOT_EQUAL_TO = " != "

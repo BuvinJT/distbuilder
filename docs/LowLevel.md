@@ -480,6 +480,8 @@ Static Constants :
     NULL    
     TRUE  
     FALSE 
+    
+    ASSIGN
       
     NOT 
     EQUAL_TO 
