@@ -3205,6 +3205,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.isAutoGlobals = True
         
         self.controllerConstructorBody = None
+        self.controllerConstructorInjection = None
         self.isAutoControllerConstructor = True
 
         self.onValueChangeCallbackBody = None
@@ -3813,6 +3814,10 @@ Controller.prototype.Dynamic%sCallback = function() {
             self.controllerConstructorBody += ( 
                 QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
                 (signalName, slotName) )            
+            
+        if self.controllerConstructorInjection: 
+            self.controllerConstructorBody+=self.controllerConstructorInjection
+                              
         self.controllerConstructorBody += (        
                 TAB + 'var mode = ' + _QtIfwScript.cmdLineArg( 
                     _QtIfwScript.MAINTAIN_MODE_CMD_ARG ) + END + 

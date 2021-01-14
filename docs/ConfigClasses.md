@@ -382,6 +382,7 @@ Attributes & default values:
     isAutoGlobals = True
         
     controllerConstructorBody = None
+    controllerConstructorInjection = None
     isAutoControllerConstructor = True
 
     onPageChangeCallbackBody      = None
