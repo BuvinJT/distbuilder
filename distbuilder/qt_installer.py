@@ -745,12 +745,16 @@ class _QtIfwScript:
     NULL  = "null"    
     TRUE  = "true"
     FALSE = "false"
+
+    NOT = "! "
+    EQUAL_TO = " == "
+    NOT_EQUAL_TO = " != "
     
     AND = " && "
     OR  = " || "
 
     CONCAT = " + "
-    
+        
     EXIT_FUNCTION = "\n    return;\n"
     
     PATH_SEP = '"\\\\"' if IS_WINDOWS else '"/"'  

@@ -481,6 +481,10 @@ Static Constants :
     TRUE  
     FALSE 
       
+    NOT 
+    EQUAL_TO 
+    NOT_EQUAL_TO 
+      
     AND 
     OR  
 
