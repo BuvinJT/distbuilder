@@ -1885,6 +1885,10 @@ class _QtIfwScript:
                 'args.push( "' + _KEEP_TEMP_SWITCH + '=true" )' + END +                
             TAB + 'var passthru=' + _QtIfwScript.cmdLineArg( 
                 _QtIfwScript.MAINTAIN_PASSTHRU_CMD_ARG ) + END +
+            TAB + 'if( passthru == \"\" ) ' + NEW +
+            (2*TAB) + 'passthru=' + _QtIfwScript.cmdLineArg( 
+                _QtIfwScript._CMD_ARGS_TEMP_PREFIX + 
+                _QtIfwScript.MAINTAIN_PASSTHRU_CMD_ARG ) + END +            
             TAB + 'if( passthru != \"\" ) {' + NEW +
             (2*TAB) + 'passthru=Dir.fromNativeSeparator(passthru)' + END +
             (2*TAB) + 'passthru=passthru.replace(/`/g, \'\\"\')' + END +
