@@ -2,7 +2,7 @@ from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
     QtIfwSimpleTextPage, QT_IFW_TARGET_DIR_PAGE, QtIfwControlScript as Script
 
 f = configFactory  = ConfigFactory()
-f.productName      = "Hello Custom Installer UI Example"
+f.productName      = "Hello Custom Pages Example"
 f.description      = "A Distribution Builder Example"
 f.companyTradeName = "Some Company"
 f.companyLegalName = "Some Company Inc."    
@@ -11,7 +11,7 @@ f.isGui            = True
 f.entryPointPy     = "../hello_world_tk/hello.py"  
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
 f.version          = (1,0,0,0)
-f.setupName        = "HelloIfwUiSetup"
+f.setupName        = "HelloIfwPagesSetup"
 
 f.ifwUiPages = QtIfwSimpleTextPage( "Example", QT_IFW_TARGET_DIR_PAGE, 
     title="Custom Page",

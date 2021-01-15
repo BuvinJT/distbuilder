@@ -55,6 +55,33 @@ class BuildProcess( RobustInstallerProcess ):
         IS_CLI_APP_INSTALLED_KEY = "isCliAppInstalled"
         IS_TK_APP_INSTALLED_KEY  = "isTkAppInstalled"
 
+        def reviseControllerConstructor( cfg ): 
+            # When running the installer (not the maintenance tool), and not
+            # using "remove all mode" (e.g. via silent installer -u),
+            # define additional arguments for the maintenance tool
+            # (unless a manual override was provided for that...) 
+            # so it will skip the custom uninstallation detached execution  
+            # during an a forced uninstall, i.e. an "update" context.               
+            Script = QtIfwControlScript
+            TAB  = Script.TAB
+            EBLK = Script.END_BLOCK
+            NOT_EQUAL_TO = Script.NOT_EQUAL_TO
+            ASSIGN = Script.ASSIGN
+            FALSE = Script.FALSE
+            cfg.controlScript.controllerConstructorInjection =(
+                Script.ifInstalling( isMultiLine=True ) +
+                TAB + Script.ifCondition( Script.cmdLineArg( 
+                    Script.MAINTAIN_MODE_CMD_ARG ) + NOT_EQUAL_TO +
+                    Script.quote( Script.MAINTAIN_MODE_OPT_REMOVE_ALL ), 
+                    isMultiLine=True ) +
+                (2*TAB) + Script.ifCmdLineArg( Script.MAINTAIN_PASSTHRU_CMD_ARG, 
+                                               isNegated=True ) +
+                    (3*TAB) + Script.setValue( Script.MAINTAIN_PASSTHRU_CMD_ARG,
+                        IS_TK_APP_INSTALLED_KEY + ASSIGN + FALSE ) +                    
+                TAB + EBLK +                
+                EBLK
+            )
+
         def customizeReadyForInstallPage( cfg, tkPkg, cliPkg ):
             # Unfortunately, there is no built-in QtIFW means to determine 
             # which components were installed via QtScript from an uninstaller. 
@@ -287,6 +314,7 @@ class BuildProcess( RobustInstallerProcess ):
         pkgs   = cfg.packages
         tkPkg  = findQtIfwPackage( pkgs, TK_CONFIG_KEY )            
         cliPkg = findQtIfwPackage( pkgs, CLI_CONFIG_KEY )     
+        reviseControllerConstructor( cfg )
         customizeReadyForInstallPage( cfg, tkPkg, cliPkg )   
         customizeFinishedPage( cfg, tkPkg, cliPkg )
             
