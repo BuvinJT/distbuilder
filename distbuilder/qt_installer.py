@@ -2426,12 +2426,12 @@ class _QtIfwScript:
             TAB + 'var pingCmd = "' +                    
                 ('echo off && ping -n " + pings + " ' +
                  '-w " + ((1000 * totalMaxSecs)/pings) + " " +'
-                 'uri + " | find \\"TTL\\" > nul && ' +  # see https://ss64.com/nt/ping.html 
+                 'uri + " | findstr /r /c:\\"[0-9] *ms\\" > nul && ' +  # see https://ss64.com/nt/ping.html 
                  'echo " + successOutput +"\\n"'         # regarding test for success
                  if IS_WINDOWS else 
                  'ping -n " + pings + " ' +              # TODO: check syntax in NIX/MAC
                  '-w " + totalMaxSecs + " " +'  +        # see https://linux.die.net/man/8/ping
-                 'uri + " | grep \\"TTL\\" > nul && ' +
+                 'uri + " | grep \\"TTL\\" > nul && ' +  # align this grep with the Windows regex findstr above!
                  'echo " + successOutput'  ) + END +                                                                                                
             TAB + 'var result = installer.execute( ' +
                 ('"cmd.exe", ["/k"], pingCmd' if IS_WINDOWS else
