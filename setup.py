@@ -8,7 +8,10 @@ IS_MACOS   = __plat == "Darwin"
 
 platform_resources = {}
 if IS_WINDOWS:
-    platform_resources['distbuilder'] = ['qtifw_res/windows/*'] 
+    platform_resources['distbuilder'] = [
+         'qtifw_res/windows/*'
+        ,'code_sign_res/windows/signtool/*'
+    ] 
     
 # get __version__ and readme
 exec( open('distbuilder/_version.py').read() ) 
@@ -24,9 +27,9 @@ setup (
     long_description = readme,
     long_description_content_type = "text/markdown",
     keywords=[ 
-		'distbuilder', 'dist', 
-		'distribution', 'install', 'package',
-		'distutils', 'setuptools'		 
+		'distbuilder', 'dist', 'distribute', 
+		'distribution', 'install', 'installer',
+        'package', 'distutils', 'setuptools'		 
 	],
     url              = "https://github.com/BuvinJT/distbuilder",	
 	classifiers=[

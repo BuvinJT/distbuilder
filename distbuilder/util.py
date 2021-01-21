@@ -19,7 +19,7 @@ import platform
 from tempfile import gettempdir, mkstemp, mkdtemp, \
     mktemp  # @UnusedImport
 from subprocess import Popen, list2cmdline, check_output, \
-    PIPE, STDOUT, \
+    PIPE, STDOUT, CalledProcessError, \
     check_call  # @UnusedImport
 try: from subprocess import DEVNULL 
 except ImportError: DEVNULL = open(devnull, 'wb')    
@@ -34,9 +34,13 @@ from copy import deepcopy # @UnusedImport
 
 # -----------------------------------------------------------------------------   
 __plat = platform.system()
-IS_WINDOWS         = __plat == "Windows"
-IS_LINUX           = __plat == "Linux"
-IS_MACOS           = __plat == "Darwin"
+IS_WINDOWS = __plat == "Windows"
+IS_LINUX   = __plat == "Linux"
+IS_MACOS   = __plat == "Darwin"
+
+__arch = platform.machine()
+IS_ARM_CPU   = "arm" in __arch or "aarch" in __arch
+IS_INTEL_CPU = not IS_ARM_CPU
 
 BIT_CONTEXT = calcsize('P') * 8
 IS_32_BIT_CONTEXT = BIT_CONTEXT==32
@@ -101,8 +105,10 @@ _NEWLINE         = '\n'
 if IS_WINDOWS :
     import ctypes        
     from ctypes import wintypes
-    from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW
+    from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW    
     __CSIDL_DESKTOP_DIRECTORY = 16    
+    __CSIDL_PROGRAM_FILES     = 38
+    __CSIDL_PROGRAM_FILESX86  = 42
     __BATCH_RUN_AND_RETURN_CMD = ["cmd","/K"] # simply assuming cmd is on the system path... 
     __BATCH_ONE_LINER_TMPLT    = "{0} 1>&2\n" # the newline triggers execution when piped in via stdin
     __BATCH_ESCAPE_PATH_TMPLT  = 'for %A in ("{0}") do @echo %~sA'     
@@ -226,6 +232,18 @@ def _system( cmd, wrkDir=None ):
     print('')
     if wrkDir is not None: chdir( initWrkDir )
 
+def _isSystemSuccess( cmd, wrkDir=None ):
+    if wrkDir is not None: print( 'cd "%s"' % (wrkDir,) )
+    print( cmd )
+    try:
+        print( check_output( cmd, cwd=wrkDir,
+                             shell=True, universal_newlines=True ) )
+    except CalledProcessError as e:
+        print( e.output )
+        print( "Failed with exit code: %d" % (e.returncode,) )
+        return False
+    return True
+    
 def _subProcessStdOut( cmd, asCleanLines=False, isDebug=False ):
     if isDebug: print( cmd ) 
     stdOut = check_output( cmd )
@@ -664,6 +682,15 @@ def _userDesktopDirPath():
         desktop = normpath( joinPath( home, DESKTOP_DIR_NAME ) )
         return desktop if isDir(desktop) else home
     raise Exception( __NOT_SUPPORTED_MSG )        
+
+def _winProgsDirPath(): 
+    if not IS_WINDOWS : _onPlatformErr()
+    return __getFolderPathByCSIDL( __CSIDL_PROGRAM_FILES )
+
+def _winProgs86DirPath(): 
+    if not IS_WINDOWS : _onPlatformErr()
+    return( _winProgsDirPath() if IS_32_BIT_CONTEXT else 
+            __getFolderPathByCSIDL( __CSIDL_PROGRAM_FILESX86 ) )
             
 def __getFolderPathByCSIDL( csidl ):
     SHGFP_TYPE_CURRENT = 0   # Get current, not default value

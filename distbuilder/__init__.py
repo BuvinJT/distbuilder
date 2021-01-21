@@ -101,6 +101,11 @@ from distbuilder.opy_library import \
     , obfuscatedId 
 
 ExtLibHandling = OpyConfig.ExtLibHandling 
+
+from distbuilder.code_sign import \
+      SignToolConfig \
+    , signExe \
+    , SIGNTOOL_PATH_ENV_VAR
     
 from distbuilder.util import \
       ExecutableScript \
