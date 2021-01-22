@@ -1,17 +1,36 @@
 from setuptools import setup
 
-import platform
+import os, platform
 __plat = platform.system()
 IS_WINDOWS = __plat == "Windows"
-IS_LINUX   = __plat == "Linux"
 IS_MACOS   = __plat == "Darwin"
+IS_LINUX   = __plat == "Linux"
 
-platform_resources = {}
-if IS_WINDOWS:
-    platform_resources['distbuilder'] = [
-         'qtifw_res/windows/*'
-        ,'code_sign_res/windows/signtool/*'
-    ] 
+def package_file_paths( package_dirname, exclude_dirnames=None ):
+    paths = []
+    for root, dirnames, filenames in os.walk( package_dirname ):
+        print(root, dirnames, filenames)
+        if exclude_dirnames:
+            for name in exclude_dirnames:
+                if name in dirnames:
+                    dirnames.remove( name ) 
+        for filename in filenames:
+            paths.append( os.path.join('..', root, filename) )
+    return paths
+
+__RES_TOP_DIR_NAME    = "distbuilder"
+__RES_SUBDIR_NAMES    = [ "util_res", "qtifw_res", "code_sign_res" ]
+__PLAT_RES_DIR_NAMES  = {"Windows":"windows", "Darwin":"macos", "Linux":"linux"}
+__PLAT_RES_DIR_NAME   = __PLAT_RES_DIR_NAMES[ __plat ] 
+__PLAT_RES_EXCLUDE_DIR_NAMES = [ n for _,n in __PLAT_RES_DIR_NAMES.items() 
+                                 if n != __PLAT_RES_DIR_NAME ]  
+
+conditional_resources=[]
+for dirname in __RES_SUBDIR_NAMES:
+    conditional_resources.extend( package_file_paths( 
+        os.path.join(__RES_TOP_DIR_NAME, dirname ),  
+        exclude_dirnames=__PLAT_RES_EXCLUDE_DIR_NAMES ) )
+conditional_resources = {'':conditional_resources}
     
 # get __version__ and readme
 exec( open('distbuilder/_version.py').read() ) 
@@ -51,5 +70,5 @@ setup (
 		#, "opy_distbuilder>=0.9.2.2"  
 	],
 	include_package_data=True, # extra files defined in MANIFEST.in    
-    package_data = platform_resources
+    package_data = conditional_resources
 )
