@@ -344,6 +344,35 @@ def __windowsElevated( exePath, args=None, wrkDir=None ):
     return retCode
 
 # -----------------------------------------------------------------------------
+__PS_OUTPUT_MAJOR_VERSION = [
+      'Try{ Write-Host $PSVersionTable.PSVersion.Major }'
+    , 'Catch{ Write-Host 1 }'
+]
+
+def _runPowerShell( script ): __runPowerShell( script )
+def _powerShellOutput( script, asCleanLines=False ): 
+    return __runPowerShell( script, isStdOut=True, asCleanLines=asCleanLines )
+def __runPowerShell( script, isStdOut=False, asCleanLines=False ):
+    if not IS_WINDOWS: _onPlatformErr()
+    if isinstance( script, string_types ) or isinstance( script, list ): 
+        script = ExecutableScript( "__tempDistbuilderScript", 
+                                   extension="ps1", script=script )
+    dirPath = tempDirPath()
+    script.write( dirPath )    
+    cmd =( 'powershell.exe -ExecutionPolicy Bypass -InputFormat None '
+           '-File "%s"' % (joinPath( dirPath, script.fileName() ),) )
+    if isStdOut: 
+        try: sdtOut = _subProcessStdOut( cmd, asCleanLines=asCleanLines )
+        finally: removeFromDir( script.fileName(), dirPath )
+    else: 
+        _system( cmd )        
+        removeFromDir( script.fileName(), dirPath )
+    if isStdOut: return sdtOut
+
+def _powerShellMajorVersion():
+    return int( _powerShellOutput( __PS_OUTPUT_MAJOR_VERSION ) )
+    
+# -----------------------------------------------------------------------------
 def collectDirs( srcDirPaths, destDirPath ):
     """ Move a list of directories into a common parent directory """
     destDirPath = absPath( destDirPath )    
