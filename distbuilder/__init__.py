@@ -103,7 +103,9 @@ from distbuilder.opy_library import \
 ExtLibHandling = OpyConfig.ExtLibHandling 
 
 from distbuilder.code_sign import \
-      SignToolConfig \
+      MakeCertConfig \
+    , SignToolConfig \
+    , generateCerts \
     , signExe \
     , SIGNTOOL_PATH_ENV_VAR
     
