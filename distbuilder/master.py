@@ -293,7 +293,7 @@ class ConfigFactory:
         return prod
 
     def __ifwPkgType( self ):
-        if self.pkgType : return self.pkgType
+        if self.pkgType is not None: return self.pkgType
         if self.__pkgPyInstConfig : return QtIfwPackage.Type.PY_INSTALLER
         if self.pkgSrcExePath is None:
             return ( QtIfwPackage.Type.DATA if self.binaryName is None else
