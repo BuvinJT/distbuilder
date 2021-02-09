@@ -532,6 +532,9 @@ def _toLibResPath( relPath ):
     path = joinPath( __THIS_LIB_DIR, relPath )
     return path if exists( path ) else None
    
+_RES_DIR_PATH = _toLibResPath( joinPath( "util_res", 
+    ("linux" if IS_LINUX else "macos" if IS_MACOS else "windows") ) )
+   
 def isImportableModule( moduleName ):
     try: __importByStr( moduleName )
     except : return False

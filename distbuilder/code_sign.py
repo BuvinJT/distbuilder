@@ -107,6 +107,10 @@ def __installSignTool():
 #------------------------------------------------------------------------------
 MAKECERT_PATH_ENV_VAR = "MAKECERT_PATH"
             
+# TODO: Add Powershell New-SelfSignedCertificate mechanism to replace this now
+# deprecated MakeCert util.  
+# Note: util._powerShellMajorVersion() >= 4 would be required for that to work.
+# See: https://docs.microsoft.com/en-us/powershell/module/pkiclient/new-selfsignedcertificate?view=win10-ps
 class MakeCertConfig:
 
     NO_MAX_CHILDREN = 0
@@ -142,13 +146,13 @@ class MakeCertConfig:
     def __init__( self, companyName, destDirPath=None ):
     
         self.commonName  = companyName
-        self.destDirPath = destDirPath if destDirPath else THIS_DIR
         
+        self.destDirPath = destDirPath if destDirPath else THIS_DIR        
         outputRoot = companyName.replace(" ", "").replace(".", "")        
-        self.subjectKeyPath   = joinPath( self.destDirPath, 
-            joinExt( outputRoot, MakeCertConfig.__SUBJECT_KEY_EXT ) )
-        self.certPath         = joinPath( self.destDirPath, 
+        self.caCertPath     = joinPath( self.destDirPath, 
             joinExt( outputRoot, MakeCertConfig.__CA_CERT_EXT) )
+        self.privateKeyPath = joinPath( self.destDirPath, 
+            joinExt( outputRoot, MakeCertConfig.__SUBJECT_KEY_EXT ) )
         
         self.makeCertPath = None # if None, this will be auto resolved 
 
@@ -163,20 +167,22 @@ class MakeCertConfig:
         selfSignedRootCert = '/r'
         maxCertChildren    = '/h %d' % (self.maxCertChildren,)
         enhancedKeyUsage   = '/eku %s' % (self.enhancedKeyUsage,)
-        subjectKeyPath     = '/sv "%s"' % (self.subjectKeyPath,)
-        certPath           = '"%s"' % (self.certPath,)                       
+        privateKeyPath     = '/sv "%s"' % (self.privateKeyPath,)
+        caCertPath         = '"%s"' % (self.caCertPath,)                       
         tokens = (name, selfSignedRootCert, maxCertChildren,
                   enhancedKeyUsage,  self.otherMakeCertArgs,
-                  subjectKeyPath, certPath )
+                  privateKeyPath, caCertPath )
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )        
 
 def __useMakeCert( makeCertConfig ):
     __validateMakeCertConfig( makeCertConfig )
     cmd = '"%s" %s' % ( makeCertConfig.makeCertPath, str(makeCertConfig) )
-    if not util._isSystemSuccess( cmd ): 
+    if( not util._isSystemSuccess( cmd ) or
+        not isFile( makeCertConfig.caCertPath ) or
+        not isFile( makeCertConfig.privateKeyPath ) ): 
         raise Exception( 'FAILED to generate code signing certificates' )
-    print( "Generated successfully!" )
-    return makeCertConfig.destDirPath
+    print( "Generated code signing certificates successfully!" )
+    return makeCertConfig.caCertPath, makeCertConfig.privateKeyPath
 
 def __validateMakeCertConfig( cfg ):
     if not isDir( cfg.destDirPath ): makeDir( cfg.destDirPath )         
@@ -188,16 +194,123 @@ def __validateMakeCertConfig( cfg ):
         raise Exception( "Valid MakeCert path required" )
 
 #------------------------------------------------------------------------------
-def generateCerts( config ):
+PVK2PFX_PATH_ENV_VAR = "PVK2PFX_PATH"
+            
+class Pvk2PfxConfig:
+
+    __RES_DIR_NAME         = "sdk_tools"
+    __INTEL_32BIT_MSI_NAME = "Windows SDK Desktop Tools x86-x86_en-us.msi"
+    __INTEL_64BIT_MSI_NAME = "Windows SDK Desktop Tools x64-x86_en-us.msi"
+    __ARM_32BIT_MSI_NAME   = "Windows SDK ARM Desktop Tools-x86_en-us.msi"
+    __ARM_64BIT_MSI_NAME   = "Windows SDK Desktop Tools arm64-x86_en-us.msi"
+    
+    __WINDOWS_KITS_DIR = r"Windows Kits\10\bin\10.0.19041.0" 
+    __INTEL_32BIT_DIR  = "x86"
+    __INTEL_64BIT_DIR  = "x64"
+    __ARM_32BIT_DIR    = "arm"
+    __ARM_64BIT_DIR    = "arm64"
+    __PVK2PFX_NAME     = "pvk2pfx.exe"
+    
+    _PFX_EXT = ".pfx"
+
+    @staticmethod
+    def _builtInInstallerPath():    
+        return joinPath( util._RES_DIR_PATH, 
+            Pvk2PfxConfig.__RES_DIR_NAME, Pvk2PfxConfig.__MSI_NAME )
+
+    @staticmethod
+    def _defaultPvk2PfxPath( isVerified=False ):    
+        if IS_ARM_CPU:
+            subDirName =( Pvk2PfxConfig.__ARM_32BIT_DIR 
+                          if IS_32_BIT_CONTEXT else 
+                          Pvk2PfxConfig.__ARM_64BIT_DIR )
+        else:
+            subDirName =( Pvk2PfxConfig.__INTEL_32BIT_DIR 
+                          if IS_32_BIT_CONTEXT else 
+                          Pvk2PfxConfig.__INTEL_64BIT_DIR )                  
+        path = joinPath( util._winProgs86DirPath(), 
+            Pvk2PfxConfig.__WINDOWS_KITS_DIR, subDirName, 
+            Pvk2PfxConfig.__PVK2PFX_NAME )
+        if isVerified and not isFile( path ): path = None            
+        return path 
+
+    def __init__( self, caCertPath, privateKeyPath, pfxFilePath=None ):
+
+        self.caCertPath     = caCertPath        
+        self.privateKeyPath = privateKeyPath  
+        self.pfxFilePath    =( pfxFilePath if pfxFilePath else
+            joinExt( splitExt( privateKeyPath )[0], Pvk2PfxConfig._PFX_EXT ) )
+ 
+        self.pvk2PfxPath = None # if None, this will be auto resolved 
+       
+        self.otherPvk2PfxArgs  = ""
+        
+        self.isDebugMode = True
+
+    def __str__( self ) :
+        if not isFile( self.privateKeyPath ):
+            raise Exception( 
+                "Missing or invalid private key path in Pvk2PfxConfig: %s" %
+                (self.privateKeyPath,) )        
+        if not isFile( self.caCertPath ):
+            raise Exception( 
+                "Missing or invalid CA cert path in Pvk2PfxConfig: %s" %
+                (self.caCertPath,) )                
+        privateKeyPath = '/pvk "%s"' % (self.privateKeyPath,)
+        caCertPath     = '/spc "%s"' % (self.caCertPath,)
+        pfxFilePath    = '/pfx "%s"' % (self.pfxFilePath,)
+        tokens = (privateKeyPath, caCertPath, pfxFilePath, self.otherPvk2PfxArgs)
+        return ' '.join( (('%s ' * len(tokens)) % tokens).split() )        
+
+def __usePvk2Pfx( pvk2PfxConfig ):
+    __validatePvk2PfxConfig( pvk2PfxConfig )
+    cmd = '"%s" %s' % ( pvk2PfxConfig.pvk2PfxPath, str(pvk2PfxConfig) )
+    if( not util._isSystemSuccess( cmd ) or 
+        not isFile( pvk2PfxConfig.pfxFilePath ) ): 
+        raise Exception( 'FAILED convert private key to PFX file' )
+    print( "Generated Personal Information Exchange (PFX) file successfully!" )
+    return pvk2PfxConfig.pfxFilePath
+
+def __validatePvk2PfxConfig( cfg ):
+    if not isFile( cfg.privateKeyPath ):
+        raise Exception( 
+            "Missing or invalid private key path in Pvk2PfxConfig: %s" %
+            (cfg.privateKeyPath,) )        
+    if not isFile( cfg.caCertPath ):
+        raise Exception( 
+            "Missing or invalid CA cert path in Pvk2PfxConfig: %s" %
+            (cfg.caCertPath,) )                
+    if cfg.pvk2PfxPath is None: 
+        cfg.pvk2PfxPath = getenv( PVK2PFX_PATH_ENV_VAR )    
+    if cfg.pvk2PfxPath is None: 
+        cfg.pvk2PfxPath = (
+            Pvk2PfxConfig._defaultPvk2PfxPath( isVerified=True ) )    
+    if cfg.pvk2PfxPath is None: 
+        cfg.pvk2PfxPath = __installPvk2Pfx()   
+    if cfg.pvk2PfxPath is None: 
+        raise Exception( "Valid Pvk2Pfx path required" )
+
+def __installPvk2Pfx():
+    print( "Installing Pvk2Pfx utility...\n" )
+    if not util._isSystemSuccess( Pvk2PfxConfig._builtInInstallerPath() ): 
+        raise Exception( "Pvk2Pfx installation FAILED" )
+    return Pvk2PfxConfig._defaultPvk2PfxPath( isVerified=True )
+
+#------------------------------------------------------------------------------
+def generateCerts( makeCertConfig ):
+    """ Returns CA Cert Path, Private Key Path, PFX Path """
     print( "Generating code signing certificates...\n" )
-    if IS_WINDOWS: return __useMakeCert( config )    
+    if IS_WINDOWS:
+        caCertPath, privKeyPath = __useMakeCert( makeCertConfig )
+        pfxPath = __usePvk2Pfx( Pvk2PfxConfig( caCertPath, privKeyPath ) )
+        return (caCertPath, privKeyPath, pfxPath)            
     #TODO: SUPPORT OTHER PLATFORMS!!!
     util._onPlatformErr()
         
-def signExe( exePath, config ):
+def signExe( exePath, signToolConfig ):
     exePath = normBinaryName( exePath, isPathPreserved=True )
     print( "Code signing %s...\n" % (exePath,) )
-    if IS_WINDOWS: return __useSignTool( exePath, config )    
+    if IS_WINDOWS: return __useSignTool( exePath, signToolConfig )    
     #TODO: SUPPORT OTHER PLATFORMS!!!
     util._onPlatformErr()
         
