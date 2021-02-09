@@ -105,7 +105,8 @@ ExtLibHandling = OpyConfig.ExtLibHandling
 from distbuilder.code_sign import \
       MakeCertConfig \
     , SignToolConfig \
-    , generateCerts \
+    , generateTrustCerts \
+    , buildTrustCertInstaller \
     , signExe \
     , SIGNTOOL_PATH_ENV_VAR
     

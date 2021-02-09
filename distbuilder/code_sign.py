@@ -174,8 +174,8 @@ class MakeCertConfig:
                   privateKeyPath, caCertPath )
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )        
 
-def __useMakeCert( makeCertConfig ):
-    __validateMakeCertConfig( makeCertConfig )
+def __useMakeCert( makeCertConfig, isOverwrite ):
+    __validateMakeCertConfig( makeCertConfig, isOverwrite )
     cmd = '"%s" %s' % ( makeCertConfig.makeCertPath, str(makeCertConfig) )
     if( not util._isSystemSuccess( cmd ) or
         not isFile( makeCertConfig.caCertPath ) or
@@ -184,8 +184,17 @@ def __useMakeCert( makeCertConfig ):
     print( "Generated code signing certificates successfully!" )
     return makeCertConfig.caCertPath, makeCertConfig.privateKeyPath
 
-def __validateMakeCertConfig( cfg ):
-    if not isDir( cfg.destDirPath ): makeDir( cfg.destDirPath )         
+def __validateMakeCertConfig( cfg, isOverwrite ):
+    if isDir( cfg.destDirPath ): 
+        if isOverwrite:
+            removeFromDir( baseFileName(cfg.caCertPath),     cfg.destDirPath )
+            removeFromDir( baseFileName(cfg.privateKeyPath), cfg.destDirPath )
+        else:
+            if isFile( cfg.caCertPath ):
+                raise Exception( "File exists: %s" % (cfg.caCertPath,) )
+            if isFile( cfg.privateKeyPath ):
+                raise Exception( "File exists: %s" % (cfg.privateKeyPath,) )
+    else: makeDir( cfg.destDirPath )                                         
     if cfg.makeCertPath is None: 
         cfg.makeCertPath = getenv( MAKECERT_PATH_ENV_VAR )    
     if cfg.makeCertPath is None: 
@@ -262,8 +271,8 @@ class Pvk2PfxConfig:
         tokens = (privateKeyPath, caCertPath, pfxFilePath, self.otherPvk2PfxArgs)
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )        
 
-def __usePvk2Pfx( pvk2PfxConfig ):
-    __validatePvk2PfxConfig( pvk2PfxConfig )
+def __usePvk2Pfx( pvk2PfxConfig, isOverwrite ):
+    __validatePvk2PfxConfig( pvk2PfxConfig, isOverwrite )
     cmd = '"%s" %s' % ( pvk2PfxConfig.pvk2PfxPath, str(pvk2PfxConfig) )
     if( not util._isSystemSuccess( cmd ) or 
         not isFile( pvk2PfxConfig.pfxFilePath ) ): 
@@ -271,7 +280,7 @@ def __usePvk2Pfx( pvk2PfxConfig ):
     print( "Generated Personal Information Exchange (PFX) file successfully!" )
     return pvk2PfxConfig.pfxFilePath
 
-def __validatePvk2PfxConfig( cfg ):
+def __validatePvk2PfxConfig( cfg, isOverwrite ):
     if not isFile( cfg.privateKeyPath ):
         raise Exception( 
             "Missing or invalid private key path in Pvk2PfxConfig: %s" %
@@ -279,7 +288,14 @@ def __validatePvk2PfxConfig( cfg ):
     if not isFile( cfg.caCertPath ):
         raise Exception( 
             "Missing or invalid CA cert path in Pvk2PfxConfig: %s" %
-            (cfg.caCertPath,) )                
+            (cfg.caCertPath,) )
+    if isOverwrite:
+        removeFromDir( baseFileName( cfg.pfxFilePath ), 
+                            dirPath( cfg.pfxFilePath ) )
+    elif isFile( cfg.pfxFilePath ):
+        raise Exception( "File exists: %s" % (cfg.pfxFilePath,) )
+    else: makeDir( cfg.destDirPath )                                         
+                        
     if cfg.pvk2PfxPath is None: 
         cfg.pvk2PfxPath = getenv( PVK2PFX_PATH_ENV_VAR )    
     if cfg.pvk2PfxPath is None: 
@@ -297,16 +313,103 @@ def __installPvk2Pfx():
     return Pvk2PfxConfig._defaultPvk2PfxPath( isVerified=True )
 
 #------------------------------------------------------------------------------
-def generateCerts( makeCertConfig ):
+def generateTrustCerts( makeCertConfig, isOverwrite=False ):
     """ Returns CA Cert Path, Private Key Path, PFX Path """
     print( "Generating code signing certificates...\n" )
     if IS_WINDOWS:
-        caCertPath, privKeyPath = __useMakeCert( makeCertConfig )
-        pfxPath = __usePvk2Pfx( Pvk2PfxConfig( caCertPath, privKeyPath ) )
+        caCertPath, privKeyPath = __useMakeCert( makeCertConfig, isOverwrite )
+        pfxPath = __usePvk2Pfx( Pvk2PfxConfig( caCertPath, privKeyPath ), 
+                                isOverwrite )
         return (caCertPath, privKeyPath, pfxPath)            
     #TODO: SUPPORT OTHER PLATFORMS!!!
     util._onPlatformErr()
+
+def buildTrustCertInstaller( companyName, caCertPath, pfxFilePath,
+                             version=(1,0,0,0), iconFilePath=None, 
+                             isSilent=False, isTest=False ):
+    print( "Building Trust Certificate Installer..." )    
+    #TODO: SUPPORT OTHER PLATFORMS!!!
+    if not IS_WINDOWS: util._onPlatformErr()
+    
+    from distbuilder.master import ConfigFactory, PyToBinPackageProcess
         
+    script = ExecutableScript( "__installTrustCert", extension="py", script=[
+         'import sys, os.path'
+        ,'from subprocess import check_call, check_output'
+        ,''
+        ,'CERT_UTIL_PATH = "Certutil"'
+        ,'CERT_STORE     = "Root"'
+        ,'CA_PATH   = os.path.join( sys._MEIPASS, "{caFileName}" )'
+        ,'ICON_PATH = os.path.join( sys._MEIPASS, "{iconFileName}" )'
+        ,'CA_COMMON_NAME_SEARCH = b"Issuer: CN={commonName}"'
+        ,'SUCCESS_TITLE = "Installed"'
+        ,'SUCCESS_MSG   = "Successfully installed {commonName} trust certificate!"'
+        ,'SUCCESS_CODE  = 0'
+        ,'FAILURE_TITLE = "Error"'
+        ,'FAILURE_MSG   = "Failed to install {commonName} trust certificate!"'
+        ,'FAILURE_CODE  = 1'
+        ,''        
+        ,'try: check_call( "\\"%s\\" -addStore \\"%s\\" \\"%s\\"" % '
+                            '(CERT_UTIL_PATH, CERT_STORE, CA_PATH) )'
+        ,'except: pass'                        
+        ,'storeOutput = check_output( "\\"%s\\" -store \\"%s\\"" % '
+                            '(CERT_UTIL_PATH, CERT_STORE) )'
+        ,'isSuccess = CA_COMMON_NAME_SEARCH in storeOutput'                        
+        ,'if isSuccess: sys.stdout.write( SUCCESS_MSG )'    
+        ,'else: sys.stderr.write( FAILURE_MSG )'
+        ] + ([] if isSilent else [ 
+         'try:    #PY3'
+        ,'    from tkinter import Tk'
+        ,'    import tkinter.messagebox as tkMessageBox' 
+        ,'except: #PY2'
+        ,'    from Tkinter import Tk'
+        ,'    import tkMessageBox'
+        ,'tkRoot = Tk()'
+        ,'tkRoot.overrideredirect( 1 )'
+        ,'if os.path.exists( ICON_PATH ): tkRoot.iconbitmap( ICON_PATH )'
+        ,'tkRoot.withdraw()'
+        ,'if isSuccess:'
+        ,'    tkMessageBox.showinfo( SUCCESS_TITLE, SUCCESS_MSG,'
+                                   ' parent=tkRoot )'
+        ,'else:'
+        ,'    tkMessageBox.showerror( FAILURE_TITLE, FAILURE_MSG,'
+                                    ' parent=tkRoot )'              
+        ]) +
+        ['sys.exit( SUCCESS_CODE if isSuccess else FAILURE_CODE )'], 
+        replacements={ "caFileName"   : baseFileName( caCertPath ) 
+                     , "iconFileName" : baseFileName( iconFilePath )
+                     , "commonName"   : companyName } 
+    )
+    script.write( THIS_DIR )    
+    
+    simpleCompanyName = companyName.replace(" ","").replace(".","")
+    
+    f = configFactory  = ConfigFactory()
+    f.productName      = "Trust %s" % (companyName,)
+    f.description      = "Trust Certificate Installer"
+    f.binaryName       = "Trust%s" % (simpleCompanyName,)
+    f.companyLegalName = companyName 
+    #f.isGui            = not isSilent    
+    f.iconFilePath     = iconFilePath 
+    f.version          = version
+    f.isOneFile        = True                   
+    f.entryPointPy     = script.fileName()  
+    
+    class TrustInstallerBuilderProcess( PyToBinPackageProcess ):               
+        def onPyInstConfig( self, cfg ): 
+            cfg.isAutoElevated = True
+            cfg.dataFilePaths  = [ caCertPath ]            
+            
+        def onFinalize( self ):
+            removeFromDir( script.fileName(), THIS_DIR )
+            # sign the installer itself 
+            signExe( self.binPath, 
+                     SignToolConfig( pfxFilePath=absPath( pfxFilePath ) ) )                                                                
+    p = TrustInstallerBuilderProcess( configFactory )       
+    p.run()     
+    if isTest: run( p.binPath, isElevated=True, isDebug=True )    
+    return p.binPath
+             
 def signExe( exePath, signToolConfig ):
     exePath = normBinaryName( exePath, isPathPreserved=True )
     print( "Code signing %s...\n" % (exePath,) )
