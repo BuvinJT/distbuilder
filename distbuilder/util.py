@@ -349,14 +349,18 @@ __PS_OUTPUT_MAJOR_VERSION = [
     , 'Catch{ Write-Host 1 }'
 ]
 
-def _runPowerShell( script ): __runPowerShell( script )
-def _powerShellOutput( script, asCleanLines=False ): 
-    return __runPowerShell( script, isStdOut=True, asCleanLines=asCleanLines )
-def __runPowerShell( script, isStdOut=False, asCleanLines=False ):
+def _runPowerShell( script, replacements=None ): 
+    __runPowerShell( script, replacements )
+def _powerShellOutput( script, replacements=None, asCleanLines=False ): 
+    return __runPowerShell( script, replacements,
+                            isStdOut=True, asCleanLines=asCleanLines )
+def __runPowerShell( script, replacements=None,
+                     isStdOut=False, asCleanLines=False ):
     if not IS_WINDOWS: _onPlatformErr()
     if isinstance( script, string_types ) or isinstance( script, list ): 
         script = ExecutableScript( "__tempDistbuilderScript", 
-                                   extension="ps1", script=script )
+                                   extension="ps1", script=script,
+                                   replacements=replacements )
     dirPath = tempDirPath()
     script.write( dirPath )    
     cmd =( 'powershell.exe -ExecutionPolicy Bypass -InputFormat None '

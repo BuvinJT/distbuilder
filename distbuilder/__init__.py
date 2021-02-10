@@ -103,7 +103,7 @@ from distbuilder.opy_library import \
 ExtLibHandling = OpyConfig.ExtLibHandling 
 
 from distbuilder.code_sign import \
-      MakeCertConfig \
+      SelfSignedCertConfig \
     , SignToolConfig \
     , generateTrustCerts \
     , buildTrustCertInstaller \

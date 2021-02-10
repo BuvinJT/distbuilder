@@ -1,6 +1,15 @@
 from distbuilder import util    # @UnusedImport
 from distbuilder.util import *  # @UnusedWildImport
 
+_PS_SELF_CERT_VER_REQ = 4 # found on Windows 8.1+
+__isPsSelfCert = None
+def _isPsSelfCertMethod():
+    global __isPsSelfCert
+    if __isPsSelfCert is None:
+        __isPsSelfCert = (
+            util._powerShellMajorVersion() >= _PS_SELF_CERT_VER_REQ )
+    return __isPsSelfCert
+
 _RES_DIR_PATH = util._toLibResPath( joinPath( "code_sign_res", 
     ("linux" if IS_LINUX else "macos" if IS_MACOS else "windows") ) )
 
@@ -108,11 +117,7 @@ def __installSignTool():
 #------------------------------------------------------------------------------
 MAKECERT_PATH_ENV_VAR = "MAKECERT_PATH"
             
-# TODO: Add Powershell New-SelfSignedCertificate mechanism to replace this now
-# deprecated MakeCert util.  
-# Note: util._powerShellMajorVersion() >= 4 would be required for that to work.
-# See: https://docs.microsoft.com/en-us/powershell/module/pkiclient/new-selfsignedcertificate?view=win10-ps
-class MakeCertConfig:
+class SelfSignedCertConfig:
 
     NO_MAX_CHILDREN      = 0
     LIFETIME_SIGNING_EKU = '1.3.6.1.5.5.7.3.3,1.3.6.1.4.1.311.10.3.13'
@@ -126,69 +131,106 @@ class MakeCertConfig:
     __ARM_64BIT_DIR    = "arm64"
     __MAKECERT_NAME    = "makecert.exe"
 
-    __SUBJECT_KEY_EXT  = ".pvk"
     __CA_CERT_EXT      = ".cer"
-    
+    __SUBJECT_KEY_EXT  = ".pvk"
+    __PFX_EXT          = ".pfx"
+   
     @staticmethod
     def _builtInMakeCertPath( isVerified=False ):    
         if IS_ARM_CPU:
-            subDirName =( MakeCertConfig.__ARM_32BIT_DIR 
+            subDirName =( SelfSignedCertConfig.__ARM_32BIT_DIR 
                           if IS_32_BIT_CONTEXT else 
-                          MakeCertConfig.__ARM_64BIT_DIR )
+                          SelfSignedCertConfig.__ARM_64BIT_DIR )
         else:
-            subDirName =( MakeCertConfig.__INTEL_32BIT_DIR 
+            subDirName =( SelfSignedCertConfig.__INTEL_32BIT_DIR 
                           if IS_32_BIT_CONTEXT else 
-                          MakeCertConfig.__INTEL_64BIT_DIR )                  
+                          SelfSignedCertConfig.__INTEL_64BIT_DIR )                  
         path = joinPath( _RES_DIR_PATH, 
-            MakeCertConfig.__RES_DIR_NAME, subDirName, 
-            MakeCertConfig.__MAKECERT_NAME )
+            SelfSignedCertConfig.__RES_DIR_NAME, subDirName, 
+            SelfSignedCertConfig.__MAKECERT_NAME )
         if isVerified and not isFile( path ): path = None            
         return path 
 
     def __init__( self, companyTradeName, destDirPath=None ):
     
         self.commonName  = companyTradeName
-        
+        self.endDate     = SelfSignedCertConfig.DEFAULT_END_DATE
+
         self.destDirPath = destDirPath if destDirPath else THIS_DIR        
         outputRoot = companyTradeName.replace(" ", "").replace(".", "")        
         self.caCertPath     = joinPath( self.destDirPath, 
-            joinExt( outputRoot, MakeCertConfig.__CA_CERT_EXT) )
+            joinExt( outputRoot, SelfSignedCertConfig.__CA_CERT_EXT) )
         self.privateKeyPath = joinPath( self.destDirPath, 
-            joinExt( outputRoot, MakeCertConfig.__SUBJECT_KEY_EXT ) )
+            joinExt( outputRoot, 
+                SelfSignedCertConfig.__PFX_EXT if _isPsSelfCertMethod() else 
+                SelfSignedCertConfig.__SUBJECT_KEY_EXT ) )
         
         self.makeCertPath = None # if None, this will be auto resolved 
 
-        self.maxCertChildren  = MakeCertConfig.NO_MAX_CHILDREN       
-        self.enhancedKeyUsage = MakeCertConfig.LIFETIME_SIGNING_EKU
-        self.endDate          = MakeCertConfig.DEFAULT_END_DATE
-        self.otherMakeCertArgs  = ""
-        
+        self._maxCertChildren  = SelfSignedCertConfig.NO_MAX_CHILDREN       
+        self._enhancedKeyUsage = SelfSignedCertConfig.LIFETIME_SIGNING_EKU        
+        self.otherArgs         = ""
         self.isDebugMode = True
 
     def __str__( self ) :
         name               = '/n "CN=%s"' % (self.commonName,)
         selfSignedRootCert = '/r'
-        maxCertChildren    = '/h %d' % (self.maxCertChildren,)
-        enhancedKeyUsage   = '/eku %s' % (self.enhancedKeyUsage,)
+        maxCertChildren    = '/h %d' % (self._maxCertChildren,)
+        enhancedKeyUsage   = '/eku %s' % (self._enhancedKeyUsage,)
         endDate            = '/e %s' % (self.endDate,)
         privateKeyPath     = '/sv "%s"' % (self.privateKeyPath,)
         caCertPath         = '"%s"' % (self.caCertPath,)                       
         tokens = (name, selfSignedRootCert, maxCertChildren,
-                  enhancedKeyUsage, endDate, self.otherMakeCertArgs,
+                  enhancedKeyUsage, endDate, self.otherArgs,
                   privateKeyPath, caCertPath )
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )        
 
-def __useMakeCert( makeCertConfig, isOverwrite ):
-    __validateMakeCertConfig( makeCertConfig, isOverwrite )
-    cmd = '"%s" %s' % ( makeCertConfig.makeCertPath, str(makeCertConfig) )
+def __useMakeCert( certConfig, isOverwrite ):
+    __validateSelfSignedCertConfig( certConfig, isOverwrite )
+    cmd = '"%s" %s' % ( certConfig.makeCertPath, str(certConfig) )
     if( not util._isSystemSuccess( cmd ) or
-        not isFile( makeCertConfig.caCertPath ) or
-        not isFile( makeCertConfig.privateKeyPath ) ): 
+        not isFile( certConfig.caCertPath ) or
+        not isFile( certConfig.privateKeyPath ) ): 
         raise Exception( 'FAILED to generate code signing certificates' )
     print( "Generated code signing certificates successfully!" )
-    return makeCertConfig.caCertPath, makeCertConfig.privateKeyPath
+    return certConfig.caCertPath, certConfig.privateKeyPath
 
-def __validateMakeCertConfig( cfg, isOverwrite ):
+def __usePsSelfSignedCertScript( certConfig, pfxPassword, isOverwrite ):
+    __validateSelfSignedCertConfig( certConfig, isOverwrite )
+    util._runPowerShell([
+         'New-SelfSignedCertificate '
+            '-CertStoreLocation Cert:\CurrentUser\My '
+            '-Type "CodeSigningCert" '
+            '-Subject "CN={commonName}" '
+            '-FriendlyName "{commonName}" '
+            '-KeyExportPolicy Exportable '
+            '-NotAfter "{endDate}" {otherArgs}'
+        ,'$newCert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | '
+            'Where-Object Subject -EQ "CN={commonName}"'    
+        ,'Export-Certificate -Cert $newCert -FilePath "{caCertPath}"'
+    ] + ([
+         '$pwd = ConvertTo-SecureString -String "{pfxPassword}" -Force -AsPlainText'
+        ,'Export-PfxCertificate -Cert $newCert -FilePath "{privateKeyPath}" '
+            '-Password $pwd'
+    ] if pfxPassword else [
+        'Export-PfxCertificate -Cert $newCert -FilePath "{privateKeyPath}"'
+    ]) + [
+        '$newCert | Remove-Item'        
+    ]            
+    , replacements={ "commonName"    : certConfig.commonName
+                   , "endDate"       : certConfig.endDate
+                   , "otherArgs"     : certConfig.otherArgs
+                   , "caCertPath"    : certConfig.caCertPath
+                   , "privateKeyPath": certConfig.privateKeyPath
+                   , "pfxPassword"   : pfxPassword
+    })
+    if( not isFile( certConfig.caCertPath ) or
+        not isFile( certConfig.privateKeyPath ) ): 
+        raise Exception( 'FAILED to generate code signing certificates' )
+    print( "Generated code signing certificates successfully!" )
+    return certConfig.caCertPath, certConfig.privateKeyPath
+
+def __validateSelfSignedCertConfig( cfg, isOverwrite ):
     if isDir( cfg.destDirPath ): 
         if isOverwrite:
             removeFromDir( baseFileName(cfg.caCertPath),     cfg.destDirPath )
@@ -198,11 +240,13 @@ def __validateMakeCertConfig( cfg, isOverwrite ):
                 raise Exception( "File exists: %s" % (cfg.caCertPath,) )
             if isFile( cfg.privateKeyPath ):
                 raise Exception( "File exists: %s" % (cfg.privateKeyPath,) )
-    else: makeDir( cfg.destDirPath )                                         
+    else: makeDir( cfg.destDirPath )                                        
+    
+    if _isPsSelfCertMethod(): return
     if cfg.makeCertPath is None: 
         cfg.makeCertPath = getenv( MAKECERT_PATH_ENV_VAR )    
     if cfg.makeCertPath is None: 
-        cfg.makeCertPath = MakeCertConfig._builtInMakeCertPath()
+        cfg.makeCertPath = SelfSignedCertConfig._builtInMakeCertPath()
     if cfg.makeCertPath is None: 
         raise Exception( "Valid MakeCert path required" )
 
@@ -258,7 +302,7 @@ class Pvk2PfxConfig:
  
         self.pvk2PfxPath = None # if None, this will be auto resolved 
        
-        self.otherPvk2PfxArgs  = ""
+        self.otherArgs  = ""
         
         self.isDebugMode = True
 
@@ -277,7 +321,7 @@ class Pvk2PfxConfig:
         pfxPassword    =( '/pi "%s"'  % (self.pfxPassword,) 
                           if self.pfxPassword else "" )
         tokens = (privateKeyPath, caCertPath, pfxFilePath, pfxPassword,
-                  self.otherPvk2PfxArgs)
+                  self.otherArgs)
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )        
 
 def __usePvk2Pfx( pvk2PfxConfig, isOverwrite ):
@@ -322,14 +366,19 @@ def __installPvk2Pfx():
     return Pvk2PfxConfig._defaultPvk2PfxPath( isVerified=True )
 
 #------------------------------------------------------------------------------
-def generateTrustCerts( makeCertConfig, pfxPassword=None, isOverwrite=False ):
-    """ Returns CA Cert Path, Private Key Path, PFX Path """
+def generateTrustCerts( certConfig, pfxPassword=None, isOverwrite=False ):
+    """ Returns CA Cert Path, PFX Path """
     print( "Generating code signing certificates...\n" )
     if IS_WINDOWS:
-        caCertPath, privKeyPath = __useMakeCert( makeCertConfig, isOverwrite )
-        pfxConfig = Pvk2PfxConfig( caCertPath, privKeyPath, pfxPassword=pfxPassword )
-        pfxPath = __usePvk2Pfx( pfxConfig, isOverwrite )
-        return (caCertPath, privKeyPath, pfxPath)            
+        if _isPsSelfCertMethod():
+            caCertPath, pfxPath = __usePsSelfSignedCertScript( 
+                certConfig, pfxPassword, isOverwrite )
+        else :
+            caCertPath, privKeyPath = __useMakeCert( certConfig, isOverwrite )            
+            pfxConfig = Pvk2PfxConfig( 
+                caCertPath, privKeyPath, pfxPassword=pfxPassword )
+            pfxPath = __usePvk2Pfx( pfxConfig, isOverwrite )
+        return caCertPath, pfxPath            
     #TODO: SUPPORT OTHER PLATFORMS!!!
     util._onPlatformErr()
 
