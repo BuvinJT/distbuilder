@@ -13,5 +13,5 @@ p = PyToBinPackageProcess( configFactory )
 p.run()  
 
 # You must run the generateTrustCerts example first, to have this PFX!
-signExe( p.binPath, SignToolConfig(pfxFilePath="SomeCompany.pfx",
+signExe( p.binPath, SignToolConfig(pfxFilePath="./certs/SomeCompany.pfx",
                                    pfxPassword=getPassword(isGuiPrompt=True)) )        
