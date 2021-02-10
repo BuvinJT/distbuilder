@@ -119,9 +119,9 @@ MAKECERT_PATH_ENV_VAR = "MAKECERT_PATH"
             
 class SelfSignedCertConfig:
 
+    DEFAULT_END_DATE     = '12/31/2050'
     NO_MAX_CHILDREN      = 0
     LIFETIME_SIGNING_EKU = '1.3.6.1.5.5.7.3.3,1.3.6.1.4.1.311.10.3.13'
-    DEFAULT_END_DATE     = '12/31/2050'
         
     __RES_DIR_NAME = "makecert"
 
@@ -205,6 +205,7 @@ def __usePsSelfSignedCertScript( certConfig, pfxPassword, isOverwrite ):
             '-FriendlyName "{commonName}" '
             '-KeyExportPolicy Exportable '
             '-NotAfter "{endDate}" {otherArgs}'
+            '-TextExtension @("2.5.29.37={text}{enhancedKeyUsage}")'
         ,'$newCert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | '
             'Where-Object Subject -EQ "CN={commonName}"'    
         ,'Export-Certificate -Cert $newCert -FilePath "{caCertPath}"'
@@ -217,12 +218,13 @@ def __usePsSelfSignedCertScript( certConfig, pfxPassword, isOverwrite ):
     ]) + [
         '$newCert | Remove-Item'        
     ]            
-    , replacements={ "commonName"    : certConfig.commonName
-                   , "endDate"       : certConfig.endDate
-                   , "otherArgs"     : certConfig.otherArgs
-                   , "caCertPath"    : certConfig.caCertPath
-                   , "privateKeyPath": certConfig.privateKeyPath
-                   , "pfxPassword"   : pfxPassword
+    , replacements={ "commonName"      : certConfig.commonName
+                   , "endDate"         : certConfig.endDate
+                   , "enhancedKeyUsage": certConfig._enhancedKeyUsage
+                   , "otherArgs"       : certConfig.otherArgs
+                   , "caCertPath"      : certConfig.caCertPath
+                   , "privateKeyPath"  : certConfig.privateKeyPath
+                   , "pfxPassword"     : pfxPassword
     })
     if( not isFile( certConfig.caCertPath ) or
         not isFile( certConfig.privateKeyPath ) ): 
