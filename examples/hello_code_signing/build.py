@@ -11,4 +11,6 @@ f.entryPointPy     = "../hello_world/hello.py"
 
 p = PyToBinPackageProcess( configFactory )       
 p.run()  
-signExe( p.binPath, SignToolConfig( pfxFilePath=absPath( "SomeCompany.pfx" ) ) )        
+
+# You must run the generateTrustCerts example first, to have this PFX!
+signExe( p.binPath, SignToolConfig( pfxFilePath=absPath("SomeCompany.pfx") ) )        

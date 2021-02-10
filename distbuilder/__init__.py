@@ -177,6 +177,7 @@ from distbuilder.util import \
     , versionTuple \
     , versionStr \
     , versionNo \
+    , getPassword \
     , assertMinVer
     
 def assertBuilderVer( ver ): 

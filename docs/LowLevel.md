@@ -1792,6 +1792,16 @@ If set to `False`, the name will be auto assigned to one which does not conflict
 with any that already exist. If set to `True`, and the path already exists, the
 new download will overwrite the prior file.       	
 
+### getPassword
+
+    getPassword( isGuiPrompt=True )
+    
+**Returns**: the password input by the user
+
+**isGuiPrompt**: If enabled, uses the Tk library to drive a gui prompt. 
+(Such requires a gui operating system / distro, of course.)
+If not enabled, the password input prompt will work via a terminal interface.     
+
 ### Aliased standard python functions
        
         exists                 os.path.exists 

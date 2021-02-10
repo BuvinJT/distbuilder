@@ -890,6 +890,27 @@ def _isLocalPath( path ):
     return isLocal, path 
 # -----------------------------------------------------------------------------            
 
+def getPassword( isGuiPrompt=False ):
+    if isGuiPrompt:
+        try:    #PY3
+            from tkinter import Tk                         # @UnusedImport
+            import tkinter.simpledialog as tkSimpleDialog  # @UnusedImport
+        except: #PY2
+            from Tkinter import Tk  # @UnresolvedImport @Reimport
+            import tkSimpleDialog   # @UnresolvedImport @Reimport 
+        tkRoot = Tk()
+        tkRoot.overrideredirect( 1 )
+        tkRoot.withdraw()
+        password = tkSimpleDialog.askstring(
+            "Password", "Enter password:", show='*', parent=tkRoot )
+        tkRoot.destroy() # clean up after yourself!
+    else :
+        from getpass import getpass
+        password = getpass()
+    return password
+
+# -----------------------------------------------------------------------------            
+
 class PlasticFile:
 
     def __init__( self, filePath=None, content=None ) :

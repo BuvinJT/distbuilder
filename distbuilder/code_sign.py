@@ -68,10 +68,11 @@ class SignToolConfig:
         fileDigest      = "/fd %s" % (self.fileDigest,)
         timeStampServer = "/tr %s" % (self.timeStampServerUrl,)
         timeStampDigest = "/td %s" % (self.timeStampDigest,)
-        pfxFile         = '/f "%s"%s' % (self.pfxFilePath, 
-            ' "%s"' % (self.pfxPassword,) if self.pfxPassword else "" )                                
+        pfxFilePath     = '/f "%s"' % (self.pfxFilePath,)
+        pfxPassword     =('/p "%s"' % (self.pfxPassword,) 
+                          if self.pfxPassword else "" )                                
         tokens = (operation, verbose, fileDigest, 
-                  timeStampServer, timeStampDigest, pfxFile,
+                  timeStampServer, timeStampDigest, pfxFilePath, pfxPassword,
                   self.otherSignToolArgs)
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )        
 
@@ -113,8 +114,9 @@ MAKECERT_PATH_ENV_VAR = "MAKECERT_PATH"
 # See: https://docs.microsoft.com/en-us/powershell/module/pkiclient/new-selfsignedcertificate?view=win10-ps
 class MakeCertConfig:
 
-    NO_MAX_CHILDREN = 0
+    NO_MAX_CHILDREN      = 0
     LIFETIME_SIGNING_EKU = '1.3.6.1.5.5.7.3.3,1.3.6.1.4.1.311.10.3.13'
+    DEFAULT_END_DATE     = '12/31/2050'
         
     __RES_DIR_NAME = "makecert"
 
@@ -143,12 +145,12 @@ class MakeCertConfig:
         if isVerified and not isFile( path ): path = None            
         return path 
 
-    def __init__( self, companyName, destDirPath=None ):
+    def __init__( self, companyTradeName, destDirPath=None ):
     
-        self.commonName  = companyName
+        self.commonName  = companyTradeName
         
         self.destDirPath = destDirPath if destDirPath else THIS_DIR        
-        outputRoot = companyName.replace(" ", "").replace(".", "")        
+        outputRoot = companyTradeName.replace(" ", "").replace(".", "")        
         self.caCertPath     = joinPath( self.destDirPath, 
             joinExt( outputRoot, MakeCertConfig.__CA_CERT_EXT) )
         self.privateKeyPath = joinPath( self.destDirPath, 
@@ -158,6 +160,7 @@ class MakeCertConfig:
 
         self.maxCertChildren  = MakeCertConfig.NO_MAX_CHILDREN       
         self.enhancedKeyUsage = MakeCertConfig.LIFETIME_SIGNING_EKU
+        self.endDate          = MakeCertConfig.DEFAULT_END_DATE
         self.otherMakeCertArgs  = ""
         
         self.isDebugMode = True
@@ -167,10 +170,11 @@ class MakeCertConfig:
         selfSignedRootCert = '/r'
         maxCertChildren    = '/h %d' % (self.maxCertChildren,)
         enhancedKeyUsage   = '/eku %s' % (self.enhancedKeyUsage,)
+        endDate            = '/e %s' % (self.endDate,)
         privateKeyPath     = '/sv "%s"' % (self.privateKeyPath,)
         caCertPath         = '"%s"' % (self.caCertPath,)                       
         tokens = (name, selfSignedRootCert, maxCertChildren,
-                  enhancedKeyUsage,  self.otherMakeCertArgs,
+                  enhancedKeyUsage, endDate, self.otherMakeCertArgs,
                   privateKeyPath, caCertPath )
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )        
 
@@ -243,10 +247,12 @@ class Pvk2PfxConfig:
         if isVerified and not isFile( path ): path = None            
         return path 
 
-    def __init__( self, caCertPath, privateKeyPath, pfxFilePath=None ):
+    def __init__( self, caCertPath, privateKeyPath, 
+                  pfxPassword=None, pfxFilePath=None ):
 
         self.caCertPath     = caCertPath        
-        self.privateKeyPath = privateKeyPath  
+        self.privateKeyPath = privateKeyPath
+        self.pfxPassword    = pfxPassword  
         self.pfxFilePath    =( pfxFilePath if pfxFilePath else
             joinExt( splitExt( privateKeyPath )[0], Pvk2PfxConfig._PFX_EXT ) )
  
@@ -265,10 +271,13 @@ class Pvk2PfxConfig:
             raise Exception( 
                 "Missing or invalid CA cert path in Pvk2PfxConfig: %s" %
                 (self.caCertPath,) )                
-        privateKeyPath = '/pvk "%s"' % (self.privateKeyPath,)
-        caCertPath     = '/spc "%s"' % (self.caCertPath,)
-        pfxFilePath    = '/pfx "%s"' % (self.pfxFilePath,)
-        tokens = (privateKeyPath, caCertPath, pfxFilePath, self.otherPvk2PfxArgs)
+        privateKeyPath =  '/pvk "%s"' % (self.privateKeyPath,)
+        caCertPath     =  '/spc "%s"' % (self.caCertPath,)
+        pfxFilePath    =  '/pfx "%s"' % (self.pfxFilePath,)
+        pfxPassword    =( '/pi "%s"'  % (self.pfxPassword,) 
+                          if self.pfxPassword else "" )
+        tokens = (privateKeyPath, caCertPath, pfxFilePath, pfxPassword,
+                  self.otherPvk2PfxArgs)
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )        
 
 def __usePvk2Pfx( pvk2PfxConfig, isOverwrite ):
@@ -313,20 +322,25 @@ def __installPvk2Pfx():
     return Pvk2PfxConfig._defaultPvk2PfxPath( isVerified=True )
 
 #------------------------------------------------------------------------------
-def generateTrustCerts( makeCertConfig, isOverwrite=False ):
+def generateTrustCerts( makeCertConfig, pfxPassword=None, isOverwrite=False ):
     """ Returns CA Cert Path, Private Key Path, PFX Path """
     print( "Generating code signing certificates...\n" )
     if IS_WINDOWS:
         caCertPath, privKeyPath = __useMakeCert( makeCertConfig, isOverwrite )
-        pfxPath = __usePvk2Pfx( Pvk2PfxConfig( caCertPath, privKeyPath ), 
-                                isOverwrite )
+        pfxConfig = Pvk2PfxConfig( caCertPath, privKeyPath, pfxPassword=pfxPassword )
+        pfxPath = __usePvk2Pfx( pfxConfig, isOverwrite )
         return (caCertPath, privKeyPath, pfxPath)            
     #TODO: SUPPORT OTHER PLATFORMS!!!
     util._onPlatformErr()
 
-def buildTrustCertInstaller( companyName, caCertPath, pfxFilePath,
-                             version=(1,0,0,0), iconFilePath=None, 
-                             isSilent=False, isTest=False ):
+def buildTrustCertInstaller( companyTradeName, caCertPath, pfxFilePath,
+            pfxPassword=None,
+            companyLegalName=None, version=(1,0,0,0), iconFilePath=None, 
+            isDesktopTarget=False, isHomeDirTarget=False,
+            isSilent=False, isTest=False ):
+    """
+    Returns path to installer
+    """
     print( "Building Trust Certificate Installer..." )    
     #TODO: SUPPORT OTHER PLATFORMS!!!
     if not IS_WINDOWS: util._onPlatformErr()
@@ -378,17 +392,18 @@ def buildTrustCertInstaller( companyName, caCertPath, pfxFilePath,
         ['sys.exit( SUCCESS_CODE if isSuccess else FAILURE_CODE )'], 
         replacements={ "caFileName"   : baseFileName( caCertPath ) 
                      , "iconFileName" : baseFileName( iconFilePath )
-                     , "commonName"   : companyName } 
+                     , "commonName"   : companyTradeName } 
     )
     script.write( THIS_DIR )    
     
-    simpleCompanyName = companyName.replace(" ","").replace(".","")
+    compressedCompName = companyTradeName.replace(" ","").replace(".","")
     
     f = configFactory  = ConfigFactory()
-    f.productName      = "Trust %s" % (companyName,)
+    f.productName      = "Trust %s" % (companyTradeName,)
     f.description      = "Trust Certificate Installer"
-    f.binaryName       = "Trust%s" % (simpleCompanyName,)
-    f.companyLegalName = companyName 
+    f.binaryName       = "Trust%s" % (compressedCompName,)
+    f.companyTradeName = companyTradeName 
+    f.companyLegalName = companyLegalName
     #f.isGui            = not isSilent    
     f.iconFilePath     = iconFilePath 
     f.version          = version
@@ -402,14 +417,20 @@ def buildTrustCertInstaller( companyName, caCertPath, pfxFilePath,
             
         def onFinalize( self ):
             removeFromDir( script.fileName(), THIS_DIR )
-            # sign the installer itself 
-            signExe( self.binPath, 
-                     SignToolConfig( pfxFilePath=absPath( pfxFilePath ) ) )                                                                
+            # sign the installer itself
+            signConfig = SignToolConfig( pfxFilePath=absPath( pfxFilePath ),
+                                         pfxPassword=pfxPassword ) 
+            signExe( self.binPath, signConfig )                                                                
     p = TrustInstallerBuilderProcess( configFactory )       
     p.run()     
-    if isTest: run( p.binPath, isElevated=True, isDebug=True )    
-    return p.binPath
-             
+    
+    if isDesktopTarget:   installerPath = moveToDesktop( p.binPath )
+    elif isHomeDirTarget: installerPath = moveToHomeDir( p.binPath )    
+    else :                installerPath = moveToDir( p.binPath, THIS_DIR )
+    removeDir( p.binDir )    
+    if isTest: run( installerPath, isElevated=True, isDebug=True )
+    return installerPath 
+         
 def signExe( exePath, signToolConfig ):
     exePath = normBinaryName( exePath, isPathPreserved=True )
     print( "Code signing %s...\n" % (exePath,) )
