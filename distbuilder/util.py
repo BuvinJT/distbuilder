@@ -901,8 +901,9 @@ def getPassword( isGuiPrompt=False ):
         tkRoot = Tk()
         tkRoot.overrideredirect( 1 )
         tkRoot.withdraw()
-        password = tkSimpleDialog.askstring(
-            "Password", "Enter password:", show='*', parent=tkRoot )
+        rPadChars = 50 * " " # stretch out the dialog so the title is fully visible
+        password = tkSimpleDialog.askstring( "Password", 
+            "Enter password:" + rPadChars, show='*', parent=tkRoot )
         tkRoot.destroy() # clean up after yourself!
     else :
         from getpass import getpass

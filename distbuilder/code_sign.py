@@ -46,7 +46,7 @@ class SignToolConfig:
 
     def __init__( self, pfxFilePath=None, pfxPassword=None ):
   
-        self.pfxFilePath  = pfxFilePath
+        self.pfxFilePath  = absPath( pfxFilePath )
         self.pfxPassword  = pfxPassword
  
         self.signToolPath = None # if None, this will be auto resolved 
@@ -250,8 +250,8 @@ class Pvk2PfxConfig:
     def __init__( self, caCertPath, privateKeyPath, 
                   pfxPassword=None, pfxFilePath=None ):
 
-        self.caCertPath     = caCertPath        
-        self.privateKeyPath = privateKeyPath
+        self.caCertPath     = absPath( caCertPath )        
+        self.privateKeyPath = absPath( privateKeyPath )
         self.pfxPassword    = pfxPassword  
         self.pfxFilePath    =( pfxFilePath if pfxFilePath else
             joinExt( splitExt( privateKeyPath )[0], Pvk2PfxConfig._PFX_EXT ) )
@@ -348,27 +348,38 @@ def buildTrustCertInstaller( companyTradeName, caCertPath, pfxFilePath,
     from distbuilder.master import ConfigFactory, PyToBinPackageProcess
         
     script = ExecutableScript( "__installTrustCert", extension="py", script=[
-         'import sys, os.path'
-        ,'from subprocess import check_call, check_output'
+         'import sys, os, traceback'
+        ,'from subprocess import( check_call, check_output,'
+        ,'    STARTUPINFO, STARTF_USESHOWWINDOW )'
+        ,'try: from subprocess import DEVNULL' 
+        ,'except ImportError: DEVNULL = open(os.devnull, "wb")'
         ,''
-        ,'CERT_UTIL_PATH = "Certutil"'
+        ,'CA_PATH        = os.path.join( sys._MEIPASS, "{caFileName}" )'
+        ,'ICON_PATH      = os.path.join( sys._MEIPASS, "{iconFileName}" )'
+        ,'CERT_UTIL_PATH = "certutil"'
         ,'CERT_STORE     = "Root"'
-        ,'CA_PATH   = os.path.join( sys._MEIPASS, "{caFileName}" )'
-        ,'ICON_PATH = os.path.join( sys._MEIPASS, "{iconFileName}" )'
-        ,'CA_COMMON_NAME_SEARCH = b"Issuer: CN={commonName}"'
-        ,'SUCCESS_TITLE = "Installed"'
-        ,'SUCCESS_MSG   = "Successfully installed {commonName} trust certificate!"'
-        ,'SUCCESS_CODE  = 0'
-        ,'FAILURE_TITLE = "Error"'
-        ,'FAILURE_MSG   = "Failed to install {commonName} trust certificate!"'
-        ,'FAILURE_CODE  = 1'
-        ,''        
-        ,'try: check_call( "\\"%s\\" -addStore \\"%s\\" \\"%s\\"" % '
-                            '(CERT_UTIL_PATH, CERT_STORE, CA_PATH) )'
-        ,'except: pass'                        
-        ,'storeOutput = check_output( "\\"%s\\" -store \\"%s\\"" % '
-                            '(CERT_UTIL_PATH, CERT_STORE) )'
-        ,'isSuccess = CA_COMMON_NAME_SEARCH in storeOutput'                        
+        ,'CN_SEARCH      = b"Issuer: CN={commonName}"'
+        ,'SUCCESS_TITLE  = "Installed Successfully"'
+        ,'SUCCESS_MSG    = "{commonName} products will now be trusted on this PC!"'
+        ,'SUCCESS_CODE   = 0'
+        ,'FAILURE_TITLE  = "Installation Error"'
+        ,'FAILURE_MSG    = "Could not install the {commonName} trust certificate!"'
+        ,'FAILURE_CODE   = 1'
+        ,'' 
+        ,'startupInfo = STARTUPINFO()'
+        ,'startupInfo.dwFlags |= STARTF_USESHOWWINDOW'
+        ,'try:'       
+        ,'    check_call( "\\"%s\\" -addStore \\"%s\\" \\"%s\\"" % '
+        ,'        (CERT_UTIL_PATH, CERT_STORE, CA_PATH), '
+        ,'        shell=False, startupinfo=startupInfo )'
+        ,'    storeOutput = check_output( "\\"%s\\" -store \\"%s\\"" % '
+        ,'        (CERT_UTIL_PATH, CERT_STORE), '
+        ,'        shell=False, startupinfo=startupInfo, '
+        ,'        stdin=DEVNULL, stderr=DEVNULL )'
+        ,'    isSuccess = CN_SEARCH in storeOutput'                                        
+        ,'except Exception as e: '              
+        ,'    sys.stderr.write( traceback.format_exc() + "\\n\\n" )'  
+        ,'    isSuccess = False'
         ,'if isSuccess: sys.stdout.write( SUCCESS_MSG )'    
         ,'else: sys.stderr.write( FAILURE_MSG )'
         ] + ([] if isSilent else [ 
@@ -404,7 +415,7 @@ def buildTrustCertInstaller( companyTradeName, caCertPath, pfxFilePath,
     f.binaryName       = "Trust%s" % (compressedCompName,)
     f.companyTradeName = companyTradeName 
     f.companyLegalName = companyLegalName
-    #f.isGui            = not isSilent    
+    f.isGui            = not isSilent    
     f.iconFilePath     = iconFilePath 
     f.version          = version
     f.isOneFile        = True                   

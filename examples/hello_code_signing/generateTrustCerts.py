@@ -3,6 +3,7 @@ from distbuilder import( MakeCertConfig,
 
 companyTradeName = "Some Company"
 companyLegalName = "Some Company Inc."
+iconFilePath     = "../hello_world_tk/demo.ico"
 password         = getPassword( isGuiPrompt=True )
 
 caCertPath, _, pfxFilePath = generateTrustCerts( 
@@ -10,5 +11,5 @@ caCertPath, _, pfxFilePath = generateTrustCerts(
 
 buildTrustCertInstaller( 
     companyTradeName, caCertPath, pfxFilePath, pfxPassword=password,
-    companyLegalName=companyLegalName, iconFilePath="../hello_world_tk/demo.ico", 
+    companyLegalName=companyLegalName, iconFilePath=iconFilePath, 
     isSilent=False, isTest=True )

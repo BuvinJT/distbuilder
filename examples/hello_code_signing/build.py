@@ -1,5 +1,5 @@
 from distbuilder import PyToBinPackageProcess, ConfigFactory, \
-    signExe, SignToolConfig, absPath
+    SignToolConfig, signExe, getPassword
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello World Example"
@@ -13,4 +13,5 @@ p = PyToBinPackageProcess( configFactory )
 p.run()  
 
 # You must run the generateTrustCerts example first, to have this PFX!
-signExe( p.binPath, SignToolConfig( pfxFilePath=absPath("SomeCompany.pfx") ) )        
+signExe( p.binPath, SignToolConfig(pfxFilePath="SomeCompany.pfx",
+                                   pfxPassword=getPassword(isGuiPrompt=True)) )        
