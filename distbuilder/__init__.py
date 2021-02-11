@@ -120,6 +120,8 @@ from distbuilder.util import \
     , BIT_CONTEXT \
     , IS_32_BIT_CONTEXT \
     , IS_64_BIT_CONTEXT \
+    , IS_ARM_CPU \
+    , IS_INTEL_CPU \
     , THIS_DIR \
     , CURRENT_USER, ALL_USERS \
     , DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE \

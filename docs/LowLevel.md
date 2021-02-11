@@ -1860,10 +1860,12 @@ If not enabled, the password input prompt will work via a terminal interface.
     PY2
     PY3
 
-	<Python build context - NOT TARGET RUNTIME context!>    
     BIT_CONTEXT
     IS_32_BIT_CONTEXT
     IS_64_BIT_CONTEXT
+
+    IS_ARM_CPU
+    IS_INTEL_CPU 
     
     THIS_DIR 
 
