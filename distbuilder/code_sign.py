@@ -1,15 +1,6 @@
 from distbuilder import util    # @UnusedImport
 from distbuilder.util import *  # @UnusedWildImport
 
-_PS_SELF_CERT_VER_REQ = 4 # found on Windows 8.1+
-__isPsSelfCert = None
-def _isPsSelfCertMethod():
-    global __isPsSelfCert
-    if __isPsSelfCert is None:
-        __isPsSelfCert = (
-            util._powerShellMajorVersion() >= _PS_SELF_CERT_VER_REQ )
-    return __isPsSelfCert
-
 _RES_DIR_PATH = util._toLibResPath( joinPath( "code_sign_res", 
     ("linux" if IS_LINUX else "macos" if IS_MACOS else "windows") ) )
 
@@ -53,10 +44,10 @@ class SignToolConfig:
         if isVerified and not isFile( path ): path = None            
         return path 
 
-    def __init__( self, pfxFilePath=None, pfxPassword=None ):
+    def __init__( self, pfxFilePath=None, keyPassword=None ):
   
         self.pfxFilePath  = absPath( pfxFilePath )
-        self.pfxPassword  = pfxPassword
+        self.keyPassword  = keyPassword
  
         self.signToolPath = None # if None, this will be auto resolved 
        
@@ -78,10 +69,10 @@ class SignToolConfig:
         timeStampServer = "/tr %s" % (self.timeStampServerUrl,)
         timeStampDigest = "/td %s" % (self.timeStampDigest,)
         pfxFilePath     = '/f "%s"' % (self.pfxFilePath,)
-        pfxPassword     =('/p "%s"' % (self.pfxPassword,) 
-                          if self.pfxPassword else "" )                                
+        keyPassword     =('/p "%s"' % (self.keyPassword,) 
+                          if self.keyPassword else "" )                                
         tokens = (operation, verbose, fileDigest, 
-                  timeStampServer, timeStampDigest, pfxFilePath, pfxPassword,
+                  timeStampServer, timeStampDigest, pfxFilePath, keyPassword,
                   self.otherSignToolArgs)
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )        
 
@@ -134,6 +125,16 @@ class SelfSignedCertConfig:
     __CA_CERT_EXT      = ".cer"
     __SUBJECT_KEY_EXT  = ".pvk"
     __PFX_EXT          = ".pfx"
+
+    __PS_SELF_CERT_VER_REQ = 4 # PowerShell version found on Windows 8.1+
+    __isPsSelfCertAvail = None    
+    @staticmethod
+    def _isPsSelfCertAvailable():        
+        if SelfSignedCertConfig.__isPsSelfCertAvail is None:
+            SelfSignedCertConfig.__isPsSelfCertAvail =( 
+                util._powerShellMajorVersion() >= 
+                SelfSignedCertConfig.__PS_SELF_CERT_VER_REQ )
+        return SelfSignedCertConfig.__isPsSelfCertAvail
    
     @staticmethod
     def _builtInMakeCertPath( isVerified=False ):    
@@ -156,22 +157,31 @@ class SelfSignedCertConfig:
         self.commonName  = companyTradeName
         self.endDate     = SelfSignedCertConfig.DEFAULT_END_DATE
 
+        self._isMakeCertMethod = not self._isPsSelfCertAvailable() 
+
         self.destDirPath = destDirPath if destDirPath else THIS_DIR        
         outputRoot = companyTradeName.replace(" ", "").replace(".", "")        
         self.caCertPath     = joinPath( self.destDirPath, 
             joinExt( outputRoot, SelfSignedCertConfig.__CA_CERT_EXT) )
         self.privateKeyPath = joinPath( self.destDirPath, 
-            joinExt( outputRoot, 
-                SelfSignedCertConfig.__PFX_EXT if _isPsSelfCertMethod() else 
-                SelfSignedCertConfig.__SUBJECT_KEY_EXT ) )
+            joinExt( outputRoot, SelfSignedCertConfig.__SUBJECT_KEY_EXT
+                                 if self._isMakeCertMethod else
+                                 SelfSignedCertConfig.__PFX_EXT ) )
         
         self.makeCertPath = None # if None, this will be auto resolved 
 
         self._maxCertChildren  = SelfSignedCertConfig.NO_MAX_CHILDREN       
-        self._enhancedKeyUsage = SelfSignedCertConfig.LIFETIME_SIGNING_EKU        
+        self._enhancedKeyUsage = SelfSignedCertConfig.LIFETIME_SIGNING_EKU                
         self.otherArgs         = ""
         self.isDebugMode = True
 
+    def _forceMakeCertMethod( self ):
+        self._isMakeCertMethod = True
+        pathHead, _ = splitExt( self.privateKeyPath )
+        self.privateKeyPath = joinExt( pathHead, 
+            SelfSignedCertConfig.__SUBJECT_KEY_EXT )        
+
+    # for MakeCert method only 
     def __str__( self ) :
         name               = '/n "CN=%s"' % (self.commonName,)
         selfSignedRootCert = '/r'
@@ -195,7 +205,7 @@ def __useMakeCert( certConfig, isOverwrite ):
     print( "Generated code signing certificates successfully!" )
     return certConfig.caCertPath, certConfig.privateKeyPath
 
-def __usePsSelfSignedCertScript( certConfig, pfxPassword, isOverwrite ):
+def __usePsSelfSignedCertScript( certConfig, keyPassword, isOverwrite ):
     __validateSelfSignedCertConfig( certConfig, isOverwrite )
     util._runPowerShell([
          'New-SelfSignedCertificate '
@@ -210,10 +220,10 @@ def __usePsSelfSignedCertScript( certConfig, pfxPassword, isOverwrite ):
             'Where-Object Subject -EQ "CN={commonName}"'    
         ,'Export-Certificate -Cert $newCert -FilePath "{caCertPath}"'
     ] + ([
-         '$pwd = ConvertTo-SecureString -String "{pfxPassword}" -Force -AsPlainText'
+         '$pwd = ConvertTo-SecureString -String "{keyPassword}" -Force -AsPlainText'
         ,'Export-PfxCertificate -Cert $newCert -FilePath "{privateKeyPath}" '
             '-Password $pwd'
-    ] if pfxPassword else [
+    ] if keyPassword else [
         'Export-PfxCertificate -Cert $newCert -FilePath "{privateKeyPath}"'
     ]) + [
         '$newCert | Remove-Item'        
@@ -224,7 +234,7 @@ def __usePsSelfSignedCertScript( certConfig, pfxPassword, isOverwrite ):
                    , "otherArgs"       : certConfig.otherArgs
                    , "caCertPath"      : certConfig.caCertPath
                    , "privateKeyPath"  : certConfig.privateKeyPath
-                   , "pfxPassword"     : pfxPassword
+                   , "keyPassword"     : keyPassword
     })
     if( not isFile( certConfig.caCertPath ) or
         not isFile( certConfig.privateKeyPath ) ): 
@@ -242,15 +252,14 @@ def __validateSelfSignedCertConfig( cfg, isOverwrite ):
                 raise Exception( "File exists: %s" % (cfg.caCertPath,) )
             if isFile( cfg.privateKeyPath ):
                 raise Exception( "File exists: %s" % (cfg.privateKeyPath,) )
-    else: makeDir( cfg.destDirPath )                                        
-    
-    if _isPsSelfCertMethod(): return
-    if cfg.makeCertPath is None: 
-        cfg.makeCertPath = getenv( MAKECERT_PATH_ENV_VAR )    
-    if cfg.makeCertPath is None: 
-        cfg.makeCertPath = SelfSignedCertConfig._builtInMakeCertPath()
-    if cfg.makeCertPath is None: 
-        raise Exception( "Valid MakeCert path required" )
+    else: makeDir( cfg.destDirPath )                                            
+    if cfg._isMakeCertMethod: 
+        if cfg.makeCertPath is None: 
+            cfg.makeCertPath = getenv( MAKECERT_PATH_ENV_VAR )    
+        if cfg.makeCertPath is None: 
+            cfg.makeCertPath = SelfSignedCertConfig._builtInMakeCertPath()
+        if cfg.makeCertPath is None: 
+            raise Exception( "Valid MakeCert path required" )
 
 #------------------------------------------------------------------------------
 PVK2PFX_PATH_ENV_VAR = "PVK2PFX_PATH"
@@ -294,11 +303,11 @@ class Pvk2PfxConfig:
         return path 
 
     def __init__( self, caCertPath, privateKeyPath, 
-                  pfxPassword=None, pfxFilePath=None ):
+                  keyPassword=None, pfxFilePath=None ):
 
         self.caCertPath     = absPath( caCertPath )        
         self.privateKeyPath = absPath( privateKeyPath )
-        self.pfxPassword    = pfxPassword  
+        self.keyPassword    = keyPassword  
         self.pfxFilePath    =( pfxFilePath if pfxFilePath else
             joinExt( splitExt( privateKeyPath )[0], Pvk2PfxConfig._PFX_EXT ) )
  
@@ -320,9 +329,9 @@ class Pvk2PfxConfig:
         privateKeyPath =  '/pvk "%s"' % (self.privateKeyPath,)
         caCertPath     =  '/spc "%s"' % (self.caCertPath,)
         pfxFilePath    =  '/pfx "%s"' % (self.pfxFilePath,)
-        pfxPassword    =( '/pi "%s"'  % (self.pfxPassword,) 
-                          if self.pfxPassword else "" )
-        tokens = (privateKeyPath, caCertPath, pfxFilePath, pfxPassword,
+        keyPassword    =( '/pi "%s"'  % (self.keyPassword,) 
+                          if self.keyPassword else "" )
+        tokens = (privateKeyPath, caCertPath, pfxFilePath, keyPassword,
                   self.otherArgs)
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )        
 
@@ -368,27 +377,32 @@ def __installPvk2Pfx():
     return Pvk2PfxConfig._defaultPvk2PfxPath( isVerified=True )
 
 #------------------------------------------------------------------------------
-def generateTrustCerts( certConfig, pfxPassword=None, isOverwrite=False ):
-    """ Returns CA Cert Path, PFX Path """
+def generateTrustCerts( certConfig, keyPassword=None, isOverwrite=False ):
+    """ Returns CA Cert Path, Key Path """
     print( "Generating code signing certificates...\n" )
     if IS_WINDOWS:
-        if _isPsSelfCertMethod():
-            caCertPath, pfxPath = __usePsSelfSignedCertScript( 
-                certConfig, pfxPassword, isOverwrite )
-        else :
+        # The legacy method would allow keys to be produced without password
+        # protection, but the new PowerShell based method no longer does
+        # since we can, we'll allow it for those who really want that... 
+        if keyPassword is None: certConfig._forceMakeCertMethod() 
+        if certConfig._isMakeCertMethod:
             caCertPath, privKeyPath = __useMakeCert( certConfig, isOverwrite )            
             pfxConfig = Pvk2PfxConfig( 
-                caCertPath, privKeyPath, pfxPassword=pfxPassword )
+                caCertPath, privKeyPath, keyPassword=keyPassword )
             pfxPath = __usePvk2Pfx( pfxConfig, isOverwrite )
+        else:
+            caCertPath, pfxPath = __usePsSelfSignedCertScript( 
+                certConfig, keyPassword, isOverwrite )    
         return caCertPath, pfxPath            
-    #TODO: SUPPORT OTHER PLATFORMS!!!
+    
+    #TODO: SUPPORT OTHER PLATFORMS! USING OPENSSL?
     util._onPlatformErr()
 
-def buildTrustCertInstaller( companyTradeName, caCertPath, pfxFilePath,
-            pfxPassword=None,
-            companyLegalName=None, version=(1,0,0,0), iconFilePath=None, 
-            isDesktopTarget=False, isHomeDirTarget=False,
-            isSilent=False, isTest=False ):
+def buildTrustCertInstaller( 
+    companyTradeName, caCertPath, keyFilePath, keyPassword=None,
+    companyLegalName=None, version=(1,0,0,0), iconFilePath=None, 
+    isDesktopTarget=False, isHomeDirTarget=False,
+    isSilent=False, isTest=False ):
     """
     Returns path to installer
     """
@@ -479,10 +493,13 @@ def buildTrustCertInstaller( companyTradeName, caCertPath, pfxFilePath,
             
         def onFinalize( self ):
             script.remove()
+            
+            # TODO: Support other platforms!
             # sign the installer itself
-            signConfig = SignToolConfig( pfxFilePath=absPath( pfxFilePath ),
-                                         pfxPassword=pfxPassword ) 
-            signExe( self.binPath, signConfig )                                                                
+            signConfig = SignToolConfig( pfxFilePath=absPath( keyFilePath ),
+                                         keyPassword=keyPassword ) 
+            signExe( self.binPath, signConfig )                            
+                                                
     p = TrustInstallerBuilderProcess( configFactory )       
     p.run()     
     

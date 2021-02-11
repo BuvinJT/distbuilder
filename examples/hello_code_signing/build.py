@@ -12,6 +12,11 @@ f.entryPointPy     = "../hello_world/hello.py"
 p = PyToBinPackageProcess( configFactory )       
 p.run()  
 
-# You must run the generateTrustCerts example first, to have this PFX!
-signExe( p.binPath, SignToolConfig(pfxFilePath="./certs/SomeCompany.pfx",
-                                   pfxPassword=getPassword(isGuiPrompt=True)) )        
+# You must run the generateTrustCerts example first, to have the PFX file
+# referenced below.
+# Supply the PFX password using one of the following options shown. 
+signConfig = SignToolConfig( pfxFilePath="./certs/SomeCompany.pfx",
+                             keyPassword=getPassword( isGuiPrompt=True ) )
+                            #keyPassword=None )
+                            #keyPassword="my-secure-password" ) 
+signExe( p.binPath, signConfig )        
