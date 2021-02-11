@@ -357,20 +357,20 @@ def _powerShellOutput( script, replacements=None, asCleanLines=False ):
 def __runPowerShell( script, replacements=None,
                      isStdOut=False, asCleanLines=False ):
     if not IS_WINDOWS: _onPlatformErr()
-    if isinstance( script, string_types ) or isinstance( script, list ): 
-        script = ExecutableScript( "__tempDistbuilderScript", 
-                                   extension="ps1", script=script,
-                                   replacements=replacements )
-    dirPath = tempDirPath()
+    if isinstance( script, string_types ) or isinstance( script, list ):
+        dirPath, fileName = reserveTempFilePath( suffix=".ps1", isSplitRet=True ) 
+        script = ExecutableScript( rootFileName( fileName ), extension="ps1", 
+                                   script=script, replacements=replacements )
+    elif script.dirPath is None: dirPath = tempDirPath()    
     script.write( dirPath )    
     cmd =( 'powershell.exe -ExecutionPolicy Bypass -InputFormat None '
-           '-File "%s"' % (joinPath( dirPath, script.fileName() ),) )
+           '-File "%s"' % (script.filePath(),) )
     if isStdOut: 
-        try: sdtOut = _subProcessStdOut( cmd, asCleanLines=asCleanLines )
-        finally: removeFromDir( script.fileName(), dirPath )
-    else: 
-        _system( cmd )        
-        removeFromDir( script.fileName(), dirPath )
+        try: sdtOut = _subProcessStdOut( cmd, asCleanLines=asCleanLines, 
+                                         isDebug=True )
+        finally: script.remove() # remove the file, then raise the Exception
+    else: _system( cmd )        
+    script.remove()
     if isStdOut: return sdtOut
 
 def _powerShellMajorVersion():
@@ -676,6 +676,10 @@ def toNativePath( path ):
     return path.replace("/","\\") if IS_WINDOWS else path.replace("\\","/")
     
 def tempDirPath(): return gettempdir()
+
+def reserveTempFilePath( suffix="", isSplitRet=False ):
+    path = _reserveTempFile( suffix )
+    return splitPath( path ) if isSplitRet else path
 
 def _reserveTempDir( suffix="" ): return mkdtemp( suffix )
 
@@ -1057,7 +1061,7 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
     def __init__( self, rootName, 
                   extension=True, # True==auto assign, str==what to use, or None
                   shebang=True, # True==auto assign, str==what to use, or None                  
-                  script=None, scriptPath=None,
+                  script=None, scriptPath=None, dirPath=None,
                   replacements=None ) :
         self.rootName = rootName
         if extension==True:
@@ -1069,7 +1073,9 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
             self.shebang =( None if IS_WINDOWS else 
                             ExecutableScript.__NIX_DEFAULT_SHEBANG ) 
         else: self.shebang = shebang            
+        self.dirPath = dirPath
         if scriptPath:
+            self.dirPath = dirPath( scriptPath ) 
             with open( scriptPath, 'r' ) as f: self.script = f.read()
         elif isinstance( script, list ): self.fromLines( script )
         else: self.script = script
@@ -1091,22 +1097,39 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
                 
     def debug( self ): 
         if self.script: print( str(self) )
+
+    def filePath( self ):
+        return( joinPath( self.dirPath, self.fileName() ) 
+                if self.dirPath else absPath( self.fileName() ) )
         
     def fileName( self ):
         return joinExt( self.rootName, self.extension )
                         
-    def write( self, dirPath ):
+    def write( self, dirPath=None ):
         if self.script is None : return
-        if not isDir( dirPath ): makeDir( dirPath )
-        filePath = joinPath( dirPath, self.fileName() )
-        print("Writing script: %s\n\n%s\n" % (filePath,str(self)) )                               
+        if dirPath is None: dirPath=self.dirPath
+        self.dirPath = dirPath if dirPath else THIS_DIR  
+        if not isDir( self.dirPath ): makeDir( self.dirPath )
+        filePath = self.filePath()
+        print( "Writing script: %s\n\n%s\n" % (filePath,str(self)) )                               
         with open( filePath, 'w' ) as f: f.write( str(self) ) 
         if not IS_WINDOWS : chmod( filePath, 0o755 )
         
-    def read( self, dirPath ):
-        self.script = None        
-        filePath = joinPath( dirPath, self.fileName() )
+    def read( self, dirPath=None ):
+        self.script = None
+        if dirPath is None: dirPath=self.dirPath
+        self.dirPath = dirPath if dirPath else THIS_DIR  
+        filePath = self.filePath()
         with open( filePath, 'r' ) as f : self.script = f.read() 
+
+    def remove( self, dirPath=None ):
+        self.script = None
+        if dirPath is None: dirPath=self.dirPath
+        self.dirPath = dirPath if dirPath else THIS_DIR  
+        filePath = self.filePath()
+        if isFile( filePath ): 
+            removeFile( filePath )
+            print( "Removed script: %s" % (filePath,) )
                 
     def toLines( self ): return ExecutableScript.strToLines( self.script )
     

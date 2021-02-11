@@ -137,6 +137,7 @@ from distbuilder.util import \
     , move \
     , rename \
     , tempDirPath \
+    , reserveTempFilePath \
     , dirPath \
     , joinPath \
     , splitPath \

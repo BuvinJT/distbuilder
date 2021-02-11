@@ -478,7 +478,7 @@ def buildTrustCertInstaller( companyTradeName, caCertPath, pfxFilePath,
             cfg.dataFilePaths  = [ caCertPath ]            
             
         def onFinalize( self ):
-            removeFromDir( script.fileName(), THIS_DIR )
+            script.remove()
             # sign the installer itself
             signConfig = SignToolConfig( pfxFilePath=absPath( pfxFilePath ),
                                          pfxPassword=pfxPassword ) 
