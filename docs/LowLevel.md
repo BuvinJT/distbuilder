@@ -1409,25 +1409,27 @@ Constructor:
 
 	ExecutableScript( rootName, 
 				  	  extension=True, shebang=True,                   
-                  	  script=None, scriptPath=None,
+                  	  script=None, scriptPath=None, dirPath=None,
                   	  replacements={} )
                   
 Attributes & default values:    
 
     rootName <required> 
-    extension=True  # i.e. automatic
-    shebang=True    # i.e. automatic   
+    extension=True  # i.e. True==automatic
+    shebang=True    # i.e. True==automatic   
     script=None
-    scriptPath=None
+    dirPath=None
     replacements={}  
-    isIfwVarEscapeBackslash = False
+    isIfwVarEscapeBackslash=False
     
 Functions:   
 
+	filePath()
     fileName()
         
-    read( dirPath  )
-    write( dirPath )
+    read( dirPath=None )
+    write( dirPath=None )
+    remove( dirPath=None )
     
     toLines()        
     fromLines( lines )
@@ -1461,8 +1463,14 @@ A user supplied string will be applied if custom provided.
 **script**: The content for the for script, provided as a string, or a list 
 (representing lines).
 
-**scriptPath**: The content for the for script, provided as a file path
-to source for where it is to be extracted.
+**scriptPath**: The content for the for script, provided to the constructor 
+as a file path to source for where it is to be extracted.  Use the 
+filePath() function later if you need this apth again.
+
+**dirPath**: Optional. During construction, this may be explicitly defined, 
+or left as `None` to imply `THIS_DIR`.  If a `scriptPath` is specified, 
+a directory path extracted from that will be used.
+On subsequent calls to `read( dirPath )`, `write( dirPath )`, or `remove( dirPath )`, the `dirPath` will be updated if supplied (i.e. `not None`).    
 
 **replacements**: A dictionary of "placeholder" keys and "substitution" values in 
 the script.  Place holders must defined in the script with the surrounding brackets,
@@ -1650,6 +1658,25 @@ is stripped down to the base name.
 
 Use these functions to retrieve or manipulate environmental variables.
 
+### reserveTempFilePath
+
+    reserveTempFilePath( suffix="", isSplitRet=False )
+
+This is light wrapper over the standard tempfile.mkstemp function, which 
+returns a temp file path, but doesn't create it. Thus, with that standard
+function it is possible (in theory) for a second process
+to create a file at that path before such can be done by the first.  
+This customization mitigates that possibility by creating a
+0 byte file on the spot, which you may then overwrite.
+
+**Returns** : the file path, optionally split into (dirPath, fileName)
+   
+**suffix**: If specified, the file name will end with that suffix,
+otherwise there will be no suffix.  Note, if the intended suffix is
+a file extension, you must include the "." explicitly.
+
+**isSplitRet**: Dictate the optional return value type / format.
+    
 ### versionTuple, versionStr
 
 	versionTuple( ver, parts=4 )    
@@ -1791,6 +1818,16 @@ whether the original name of the file should be used when saving the file locall
 If set to `False`, the name will be auto assigned to one which does not conflict
 with any that already exist. If set to `True`, and the path already exists, the
 new download will overwrite the prior file.       	
+
+### getPassword
+
+    getPassword( isGuiPrompt=True )
+    
+**Returns**: the password input by the user
+
+**isGuiPrompt**: If enabled, uses the Tk library to drive a gui prompt. 
+(Such requires a gui operating system / distro, of course.)
+If not enabled, the password input prompt will work via a terminal interface.     
 
 ### Aliased standard python functions
        

@@ -19,7 +19,7 @@ import platform
 from tempfile import gettempdir, mkstemp, mkdtemp, \
     mktemp  # @UnusedImport
 from subprocess import Popen, list2cmdline, check_output, \
-    PIPE, STDOUT, \
+    PIPE, STDOUT, CalledProcessError, \
     check_call  # @UnusedImport
 try: from subprocess import DEVNULL 
 except ImportError: DEVNULL = open(devnull, 'wb')    
@@ -34,9 +34,13 @@ from copy import deepcopy # @UnusedImport
 
 # -----------------------------------------------------------------------------   
 __plat = platform.system()
-IS_WINDOWS         = __plat == "Windows"
-IS_LINUX           = __plat == "Linux"
-IS_MACOS           = __plat == "Darwin"
+IS_WINDOWS = __plat == "Windows"
+IS_LINUX   = __plat == "Linux"
+IS_MACOS   = __plat == "Darwin"
+
+__arch = platform.machine()
+IS_ARM_CPU   = "arm" in __arch or "aarch" in __arch
+IS_INTEL_CPU = not IS_ARM_CPU
 
 BIT_CONTEXT = calcsize('P') * 8
 IS_32_BIT_CONTEXT = BIT_CONTEXT==32
@@ -101,8 +105,10 @@ _NEWLINE         = '\n'
 if IS_WINDOWS :
     import ctypes        
     from ctypes import wintypes
-    from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW
+    from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW    
     __CSIDL_DESKTOP_DIRECTORY = 16    
+    __CSIDL_PROGRAM_FILES     = 38
+    __CSIDL_PROGRAM_FILESX86  = 42
     __BATCH_RUN_AND_RETURN_CMD = ["cmd","/K"] # simply assuming cmd is on the system path... 
     __BATCH_ONE_LINER_TMPLT    = "{0} 1>&2\n" # the newline triggers execution when piped in via stdin
     __BATCH_ESCAPE_PATH_TMPLT  = 'for %A in ("{0}") do @echo %~sA'     
@@ -226,6 +232,18 @@ def _system( cmd, wrkDir=None ):
     print('')
     if wrkDir is not None: chdir( initWrkDir )
 
+def _isSystemSuccess( cmd, wrkDir=None ):
+    if wrkDir is not None: print( 'cd "%s"' % (wrkDir,) )
+    print( cmd )
+    try:
+        print( check_output( cmd, cwd=wrkDir,
+                             shell=True, universal_newlines=True ) )
+    except CalledProcessError as e:
+        print( e.output )
+        print( "Failed with exit code: %d" % (e.returncode,) )
+        return False
+    return True
+    
 def _subProcessStdOut( cmd, asCleanLines=False, isDebug=False ):
     if isDebug: print( cmd ) 
     stdOut = check_output( cmd )
@@ -325,6 +343,39 @@ def __windowsElevated( exePath, args=None, wrkDir=None ):
     removeFile( sharedFilePath )
     return retCode
 
+# -----------------------------------------------------------------------------
+__PS_OUTPUT_MAJOR_VERSION = [
+      'Try{ Write-Host $PSVersionTable.PSVersion.Major }'
+    , 'Catch{ Write-Host 1 }'
+]
+
+def _runPowerShell( script, replacements=None ): 
+    __runPowerShell( script, replacements )
+def _powerShellOutput( script, replacements=None, asCleanLines=False ): 
+    return __runPowerShell( script, replacements,
+                            isStdOut=True, asCleanLines=asCleanLines )
+def __runPowerShell( script, replacements=None,
+                     isStdOut=False, asCleanLines=False ):
+    if not IS_WINDOWS: _onPlatformErr()
+    if isinstance( script, string_types ) or isinstance( script, list ):
+        dirPath, fileName = reserveTempFilePath( suffix=".ps1", isSplitRet=True ) 
+        script = ExecutableScript( rootFileName( fileName ), extension="ps1", 
+                                   script=script, replacements=replacements )
+    elif script.dirPath is None: dirPath = tempDirPath()    
+    script.write( dirPath )    
+    cmd =( 'powershell.exe -ExecutionPolicy Bypass -InputFormat None '
+           '-File "%s"' % (script.filePath(),) )
+    if isStdOut: 
+        try: sdtOut = _subProcessStdOut( cmd, asCleanLines=asCleanLines, 
+                                         isDebug=True )
+        finally: script.remove() # remove the file, then raise the Exception
+    else: _system( cmd )        
+    script.remove()
+    if isStdOut: return sdtOut
+
+def _powerShellMajorVersion():
+    return int( _powerShellOutput( __PS_OUTPUT_MAJOR_VERSION ) )
+    
 # -----------------------------------------------------------------------------
 def collectDirs( srcDirPaths, destDirPath ):
     """ Move a list of directories into a common parent directory """
@@ -485,6 +536,9 @@ def _toLibResPath( relPath ):
     path = joinPath( __THIS_LIB_DIR, relPath )
     return path if exists( path ) else None
    
+_RES_DIR_PATH = _toLibResPath( joinPath( "util_res", 
+    ("linux" if IS_LINUX else "macos" if IS_MACOS else "windows") ) )
+   
 def isImportableModule( moduleName ):
     try: __importByStr( moduleName )
     except : return False
@@ -623,6 +677,10 @@ def toNativePath( path ):
     
 def tempDirPath(): return gettempdir()
 
+def reserveTempFilePath( suffix="", isSplitRet=False ):
+    path = _reserveTempFile( suffix )
+    return splitPath( path ) if isSplitRet else path
+
 def _reserveTempDir( suffix="" ): return mkdtemp( suffix )
 
 # mktemp returns a temp file path, but doesn't create it.
@@ -664,6 +722,15 @@ def _userDesktopDirPath():
         desktop = normpath( joinPath( home, DESKTOP_DIR_NAME ) )
         return desktop if isDir(desktop) else home
     raise Exception( __NOT_SUPPORTED_MSG )        
+
+def _winProgsDirPath(): 
+    if not IS_WINDOWS : _onPlatformErr()
+    return __getFolderPathByCSIDL( __CSIDL_PROGRAM_FILES )
+
+def _winProgs86DirPath(): 
+    if not IS_WINDOWS : _onPlatformErr()
+    return( _winProgsDirPath() if IS_32_BIT_CONTEXT else 
+            __getFolderPathByCSIDL( __CSIDL_PROGRAM_FILESX86 ) )
             
 def __getFolderPathByCSIDL( csidl ):
     SHGFP_TYPE_CURRENT = 0   # Get current, not default value
@@ -831,6 +898,28 @@ def _isLocalPath( path ):
     return isLocal, path 
 # -----------------------------------------------------------------------------            
 
+def getPassword( isGuiPrompt=False ):
+    if isGuiPrompt:
+        try:    #PY3
+            from tkinter import Tk                         # @UnusedImport
+            import tkinter.simpledialog as tkSimpleDialog  # @UnusedImport
+        except: #PY2
+            from Tkinter import Tk  # @UnresolvedImport @Reimport
+            import tkSimpleDialog   # @UnresolvedImport @Reimport 
+        tkRoot = Tk()
+        tkRoot.overrideredirect( 1 )
+        tkRoot.withdraw()
+        rPadChars = 50 * " " # stretch out the dialog so the title is fully visible
+        password = tkSimpleDialog.askstring( "Password", 
+            "Enter password:" + rPadChars, show='*', parent=tkRoot )
+        tkRoot.destroy() # clean up after yourself!
+    else :
+        from getpass import getpass
+        password = getpass()
+    return password
+
+# -----------------------------------------------------------------------------            
+
 class PlasticFile:
 
     def __init__( self, filePath=None, content=None ) :
@@ -972,7 +1061,7 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
     def __init__( self, rootName, 
                   extension=True, # True==auto assign, str==what to use, or None
                   shebang=True, # True==auto assign, str==what to use, or None                  
-                  script=None, scriptPath=None,
+                  script=None, scriptPath=None, dirPath=None,
                   replacements=None ) :
         self.rootName = rootName
         if extension==True:
@@ -984,7 +1073,9 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
             self.shebang =( None if IS_WINDOWS else 
                             ExecutableScript.__NIX_DEFAULT_SHEBANG ) 
         else: self.shebang = shebang            
+        self.dirPath = dirPath
         if scriptPath:
+            self.dirPath = dirPath( scriptPath ) 
             with open( scriptPath, 'r' ) as f: self.script = f.read()
         elif isinstance( script, list ): self.fromLines( script )
         else: self.script = script
@@ -1006,22 +1097,39 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
                 
     def debug( self ): 
         if self.script: print( str(self) )
+
+    def filePath( self ):
+        return( joinPath( self.dirPath, self.fileName() ) 
+                if self.dirPath else absPath( self.fileName() ) )
         
     def fileName( self ):
         return joinExt( self.rootName, self.extension )
                         
-    def write( self, dirPath ):
+    def write( self, dirPath=None ):
         if self.script is None : return
-        if not isDir( dirPath ): makeDir( dirPath )
-        filePath = joinPath( dirPath, self.fileName() )
-        print("Writing script: %s\n\n%s\n" % (filePath,str(self)) )                               
+        if dirPath is None: dirPath=self.dirPath
+        self.dirPath = dirPath if dirPath else THIS_DIR  
+        if not isDir( self.dirPath ): makeDir( self.dirPath )
+        filePath = self.filePath()
+        print( "Writing script: %s\n\n%s\n" % (filePath,str(self)) )                               
         with open( filePath, 'w' ) as f: f.write( str(self) ) 
         if not IS_WINDOWS : chmod( filePath, 0o755 )
         
-    def read( self, dirPath ):
-        self.script = None        
-        filePath = joinPath( dirPath, self.fileName() )
+    def read( self, dirPath=None ):
+        self.script = None
+        if dirPath is None: dirPath=self.dirPath
+        self.dirPath = dirPath if dirPath else THIS_DIR  
+        filePath = self.filePath()
         with open( filePath, 'r' ) as f : self.script = f.read() 
+
+    def remove( self, dirPath=None ):
+        self.script = None
+        if dirPath is None: dirPath=self.dirPath
+        self.dirPath = dirPath if dirPath else THIS_DIR  
+        filePath = self.filePath()
+        if isFile( filePath ): 
+            removeFile( filePath )
+            print( "Removed script: %s" % (filePath,) )
                 
     def toLines( self ): return ExecutableScript.strToLines( self.script )
     

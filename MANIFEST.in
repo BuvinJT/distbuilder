@@ -1,4 +1,7 @@
 include LICENSE
 recursive-include docs *
 recursive-include examples *
+recursive-include distbuilder/util_res *
+recursive-include distbuilder/code_sign_res *
+recursive-include distbuilder/qtifw_res *
 recursive-include distbuilder/qtifw_ui *

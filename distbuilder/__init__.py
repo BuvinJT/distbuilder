@@ -101,6 +101,14 @@ from distbuilder.opy_library import \
     , obfuscatedId 
 
 ExtLibHandling = OpyConfig.ExtLibHandling 
+
+from distbuilder.code_sign import \
+      SelfSignedCertConfig \
+    , SignToolConfig \
+    , generateTrustCerts \
+    , buildTrustCertInstaller \
+    , signExe \
+    , SIGNTOOL_PATH_ENV_VAR
     
 from distbuilder.util import \
       ExecutableScript \
@@ -129,6 +137,7 @@ from distbuilder.util import \
     , move \
     , rename \
     , tempDirPath \
+    , reserveTempFilePath \
     , dirPath \
     , joinPath \
     , splitPath \
@@ -169,6 +178,7 @@ from distbuilder.util import \
     , versionTuple \
     , versionStr \
     , versionNo \
+    , getPassword \
     , assertMinVer
     
 def assertBuilderVer( ver ): 
