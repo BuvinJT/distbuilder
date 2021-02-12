@@ -253,7 +253,8 @@ def __validateSelfSignedCertConfig( cfg, isOverwrite ):
                 raise Exception( "File exists: %s" % (cfg.caCertPath,) )
             if isFile( cfg.privateKeyPath ):
                 raise Exception( "File exists: %s" % (cfg.privateKeyPath,) )
-    else: makeDir( cfg.destDirPath )                                            
+    else: makeDir( cfg.destDirPath )       
+                                         
     if cfg._isMakeCertMethod: 
         if cfg.makeCertPath is None: 
             cfg.makeCertPath = getenv( MAKECERT_PATH_ENV_VAR )    
@@ -354,12 +355,14 @@ def __validatePvk2PfxConfig( cfg, isOverwrite ):
         raise Exception( 
             "Missing or invalid CA cert path in Pvk2PfxConfig: %s" %
             (cfg.caCertPath,) )
-    if isOverwrite:
-        removeFromDir( baseFileName( cfg.pfxFilePath ), 
-                            dirPath( cfg.pfxFilePath ) )
-    elif isFile( cfg.pfxFilePath ):
-        raise Exception( "File exists: %s" % (cfg.pfxFilePath,) )
-    else: makeDir( cfg.destDirPath )                                         
+    
+    destDirPath = dirPath( cfg.pfxFilePath )
+    if isDir( destDirPath ):    
+        if isOverwrite:
+            removeFromDir( baseFileName( cfg.pfxFilePath ), destDirPath )
+        elif isFile( cfg.pfxFilePath ):
+            raise Exception( "File exists: %s" % (cfg.pfxFilePath,) )
+    else: makeDir( destDirPath )                                         
                         
     if cfg.pvk2PfxPath is None: 
         cfg.pvk2PfxPath = getenv( PVK2PFX_PATH_ENV_VAR )    

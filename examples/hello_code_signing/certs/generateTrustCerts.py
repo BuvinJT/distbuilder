@@ -7,7 +7,7 @@ iconFilePath     = "../../hello_world_tk/demo.ico"
 
 # Supply a PFX password using one of the following options. 
 password = getPassword( isGuiPrompt=True )
-#password = None # click ok through the prompts if you really don't want a password!
+#password = None # Verify in prompts that appear that you really don't want a password!
 #password = "my-secure-password"
 
 # Generate code signing files to retain (securely!) in house
