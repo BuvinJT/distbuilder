@@ -1,5 +1,5 @@
-from distbuilder import( SelfSignedCertConfig, 
-    getPassword, generateTrustCerts, buildTrustCertInstaller ) 
+from distbuilder import( SelfSignedCertConfig, TrustInstallerBuilderProcess, 
+    getPassword, generateTrustCerts, trustCertInstallerConfigFactory ) 
 
 companyTradeName = "Some Company"
 companyLegalName = "Some Company Inc."
@@ -17,8 +17,13 @@ certConfig = SelfSignedCertConfig( companyTradeName )
 caCertPath, keyFilePath = generateTrustCerts( 
     certConfig, keyPassword=password, isOverwrite=True )
 
-# build an installer to distribute to users
-buildTrustCertInstaller( 
-    companyTradeName, caCertPath, keyFilePath, keyPassword=password,
-    companyLegalName=companyLegalName, iconFilePath=iconFilePath, 
-    isSilent=False, isDesktopTarget=True, isTest=True )
+configFactory = trustCertInstallerConfigFactory( 
+    companyTradeName, caCertPath, keyFilePath, keyPassword=password, 
+    companyLegalName=companyLegalName, iconFilePath=iconFilePath,    
+    isSilent=False )
+
+p = TrustInstallerBuilderProcess( configFactory, isDesktopTarget=True )
+p.isExeTest      = True
+p.isElevatedTest = True
+p.run()
+ 

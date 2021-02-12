@@ -450,18 +450,21 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
 
     def __init__( self, configFactory,                  
                   name="Python to Binary Package Process",
-                  isZipped=False ) :
+                  isZipped=False, isDesktopTarget=False, isHomeDirTarget=False ) :
         _DistBuildProcessBase.__init__( self, configFactory, name )        
         self.isZipped = isZipped
-        
+        self.isDesktopTarget = isDesktopTarget
+        self.isHomeDirTarget = isHomeDirTarget
+
         self.isWarningSuppression   = True
         self.isUnBufferedStdIo      = False                
         self.isPyInstDupDataPatched = None
+
         self.isObfuscationTest      = False
         self.isExeTest              = False
         self.isElevatedTest         = False
         self.exeTestArgs            = []        
-        
+                        
         self._pyInstConfig = None
         
         # Results
@@ -503,12 +506,36 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
         self.binDir, self.binPath = (
             buildExecutable( pyInstConfig=self._pyInstConfig, 
                              opyConfig=opyConfig ) )
-        if self.isExeTest : 
-            run( self.binPath, self.exeTestArgs,
-                 isElevated=self.isElevatedTest, isDebug=True )
         
+        destDirPath =( util._userDesktopDirPath() if self.isDesktopTarget else 
+                       util._userHomeDirPath()    if self.isHomeDirTarget else 
+                       None )          
         if self.isZipped :
-            toZipFile( self.binDir, zipDest=None, removeScr=True )
+            # test exe first!
+            if self.isExeTest : self.__testExe() 
+            # bin path is actually the zip now...
+            self.binPath = toZipFile( self.binDir, zipDest=None, removeScr=True )
+            if destDirPath and self.binDir != destDirPath: 
+                self.binPath = moveToDir( self.binPath, destDirPath ) 
+                self.binDir  = destDirPath
+        else:         
+            if destDirPath and self.binDir != destDirPath:
+                binName = baseFileName( self.binPath )
+                isOtherContent = len( [item for item in listdir( self.binDir ) 
+                                      if item != binName ] ) > 0
+                if isOtherContent:
+                    self.binDir  = moveToDir( self.binDir, destDirPath )
+                    self.binPath = joinPath( self.binDir, binName )
+                else:
+                    originDirPath = self.binDir 
+                    self.binPath = moveToDir( self.binPath, destDirPath )
+                    self.binDir  = destDirPath 
+                    removeDir( originDirPath )
+            if self.isExeTest : self.__testExe()
+            
+    def __testExe( self ):
+        run( self.binPath, self.exeTestArgs,
+             isElevated=self.isElevatedTest, isDebug=True )
                     
     # Override these to further customize the build process once the 
     # ConfigFactory has produced each initial config object

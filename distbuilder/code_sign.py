@@ -1,3 +1,4 @@
+from distbuilder.master import ConfigFactory, PyToBinPackageProcess
 from distbuilder import util    # @UnusedImport
 from distbuilder.util import *  # @UnusedWildImport
 
@@ -398,21 +399,10 @@ def generateTrustCerts( certConfig, keyPassword=None, isOverwrite=False ):
     #TODO: SUPPORT OTHER PLATFORMS! USING OPENSSL?
     util._onPlatformErr()
 
-def buildTrustCertInstaller( 
-    companyTradeName, caCertPath, keyFilePath, keyPassword=None,
-    companyLegalName=None, version=(1,0,0,0), iconFilePath=None, 
-    isDesktopTarget=False, isHomeDirTarget=False,
-    isSilent=False, isTest=False ):
-    """
-    Returns path to installer
-    """
-    print( "Building Trust Certificate Installer..." )    
-    #TODO: SUPPORT OTHER PLATFORMS!!!
-    if not IS_WINDOWS: util._onPlatformErr()
-    
-    from distbuilder.master import ConfigFactory, PyToBinPackageProcess
-        
-    script = ExecutableScript( "__installTrustCert", extension="py", script=[
+def _trustCertInstallerScript( companyTradeName, caCertPath, 
+                               iconFilePath=None, isSilent=False ):
+
+    return ExecutableScript( "__installTrustCert", extension="py", script=[
          'import sys, os, traceback'
         ,'from subprocess import( check_call, check_output,'
         ,'    STARTUPINFO, STARTF_USESHOWWINDOW )'
@@ -470,45 +460,59 @@ def buildTrustCertInstaller(
                      , "iconFileName" : baseFileName( iconFilePath )
                      , "commonName"   : companyTradeName } 
     )
-    script.write( THIS_DIR )    
+
+def trustCertInstallerConfigFactory( companyTradeName, 
+    caCertPath, keyFilePath, keyPassword=None, 
+    companyLegalName=None, version=(1,0,0,0), iconFilePath=None,    
+    isSilent=False, script=None ):
+
+    #TODO: SUPPORT OTHER PLATFORMS!!!
+    if not IS_WINDOWS: util._onPlatformErr()
     
-    compressedCompName = companyTradeName.replace(" ","").replace(".","")
-    
-    f = configFactory  = ConfigFactory()
+    if script is None :
+        script = _trustCertInstallerScript( companyTradeName, caCertPath, 
+                                            iconFilePath, isSilent )
+        
+    f = ConfigFactory()
     f.productName      = "Trust %s" % (companyTradeName,)
     f.description      = "Trust Certificate Installer"
-    f.binaryName       = "Trust%s" % (compressedCompName,)
+    f.binaryName       = "Trust%s" % (
+        companyTradeName.replace(" ","").replace(".",""),)
     f.companyTradeName = companyTradeName 
     f.companyLegalName = companyLegalName
     f.isGui            = not isSilent    
     f.iconFilePath     = iconFilePath 
     f.version          = version
     f.isOneFile        = True                   
-    f.entryPointPy     = script.fileName()  
+    f.entryPointPy     = script.fileName()
     
-    class TrustInstallerBuilderProcess( PyToBinPackageProcess ):               
-        def onPyInstConfig( self, cfg ): 
-            cfg.isAutoElevated = True
-            cfg.dataFilePaths  = [ caCertPath ]            
-            
-        def onFinalize( self ):
-            script.remove()
-            
-            # TODO: Support other platforms!
-            # sign the installer itself
-            signConfig = SignToolConfig( pfxFilePath=absPath( keyFilePath ),
-                                         keyPassword=keyPassword ) 
-            signExe( self.binPath, signConfig )                            
-                                                
-    p = TrustInstallerBuilderProcess( configFactory )       
-    p.run()     
+    # Adding custom attributes on the fly!
+    f._trustCertScript = script   
+    f._caCertPath      = caCertPath
+    f._keyFilePath     = keyFilePath 
+    f._keyPassword     = keyPassword
+
+    return f   
     
-    if isDesktopTarget:   installerPath = moveToDesktop( p.binPath )
-    elif isHomeDirTarget: installerPath = moveToHomeDir( p.binPath )    
-    else :                installerPath = moveToDir( p.binPath, THIS_DIR )
-    removeDir( p.binDir )    
-    if isTest: run( installerPath, isElevated=True, isDebug=True )
-    return installerPath 
+class TrustInstallerBuilderProcess( PyToBinPackageProcess ):
+    def onInitialize( self ):
+                #TODO: SUPPORT OTHER PLATFORMS!!!
+        if not IS_WINDOWS: util._onPlatformErr()
+        self.configFactory._trustCertScript.write()    
+                                   
+    def onPyInstConfig( self, cfg ): 
+        cfg.isAutoElevated = True
+        cfg.dataFilePaths  = [ self.configFactory._caCertPath ]
+        if self.configFactory.iconFilePath:
+            cfg.dataFilePaths.append( self.configFactory.iconFilePath )            
+        
+    def onFinalize( self ):
+        self.configFactory._trustCertScript.remove()        
+        # sign the installer itself
+        signConfig = SignToolConfig( 
+            pfxFilePath=absPath( self.configFactory._keyFilePath ),
+            keyPassword=self.configFactory._keyPassword ) 
+        signExe( self.binPath, signConfig )                                                                            
          
 def signExe( exePath, signToolConfig ):
     exePath = normBinaryName( exePath, isPathPreserved=True )
