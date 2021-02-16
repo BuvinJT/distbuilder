@@ -1,5 +1,5 @@
 from distbuilder import( PyToBinInstallerProcess, ConfigFactory, 
-                         CodeSignConfig, getPassword)
+                         CodeSignConfig, getPassword )
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello World Tk Example"
@@ -13,13 +13,14 @@ f.iconFilePath     = "../hello_world_tk/demo.ico"
 f.version          = (1,0,0,0)
 f.setupName        = "HelloSignedSetup"
 
-# You must run the generateTrustCerts example first, to have the PFX file
+# NOTE: BOTH the installer and program binary will be signed in this process. 
+# You must run the generateTrustCerts example first, to have the key file
 # referenced below.
-# Supply the PFX password using one of the following options shown. 
-f.codeSignConfig = CodeSignConfig( pfxFilePath="./certs/SomeCompany.pfx",
-                             keyPassword=getPassword( isGuiPrompt=True ) )
-                            #keyPassword=None )
-                            #keyPassword="my-secure-password" ) 
+# Supply the key password using one of the following options shown. 
+f.codeSignConfig = CodeSignConfig( keyFilePath="./certs/SomeCompany.pfx",
+                                   keyPassword=getPassword( isGuiPrompt=True ) )
+                                    #keyPassword=None )
+                                    #keyPassword="my-secure-password" ) 
 
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isAutoInstallTest = True

@@ -9,7 +9,7 @@ _RES_DIR_PATH = util._toLibResPath( joinPath( "code_sign_res",
 #------------------------------------------------------------------------------
 SIGNTOOL_PATH_ENV_VAR = "SIGNTOOL_PATH"
 
-# TODO: Refactor, so as to not be quite so MS SignTool specific            
+#TODO: SUPPORT OTHER PLATFORMS!!!   
 class CodeSignConfig:
 
     DEFAULT_DIGEST           = "sha256"
@@ -25,8 +25,10 @@ class CodeSignConfig:
     __ARM_64BIT_DIR    = "arm64"
     __SIGNTOOL_NAME    = "signtool.exe"
 
+    _KEY_EXT = ".pfx" if IS_WINDOWS else ".???" # TODO
+
     @staticmethod
-    def _builtInInstallerPath():    
+    def _builtInSignToolInstallerPath():    
         return joinPath( _RES_DIR_PATH, 
             CodeSignConfig.__RES_DIR_NAME, CodeSignConfig.__MSI_NAME )
 
@@ -46,10 +48,10 @@ class CodeSignConfig:
         if isVerified and not isFile( path ): path = None            
         return path 
 
-    def __init__( self, pfxFilePath=None, keyPassword=None ):
+    def __init__( self, keyFilePath=None, keyPassword=None ):
   
-        self.pfxFilePath  = absPath( pfxFilePath )
-        self.keyPassword  = keyPassword
+        self.keyFilePath = absPath( keyFilePath )
+        self.keyPassword = keyPassword
  
         self.signToolPath = None # if None, this will be auto resolved 
        
@@ -61,16 +63,12 @@ class CodeSignConfig:
         self.isDebugMode = True
 
     def __str__( self ) :
-        if not isFile( self.pfxFilePath ):
-            raise Exception( 
-                "Missing or invalid pfx path in CodeSignConfig: %s" %
-                (self.pfxFilePath,) )        
         operation       = "sign"        
         verbose         = '/v' if self.isDebugMode else ''
         fileDigest      = "/fd %s" % (self.fileDigest,)
         timeStampServer = "/tr %s" % (self.timeStampServerUrl,)
         timeStampDigest = "/td %s" % (self.timeStampDigest,)
-        pfxFilePath     = '/f "%s"' % (self.pfxFilePath,)
+        pfxFilePath     = '/f "%s"' % (self.keyFilePath,)
         keyPassword     =('/p "%s"' % (self.keyPassword,) 
                           if self.keyPassword else "" )                                
         tokens = (operation, verbose, fileDigest, 
@@ -88,9 +86,12 @@ def __useSignTool( exePath, codeSignConfig ):
     return exePath           
 
 def __validateCodeSignConfig( cfg ):
-    if not isFile( cfg.pfxFilePath ):         
-        raise Exception( "Missing or invalid PFX file path: %s" % 
-                         (cfg.pfxFilePath,) )
+    if( not isFile( cfg.keyFilePath ) or 
+        fileExt( cfg.keyFilePath ).lower() != CodeSignConfig._KEY_EXT ):
+        raise Exception( 
+            "Missing or invalid key path in CodeSignConfig: %s" %
+            (cfg.keyFilePath,) )     
+           
     if cfg.signToolPath is None: 
         cfg.signToolPath = getenv( SIGNTOOL_PATH_ENV_VAR )    
     if cfg.signToolPath is None: 
@@ -103,13 +104,14 @@ def __validateCodeSignConfig( cfg ):
 
 def __installSignTool():
     print( "Installing SignTool utility...\n" )
-    if not util._isSystemSuccess( CodeSignConfig._builtInInstallerPath() ): 
+    if not util._isSystemSuccess( CodeSignConfig._builtInSignToolInstallerPath() ): 
         raise Exception( "SignTool installation FAILED" )
     return CodeSignConfig._defaultSignToolPath( isVerified=True )
 
 #------------------------------------------------------------------------------
 MAKECERT_PATH_ENV_VAR = "MAKECERT_PATH"
-            
+
+#TODO: SUPPORT OTHER PLATFORMS!!! via OpenSSL?            
 class SelfSignedCertConfig:
 
     DEFAULT_END_DATE     = '12/31/2050'
@@ -311,7 +313,7 @@ class Pvk2PfxConfig:
         self.caCertPath     = absPath( caCertPath )        
         self.privateKeyPath = absPath( privateKeyPath )
         self.keyPassword    = keyPassword  
-        self.pfxFilePath    =( pfxFilePath if pfxFilePath else
+        self.keyFilePath    =( pfxFilePath if pfxFilePath else
             joinExt( splitExt( privateKeyPath )[0], Pvk2PfxConfig._PFX_EXT ) )
  
         self.pvk2PfxPath = None # if None, this will be auto resolved 
@@ -320,18 +322,10 @@ class Pvk2PfxConfig:
         
         self.isDebugMode = True
 
-    def __str__( self ) :
-        if not isFile( self.privateKeyPath ):
-            raise Exception( 
-                "Missing or invalid private key path in Pvk2PfxConfig: %s" %
-                (self.privateKeyPath,) )        
-        if not isFile( self.caCertPath ):
-            raise Exception( 
-                "Missing or invalid CA cert path in Pvk2PfxConfig: %s" %
-                (self.caCertPath,) )                
+    def __str__( self ) :       
         privateKeyPath =  '/pvk "%s"' % (self.privateKeyPath,)
         caCertPath     =  '/spc "%s"' % (self.caCertPath,)
-        pfxFilePath    =  '/pfx "%s"' % (self.pfxFilePath,)
+        pfxFilePath    =  '/pfx "%s"' % (self.keyFilePath,)
         keyPassword    =( '/pi "%s"'  % (self.keyPassword,) 
                           if self.keyPassword else "" )
         tokens = (privateKeyPath, caCertPath, pfxFilePath, keyPassword,
@@ -342,10 +336,10 @@ def __usePvk2Pfx( pvk2PfxConfig, isOverwrite ):
     __validatePvk2PfxConfig( pvk2PfxConfig, isOverwrite )
     cmd = '"%s" %s' % ( pvk2PfxConfig.pvk2PfxPath, str(pvk2PfxConfig) )
     if( not util._isSystemSuccess( cmd ) or 
-        not isFile( pvk2PfxConfig.pfxFilePath ) ): 
+        not isFile( pvk2PfxConfig.keyFilePath ) ): 
         raise Exception( 'FAILED convert private key to PFX file' )
     print( "Generated Personal Information Exchange (PFX) file successfully!" )
-    return pvk2PfxConfig.pfxFilePath
+    return pvk2PfxConfig.keyFilePath
 
 def __validatePvk2PfxConfig( cfg, isOverwrite ):
     if not isFile( cfg.privateKeyPath ):
@@ -356,13 +350,13 @@ def __validatePvk2PfxConfig( cfg, isOverwrite ):
         raise Exception( 
             "Missing or invalid CA cert path in Pvk2PfxConfig: %s" %
             (cfg.caCertPath,) )
-    
-    destDirPath = dirPath( cfg.pfxFilePath )
+  
+    destDirPath = dirPath( cfg.keyFilePath )
     if isDir( destDirPath ):    
         if isOverwrite:
-            removeFromDir( baseFileName( cfg.pfxFilePath ), destDirPath )
-        elif isFile( cfg.pfxFilePath ):
-            raise Exception( "File exists: %s" % (cfg.pfxFilePath,) )
+            removeFromDir( baseFileName( cfg.keyFilePath ), destDirPath )
+        elif isFile( cfg.keyFilePath ):
+            raise Exception( "File exists: %s" % (cfg.keyFilePath,) )
     else: makeDir( destDirPath )                                         
                         
     if cfg.pvk2PfxPath is None: 
@@ -488,13 +482,14 @@ def trustCertInstallerConfigFactory( companyTradeName,
     f.iconFilePath     = iconFilePath 
     f.version          = version
     f.isOneFile        = True                   
-    f.entryPointPy     = script.fileName()
+    f.entryPointPy     = script.fileName()    
+    # sign the installer itself
+    f.codeSignConfig = CodeSignConfig( keyFilePath= keyFilePath,
+                                       keyPassword=keyPassword ) 
     
     # Adding custom attributes on the fly!
     f._trustCertScript = script   
     f._caCertPath      = caCertPath
-    f._keyFilePath     = keyFilePath 
-    f._keyPassword     = keyPassword
 
     return f   
     
@@ -511,12 +506,7 @@ class TrustInstallerBuilderProcess( PyToBinPackageProcess ):
             cfg.dataFilePaths.append( self.configFactory.iconFilePath )            
         
     def onFinalize( self ):
-        self.configFactory._trustCertScript.remove()        
-        # sign the installer itself
-        signConfig = CodeSignConfig( 
-            pfxFilePath=absPath( self.configFactory._keyFilePath ),
-            keyPassword=self.configFactory._keyPassword ) 
-        signExe( self.binPath, signConfig )                                                                            
+        self.configFactory._trustCertScript.remove()                                                                    
          
 def signExe( exePath, codeSignConfig ):
     exePath = normBinaryName( exePath, isPathPreserved=True )
