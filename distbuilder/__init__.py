@@ -104,7 +104,7 @@ ExtLibHandling = OpyConfig.ExtLibHandling
 
 from distbuilder.code_sign import \
       SelfSignedCertConfig \
-    , SignToolConfig \
+    , CodeSignConfig \
     , TrustInstallerBuilderProcess \
     , trustCertInstallerConfigFactory \
     , generateTrustCerts \

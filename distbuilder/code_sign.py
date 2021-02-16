@@ -8,8 +8,9 @@ _RES_DIR_PATH = util._toLibResPath( joinPath( "code_sign_res",
 # WINDOWS CODE SIGNING
 #------------------------------------------------------------------------------
 SIGNTOOL_PATH_ENV_VAR = "SIGNTOOL_PATH"
-            
-class SignToolConfig:
+
+# TODO: Refactor, so as to not be quite so MS SignTool specific            
+class CodeSignConfig:
 
     DEFAULT_DIGEST           = "sha256"
     DEFAULT_TIMESTAMP_SERVER = "http://timestamp.digicert.com"
@@ -27,21 +28,21 @@ class SignToolConfig:
     @staticmethod
     def _builtInInstallerPath():    
         return joinPath( _RES_DIR_PATH, 
-            SignToolConfig.__RES_DIR_NAME, SignToolConfig.__MSI_NAME )
+            CodeSignConfig.__RES_DIR_NAME, CodeSignConfig.__MSI_NAME )
 
     @staticmethod
     def _defaultSignToolPath( isVerified=False ):    
         if IS_ARM_CPU:
-            subDirName =( SignToolConfig.__ARM_32BIT_DIR 
+            subDirName =( CodeSignConfig.__ARM_32BIT_DIR 
                           if IS_32_BIT_CONTEXT else 
-                          SignToolConfig.__ARM_64BIT_DIR )
+                          CodeSignConfig.__ARM_64BIT_DIR )
         else:
-            subDirName =( SignToolConfig.__INTEL_32BIT_DIR 
+            subDirName =( CodeSignConfig.__INTEL_32BIT_DIR 
                           if IS_32_BIT_CONTEXT else 
-                          SignToolConfig.__INTEL_64BIT_DIR )                  
+                          CodeSignConfig.__INTEL_64BIT_DIR )                  
         path = joinPath( util._winProgs86DirPath(), 
-            SignToolConfig.__WINDOWS_KITS_DIR, subDirName, 
-            SignToolConfig.__SIGNTOOL_NAME )
+            CodeSignConfig.__WINDOWS_KITS_DIR, subDirName, 
+            CodeSignConfig.__SIGNTOOL_NAME )
         if isVerified and not isFile( path ): path = None            
         return path 
 
@@ -52,9 +53,9 @@ class SignToolConfig:
  
         self.signToolPath = None # if None, this will be auto resolved 
        
-        self.fileDigest         = SignToolConfig.DEFAULT_DIGEST        
-        self.timeStampDigest    = SignToolConfig.DEFAULT_DIGEST
-        self.timeStampServerUrl = SignToolConfig.DEFAULT_TIMESTAMP_SERVER
+        self.fileDigest         = CodeSignConfig.DEFAULT_DIGEST        
+        self.timeStampDigest    = CodeSignConfig.DEFAULT_DIGEST
+        self.timeStampServerUrl = CodeSignConfig.DEFAULT_TIMESTAMP_SERVER
         self.otherSignToolArgs  = ""
         
         self.isDebugMode = True
@@ -62,7 +63,7 @@ class SignToolConfig:
     def __str__( self ) :
         if not isFile( self.pfxFilePath ):
             raise Exception( 
-                "Missing or invalid pfx path in SignToolConfig: %s" %
+                "Missing or invalid pfx path in CodeSignConfig: %s" %
                 (self.pfxFilePath,) )        
         operation       = "sign"        
         verbose         = '/v' if self.isDebugMode else ''
@@ -77,16 +78,16 @@ class SignToolConfig:
                   self.otherSignToolArgs)
         return ' '.join( (('%s ' * len(tokens)) % tokens).split() )        
 
-def __useSignTool( exePath, signToolConfig ):
-    __validateSignToolConfig( signToolConfig )
-    cmd = '"%s" %s "%s"' % ( signToolConfig.signToolPath, 
-                             str(signToolConfig), exePath )
+def __useSignTool( exePath, codeSignConfig ):
+    __validateCodeSignConfig( codeSignConfig )
+    cmd = '"%s" %s "%s"' % ( codeSignConfig.signToolPath, 
+                             str(codeSignConfig), exePath )
     if not util._isSystemSuccess( cmd ): 
         raise Exception( 'FAILED to code sign "%s"' % (exePath,) )
     print( "Signed successfully!" )
     return exePath           
 
-def __validateSignToolConfig( cfg ):
+def __validateCodeSignConfig( cfg ):
     if not isFile( cfg.pfxFilePath ):         
         raise Exception( "Missing or invalid PFX file path: %s" % 
                          (cfg.pfxFilePath,) )
@@ -94,7 +95,7 @@ def __validateSignToolConfig( cfg ):
         cfg.signToolPath = getenv( SIGNTOOL_PATH_ENV_VAR )    
     if cfg.signToolPath is None: 
         cfg.signToolPath = (
-            SignToolConfig._defaultSignToolPath( isVerified=True ) )    
+            CodeSignConfig._defaultSignToolPath( isVerified=True ) )    
     if cfg.signToolPath is None: 
         cfg.signToolPath = __installSignTool()   
     if cfg.signToolPath is None: 
@@ -102,9 +103,9 @@ def __validateSignToolConfig( cfg ):
 
 def __installSignTool():
     print( "Installing SignTool utility...\n" )
-    if not util._isSystemSuccess( SignToolConfig._builtInInstallerPath() ): 
+    if not util._isSystemSuccess( CodeSignConfig._builtInInstallerPath() ): 
         raise Exception( "SignTool installation FAILED" )
-    return SignToolConfig._defaultSignToolPath( isVerified=True )
+    return CodeSignConfig._defaultSignToolPath( isVerified=True )
 
 #------------------------------------------------------------------------------
 MAKECERT_PATH_ENV_VAR = "MAKECERT_PATH"
@@ -512,15 +513,15 @@ class TrustInstallerBuilderProcess( PyToBinPackageProcess ):
     def onFinalize( self ):
         self.configFactory._trustCertScript.remove()        
         # sign the installer itself
-        signConfig = SignToolConfig( 
+        signConfig = CodeSignConfig( 
             pfxFilePath=absPath( self.configFactory._keyFilePath ),
             keyPassword=self.configFactory._keyPassword ) 
         signExe( self.binPath, signConfig )                                                                            
          
-def signExe( exePath, signToolConfig ):
+def signExe( exePath, codeSignConfig ):
     exePath = normBinaryName( exePath, isPathPreserved=True )
     print( "Code signing %s...\n" % (exePath,) )
-    if IS_WINDOWS: return __useSignTool( exePath, signToolConfig )    
+    if IS_WINDOWS: return __useSignTool( exePath, codeSignConfig )    
     #TODO: SUPPORT OTHER PLATFORMS!!!
     util._onPlatformErr()
         

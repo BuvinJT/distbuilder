@@ -606,12 +606,13 @@ class QtIfwPackage:
         self.distResources = None        
         self.isTempSrc     = isTempSrc                     
         # extended content detail        
-        self.subDirName   = subDirName 
-        self.exeName      = None           
-        self.isGui        = False
-        self.exeWrapper   = None # class QtIfwExeWrapper        
-        self.qtCppConfig  = None
-    
+        self.subDirName      = subDirName 
+        self.exeName         = None           
+        self.isGui           = False
+        self.exeWrapper      = None # class QtIfwExeWrapper        
+        self.codeSignTargets = None # list of relative paths within package 
+        self.qtCppConfig     = None
+        
         self._isMergeProduct = False
         
     def dirPath( self ) :
@@ -7410,7 +7411,11 @@ def __mergePackageObjects( srcPkg, destPkg, subDirName=None ):
             for i, _ in enumerate( srcShortcuts ): 
                 srcShortcuts[i].exeDir = joinPathQtIfw( 
                     QT_IFW_TARGET_DIR, subDirName )                
-    except: srcShortcuts = []                
+    except: srcShortcuts = []
+    if srcPkg.pkgCodeSignTargets:
+        try: destPkg.pkgCodeSignTargets.extend( srcPkg.pkgCodeSignTargets )
+        except: destPkg.pkgCodeSignTargets = srcPkg.pkgCodeSignTargets
+        destPkg.pkgCodeSignTargets = list(set( destPkg.pkgCodeSignTargets ))                    
     if destPkg.pkgScript:    
         if srcShortcuts:
             try: destPkg.pkgScript.shortcuts.extend( srcShortcuts )

@@ -39,6 +39,15 @@ from distbuilder.qt_installer import \
     , QT_IFW_TARGET_DIR \
     , _SILENT_FORCED_ARGS \
     , _LOUD_FORCED_ARGS 
+
+# work around for cross dependency 
+__signExe = None
+def signExe( exePath, codeSignConfig ):
+    global __signExe
+    if __signExe is None:
+        from distbuilder.code_sign import signExe
+        __signExe = signExe
+    return __signExe( exePath, codeSignConfig )
     
 # -----------------------------------------------------------------------------       
 class ConfigFactory:
@@ -108,13 +117,17 @@ class ConfigFactory:
         self.ifwPkgScriptPath = None        
         self.ifwPkgScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
         
-        self.pkgType         = None
-        self.pkgSubDirName   = None
-        self.pkgSrcDirPath   = None
-        self.pkgSrcExePath   = None
-        self.pkgExeWrapper   = None 
+        self.pkgType            = None
+        self.pkgSubDirName      = None
+        self.pkgSrcDirPath      = None
+        self.pkgSrcExePath      = None
+        self.pkgExeWrapper      = None 
+        self.pkgCodeSignTargets = None
 
         self.startOnBoot   = False
+       
+        # code signing
+        self.codeSignConfig = None
        
         # Configurations for specific package types               
         self.__pkgPyInstConfig = None
@@ -223,7 +236,7 @@ class ConfigFactory:
                 
         pkg.exeName    = self.__pkgExeName()
         pkg.isGui      = self.isGui
-        
+            
         pkg.exeWrapper = self.pkgExeWrapper        
         if( IS_WINDOWS and 
             isinstance( pkg.exeWrapper, QtIfwExeWrapper ) and 
@@ -254,8 +267,19 @@ class ConfigFactory:
             pkg.distResources = list( set().union(
                 pkg.distResources if pkg.distResources else [], 
                 self.distResources if self.distResources else [] ) )
-                                                
-        pkg.qtCppConfig = self.qtCppConfig
+        
+        if self.codeSignConfig:
+            if pkgType != QtIfwPackage.Type.PY_INSTALLER:          
+                try: self.pkgCodeSignTargets.append( pkg.exeName )
+                except: self.pkgCodeSignTargets=[ pkg.exeName ]
+            if( isinstance( pkg.exeWrapper, QtIfwExeWrapper ) and 
+                pkg.exeWrapper.isExe ):
+                exeName = pkg.exeWrapper.wrapperExeName
+                try: self.pkgCodeSignTargets.append( exeName )
+                except: self.pkgCodeSignTargets=[ exeName ]
+            pkg.codeSignTargets = self.pkgCodeSignTargets
+                                                       
+        pkg.qtCppConfig = self.qtCppConfig        
         return pkg
 
     def qtIfwPackageXml( self ) :
@@ -507,6 +531,9 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
             buildExecutable( pyInstConfig=self._pyInstConfig, 
                              opyConfig=opyConfig ) )
         
+        if self.configFactory.codeSignConfig :
+            signExe( self.binPath, self.configFactory.codeSignConfig ) 
+        
         destDirPath =( util._userDesktopDirPath() if self.isDesktopTarget else 
                        util._userHomeDirPath()    if self.isHomeDirTarget else 
                        None )          
@@ -522,7 +549,7 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
             if destDirPath and self.binDir != destDirPath:
                 binName = baseFileName( self.binPath )
                 isOtherContent = len( [item for item in listdir( self.binDir ) 
-                                      if item != binName ] ) > 0
+                                      if item != binName] ) > 0                                      
                 if isOtherContent:
                     self.binDir  = moveToDir( self.binDir, destDirPath )
                     self.binPath = joinPath( self.binDir, binName )
@@ -568,7 +595,6 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
         self.setupPath = None
         
     def _body( self ):        
-
         for p in self.pyToBinPkgProcesses :
             p.run()
             self.ifwPackages.append(                
@@ -582,9 +608,19 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
         
         _stageInstallerPackages( ifwConfig, self.configFactory.isSilentSetup )
         self.onPackagesStaged( ifwConfig, ifwConfig.packages )
+
+        if self.configFactory.codeSignConfig:
+            for pkg in self.ifwPackages:
+                if pkg.codeSignTargets:
+                    for relPath in pkg.codeSignTargets: 
+                        exePath = absPath( relPath, pkg.contentDirPath )
+                        signExe( exePath, self.configFactory.codeSignConfig ) 
                    
         self.setupPath = _buildInstaller( 
             ifwConfig, self.configFactory.isSilentSetup )
+        
+        if self.configFactory.codeSignConfig :
+            signExe( self.setupPath, self.configFactory.codeSignConfig ) 
         
         if self.isDesktopTarget :
             self.setupPath = moveToDesktop( self.setupPath )
