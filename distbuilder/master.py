@@ -238,7 +238,7 @@ class ConfigFactory:
         pkg.isGui      = self.isGui
             
         pkg.exeWrapper = self.pkgExeWrapper        
-        if( IS_WINDOWS and 
+        if( IS_WINDOWS and # On the fly, installer generated exe is only currently supported on Windows! 
             isinstance( pkg.exeWrapper, QtIfwExeWrapper ) and 
             pkg.exeWrapper.isExe ):
             w = pkg.exeWrapper
@@ -275,8 +275,11 @@ class ConfigFactory:
             if( isinstance( pkg.exeWrapper, QtIfwExeWrapper ) and 
                 pkg.exeWrapper.isExe ):
                 exeName = pkg.exeWrapper.wrapperExeName
-                try: self.pkgCodeSignTargets.append( exeName )
-                except: self.pkgCodeSignTargets=[ exeName ]
+                printErr( "WARNING: %s will be generated at install time and "
+                          "therefore cannot be code signed (as your private "
+                          "key would be be required in the distribution)!" % 
+                          (exeName,), 
+                          isFatal=False)
             pkg.codeSignTargets = self.pkgCodeSignTargets
                                                        
         pkg.qtCppConfig = self.qtCppConfig        
@@ -613,7 +616,7 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
             for pkg in self.ifwPackages:
                 if pkg.codeSignTargets:
                     for relPath in pkg.codeSignTargets: 
-                        exePath = absPath( relPath, pkg.contentDirPath )
+                        exePath = absPath( relPath, pkg.contentDirPath() )
                         signExe( exePath, self.configFactory.codeSignConfig ) 
                    
         self.setupPath = _buildInstaller( 

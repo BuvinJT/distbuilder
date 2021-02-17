@@ -7412,10 +7412,10 @@ def __mergePackageObjects( srcPkg, destPkg, subDirName=None ):
                 srcShortcuts[i].exeDir = joinPathQtIfw( 
                     QT_IFW_TARGET_DIR, subDirName )                
     except: srcShortcuts = []
-    if srcPkg.pkgCodeSignTargets:
-        try: destPkg.pkgCodeSignTargets.extend( srcPkg.pkgCodeSignTargets )
-        except: destPkg.pkgCodeSignTargets = srcPkg.pkgCodeSignTargets
-        destPkg.pkgCodeSignTargets = list(set( destPkg.pkgCodeSignTargets ))                    
+    if srcPkg.codeSignTargets:
+        try: destPkg.codeSignTargets.extend( srcPkg.codeSignTargets )
+        except: destPkg.codeSignTargets = srcPkg.codeSignTargets
+        destPkg.codeSignTargets = list(set( destPkg.codeSignTargets ))                    
     if destPkg.pkgScript:    
         if srcShortcuts:
             try: destPkg.pkgScript.shortcuts.extend( srcShortcuts )
