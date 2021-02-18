@@ -5809,6 +5809,7 @@ class QtIfwExternalOp:
 
         @staticmethod
         def __batExitIfFalseVar( varName, isNegated=False, errorCode=0 ):
+            if varName is None: return ""
             return str( ExecutableScript( "", script=([               
                   'set "reqFlag={varName}"'               
                 , 'if "%reqFlag%"=="{undef}" set "reqFlag=false"'
@@ -5823,7 +5824,8 @@ class QtIfwExternalOp:
             }) )
 
         @staticmethod
-        def __batExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):            
+        def __batExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):
+            if fileName is None: return ""            
             return str( ExecutableScript( "", script=([                               
                 'if {negate}exist "{filePath}" exit /b {errorCode}'   
             ]), replacements={
@@ -5835,6 +5837,7 @@ class QtIfwExternalOp:
         # TODO: TEST
         @staticmethod
         def __psExitIfFalseVar( varName, isNegated=False, errorCode=0 ):
+            if varName is None: return ""
             return str( ExecutableScript( "", script=([    
                   '$reqFlag="{varName}"'
                 , 'if( $reqFlag -eq "{undef}" ) { $reqFlag="false" }'
@@ -5851,7 +5854,8 @@ class QtIfwExternalOp:
             }) )
 
         @staticmethod
-        def __psExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):            
+        def __psExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):
+            if fileName is None: return ""            
             return str( ExecutableScript( "", script=([               
                   'if( {negate}(Test-Path "{filePath}" -PathType Leaf) ) {'
                 , '    [Environment]::Exit( {errorCode} )'
@@ -6304,6 +6308,7 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
         # TODO: TEST
         @staticmethod
         def __shExitIfFalseVar( varName, isNegated=False, errorCode=0 ):
+            if varName is None: return ""
             return str( ExecutableScript( "", script=([
                   'reqFlag="{varName}"'               
                 , '[ "{reqFlag}"=="{undef}" ] && reqFlag="false"'
