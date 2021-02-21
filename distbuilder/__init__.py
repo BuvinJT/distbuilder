@@ -106,11 +106,13 @@ from distbuilder.code_sign import \
       SelfSignedCertConfig \
     , CodeSignConfig \
     , TrustInstallerBuilderProcess \
+    , SIGNTOOL_PATH_ENV_VAR \
+    , MAKECERT_PATH_ENV_VAR \
+    , PVK2PFX_PATH_ENV_VAR \
     , trustCertInstallerConfigFactory \
     , generateTrustCerts \
-    , signExe \
-    , SIGNTOOL_PATH_ENV_VAR
-    
+    , signExe 
+            
 from distbuilder.util import \
       ExecutableScript \
     , IS_WINDOWS \

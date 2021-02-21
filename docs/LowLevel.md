@@ -1484,6 +1484,56 @@ attribute with cause dynamically resolved installer driven paths
 to be injected into the script with backslashes doubled up, thereby
 escaping them in certain scripting languages / string literal contexts.  
 
+## Code Signing
+
+"Code signing" an executable file is a means to provide proof that a program was 
+produced by a party who can be identified and trusted to not install viruses or 
+malware on to your PC.  This mechanism may be thought of as a "first line of 
+defense" for virus checkers and security tools.  
+
+Explicitly installing a "Trusted Software Publisher Certificate" maybe necessary 
+for the digital signature on a file to be validated, if the file was signed by an 
+unknown "Certification Authority".  All major operating systems ship with a host 
+of standard "CA certs" preinstalled, but will also allow the manual addition of 
+such to supplement those included out-of-the-box.  
+
+### signExe( exePath, codeSignConfig )
+
+**Returns**: exePath
+
+**exePath**: The path to the executable to be code signed. 
+
+**codeSignConfig**: [CodeSignConfig](ConfigClasses.md#codesignconfig) object
+
+### generateTrustCerts
+
+    generateTrustCerts( certConfig, keyPassword=None, isOverwrite=False )
+
+Creates self-sign certificates and keys.
+
+**Returns**: (CA Cert Path, Key Path)
+
+**certConfig**: [SelfSignedCertConfig](ConfigClasses.md#selfsignedcertconfig)
+
+**keyPassword**: Recommend using the function [getPassword](#getpassword) to 
+set this.  
+ 
+**isOverwrite**: Recommend keeping this as `False` in production context, 
+and only making `True` is you are certain you want to regenerate existing files. 
+
+### TrustInstallerBuilderProcess
+
+A [PyToBinPackageProcess](HighLevel.md#pytobinpackageprocess) derivative.
+Builds an installer based upon a [ConfigFactory](HighLevel.md#configFactory).
+That ConfigFactory maybe most easily generated via the convenience function: 
+
+#### trustCertInstallerConfigFactory
+
+    trustCertInstallerConfigFactory( companyTradeName, 
+        caCertPath, keyFilePath, keyPassword=None, 
+        companyLegalName=None, version=(1,0,0,0), iconFilePath=None,    
+        isSilent=False, script=None )  
+
 ## Utilities
 
 The following low level "utilities" are also provided for 

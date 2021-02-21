@@ -234,6 +234,14 @@ produced by, [QtIfwConfigXml](ConfigClasses.md#qtifwpackage) and
 [QtIfwPackageXml](ConfigClasses.md#qtifwpackage) objects to give you further
 insight into the design patterns and functionality of the library. 
 
+## Hello Code Signing Examples
+
+### Generate Trust Certs w/ Installer
+
+### Signed Python Executable Example
+
+### Signed Installer Example
+
 ## Hello Wrapper Example
 
 This example provides a **collection** of demonstrations using the

@@ -93,13 +93,18 @@ Attributes & default values:
 	    ifwPkgScriptPath = None        
 	    ifwPkgScriptName = "installscript.qs"
 	
-	    pkgType       = None    
-	    pkgSubDirName = None
-	    pkgSrcDirPath = None
-	    pkgSrcExePath = None
-	    pkgExeWrapper = None
+	    pkgType            = None    
+	    pkgSubDirName      = None
+	    pkgSrcDirPath      = None
+	    pkgSrcExePath      = None
+	    pkgExeWrapper      = None
+		pkgCodeSignTargets = None
 	
 		startOnBoot   = False <CURRENT_USER, ALL_USERS>    
+
+	<Code Signing>
+	
+		codeSignConfig 
 
 	<"Special" Contexts>
 		        

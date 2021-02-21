@@ -527,6 +527,7 @@ class TrustInstallerBuilderProcess( PyToBinPackageProcess ):
         self.configFactory._trustCertScript.remove()                                                                    
          
 def signExe( exePath, codeSignConfig ):
+    """ Returns exePath """
     exePath = normBinaryName( exePath, isPathPreserved=True )
     print( "Code signing %s...\n" % (exePath,) )
     if IS_WINDOWS: return __useSignTool( exePath, codeSignConfig )    
