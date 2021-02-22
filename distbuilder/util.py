@@ -32,6 +32,8 @@ import base64  # @UnusedImport
 from operator import attrgetter, itemgetter # @UnusedImport 
 from copy import deepcopy # @UnusedImport
 
+from distbuilder.log import Logger, isLogging
+
 # -----------------------------------------------------------------------------   
 __plat = platform.system()
 IS_WINDOWS = __plat == "Windows"
@@ -119,8 +121,22 @@ if IS_WINDOWS :
     __SHARED_RET_CODE_PREFIX= "__SHARED_RET_CODE:"
     __SHARED_RET_CODE_TMPLT = __SHARED_RET_CODE_PREFIX + "%d" 
 
-__SYSTEM_REDIRECT_TMPT = '"%s" > "%s" 2>&1'
+__SYSTEM_REDIRECT_TMPT = '"%s" >> "%s" 2>&1'
 if not IS_WINDOWS: __SYSTEM_REDIRECT_TMPT = ". " + __SYSTEM_REDIRECT_TMPT
+
+def __toStdOut( msg ):
+    if isLogging():
+        Logger.singleton().write( msg )
+    else:
+        stdout.write( msg )
+        stdout.flush()
+
+def __toStdErr( msg ):
+    if isLogging():
+        Logger.singleton().write( msg )
+    else:    
+        stderr.write( msg )
+        stderr.flush()
 
 # -----------------------------------------------------------------------------  
 def isDebug():
@@ -145,8 +161,7 @@ def _run( binPath, args=None,
         print( list2cmdline(cmdList) )
 
     def __printRetCode( retCode ):
-        stdout.write( "\nReturn code: %d\n" % (retCode,) )
-        stdout.flush()    
+        print( "\nReturn code: %d\n" % (retCode,) )
     
     if args is None: args=[]
             
@@ -190,9 +205,7 @@ def _run( binPath, args=None,
             # I doubt anyone would miss nulls in some other context here?    
             line = line.replace( chr(0), '' ) 
             if sharedFile: sharedFile.write( line )
-            else:
-                stdout.write( line )
-                stdout.flush()
+            else: __toStdOut( line )
         if sharedFile :
             sharedFile.write( __SHARED_RET_CODE_TMPLT % (p.returncode,) )
             sharedFile.close()
@@ -229,29 +242,22 @@ def _system( cmd, wrkDir=None ):
         initWrkDir = getcwd()
         print( 'cd "%s"' % (wrkDir,) )
         chdir( wrkDir )
-    cmd = __scrubSystemCmd( cmd )            
-    from distbuilder.log import isLogging, log
-    if isLogging:
-        # While this coding is rather ugly, and introduces a weakness
-        # in that the sub process output does not stream in the log in real
-        # time.. It does seem to work universally!  In certain contexts,
-        # it seemed that some streams were no being captured via any
-        # clean means with popen or file descriptor inheritance tricks, etc.   
-        outputPath = reserveTempFilePath()        
-        script = ExecutableScript( rootFileName( mktemp() ), script=cmd )
-        script.write( tempDirPath() )
-        execCmd = __scrubSystemCmd( __SYSTEM_REDIRECT_TMPT % (
-                        script.filePath(), outputPath) )
-        print( execCmd )          
-        system( execCmd )
-        try: 
-            with open( outputPath, 'r' ) as f: log( f.read() )
-            removeFile( outputPath )
-        except: pass
+    cmd = __scrubSystemCmd( cmd )
+    print( cmd )             
+    if Logger.isSingletonOpen():
+        # While this coding appears a bit ugly, it does seem to work 
+        # universally!  In certain contexts, it seemed that some streams 
+        # were no being captured via any  clean means with popen or file 
+        # descriptor inheritance tricks, etc.           
+        script = ExecutableScript( rootFileName( mktemp() ), script=cmd,
+                                   isDebug=False )
+        script.write( tempDirPath() )        
+        Logger.singleton().pause()
+        system( __scrubSystemCmd( __SYSTEM_REDIRECT_TMPT % (
+            script.filePath(), Logger.singleton().filePath() ) ) )
+        Logger.singleton().resume()
         script.remove()
-    else:
-        print( cmd ) 
-        system( cmd )
+    else: system( cmd )
     print('')
     if wrkDir is not None: chdir( initWrkDir )
 
@@ -354,8 +360,7 @@ def __windowsElevated( exePath, args=None, wrkDir=None ):
                 chunk = parts[0]
                 try: retCode = int( parts[1] )
                 except: retCode = -1                
-            stdout.write( chunk ) 
-            stdout.flush()                    
+            __toStdOut( chunk ) 
         sharedFile.close()    
         return retCode 
 
@@ -875,12 +880,11 @@ def delEnv( varName ):
 def halt(): printErr( "HALT!", isFatal=True )
                
 def printErr( msg, isFatal=False ):
-    try: stderr.write( str(msg) + "\n" )
+    try: __toStdErr( str(msg) + "\n" )
     except: 
-        try: stderr.write( unicode(msg) + "\n" )  # @UndefinedVariable
-        except: stderr.write( "ERROR on: %s\n" % 
+        try: __toStdErr( unicode(msg) + "\n" )  # @UndefinedVariable
+        except: __toStdErr( "ERROR on: %s\n" % 
                 (traceback.format_stack(limit=1)) )
-    stderr.flush()        
     if isFatal: exit(1)   
 
 def printExc( e, isDetailed=False, isFatal=False ):
@@ -902,9 +906,8 @@ def download( url, saveToPath=None, preserveName=True ):
             pct = int(100 * ((blockCount*blockSize) / fileSize))
             if pct - download._priorPct >= 10 :
                 download._priorPct = pct 
-                stdout.write( "Done!\n" if pct==100 else 
-                              "{0}%...".format( pct ) )
-                stdout.flush() 
+                __toStdOut( "Done!\n" if pct==100 else 
+                            "{0}%...".format( pct ) )
     if saveToPath is None and preserveName:
         downloadDir = tempDirPath()
         downloadName = baseFileName( urllib.parse.urlsplit( url )[2] )
@@ -1085,7 +1088,7 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
                   extension=True, # True==auto assign, str==what to use, or None
                   shebang=True, # True==auto assign, str==what to use, or None                  
                   script=None, scriptPath=None, dirPath=None,
-                  replacements=None ) :
+                  replacements=None, isDebug=True ) :
         self.rootName = rootName
         if extension==True:
             self.extension = ( ExecutableScript.__WIN_DEFAULT_EXT 
@@ -1104,6 +1107,7 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         else: self.script = script
         self.replacements=replacements if replacements else {}  
         self.isIfwVarEscapeBackslash = False
+        self.isDebug = isDebug
                                                     
     def __str__( self ) :
         if self.script is None : ""
@@ -1134,7 +1138,8 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         self.dirPath = dirPath if dirPath else THIS_DIR  
         if not isDir( self.dirPath ): makeDir( self.dirPath )
         filePath = self.filePath()
-        print( "Writing script: %s\n\n%s\n" % (filePath,str(self)) )                               
+        if self.isDebug:
+            print( "Writing script: %s\n\n%s\n" % (filePath,str(self)) )                               
         with open( filePath, 'w' ) as f: f.write( str(self) ) 
         if not IS_WINDOWS : chmod( filePath, 0o755 )
         
@@ -1152,7 +1157,8 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         filePath = self.filePath()
         if isFile( filePath ): 
             removeFile( filePath )
-            print( "Removed script: %s" % (filePath,) )
+            if self.isDebug:
+                print( "Removed script: %s" % (filePath,) )
                 
     def toLines( self ): return ExecutableScript.strToLines( self.script )
     

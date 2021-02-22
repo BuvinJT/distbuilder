@@ -188,6 +188,8 @@ _TEMP_RESOURCE_DIR = '__installerTempPath() + "/%s"' % (_TEMP_RESOURCE_SUBDIR,)
 _WRAPPER_MSG_PREFIX = "__MSG__:"
 _REBOOT_MSG = "Please reboot now to complete the installation."
 
+__SCRIPT_LINE1_COMMENT = "// ------------ LINE 1 ------------ \n\n"
+
 # don't use back slash on Windows!
 def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
 
@@ -3342,7 +3344,7 @@ Controller.prototype.Dynamic%sCallback = function() {
             slotName, slotBody )
                                                             
     def _generate( self ) :        
-        self.script = ""
+        self.script = __SCRIPT_LINE1_COMMENT
                         
         if self.isAutoLib: _QtIfwScript._genLib( self )        
         if self.qtScriptLib: self.script += self.qtScriptLib
@@ -4400,7 +4402,7 @@ Component.prototype.%s = function(){
         collectDependencies()
                                                         
     def _generate( self ) :        
-        self.script = ""
+        self.script = __SCRIPT_LINE1_COMMENT
         
         if self.isAutoLib: _QtIfwScript._genLib( self )        
         if self.qtScriptLib: self.script += self.qtScriptLib        
@@ -7570,13 +7572,13 @@ def __addInstallerResources( qtIfwConfig ) :
         pkgXml = p.pkgXml              
         pkgScript = p.pkgScript       
         if pkgXml :            
-            print( "Adding installer package definition: %s..." 
-                   % (pkgXml.pkgName) )
+            print( "Adding installer package definition: %s\n..." 
+                   % (pkgXml.pkgName,) )
             pkgXml.debug()
             pkgXml.write()            
         if pkgScript :
-            print( "Adding installer package script: %s..." 
-                   % (pkgScript.fileName) )
+            print( "Adding installer package script: %s\n..." 
+                   % (pkgScript.fileName,) )
             pkgScript.debug()
             pkgScript.write()
 
@@ -7630,10 +7632,9 @@ def __genQtIfwCntrlRes( qtIfwConfig ) :
             if not isStartMenuUpdated:    
                 ctrlScript.isStartMenuDirectoryPageVisible=False
 
-        print( "%s installer control script..." 
+        print( "%s installer control script...\n" 
                % ( "Regenerating" if ctrlScript.exists() else "Adding" ) )       
         if ctrlScript.script: ctrlScript._generate() 
-        print( "script: \n" )
         ctrlScript.debug()
         ctrlScript.write()        
 

@@ -1410,7 +1410,7 @@ Constructor:
 	ExecutableScript( rootName, 
 				  	  extension=True, shebang=True,                   
                   	  script=None, scriptPath=None, dirPath=None,
-                  	  replacements={} )
+                  	  replacements={}, isDebug=True )
                   
 Attributes & default values:    
 
@@ -1421,6 +1421,7 @@ Attributes & default values:
     dirPath=None
     replacements={}  
     isIfwVarEscapeBackslash=False
+    isDebug=True
     
 Functions:   
 
@@ -1536,22 +1537,21 @@ That ConfigFactory maybe most easily generated via the convenience function:
 
 ## Logging
 
+Distbuilder often produces extensive debugging output when running assorted
+processes.  It may prove cumbersome, if not impossible, to read through such
+from a terminal, or from within an IDE.  In which case, the built in logging
+mechanisms can be drawn upon to resolve this.
+
 The easiest way to log the output of distbuilder processes, is to simply
 call `startLog()` at the top of your script.  This will redirect all print
 statements, along with the stdout and stderr streams of sub processes, to 
-the log.  If desired, you may also explicitly call logger functions e.g. 
-`write( msg )`.
+a default log.  
 
-If you wish to split logs across multiple files, you may create your own
-[Logger](#logger) objects.  Note that only the primary/singleton instance
-will have implicit stream redirections applied.
-
-When logging is enabled, sub process results will NOT presently stream into the 
-log in real time.  You will have to wait for a given child process to terminate 
-in order to see that debugging info.  This is because the method devised for 
-capturing this data in the most universally functional manner introduced this 
-weakness.  Live streaming attempts seemed to miss the streams of some tools 
-where there was perhaps multiple levels of file descriptor inheritance (or the lack thereof...) involved.      
+If desired, you may also explicitly create your own
+[Logger](#logger) objects and call their functions e.g. 
+`write( msg )` directly.  This maybe useful to split logs across 
+multiple files for instance.  Note that only the primary/singleton instance
+will have implicit stream redirections applied though.
 
 ### startLog
 
@@ -1587,8 +1587,8 @@ Check if the primary/singleton logger is in use.
 
 ### Logger
 
-Class for logging messages, e.g. debugging details and process results, 
-to files.
+Class used for logging messages to files, e.g. debugging details and 
+process results.
 
 Constructor:
 
@@ -1596,17 +1596,29 @@ Constructor:
     
 Attributes:
    
-	name = <name or auto based on entry point script name>
+	name = <client supplied, or auto defined>
+	isUniqueFile = False
 
 Object Methods:
 
-	isOpen()
     open()
     close()
+    
+    pause()
+    resume()
+    
     write( msg )
     toStdout( msg )
     toStderr( msg )
 
+    writeLn( msg )
+    toStdoutLn( msg )
+    toStderrLn( msg )
+
+	isOpen()
+	isPaused()
+    filePath() 
+	
 Static Methods:
 
 	singleton( name=None, isUniqueFile=False )
