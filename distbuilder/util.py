@@ -119,6 +119,9 @@ if IS_WINDOWS :
     __SHARED_RET_CODE_PREFIX= "__SHARED_RET_CODE:"
     __SHARED_RET_CODE_TMPLT = __SHARED_RET_CODE_PREFIX + "%d" 
 
+__SYSTEM_REDIRECT_TMPT = '"%s" > "%s" 2>&1'
+if not IS_WINDOWS: __SYSTEM_REDIRECT_TMPT = ". " + __SYSTEM_REDIRECT_TMPT
+
 # -----------------------------------------------------------------------------  
 def isDebug():
     try: return isDebug.__CACHE
@@ -226,9 +229,29 @@ def _system( cmd, wrkDir=None ):
         initWrkDir = getcwd()
         print( 'cd "%s"' % (wrkDir,) )
         chdir( wrkDir )
-    cmd = __scrubSystemCmd( cmd )        
-    print( cmd )
-    system( cmd ) 
+    cmd = __scrubSystemCmd( cmd )            
+    from distbuilder.log import isLogging, log
+    if isLogging:
+        # While this coding is rather ugly, and introduces a weakness
+        # in that the sub process output does not stream in the log in real
+        # time.. It does seem to work universally!  In certain contexts,
+        # it seemed that some streams were no being captured via any
+        # clean means with popen or file descriptor inheritance tricks, etc.   
+        outputPath = reserveTempFilePath()        
+        script = ExecutableScript( rootFileName( mktemp() ), script=cmd )
+        script.write( tempDirPath() )
+        execCmd = __scrubSystemCmd( __SYSTEM_REDIRECT_TMPT % (
+                        script.filePath(), outputPath) )
+        print( execCmd )          
+        system( execCmd )
+        try: 
+            with open( outputPath, 'r' ) as f: log( f.read() )
+            removeFile( outputPath )
+        except: pass
+        script.remove()
+    else:
+        print( cmd ) 
+        system( cmd )
     print('')
     if wrkDir is not None: chdir( initWrkDir )
 

@@ -1534,6 +1534,84 @@ That ConfigFactory maybe most easily generated via the convenience function:
         companyLegalName=None, version=(1,0,0,0), iconFilePath=None,    
         isSilent=False, script=None )  
 
+## Logging
+
+The easiest way to log the output of distbuilder processes, is to simply
+call `startLog()` at the top of your script.  This will redirect all print
+statements, along with the stdout and stderr streams of sub processes, to 
+the log.  If desired, you may also explicitly call logger functions e.g. 
+`write( msg )`.
+
+If you wish to split logs across multiple files, you may create your own
+[Logger](#logger) objects.  Note that only the primary/singleton instance
+will have implicit stream redirections applied.
+
+When logging is enabled, sub process results will NOT presently stream into the 
+log in real time.  You will have to wait for a given child process to terminate 
+in order to see that debugging info.  This is because the method devised for 
+capturing this data in the most universally functional manner introduced this 
+weakness.  Live streaming attempts seemed to miss the streams of some tools 
+where there was perhaps multiple levels of file descriptor inheritance (or the lack thereof...) involved.      
+
+### startLog
+
+    startLog( name=None, isUniqueFile=False )
+
+Start the primary/singleton logger. 
+
+**name**: If omitted, the name is auto assigned,
+based on the entry point script name (e.g. "build").  The Logger name will
+dictate the name of the file produced.   
+
+**isUniqueFile**: If this is enabled, the file produced will have a unique  
+name, i.e. will have a time stamp suffix.  Else, a prior/existing log (of the
+same name) will be overwritten.  
+
+### stopLog
+
+    stopLog()
+
+Stop the primary/singleton logger.  
+
+### log
+
+	log( msg )
+	 
+Log a message with the primary/singleton logger, **if it is in use**.
+
+### isLogging
+
+    isLogging()
+
+Check if the primary/singleton logger is in use.    
+
+### Logger
+
+Class for logging messages, e.g. debugging details and process results, 
+to files.
+
+Constructor:
+
+    Logger( name=None, isUniqueFile=False )
+    
+Attributes:
+   
+	name = <name or auto based on entry point script name>
+
+Object Methods:
+
+	isOpen()
+    open()
+    close()
+    write( msg )
+    toStdout( msg )
+    toStderr( msg )
+
+Static Methods:
+
+	singleton( name=None, isUniqueFile=False )
+	isSingletonOpen()
+
 ## Utilities
 
 The following low level "utilities" are also provided for 
