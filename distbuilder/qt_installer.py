@@ -188,7 +188,7 @@ _TEMP_RESOURCE_DIR = '__installerTempPath() + "/%s"' % (_TEMP_RESOURCE_SUBDIR,)
 _WRAPPER_MSG_PREFIX = "__MSG__:"
 _REBOOT_MSG = "Please reboot now to complete the installation."
 
-__SCRIPT_LINE1_COMMENT = "// ------------ LINE 1 ------------ \n\n"
+_SCRIPT_LINE1_COMMENT = "// ------------ LINE 1 ------------ \n\n"
 
 # don't use back slash on Windows!
 def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
@@ -3344,7 +3344,7 @@ Controller.prototype.Dynamic%sCallback = function() {
             slotName, slotBody )
                                                             
     def _generate( self ) :        
-        self.script = __SCRIPT_LINE1_COMMENT
+        self.script = _SCRIPT_LINE1_COMMENT
                         
         if self.isAutoLib: _QtIfwScript._genLib( self )        
         if self.qtScriptLib: self.script += self.qtScriptLib
@@ -4402,7 +4402,7 @@ Component.prototype.%s = function(){
         collectDependencies()
                                                         
     def _generate( self ) :        
-        self.script = __SCRIPT_LINE1_COMMENT
+        self.script = _SCRIPT_LINE1_COMMENT
         
         if self.isAutoLib: _QtIfwScript._genLib( self )        
         if self.qtScriptLib: self.script += self.qtScriptLib        
