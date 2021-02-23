@@ -2515,7 +2515,7 @@ class _QtIfwScript:
             TAB + 'var bitContext = isAutoBitContext===false ? " /reg:64" : ""' + END +            
             TAB + 'var regQuery = "@echo off & REG QUERY" + keySearch + valSearch + '
                     'bitContext + '
-                    '" 1>null 2>&1 && echo " + existsOutput + "\\n"' + END + 
+                    '" 1>nul 2>&1 && echo " + existsOutput + "\\n"' + END + 
             TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
             TAB + 'if( result[1] != 0 ) ' + NEW +
             (2*TAB) + 'throw new Error("Registry query failed.")' + END +
@@ -2546,7 +2546,7 @@ class _QtIfwScript:
             TAB + 'var subSearch = isRecursive ? " /S" : ""' + END +                        
             TAB + 'var regQuery = "@echo off & REG QUERY" + keySearch + valSearch + '
                     'bitContext + caseSens + subSearch + '
-                    '" 1>null 2>&1 && echo " + existsOutput + "\\n"' + END + 
+                    '" 1>nul 2>&1 && echo " + existsOutput + "\\n"' + END + 
             TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
             TAB + 'if( result[1] != 0 ) ' + NEW +
             (2*TAB) + 'throw new Error("Registry query failed.")' + END +
@@ -2569,7 +2569,7 @@ class _QtIfwScript:
             TAB + 'var keySearch = " \\"" + key + "\\" /VE"' + END +        
             TAB + 'var bitContext = isAutoBitContext===false ? " /reg:64" : ""' + END +
              TAB + 'var regQuery = "@echo off & REG QUERY" + keySearch + bitContext + '                
-                    '" 1>null 2>&1 && echo " + existsOutput + "\\n"' + END + 
+                    '" 1>nul 2>&1 && echo " + existsOutput + "\\n"' + END + 
             TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +
             TAB + 'if( result[1] != 0 ) ' + NEW +
             (2*TAB) + 'throw new Error("Registry query failed.")' + END +
@@ -2599,7 +2599,7 @@ class _QtIfwScript:
             TAB + 'var subSearch = isRecursive ? " /S" : ""' + END +                        
             TAB + 'var regQuery = "@echo off & REG QUERY" + keySearch + bitContext + '
                     'caseSens + subSearch + '
-                    '" 1>null 2>&1 && echo " + existsOutput + "\\n"' + END + 
+                    '" 1>nul 2>&1 && echo " + existsOutput + "\\n"' + END + 
             TAB + 'var result = installer.execute( "cmd.exe", ["/k"], regQuery )' + END +                
             TAB + 'if( result[1] != 0 ) ' + NEW +
             (2*TAB) + 'throw new Error("Registry query failed.")' + END +
