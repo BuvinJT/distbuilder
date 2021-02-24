@@ -1,6 +1,7 @@
 import sys, os
 import datetime
 import atexit
+import traceback
 
 class Logger:
 
@@ -22,14 +23,15 @@ class Logger:
     
     def __init__( self, name=None, isUniqueFile=False ) :
         from distbuilder.util import rootFileName
-        self.name         = name if None else rootFileName( sys.argv[0] )
-        self.isUniqueFile = isUniqueFile
-        self._isPrimary   = False
-        self.__path       = None
-        self.__file       = None        
-        self.__stderr     = None
-        self.__stdout     = None
-        atexit.register( self.close )
+        self.name          = name if None else rootFileName( sys.argv[0] )
+        self.isUniqueFile  = isUniqueFile
+        self._isPrimary    = False
+        self.__path        = None
+        self.__file        = None        
+        self.__stderr      = None
+        self.__stdout      = None
+        self.__isException = False
+        atexit.register( self.__onExit )
 
     def open( self ): self._getFile()
 
@@ -44,27 +46,30 @@ class Logger:
             self._flush()
             self.__file.close()
             self.__file = None     
-            if self._isPrimary: self.__restoreStd()
+            if self._isPrimary: 
+                self.__restoreStd()
+                self.__stopCatchall()
 
     def resume( self ): self._getFile( isAppend=True )
                         
     def write( self, msg ):
-        self._getFile().write( msg )
+        self._getFile().write( str(msg) )
         self._flush()
 
     def toStdout( self, msg ):
         stream = self.__stdout if self.__stdout else sys.stdout
-        stream.write( msg )
+        stream.write( str(msg) )
         stream.flush()
 
     def toStderr( self, msg ):
         stream = self.__stderr if self.__stderr else sys.stderr
-        stream.write( msg )
+        stream.write( str(msg) )
         stream.flush()
 
-    def writeLn( self, msg ):    self.write(    self.__formatLn( msg ) )
+    def writeLn(    self, msg ): self.write(    self.__formatLn( msg ) )
     def toStdoutLn( self, msg ): self.toStdout( self.__formatLn( msg ) )
-    def toStderrLn( self, msg ): self.toStderr( self.__formatLn( msg ) )
+    def toStderrLn( self, msg ): self.toStderr( self.__formatLn( msg ) )   
+    def __formatLn( self, msg ): return str(msg) + "\n"
 
     def isOpen( self ): return self.__file is not None
 
@@ -84,7 +89,9 @@ class Logger:
                 self.__path = absPath( joinExt( 
                     rootLogName, Logger.__EXTENSION ) )         
             self.__file = open( self.__path, "a+" if isAppend else "w" )        
-            if self._isPrimary: self.__redirectStd()
+            if self._isPrimary: 
+                self.__redirectStd()
+                self.__startCatchall()
             if not isAppend: self.toStdoutLn( "Logging to: %s" % (self.__path,) )    
         return self.__file
                                         
@@ -96,20 +103,34 @@ class Logger:
             self.__file.flush()
             os.fsync( self.__file.fileno() )
     
-    def __redirectStd(self):
+    def __redirectStd( self ):
         self._flush()        
         self.__stderr = sys.stderr  
         self.__stdout = sys.stdout  
         sys.stderr = self.__file
         sys.stdout = self.__file
 
-    def __restoreStd(self):
+    def __restoreStd( self ):
         sys.stderr = self.__stderr
         sys.stdout = self.__stdout
         self.__stderr = None
         self.__stdout = None
     
-    def __formatLn( self, msg ): return str(msg) + "\n"    
+    def __startCatchall( self ): sys.excepthook = self.__onUncaughtException
+    
+    def __stopCatchall( self ): sys.excepthook = None
+
+    def __onUncaughtException( self, *exc_info ):
+        self.__isException = True
+        if self._isPrimary:        
+            self.toStderr( "".join( traceback.format_exception( *exc_info ) ) )
+        sys.__excepthook__( *exc_info )
+
+    def __onExit( self ):
+        if self.isOpen():
+            self.close()
+            if self._isPrimary and not self.__isException: 
+                self.toStdout( "Done!" )
             
 def startLog( name=None, isUniqueFile=False ): 
     Logger.singleton( name, isUniqueFile ).open()
