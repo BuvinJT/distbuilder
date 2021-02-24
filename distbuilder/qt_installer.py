@@ -5805,7 +5805,7 @@ class QtIfwExternalOp:
                     runCmd])  
             else: script=[exitSnippet, runCmd ]
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "runProgram" ), script=script )
+                "runProgram" ), script=script, replacements=replacements )
                      
     if IS_WINDOWS:
 
