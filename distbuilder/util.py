@@ -10,7 +10,8 @@ from os import system, sep as PATH_DELIM, \
     chmod, getenv, listdir, makedirs as makeDir, rename, pardir as PARENT_DIR # @UnusedImport   
 from os.path import exists, isfile, islink, \
     dirname as dirPath, normpath, realpath, isabs, \
-    join as joinPath, split as splitPath, splitext as splitExt, \
+    join as joinPath, split as splitPath, \
+    splitext as splitExt, splitdrive as splitDrive, \
     expanduser, basename as baseFileName, \
     relpath, pathsep      # @UnusedImport
 from shutil import rmtree as removeDir, move, make_archive, \
@@ -19,8 +20,8 @@ import platform
 from tempfile import gettempdir, mkstemp, mkdtemp, \
     mktemp  # @UnusedImport
 from subprocess import Popen, list2cmdline, check_output, \
-    PIPE, STDOUT, CalledProcessError, \
-    check_call  # @UnusedImport
+    PIPE, CalledProcessError, \
+    check_call, STDOUT  # @UnusedImport
 try: from subprocess import DEVNULL 
 except ImportError: DEVNULL = open(devnull, 'wb')    
 import traceback
@@ -62,6 +63,7 @@ __THIS_LIB_DIR     = dirPath( realpath( __file__ ) )
 PATH_PAIR_DELIMITER=";"
 SYS_CMD_DELIM = "&" if IS_WINDOWS else ";"
 SYS_CMD_COND_DELIM = "&&"
+SYS_RET_CODE = "!errorlevel!" if IS_WINDOWS else "$?"
 
 # Windows 
 PY_SCRIPTS_DIR     = joinPath( PY_DIR, "Scripts" ) 
@@ -77,6 +79,10 @@ DESKTOP_DIR_NAME   = "Desktop"
 
 DEBUG_ENV_VAR_NAME  = "DEBUG_MODE"
 DEBUG_ENV_VAR_VALUE = "1"
+
+_RET_CODE_TO_FILE_TMPLT = ' {0} echo {1} > "{2}"'.format( 
+    SYS_CMD_DELIM, SYS_RET_CODE, "{0}" )
+_REDIRECT_PATH_ENV_VAR_NAME = "__pipeto"
 
 # strictly Apple
 _MACOS_APP_EXT                     = ".app"
@@ -118,11 +124,17 @@ if IS_WINDOWS :
     __BATCH_ONE_LINER_STARTUPINFO.dwFlags |= STARTF_USESHOWWINDOW 
     __SW_SHOWNORMAL=1
     __SW_HIDE=0        
-    __SHARED_RET_CODE_PREFIX= "__SHARED_RET_CODE:"
-    __SHARED_RET_CODE_TMPLT = __SHARED_RET_CODE_PREFIX + "%d" 
+    __WIN_SHARED_FILE_EXT  = ".shared"
+    __SHARED_RET_CODE_PREFIX = "__SHARED_RET_CODE:"
+    __SHARED_RET_CODE_TMPLT  = __SHARED_RET_CODE_PREFIX + "%d" 
+    __DELAYED_EXPANSION_PREFIX = "@cmd /V:ON /c "
+    __ENABLE_DELAYED_EXPANSION = "@SetLocal EnableDelayedExpansion"
+    __SYS_CMD_DELIM_FIND = " & " 
+    __SYS_CMD_DELIM_DELAYED_REPLACE = " ^& " 
+    __NO_ECHO_PREFIX = "@"
 
-__SYSTEM_REDIRECT_TMPT = '"%s" >> "%s" 2>&1'
-if not IS_WINDOWS: __SYSTEM_REDIRECT_TMPT = ". " + __SYSTEM_REDIRECT_TMPT
+__CMD_OUTPUT_REDIRECT_TMPT = '"%s" >> "%s" 2>&1'
+if not IS_WINDOWS: __CMD_OUTPUT_REDIRECT_TMPT = ". " + __CMD_OUTPUT_REDIRECT_TMPT
 
 def __toStdOut( msg ):
     if isLogging():
@@ -154,14 +166,14 @@ def _run( binPath, args=None,
          isDebug=False, sharedFilePath=None ):
     
     def __printCmd( elevate, binPath, args, wrkDir ):
-        cmdList = [elevate, binPath]
+        cmdList = [binPath] if elevate=="" else [elevate, binPath]
         if isinstance(args,list): cmdList.extend( args )
         elif args is not None: cmdList.append( args )    
         print( 'cd "%s"' % (wrkDir,) )
         print( list2cmdline(cmdList) )
 
     def __printRetCode( retCode ):
-        print( "\nReturn code: %d\n" % (retCode,) )
+        print( "\nReturn code: %s\n" % (str(retCode),) )
     
     if args is None: args=[]
             
@@ -171,7 +183,7 @@ def _run( binPath, args=None,
     
     # Handle elevated sub processes in Windows
     if IS_WINDOWS and isElevated and not __windowsIsElevated():        
-        __printCmd( "", binPath, args, wrkDir )
+        __printCmd( "ELEVATED=>", binPath, args, wrkDir )
         retCode = __windowsElevated( binPath, args, wrkDir ) # always in debug
         if isDebug and retCode is not None : __printRetCode( retCode )  
         return
@@ -179,11 +191,13 @@ def _run( binPath, args=None,
     # "Debug" mode    
     if isDebug :
         setEnv( DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE )
+
         if isMacApp:                
             binPath = __INTERNAL_MACOS_APP_BINARY_TMPLT % (
                   normBinaryName( fileName, isGui=True )
                 , normBinaryName( fileName, isGui=False )  
-            )                
+            )
+                            
         cmdList = [binPath]
         if isinstance(args,list): cmdList.extend( args )
         elif args is not None: cmdList.append( args )    
@@ -191,25 +205,40 @@ def _run( binPath, args=None,
             elevate = "sudo"
             cmdList = [elevate] + cmdList
         else: elevate = ""      
-        __printCmd( elevate, binPath, args, wrkDir )        
-        sharedFile = ( 
-            _WindowsSharedFile( isProducer=True, filePath=sharedFilePath )
-            if sharedFilePath else None )
-        p = Popen( cmdList, cwd=wrkDir, shell=False, 
-                   stdout=PIPE, stderr=STDOUT, bufsize=0,
-                   universal_newlines=True )
-        while p.poll() is None:
-            line = p.stdout.readline()        
-            # patch for some funky observed output from a python win service debug,
-            # where nulls appeared between every cNULLhNULLaNULLrNULLaNULLcNULLtNULLeNULLrNULL!
-            # I doubt anyone would miss nulls in some other context here?    
-            line = line.replace( chr(0), '' ) 
-            if sharedFile: sharedFile.write( line )
-            else: __toStdOut( line )
-        if sharedFile :
-            sharedFile.write( __SHARED_RET_CODE_TMPLT % (p.returncode,) )
-            sharedFile.close()
-        else : __printRetCode( p.returncode )
+
+        isWindowsSharedFile = fileExt( sharedFilePath ) == __WIN_SHARED_FILE_EXT
+        if isWindowsSharedFile:                
+            sharedFile = _WindowsSharedFile( isProducer=True, 
+                                             filePath=sharedFilePath )
+            cmdLogPath=reserveTempFilePath()
+        else: cmdLogPath=sharedFilePath
+
+        nestedSubProcOutputPath = reserveTempFilePath()    
+        setEnv( _REDIRECT_PATH_ENV_VAR_NAME, nestedSubProcOutputPath )                             
+        retCode = _system( cmdList, wrkDir, logPath=cmdLogPath, defaultRet=-1 )        
+        delEnv( _REDIRECT_PATH_ENV_VAR_NAME )
+        
+        cmdOutput = ""
+        try:
+            with open( nestedSubProcOutputPath, 'r' ) as f: 
+                cmdOutput += f.read()
+            removeFile( nestedSubProcOutputPath )
+        except: pass                        
+        
+        if isWindowsSharedFile :
+            try:
+                with open( cmdLogPath, 'r' ) as f: cmdOutput += f.read()
+                removeFile( cmdLogPath )
+            except: pass            
+            if len(cmdOutput) > 0: sharedFile.write( cmdOutput )            
+            # TODO: Eliminate to need for this kludge!
+            #sleep( 2 ) # prevent asynchronous write collisions                                       
+            sharedFile.write( __SHARED_RET_CODE_TMPLT % (retCode,) )
+            sharedFile.close()            
+        else :
+            if len(cmdOutput) > 0: print( cmdOutput )
+            __printRetCode( retCode ) 
+        
         delEnv( DEBUG_ENV_VAR_NAME )
         return 
     
@@ -223,6 +252,8 @@ def _run( binPath, args=None,
             newArgs.extend( [_LAUNCH_MACOS_APP_ARGS_SWITCH] + args ) 
         args=newArgs
         binPath = fileName = _LAUNCH_MACOS_APP_CMD
+        
+        
     if isinstance(args,list): args = list2cmdline(args)
     elif args is None: args=""
     elevate = "" if not isElevated or IS_WINDOWS else "sudo"  
@@ -236,30 +267,53 @@ def runPy( pyPath, args=None, isElevated=False ):
     pyArgs = [fileName]
     if isinstance(args,list): pyArgs.extend( args )
     run( PYTHON_PATH, pyArgs, wrkDir, isElevated, isDebug=False )
- 
-def _system( cmd, wrkDir=None ):
+
+# While this coding appears a bit ugly, it does seem to work for every context  
+# Under certain conditions, some streams could not be captured via any  "clean" 
+# / "standard" means with popen polling or file descriptor inheritance tricks            
+def _system( cmd, wrkDir=None, logPath=None, defaultRet=None ):
+    if isinstance( cmd, list ): cmd = list2cmdline(cmd)
+    cmd = __scrubSystemCmd( cmd )       
+     
     if wrkDir is not None:
         initWrkDir = getcwd()
         print( 'cd "%s"' % (wrkDir,) )
-        chdir( wrkDir )
-    cmd = __scrubSystemCmd( cmd )
-    print( cmd )             
-    if Logger.isSingletonOpen():
-        # While this coding appears a bit ugly, it does seem to work 
-        # universally!  In certain contexts, it seemed that some streams 
-        # were no being captured via any  clean means with popen or file 
-        # descriptor inheritance tricks, etc.           
+        chdir( wrkDir )        
+        
+    if logPath is None and isLogging():
+        logPath = Logger.singleton().filePath()                      
+     
+    retCodPath = reserveTempFilePath()
+    cmd += _RET_CODE_TO_FILE_TMPLT.format( retCodPath )
+    if IS_WINDOWS:
+        batch = cmd 
+        cmd = __DELAYED_EXPANSION_PREFIX + cmd.replace(
+            __SYS_CMD_DELIM_FIND, __SYS_CMD_DELIM_DELAYED_REPLACE )     
+        print( cmd )    
+    
+    if logPath:
+        if IS_WINDOWS: cmd = [ __ENABLE_DELAYED_EXPANSION, batch ]
         script = ExecutableScript( rootFileName( mktemp() ), script=cmd,
-                                   isDebug=False )
+                                   isDebug=False )                                 
         script.write( tempDirPath() )        
         Logger.singleton().pause()
-        system( __scrubSystemCmd( __SYSTEM_REDIRECT_TMPT % (
-            script.filePath(), Logger.singleton().filePath() ) ) )
+        runScriptCmd = __scrubSystemCmd( __CMD_OUTPUT_REDIRECT_TMPT % (
+            script.filePath(), logPath ) )        
+        system( runScriptCmd )
         Logger.singleton().resume()
         script.remove()
-    else: system( cmd )
-    print('')
-    if wrkDir is not None: chdir( initWrkDir )
+    else:
+        system( cmd )
+        print('')
+    
+    if wrkDir is not None: chdir( initWrkDir )    
+    
+    try: 
+        with open( retCodPath, 'r' ) as f: retCode = int( f.read().strip() )
+    except: retCode = defaultRet
+    try: removeFile( retCodPath )
+    except: pass    
+    return retCode
 
 def _isSystemSuccess( cmd, wrkDir=None ):
     if wrkDir is not None: print( 'cd "%s"' % (wrkDir,) )
@@ -294,7 +348,11 @@ def __scrubSystemCmd( cmd ):
     built into the function can all fall apart.  So, this scrub function
     solves that...  
     """    
-    if not cmd.startswith( __DBL_QUOTE ): return cmd
+    
+    if IS_WINDOWS: 
+        if not cmd.startswith( __NO_ECHO_PREFIX ): 
+            return __NO_ECHO_PREFIX + cmd
+    elif not cmd.startswith( __DBL_QUOTE ): return cmd
     cmdParts    = cmd[1:].split( __DBL_QUOTE )
     safeBinPath = _escapePath( cmdParts[0] )
     args        = __DBL_QUOTE.join( cmdParts[1:] ) # (the leading space will remain)
@@ -317,8 +375,7 @@ def __batchOneLinerOutput( batch ):
 
 def __windowsIsElevated():
     return ctypes.windll.shell32.IsUserAnAdmin()==1
-
-# returns  (isRun, retCode, output)            
+            
 def __windowsElevated( exePath, args=None, wrkDir=None ):
 
     def __runElevated( exePath, args, wrkDir, sharedFilePath ):
@@ -341,7 +398,8 @@ def __windowsElevated( exePath, args=None, wrkDir=None ):
         if PY2:
             verb = unicode(verb)      # @UndefinedVariable
             pyPath = unicode(pyPath)  # @UndefinedVariable
-            args = unicode(args)      # @UndefinedVariable          
+            args = unicode(args)      # @UndefinedVariable
+        #print( pyPath + " " + args )              
         hwd = ctypes.windll.shell32.ShellExecuteW( 
             None, verb, pyPath, args, None, __SW_HIDE )
         return int(hwd) > 32 # check if launched elevated    
@@ -364,11 +422,25 @@ def __windowsElevated( exePath, args=None, wrkDir=None ):
         sharedFile.close()    
         return retCode 
 
+    def __removeSharedFile( sharedFilePath ):
+        PURGE_ATTEMPT_SECONDS = 3
+        REATTEMPT_DELAY = 0.25
+        MAX_ATTEMPTS = PURGE_ATTEMPT_SECONDS / REATTEMPT_DELAY
+        attempts=0
+        while True:
+            try: 
+                removeFile( sharedFilePath )
+                break
+            except Exception as e:
+                attempts+=1
+                if attempts < MAX_ATTEMPTS: sleep( REATTEMPT_DELAY )
+                else: raise e    
+
     if args is None: args=[]
-    sharedFilePath = _reserveTempFile()
+    sharedFilePath = _reserveTempFile( suffix=__WIN_SHARED_FILE_EXT )
     isRun = __runElevated( exePath, args, wrkDir, sharedFilePath )
     retCode = __getResults( sharedFilePath ) if isRun else None
-    removeFile( sharedFilePath )
+    __removeSharedFile( sharedFilePath )
     return retCode
 
 # -----------------------------------------------------------------------------
@@ -1186,25 +1258,43 @@ if IS_WINDOWS :
         
         __byref        = ctypes.byref
         __DWORD        = wintypes.DWORD
-        __CreateFileW  = ctypes.windll.Kernel32.CreateFileW
+        __LPCWSTR      = wintypes.LPCWSTR
+        __GetDiskInfo  = ctypes.windll.Kernel32.GetDiskFreeSpaceW
+        __CreateFile   = ctypes.windll.Kernel32.CreateFileW
         __CloseHandle  = ctypes.windll.Kernel32.CloseHandle
         __WriteFile    = ctypes.windll.Kernel32.WriteFile
+        __FlushFile    = ctypes.windll.Kernel32.FlushFileBuffers
         __ReadFile     = ctypes.windll.Kernel32.ReadFile
-        __GetLastError = ctypes.windll.Kernel32.GetLastError       
-        
-        __GENERIC_READ         = 0x80000000 
-        __GENERIC_WRITE        = 0x40000000 
-        __FILE_SHARE_READ      = 0x00000001 
-        __FILE_SHARE_WRITE     = 0x00000002 
-        __CREATE_ALWAYS        = 2 
-        __OPEN_EXISTING        = 3 
-        __INVALID_HANDLE_VALUE = wintypes.HANDLE(-1).value
-        __DEFAULT_CHUNK_SIZE   = 1024
-             
+        __GetLastError = ctypes.windll.Kernel32.GetLastError
+                
+        __GENERIC_READ              = 0x80000000 
+        __GENERIC_WRITE             = 0x40000000 
+        __FILE_SHARE_READ           = 0x00000001 
+        __FILE_SHARE_WRITE          = 0x00000002
+        __FILE_FLAG_NO_BUFFERING    = 0x20000000
+        __FILE_FLAG_SEQUENTIAL_SCAN = 0x08000000
+        __FILE_FLAG_WRITE_THROUGH   = 0x80000000
+        __CREATE_ALWAYS             = 2 
+        __OPEN_EXISTING             = 3 
+        __INVALID_HANDLE_VALUE      = wintypes.HANDLE(-1).value
+        __DEFAULT_CHUNK_SIZE        = 512
+        __FILLER_BYTE               = chr(0) if PY2 else chr(0).encode()
+                     
         def __init__( self, isProducer=True, filePath=None ) :
             self.isProducer = isProducer 
             self.filePath = filePath # using "hidden" file stream to mitigate data visibility 
-            self.chunkSize = _WindowsSharedFile.__DEFAULT_CHUNK_SIZE
+            rootVolumePath = _WindowsSharedFile.__LPCWSTR(
+                splitDrive( filePath )[0] + PATH_DELIM )
+            bytesPerSector = _WindowsSharedFile.__DWORD()
+            dummy=_WindowsSharedFile.__DWORD()
+            _WindowsSharedFile.__GetDiskInfo( rootVolumePath, 
+                _WindowsSharedFile.__byref(dummy), 
+                _WindowsSharedFile.__byref(bytesPerSector), 
+                _WindowsSharedFile.__byref(dummy), 
+                _WindowsSharedFile.__byref(dummy) )
+            self.chunkSize = bytesPerSector.value
+            if self.chunkSize==0:      
+                raise Exception( "Could not determine volume bytes per sector" )                  
             if isProducer :
                 if self.filePath is None: self.filePath = mktemp()
                 dwDesiredAccess = _WindowsSharedFile.__GENERIC_WRITE  
@@ -1215,14 +1305,21 @@ if IS_WINDOWS :
                                      % (self.filePath,) )
                 dwDesiredAccess = _WindowsSharedFile.__GENERIC_READ
                 dwCreationDisposition = _WindowsSharedFile.__OPEN_EXISTING            
-            self.__handle = _WindowsSharedFile.__CreateFileW(
+            self.__handle = _WindowsSharedFile.__CreateFile(
                unicode(self.filePath) if PY2 else self.filePath,    # @UndefinedVariable            
                dwDesiredAccess,   
+               # allow concurrent r/w by another process 
+               # (it seems that both must be enabled for cross process 
+               #  concurrent access)
                _WindowsSharedFile.__FILE_SHARE_READ | 
-               _WindowsSharedFile.__FILE_SHARE_WRITE, # allow concurrent r/w by another process (it seems that both must be enabled for cross process concurrent access)
-               None,            # security attributes
+               _WindowsSharedFile.__FILE_SHARE_WRITE, 
+               None, # security attributes
                dwCreationDisposition,
-               0,               # additional flags
+               # Flags defined for max speed i/o and data corruption prevention,
+               # at the expense of needing to read & write in exact sector size chunks  
+               _WindowsSharedFile.__FILE_FLAG_NO_BUFFERING |
+               _WindowsSharedFile.__FILE_FLAG_WRITE_THROUGH |
+               _WindowsSharedFile.__FILE_FLAG_SEQUENTIAL_SCAN,                  
                None             # template file handle
             )
             if not self.isOpen():
@@ -1244,29 +1341,42 @@ if IS_WINDOWS :
             if not self.isProducer or not self.isOpen():
                 raise Exception( "Cannot write to shared file" ) 
             if PY3: data=str(data).encode()
-            bytesToWrite = _WindowsSharedFile.__DWORD( len(data) ) 
-            bytesWritten = _WindowsSharedFile.__DWORD()
-            _WindowsSharedFile.__WriteFile( 
-                self.__handle, data, bytesToWrite,
-                _WindowsSharedFile.__byref(bytesWritten), None )       
-            if bytesToWrite.value != bytesWritten.value : 
-                raise Exception( "Error writing to shared file" ) 
+            totalBytesToWrite = len(data)
+            totalBytesWritten = 0
+            while totalBytesWritten < totalBytesToWrite: 
+                chunk = data[ totalBytesWritten : 
+                              totalBytesWritten + self.chunkSize ]
+                chunkSize = len(chunk)
+                fillSize = self.chunkSize - chunkSize
+                if fillSize:                 
+                    chunk += _WindowsSharedFile.__FILLER_BYTE * fillSize 
+                bytesToWrite = _WindowsSharedFile.__DWORD( self.chunkSize ) 
+                bytesWritten = _WindowsSharedFile.__DWORD()
+                _WindowsSharedFile.__WriteFile( 
+                    self.__handle, chunk, bytesToWrite,
+                    _WindowsSharedFile.__byref(bytesWritten), None )       
+                if bytesToWrite.value != bytesWritten.value : 
+                    raise Exception( "Error writing to shared file. "
+                                     "Bytes to write: %d / Bytes written: %d" % 
+                                     (bytesToWrite.value,bytesWritten.value) )  
+                #_WindowsSharedFile.__FlushFile( self.__handle ) # Don't need per FILE_FLAG_NO_BUFFERING
+                totalBytesWritten += self.chunkSize
     
         def read( self ):
             if self.isProducer or not self.isOpen():
                 raise Exception( "Cannot read from shared file" )         
             data = ""
-            chunk = ctypes.create_string_buffer( self.chunkSize )
+            chunkBuffer = ctypes.create_string_buffer( self.chunkSize )
             bytesToRead = _WindowsSharedFile.__DWORD( self.chunkSize ) 
             bytesRead   = _WindowsSharedFile.__DWORD()            
             while True:
                 _WindowsSharedFile.__ReadFile( self.__handle,  
-                    _WindowsSharedFile.__byref(chunk), bytesToRead,
+                    _WindowsSharedFile.__byref(chunkBuffer), bytesToRead,
                     _WindowsSharedFile.__byref(bytesRead), None )  
                 if bytesRead.value==0: break
-                #data += ( eval("%s.decode()" % (chunk.value.decode(),)) 
-                #          if PY3 else chunk.value )
-                data += chunk.value.decode() if PY3 else chunk.value                            
+                chunk = chunkBuffer.value.replace( 
+                    _WindowsSharedFile.__FILLER_BYTE, b'' )                
+                data += chunk.decode() if PY3 else chunk                            
             return None if data=="" else data
     
 # ----------------------------------------------------------------------------- 

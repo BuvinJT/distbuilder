@@ -1543,19 +1543,24 @@ from a terminal, or from within an IDE.  In which case, the built in logging
 mechanisms can be drawn upon to resolve this.
 
 The easiest way to log the output of distbuilder processes, is to simply
-call `startLog()` at the top of your script.  This will redirect all print
+call `startLogging()` at the top of your script.  This will redirect all print
 statements, along with the stdout and stderr streams of sub processes, to 
-a default log.  
+a (default named) log file.  
+
+When logging in the standard manner and an uncaught exception occurs, the 
+stack trace for that will appear both in the log, and in the console where the 
+script was launched.  
 
 If desired, you may also explicitly create your own
 [Logger](#logger) objects and call their functions e.g. 
-`write( msg )` directly.  This maybe useful to split logs across 
-multiple files for instance.  Note that only the primary/singleton instance
-will have implicit stream redirections applied though.
+`write( msg )` directly.  This maybe useful if you wish to split logs across 
+multiple files for different parts of a build process.  
+Note that only the primary/singleton instance will have implicit stream 
+redirections applied though.  So, if there is no multi-threading / parallel processing dimension to your use case, you may alternatively wish use the pattern `stopLogging`...`startLogging( "MyAltLogName" )` to achieve a "split log" result.
 
-### startLog
+### startLogging
 
-    startLog( name=None, isUniqueFile=False )
+    startLogging( name=None, isUniqueFile=False )
 
 Start the primary/singleton logger. 
 
@@ -1567,11 +1572,15 @@ dictate the name of the file produced.
 name, i.e. will have a time stamp suffix.  Else, a prior/existing log (of the
 same name) will be overwritten.  
 
-### stopLog
+### stopLogging
 
-    stopLog()
+    stopLogging()
 
-Stop the primary/singleton logger.  
+Stop the primary/singleton logger.  Typically, you may omit invoking this 
+explicitly.  When the script ends, all open Loggers will be gracefully closed
+automatically.  Allowing that to occur "naturally" will also result in a 
+message being sent to the console indicating when a script has completed
+without an uncaught exception being encountered.       
 
 ### log
 

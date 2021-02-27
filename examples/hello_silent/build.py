@@ -1,4 +1,6 @@
-from distbuilder import PyToBinInstallerProcess, ConfigFactory
+from distbuilder import PyToBinInstallerProcess, ConfigFactory, startLogging
+
+startLogging()
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello World CLI Example"

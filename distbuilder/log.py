@@ -50,7 +50,8 @@ class Logger:
                 self.__restoreStd()
                 self.__stopCatchall()
 
-    def resume( self ): self._getFile( isAppend=True )
+    def resume( self ):
+        if self.isPaused(): self._getFile( isAppend=True )
                         
     def write( self, msg ):
         self._getFile().write( str(msg) )
@@ -132,10 +133,10 @@ class Logger:
             if self._isPrimary and not self.__isException: 
                 self.toStdout( "Done!" )
             
-def startLog( name=None, isUniqueFile=False ): 
+def startLogging( name=None, isUniqueFile=False ): 
     Logger.singleton( name, isUniqueFile ).open()
 
-def stopLog(): Logger.singleton().close()
+def stopLogging(): Logger.singleton().close()
         
 def isLogging(): return Logger.isSingletonOpen()
         

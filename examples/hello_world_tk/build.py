@@ -1,6 +1,6 @@
-from distbuilder import PyToBinInstallerProcess, ConfigFactory, startLog
+from distbuilder import PyToBinInstallerProcess, ConfigFactory, startLogging
 
-startLog()
+startLogging()
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello World Tk Example"

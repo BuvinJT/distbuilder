@@ -7998,9 +7998,18 @@ import glob
     PS_WAIT_SWITCH      = "-Wait"
     PS_WIN_STYLE_SWITCH = "-WindowStyle"
     PS_WIN_STYLE_HIDDEN = "Hidden"
-
+    PS_REDIRECT_STDOUT  = "-RedirectStandardOutput"
+    PS_REDIRECT_STDERR  = "-RedirectStandardError"
+    
     psArgs = [PS, PS_START, PS_PATH_SWITCH, EXE_PATH, 
-              PS_WAIT_SWITCH, PS_WIN_STYLE_SWITCH, PS_WIN_STYLE_HIDDEN]
+              PS_WAIT_SWITCH, PS_WIN_STYLE_SWITCH, PS_WIN_STYLE_HIDDEN]              
+    
+    if REDIRECT_PATH:
+        # PS Start-Process will not redirect both streams to the same file
+        outPath = REDIRECT_PATH + ".out"
+        errPath = REDIRECT_PATH + ".err"
+        psArgs += [PS_REDIRECT_STDOUT, outPath, PS_REDIRECT_STDERR, errPath]
+                                                            
     psArgs = list2cmdline( psArgs ) 
 
     keepAliveFilePath = tempfile.mktemp( suffix='.keep' ).replace( "\\\\","/" )
@@ -8012,11 +8021,11 @@ import glob
         ",".join( [ "'%s'" % (a.replace('"','\\\\"'),) 
                     for a in installerArgs ] ) 
     )
-                                        
+
     processStartupInfo = STARTUPINFO()
     processStartupInfo.dwFlags |= STARTF_USESHOWWINDOW
     # passing psArgs as a string vs list prevents more auto escape nonsense!
-    #print( psArgs )
+    # print( psArgs )
     process = Popen( psArgs, cwd=WORK_DIR, 
                      shell=False, universal_newlines=True,
                      stdin=DEVNULL, # Prevent PS blocking encountered in special contexts
@@ -8039,7 +8048,19 @@ import glob
     else: 
         time.sleep( RUN_PROG_DETACHED_DELAY_SECS )
         process.kill()        
-        retCode=0          
+        retCode=0
+
+    if REDIRECT_PATH:
+        output = ""
+        try: 
+            with open( outPath, 'r' ) as f: output += f.read()
+            os.remove( outPath )
+        except: pass
+        try: 
+            with open( errPath, 'r' ) as f: output += f.read()
+            os.remove( errPath )
+        except: pass
+        with open( REDIRECT_PATH, 'a+' ) as f: f.write( output )                                                                      
 """ ).format( _QtIfwScript._KEEP_ALIVE_PATH_CMD_ARG )
 
     if isQtIfwInstaller :
@@ -8363,6 +8384,7 @@ IFW_ERR_LOG_PATH     = os.path.join( WORK_DIR, IFW_ERR_LOG_NAME )
 IS_IFW_ERR_LOG_PURGE = True
 
 VERBOSE_SWITCH = "{4}"
+REDIRECT_PATH = os.getenv( "{34}" )
 IS_RUN_SWITCH  = {22}
 IS_REBOOT_SWITCH = {28}
 IS_STARTMENU_SWITCH = {32}
@@ -8632,6 +8654,7 @@ sys.exit( main() )
     , ("%s=true" % (_QtIfwScript.DRYRUN_CMD_ARG,))          # {31}
     , str(isStartMenu)                                      # {32}
     , _QtIfwScript.MAINTAIN_PASSTHRU_CMD_ARG                # {33}
+    , util._REDIRECT_PATH_ENV_VAR_NAME                      # {34}
 )
 
 def __generateQtIfwInstallPyScript( installerPath, ifwScriptPath, 

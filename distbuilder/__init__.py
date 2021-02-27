@@ -6,7 +6,7 @@ from distbuilder.master import \
     , PyToBinInstallerProcess \
     , RobustInstallerProcess 
 
-from distbuilder.log import Logger, startLog, stopLog, isLogging, log
+from distbuilder.log import Logger, startLogging, stopLogging, isLogging, log
        
 from distbuilder.py_installer import \
       PyInstallerConfig \
