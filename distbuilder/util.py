@@ -9,11 +9,11 @@ from os import system, sep as PATH_DELIM, \
     fdopen, getcwd, chdir, walk, environ, devnull, \
     chmod, getenv, listdir, makedirs as makeDir, rename, pardir as PARENT_DIR # @UnusedImport   
 from os.path import exists, isfile, islink, \
-    dirname as dirPath, normpath, realpath, isabs, \
+    dirname as dirPath, normpath, realpath, isabs, abspath, \
     join as joinPath, split as splitPath, \
     splitext as splitExt, splitdrive as splitDrive, \
     expanduser, basename as baseFileName, \
-    relpath, pathsep      # @UnusedImport
+    relpath, pathsep  # @UnusedImport
 from shutil import rmtree as removeDir, move, make_archive, \
     copytree as copyDir, copyfile as copyFile   # @UnusedImport
 import platform
@@ -792,6 +792,10 @@ def _reserveTempFile( suffix="" ):
     with fdopen( fd, 'w' ) as _: pass
     return path
 
+def _rootVolumePath( path ):     
+    try:    return splitDrive( abspath( path ) )[0] + PATH_DELIM
+    except: return None 
+
 # -----------------------------------------------------------------------------                          
 def _pythonPath( relativePath ):    
     return normpath( joinPath( PY_DIR, relativePath ) )
@@ -1284,7 +1288,7 @@ if IS_WINDOWS :
             self.isProducer = isProducer 
             self.filePath = filePath # using "hidden" file stream to mitigate data visibility 
             rootVolumePath = _WindowsSharedFile.__LPCWSTR(
-                splitDrive( filePath )[0] + PATH_DELIM )
+                _rootVolumePath( filePath ) )
             bytesPerSector = _WindowsSharedFile.__DWORD()
             dummy=_WindowsSharedFile.__DWORD()
             _WindowsSharedFile.__GetDiskInfo( rootVolumePath, 
