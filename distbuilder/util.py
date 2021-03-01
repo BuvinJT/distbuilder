@@ -81,7 +81,8 @@ DEBUG_ENV_VAR_NAME  = "DEBUG_MODE"
 DEBUG_ENV_VAR_VALUE = "1"
 
 _RET_CODE_TO_FILE_TMPLT = ' {0} echo {1} > "{2}"'.format( 
-    SYS_CMD_DELIM, SYS_RET_CODE, "{0}" )
+    SYS_CMD_DELIM, SYS_RET_CODE,
+    "{0}" ) # setup for subsequent use of format
 _REDIRECT_PATH_ENV_VAR_NAME = "__pipeto"
 
 # strictly Apple
@@ -131,6 +132,8 @@ if IS_WINDOWS :
     __ENABLE_DELAYED_EXPANSION = "@SetLocal EnableDelayedExpansion"
     __SYS_CMD_DELIM_FIND = " & " 
     __SYS_CMD_DELIM_DELAYED_REPLACE = " ^& " 
+    __SYS_CMD_REDIRECT_FIND = " > " 
+    __SYS_CMD_REDIRECT_DELAYED_REPLACE = " ^> " 
     __NO_ECHO_PREFIX = "@"
 
 __CMD_OUTPUT_REDIRECT_TMPT = '"%s" >> "%s" 2>&1'
@@ -288,7 +291,8 @@ def _system( cmd, wrkDir=None, logPath=None, defaultRet=None ):
     if IS_WINDOWS:
         batch = cmd 
         cmd = __DELAYED_EXPANSION_PREFIX + cmd.replace(
-            __SYS_CMD_DELIM_FIND, __SYS_CMD_DELIM_DELAYED_REPLACE )     
+            __SYS_CMD_DELIM_FIND, __SYS_CMD_DELIM_DELAYED_REPLACE ).replace(
+            __SYS_CMD_REDIRECT_FIND, __SYS_CMD_REDIRECT_DELAYED_REPLACE )     
         print( cmd )    
     
     if logPath:
@@ -347,8 +351,7 @@ def __scrubSystemCmd( cmd ):
     to the binary you are executing), then the limited (undesirable) parsing 
     built into the function can all fall apart.  So, this scrub function
     solves that...  
-    """    
-    
+    """        
     if IS_WINDOWS: 
         if not cmd.startswith( __NO_ECHO_PREFIX ): 
             return __NO_ECHO_PREFIX + cmd

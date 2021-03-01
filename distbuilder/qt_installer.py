@@ -430,6 +430,14 @@ class _QtIfwXml:
             
 # -----------------------------------------------------------------------------    
 class QtIfwConfigXml( _QtIfwXml ):
+
+    class WizardStyle: CLASSIC, MODERN, MAC, AERO = range(4)
+    __WizardStyleValue = { 
+        WizardStyle.CLASSIC : "Classic", 
+        WizardStyle.MODERN  : "Modern", 
+        WizardStyle.MAC     : "Mac", 
+        WizardStyle.AERO    : "Aero" 
+    }
     
     __DIR_TMPLT  = "%s/config"
     __PATH_TMPLT = __DIR_TMPLT + "/config.xml"
@@ -437,27 +445,32 @@ class QtIfwConfigXml( _QtIfwXml ):
     __TAGS       = [ "Name"
                    , "Version"
                    , "Title"
+                   , "TitleColor"
                    , "Publisher"
                    , "InstallerApplicationIcon"
                    , "TargetDir"
                    , "StartMenuDir"             
                    , "RunProgram" # RunProgramArguments added separately...
                    , "RunProgramDescription"
-                   , "ControlScript"                                 
+                   , "ControlScript"
+                   , "WizardStyle"                 
+                   , "Logo"
+                   , "Banner"                                
                    ]
     __RUN_ARGS_TAG = "RunProgramArguments"
     __ARG_TAG      = "Argument"
         
     __RUN_PROG_DESCR_TMPLT = "Run %s now."    
-    
+                          
     # QtIfwConfigXml
-    def __init__( self, name, version, publisher,
-                  iconFilePath=None, 
+    def __init__( self, name, version, publisher, 
+                  iconFilePath=None,                   
                   controlScriptName=None,
-                  primaryContentExe=None,
-                  isPrimaryExeGui=True,
+                  primaryContentExe=None, isPrimaryExeGui=True,
                   primaryExeWrapper=None,
-                  companyTradeName=None ) :
+                  companyTradeName=None,
+                  wizardStyle=None, 
+                  logoFilePath=None, bannerFilePath=None ) :
         _QtIfwXml.__init__( self, QtIfwConfigXml.__ROOT_TAG, 
                             QtIfwConfigXml.__TAGS )
        
@@ -466,32 +479,102 @@ class QtIfwConfigXml( _QtIfwXml ):
                                  isGui=isPrimaryExeGui )
             if primaryContentExe else None )
         self.primaryExeWrapper=primaryExeWrapper
-        
+        self.runProgramArgList = None
+
+        self.companyTradeName = ( companyTradeName if companyTradeName 
+                                  else publisher.replace(".","") )        
         if IS_LINUX :
             # qt installer does not support icon embedding in Linux
-            iconBaseName = self.iconFilePath = None
+            # TODO: use InstallerWindowIcon 
+            iconRootName = self.iconFilePath = None
         else :    
             self.iconFilePath = ( None if iconFilePath is None else 
                                   normIconName( iconFilePath, 
                                                 isPathPreserved=True ) )        
-            try:    iconBaseName = splitExt( baseFileName(iconFilePath) )[0]
-            except: iconBaseName = None
-        self.companyTradeName = ( companyTradeName if companyTradeName 
-                                  else publisher.replace(".","") )
-        self.runProgramArgList = None
+            try:    iconRootName = rootFileName( iconFilePath )
+            except: iconRootName = None
+       
+        wizardStyleValue = QtIfwConfigXml.__WizardStyleValue.get( 
+                                wizardStyle, None )
 
-        # TODO: expand on the built-in attributes here...        
+        if( logoFilePath and 
+            wizardStyle != QtIfwConfigXml.WizardStyle.CLASSIC and
+            wizardStyle != QtIfwConfigXml.WizardStyle.MODERN ):
+            printErr( "WARNING: Installer Logo is only applied in "
+                      "CLASSIC or MODERN styles!" )        
+        self.logoFilePath = logoFilePath
+        try:    logoBaseName = baseFileName(logoFilePath)
+        except: logoBaseName = None        
+        
+        if bannerFilePath and wizardStyle != QtIfwConfigXml.WizardStyle.MODERN:
+            printErr( "WARNING: Installer Banner is only applied in "
+                      "MODERN style!" )
+        self.bannerFilePath = bannerFilePath
+        try:    bannerBaseName = baseFileName(bannerFilePath)
+        except: bannerBaseName = None
+
         self.Name                     = name
         self.Version                  = version
         self.Publisher                = publisher
-        self.InstallerApplicationIcon = iconBaseName
-        self.ControlScript            = controlScriptName 
+        self.InstallerApplicationIcon = iconRootName         
         self.Title                    = None        
+        self.TitleColor               = None # HTML color code, such as "#88FF33"
+                        
+        self.ControlScript            = controlScriptName
+        
         self.TargetDir                = None        
-        self.StartMenuDir             = None
+        self.StartMenuDir             = None # Windows only of course
+        
         self.RunProgram               = None
         self.RunProgramDescription    = None
-                       
+
+        self.WizardStyle              = wizardStyleValue
+        self.Logo                     = logoBaseName
+        self.Banner                   = bannerBaseName       
+        
+        #self.ProductUrl    URL to a page that contains product information on your web site.
+        #self.DisableAuthorizationFallback    Set to true if the installation should not ask users to run the authorization fallback in case of authorization errors. Instead abort the installation immediately.
+        #self.WizardDefaultWidth    (will cause conflicts with existing custom code) Sets the default width of the wizard in pixels. Setting a banner image will override this. You can add the em or ex suffix to the specified value to use the em or ex unit, as in a CSS file.
+        #self.WizardDefaultHeight    (will cause conflicts with existing custom code) Sets the default height of the wizard in pixels. Setting a watermark image will override this. You can add the em or ex suffix to the specified value to use the em or ex unit, as in a CSS file.
+
+        # TODO
+        #self.InstallerWindowIcon   (vs InstallerApplicationIcon?) Filename for a custom window icon in PNG format for the Installer application.
+        #self.StyleSheet    Set the stylesheet file.
+
+        # TODO 
+        #self.MaintenanceToolName    (will cause conflicts with existing custom code) Filename of the generated maintenance tool. Defaults to maintenancetool. The platform-specific executable file extension is appended.
+        #self.MaintenanceToolIniFile    Filename for the configuration of the generated maintenance tool. Defaults to MaintenanceToolName.ini.
+
+        # TODO
+        #self.WizardShowPageList    Set to false if the widget listing installer pages on the left side of the wizard should not be shown. Defaults to true. If visible, this widget hides QWizard::WatermarkPixmap on QWizard::ClassicStyle and QWizard::ModernStyle, and QWizard::BackgroundPixmap on QWizard::MacStyle.
+        #self.Watermark    Filename for a watermark used as QWizard::WatermarkPixmap. If <WizardShowPageList> is set to true, the watermark is hidden.
+        #self.Background    Filename for an image used as QWizard::BackgroundPixmap (only used by MacStyle). If <WizardShowPageList> is set to true, the background is hidden.
+        #self.PageListPixmap    Filename for an image shown on top of installer page list. The image is shown only if <WizardShowPageList> is also set to true.
+        #self.ProductImages    A list of images to be shown on PerformInstallationPage. This element can have one or several <Image> child elements that contain a filename for an image.
+
+        # TODO
+        #self.RemoteRepositories    List of remote repositories. This element can contain several <Repository> child elements that each contain the <Url> child element that specifies the URL to access the repository. For more information, see Configuring Repositories.
+        #self.RepositoryCategories    Name of a category that can contain a list of <RemoteRepositories> child elements. For more information, see Configuring Repository Categories.
+        #self.RepositorySettingsPageVisible    Set to false to hide the repository settings page inside the settings dialog.
+        #self.UrlQueryString    This string needs to be in the form "key=value" and will be appended to archive download requests. This can be used to transmit information to the webserver hosting the repository.
+
+        # TODO 
+        #self.Translations    List of language codes to be used for translating the user interface. To add several language variants, specify several <Translation> child elements that each specify the name of a language variant. Optional. For more information, see Translating Pages.
+        
+        # MAYBE Someday implement these...        
+        #self.AdminTargetDir    Default target directory for installation with administrator rights. Only available on Linux, where you usually do not want to install in the administrator user's home directory.
+        #self.RemoveTargetDir    (may cause conflicts with existing custom code!) Set to false if the target directory should not be deleted when uninstalling.
+        #self.DisableCommandLineInterface    Set to true if command line interface features should be disabled. This prevents the user from passing any consumer command to installer, like install, update and remove. Other options can still be used normally. Defaults to false.        
+        #self.DependsOnLocalInstallerBinary    Set to true if you want to prohibit installation from an external resource, such as a network drive. This might make sense for e.g. very big installers. The option is only used on Windows.
+        #self.TargetConfigurationFile    Filename for the configuration file on the target. Default is components.xml.
+        #self.AllowNonAsciiCharacters    Set to true if the installation path can contain non-ASCII characters.
+        #self.AllowSpaceInPath    Set to false if the installation path cannot contain space characters.        
+        #self.CreateLocalRepository    Set to true if you want to create a local repository inside the installation directory. This option has no effect on online installers. The repository will be automatically added to the list of default repositories.
+        #self.InstallActionColumnVisible    Set to true if you want to add an extra column into component tree showing install actions. This extra column indicates whether a component is going to be installed or uninstalled, or just stay installed or uninstalled.
+        #self.SupportsModify    Set to false if the product does not support modifying an existing installation.
+        #self.SaveDefaultRepositories    Set to false if default repositories <RemoteRepositories> should not be saved to MaintenanceToolName.ini. By default default repositories are saved. Not saving the repositories means than when you run maintenancetool there are no default repositories in use.
+        #self.AllowUnstableComponents    Set to true if other components are allowed to be installed although there are unstable components. A component is unstable if it is missing a dependency, has errors in scripts, and so on. Unstable components are grayed in the component tree, and therefore cannot be selected. By default, the value is false which means that the installation will be aborted if unstable components are found.        
+        
         self.setDefaultTitle()
         self.setDefaultPaths()
 
@@ -7606,12 +7689,18 @@ def __genQtIfwCntrlRes( qtIfwConfig ) :
                % ( "Regenerating" if configXml.exists() else "Adding" ) )
         configXml.debug()
         configXml.write()
-        if configXml.iconFilePath :
-            iconFilePath = absPath( configXml.iconFilePath )
-            if isFile( iconFilePath ):
-                copyFile( iconFilePath,                       
-                          joinPath( configXml.dirPath(), 
-                                    baseFileName( configXml.iconFilePath ) ) )
+        def copyToConfigDir( scrPaths ):
+            for scrPath in scrPaths:
+                if scrPath :
+                    scrPath = absPath( scrPath )
+                    if isFile( scrPath ):
+                        copyFile( scrPath,                       
+                                  joinPath( configXml.dirPath(), 
+                                            baseFileName( scrPath ) ) )                
+        copyToConfigDir([ configXml.iconFilePath 
+                        , configXml.logoFilePath 
+                        , configXml.bannerFilePath 
+                        ])
     if ctrlScript :
         # Allow component selection to be explicitly disabled, but force that
         # when there are not multiple packages to begin with

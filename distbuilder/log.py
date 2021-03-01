@@ -1,4 +1,5 @@
 import sys, os
+from time import sleep
 import datetime
 import atexit
 import traceback
@@ -8,6 +9,10 @@ class Logger:
     __EXTENSION                = "log"
     __UNIQUE_FILENAME_TMPLT    = "%s-%s"
     __DTSTAMP_FORMAT           = "%y%m%d%H%M%S%f"
+
+    __RESUME_ATTEMPT_SECS = 3
+    __RESUME_REATTEMPT_FREQ_SECS = 0.25
+    __RESUME_MAX_ATTEMPTS = __RESUME_ATTEMPT_SECS/__RESUME_REATTEMPT_FREQ_SECS
     
     __instance = None
     @staticmethod    
@@ -30,6 +35,7 @@ class Logger:
         self.__file        = None        
         self.__stderr      = None
         self.__stdout      = None
+        self.__excepthook  = None
         self.__isException = False
         atexit.register( self.__onExit )
 
@@ -51,7 +57,19 @@ class Logger:
                 self.__stopCatchall()
 
     def resume( self ):
-        if self.isPaused(): self._getFile( isAppend=True )
+        if self.isPaused():
+            # Another process may still have a lock on the file, 
+            # so try this a few times before giving up 
+            attempts=0
+            while True:
+                try: 
+                    self._getFile( isAppend=True )
+                    break
+                except PermissionError as e:
+                    attempts+=1
+                    if attempts < Logger.__RESUME_MAX_ATTEMPTS: 
+                        sleep( Logger.__RESUME_REATTEMPT_FREQ_SECS )
+                    else: raise e    
                         
     def write( self, msg ):
         self._getFile().write( str(msg) )
@@ -117,9 +135,15 @@ class Logger:
         self.__stderr = None
         self.__stdout = None
     
-    def __startCatchall( self ): sys.excepthook = self.__onUncaughtException
+    def __startCatchall( self ):
+        if self.__excepthook is not None: return
+        self.__excepthook = sys.excepthook 
+        sys.excepthook = self.__onUncaughtException
     
-    def __stopCatchall( self ): sys.excepthook = None
+    def __stopCatchall( self ):
+        if self.__excepthook is None: return  
+        sys.excepthook = self.__excepthook
+        self.__excepthook = None
 
     def __onUncaughtException( self, *exc_info ):
         self.__isException = True

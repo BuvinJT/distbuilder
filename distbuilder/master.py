@@ -91,6 +91,10 @@ class ConfigFactory:
          
         self.isLimitedMaintenance = True
         self.replaceTarget = False # TODO: Fix this, or drop it!
+
+        self.ifwWizardStyle    = None
+        self.ifwLogoFilePath   = None
+        self.ifwBannerFilePath = None
                 
         self.licensePath = None        
         self.ifwUiPages  = None
@@ -183,12 +187,16 @@ class ConfigFactory:
 
     def qtIfwConfigXml( self ) :
         xml = QtIfwConfigXml( self.productName,  
-                              self.__versionStr(), self.companyLegalName, 
+                              self.__versionStr(), self.companyLegalName,                              
                               iconFilePath=self.iconFilePath, 
                               primaryContentExe=self.binaryName,
                               isPrimaryExeGui=self.isGui,
                               primaryExeWrapper=self.pkgExeWrapper,                               
-                              companyTradeName=self.companyTradeName )
+                              companyTradeName=self.companyTradeName,
+                              wizardStyle=self.ifwWizardStyle,
+                              logoFilePath=self.ifwLogoFilePath,
+                              bannerFilePath=self.ifwBannerFilePath
+                            )
         if xml.RunProgram is None and self.ifwPackages is not None:
             xml.setPrimaryContentExe( self.ifwPackages[0] )
         return xml

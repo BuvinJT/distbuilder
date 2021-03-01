@@ -309,6 +309,10 @@ TODO: FILL IN!
 
 ## Hello Installer UI Examples
 
+### Custom Graphics Examples
+
+TODO: FILL IN!
+
 ### Custom Interactions Examples
 
 TODO: FILL IN!
