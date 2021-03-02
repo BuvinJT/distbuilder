@@ -446,10 +446,10 @@ class QtIfwConfigXml( _QtIfwXml ):
     __ROOT_TAG   = "Installer"
     __TAGS       = [ "Name"
                    , "Version"
-                   , "Title"
-                   , "TitleColor"
                    , "Publisher"
                    , "InstallerApplicationIcon"
+                   , "Title"
+                   , "TitleColor"
                    , "TargetDir"
                    , "StartMenuDir"             
                    , "RunProgram" # RunProgramArguments added separately...
@@ -459,7 +459,9 @@ class QtIfwConfigXml( _QtIfwXml ):
                    , "WizardDefaultWidth"    
                    , "WizardDefaultHeight"                      
                    , "Logo"
-                   , "Banner"                                
+                   , "Banner"   # Questionable functionality...                              
+                   , "ProductUrl"           
+                   #, "DisableAuthorizationFallback" # Does not work?!         
                    ]
     __RUN_ARGS_TAG = "RunProgramArguments"
     __ARG_TAG      = "Argument"
@@ -520,7 +522,8 @@ class QtIfwConfigXml( _QtIfwXml ):
         self.Name                     = name
         self.Version                  = version
         self.Publisher                = publisher
-        self.InstallerApplicationIcon = iconRootName         
+        self.InstallerApplicationIcon = iconRootName
+                 
         self.Title                    = None        
         self.TitleColor               = None # HTML color code, such as "#88FF33"
                         
@@ -536,10 +539,12 @@ class QtIfwConfigXml( _QtIfwXml ):
         self.WizardDefaultWidth       = None    
         self.WizardDefaultHeight      = None
         self.Logo                     = logoBaseName
-        self.Banner                   = bannerBaseName       
-        
-        #self.ProductUrl    URL to a page that contains product information on your web site.
-        #self.DisableAuthorizationFallback    Set to true if the installation should not ask users to run the authorization fallback in case of authorization errors. Instead abort the installation immediately.
+        self.Banner                   = bannerBaseName  # TODO: resolve size issues       
+        self.ProductUrl               = None # Appears on Windows on the Control Panel Programs List, yet to see anywhere else...
+
+        # This doesn't appear to work... so
+        # custom scripting is also in place to enforce this!        
+        #self.DisableAuthorizationFallback = True # Set to true if the installation should not ask users to run the authorization fallback in case of authorization errors. Instead abort the installation immediately.
 
         # TODO
         #self.InstallerWindowIcon   (vs InstallerApplicationIcon?) Filename for a custom window icon in PNG format for the Installer application.

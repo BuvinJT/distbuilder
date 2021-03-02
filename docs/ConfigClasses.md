@@ -407,6 +407,8 @@ Attributes:
     WizardDefaultHeight      
     Logo                     
     Banner                          
+    
+    ProductUrl
         
     runProgramArgList  (used indirectly)
     
