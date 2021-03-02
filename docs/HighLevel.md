@@ -73,6 +73,10 @@ Attributes & default values:
 	    ifwUiPages  = None
 		ifwWidgets  = None                    
 	       
+        ifwWizardStyle    = None
+        ifwLogoFilePath   = None
+        ifwBannerFilePath = None
+        	       
 	    ifwCntrlScript     = None # None=Default False=Exclude                
 	    ifwCntrlScriptText = None
 	    ifwCntrlScriptPath = None
@@ -116,7 +120,7 @@ Object creation functions:
     opyConfig()
     qtIfwConfig( packages=None )
     qtIfwConfigXml()
-    qtIfwControlScript()
+    qtIfwControlScript( configXml )
     qtIfwPackage( pyInstConfig=None, isTempSrc=False )
     qtIfwPackageXml()    
     qtIfwPackageScript( pyInstConfig=None )
@@ -367,6 +371,25 @@ dynamic features for the page.
 
 Relative or absolute path to a license file to be included in an installer, which the 
 end user will be required to agree to.
+
+#### ifwWizardStyle    
+
+QtIFW installer predefined visual style.  
+
+	QtIfwConfigXml.DEFAULT_WIZARD_STYLE <per platform>
+    
+    QtIfwConfigXml.WizardStyle.AERO     <Windows Default>	
+    QtIfwConfigXml.WizardStyle.MAC      <MacOS Default>
+    QtIfwConfigXml.WizardStyle.MODERN   <Linux Default>
+	QtIfwConfigXml.WizardStyle.CLASSIC  <Simliar to MODERN>  
+    
+#### ifwLogoFilePath, ifwBannerFilePath
+
+Relative or absolute path to QtIFW installer image resources.  These should .png 
+files (on any platform).  Transparency is supported.
+
+Note: `ifwLogoFilePath` is only applied in MODERN or CLASSIC style installers.
+Note: `ifwBannerFilePath` is only applied in MODERN style installers.   
 
 #### ifwCntrlScript, ifwCntrlScriptText, ifwCntrlScriptPath, ifwCntrlScriptName
 

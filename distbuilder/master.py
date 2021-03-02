@@ -172,11 +172,13 @@ class ConfigFactory:
                           patches=self.opyPatches )                 
     
     def qtIfwConfig( self, packages=None ):
-        if packages is not None: self.ifwPackages = packages                
+        if packages is not None: self.ifwPackages = packages
+        configXml     = self.qtIfwConfigXml()  
+        controlScript = self.qtIfwControlScript( configXml )              
         cfg = QtIfwConfig( installerDefDirPath=self.ifwDefDirPath,
                            packages=self.ifwPackages,
-                           configXml=self.qtIfwConfigXml(), 
-                           controlScript=self.qtIfwControlScript(),
+                           configXml=configXml, 
+                           controlScript=controlScript,
                            setupExeName=self.setupName ) 
         cfg.addLicense( self.licensePath )
         cfg.addUiElements( self.ifwUiPages )
@@ -201,7 +203,7 @@ class ConfigFactory:
             xml.setPrimaryContentExe( self.ifwPackages[0] )
         return xml
 
-    def qtIfwControlScript( self ) :
+    def qtIfwControlScript( self, configXml ) :
         if self.ifwCntrlScript : return self.ifwCntrlScript 
         if( self.ifwCntrlScript == False and
             self.ifwCntrlScriptText is None and 
@@ -212,8 +214,9 @@ class ConfigFactory:
                 script=self.ifwCntrlScriptText, 
                 scriptPath=self.ifwCntrlScriptPath )
         
+        script._wizardStyle = configXml.WizardStyle
         script.isLimitedMaintenance = self.isLimitedMaintenance 
-        
+                
         # TODO: Fix this, as it is no longer respected!
         if self.replaceTarget:
             script.virtualArgs={ _QtIfwScript.TARGET_EXISTS_OPT_CMD_ARG:

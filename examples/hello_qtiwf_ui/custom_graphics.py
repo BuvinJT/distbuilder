@@ -17,6 +17,8 @@ f.ifwLogoFilePath   = "demo_logo.png"
 class BuildProcess( PyToBinInstallerProcess ):
     def onQtIfwConfig( self, cfg ):
         cfg.configXml.TitleColor = "#FF0000"
+        #cfg.configXml.WizardDefaultWidth  = 800
+        #cfg.configXml.WizardDefaultHeight = 800
     
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True

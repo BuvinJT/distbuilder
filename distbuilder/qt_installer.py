@@ -431,13 +431,15 @@ class _QtIfwXml:
 # -----------------------------------------------------------------------------    
 class QtIfwConfigXml( _QtIfwXml ):
 
-    class WizardStyle: CLASSIC, MODERN, MAC, AERO = range(4)
-    __WizardStyleValue = { 
-        WizardStyle.CLASSIC : "Classic", 
-        WizardStyle.MODERN  : "Modern", 
-        WizardStyle.MAC     : "Mac", 
-        WizardStyle.AERO    : "Aero" 
-    }
+    class WizardStyle: AERO, MODERN, MAC, CLASSIC = range(4)
+    DEFAULT_WIZARD_STYLE=( WizardStyle.MODERN  if IS_LINUX else
+                           WizardStyle.MAC     if IS_MACOS else
+                           WizardStyle.AERO ) #if IS_WINDOWS 
+    _WizardStyles = { WizardStyle.AERO    : "Aero"
+                    , WizardStyle.MODERN  : "Modern" 
+                    , WizardStyle.MAC     : "Mac"
+                    , WizardStyle.CLASSIC : "Classic"
+                    }
     
     __DIR_TMPLT  = "%s/config"
     __PATH_TMPLT = __DIR_TMPLT + "/config.xml"
@@ -453,7 +455,9 @@ class QtIfwConfigXml( _QtIfwXml ):
                    , "RunProgram" # RunProgramArguments added separately...
                    , "RunProgramDescription"
                    , "ControlScript"
-                   , "WizardStyle"                 
+                   , "WizardStyle"              
+                   , "WizardDefaultWidth"    
+                   , "WizardDefaultHeight"                      
                    , "Logo"
                    , "Banner"                                
                    ]
@@ -494,7 +498,7 @@ class QtIfwConfigXml( _QtIfwXml ):
             try:    iconRootName = rootFileName( iconFilePath )
             except: iconRootName = None
        
-        wizardStyleValue = QtIfwConfigXml.__WizardStyleValue.get( 
+        wizardStyleValue = QtIfwConfigXml._WizardStyles.get( 
                                 wizardStyle, None )
 
         if( logoFilePath and 
@@ -529,13 +533,13 @@ class QtIfwConfigXml( _QtIfwXml ):
         self.RunProgramDescription    = None
 
         self.WizardStyle              = wizardStyleValue
+        self.WizardDefaultWidth       = None    
+        self.WizardDefaultHeight      = None
         self.Logo                     = logoBaseName
         self.Banner                   = bannerBaseName       
         
         #self.ProductUrl    URL to a page that contains product information on your web site.
         #self.DisableAuthorizationFallback    Set to true if the installation should not ask users to run the authorization fallback in case of authorization errors. Instead abort the installation immediately.
-        #self.WizardDefaultWidth    (will cause conflicts with existing custom code) Sets the default width of the wizard in pixels. Setting a banner image will override this. You can add the em or ex suffix to the specified value to use the em or ex unit, as in a CSS file.
-        #self.WizardDefaultHeight    (will cause conflicts with existing custom code) Sets the default height of the wizard in pixels. Setting a watermark image will override this. You can add the em or ex suffix to the specified value to use the em or ex unit, as in a CSS file.
 
         # TODO
         #self.InstallerWindowIcon   (vs InstallerApplicationIcon?) Filename for a custom window icon in PNG format for the Installer application.
@@ -890,6 +894,7 @@ class _QtIfwScript:
 
     IS_NET_CONNECTED_KEY         = "isNetConnected"
 
+    _WIZARD_STYLE_KEY     = "__wizardStyle"
     _IS_CMD_ARGS_TEMP_KEY = "__tmp_sv"
     _CMD_ARGS_TEMP_PREFIX = "__tmp_"
     _CMD_ARGS = { 
@@ -3293,6 +3298,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         self.uiPages = []
         self.widgets = []
 
+        self._wizardStyle = None
         self._isLicenseRequired = False
         self._installerResources = []
         self._maintenanceToolResources = []
@@ -3758,13 +3764,11 @@ Controller.prototype.Dynamic%sCallback = function() {
         TAB = _QtIfwScript.TAB
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK
-        self.controllerGlobals=""
+        self.controllerGlobals = 'function initGlobals() ' + SBLK 
         if self.virtualArgs :
-            self.controllerGlobals += (
-            'function initGlobals() ' + SBLK )
             for k,v in six.iteritems( self.virtualArgs ):            
                 self.controllerGlobals += TAB + _QtIfwScript.setValue(k,v)  
-            self.controllerGlobals += EBLK + NEW             
+        self.controllerGlobals += EBLK + NEW             
         
     def __genControllerConstructorBody( self ):
         NEW = _QtIfwScript.NEW_LINE
@@ -3795,6 +3799,9 @@ Controller.prototype.Dynamic%sCallback = function() {
                 ('"%s"' % (_REMOVE_TARGET_KEY,) ) + ', "" )' + END +        
             TAB + ('if( getEnv("%s")=="true" )' % (_KEEP_TEMP_SWITCH,)) + NEW +
             (2*TAB) + _QtIfwScript.setBoolValue( _KEEP_TEMP_SWITCH, True ) +
+            TAB + _QtIfwScript.setValue( _QtIfwScript._WIZARD_STYLE_KEY, 
+                self._wizardStyle if self._wizardStyle else 
+                QtIfwConfigXml._WizardStyles[QtIfwConfigXml.DEFAULT_WIZARD_STYLE] ) +   
             TAB + 'clearOutLog()' + END +
             TAB + 'clearErrorLog()' + END +
             TAB + _QtIfwScript.ifDryRun() + _QtIfwScript.setBoolValue( 
@@ -6623,21 +6630,31 @@ class QtIfwUiPage( _QtIfwInterface ):
     __FILE_EXTENSION  = "ui"
     __UI_RES_DIR_NAME = "qtifw_ui"
 
-    BASE_ON_LOAD_TMPT = (    
-"""
-    var page = gui.pageWidgetByObjectName("Dynamic%s");
-    switch( systemInfo.kernelType ){
-    case "darwin": // macOS
+    BASE_ON_LOAD_TMPT = (        
+"""    
+    var page = gui.pageWidgetByObjectName( "%s" );
+    var wizardStyle = installer.value( "%s", "%s" );
+    switch( wizardStyle ){
+    case "%s": 
         page.minimumSize.width=300;
         break;
-    case "linux": 
-        page.minimumSize.width=480;
+    case "%s": 
+        page.minimumSize.width=475;
         break;
-    default: // "windows"
-        // This is the hard coded width of "standard" QtIfw .ui's
+    case "%s": 
+        page.minimumSize.width=480;
+        break;        
+    default: // "Aero" - This is the hard coded width of QtIfw example .ui's
         page.minimumSize.width=491;   
     }    
-""")
+""") %  ( "Dynamic%s" # setup subsequent template use
+        , _QtIfwScript._WIZARD_STYLE_KEY
+        , QtIfwConfigXml._WizardStyles[QtIfwConfigXml.DEFAULT_WIZARD_STYLE]         
+        , QtIfwConfigXml._WizardStyles[QtIfwConfigXml.WizardStyle.MAC]
+        , QtIfwConfigXml._WizardStyles[QtIfwConfigXml.WizardStyle.CLASSIC]
+        , QtIfwConfigXml._WizardStyles[QtIfwConfigXml.WizardStyle.MODERN]   
+        #, QtIfwConfigXml._WizardStyles[QtIfwConfigXml.WizardStyle.AERO]
+        )
 
     BASE_ON_ENTER_TMPT = (    
 """
@@ -6893,21 +6910,32 @@ class QtIfwTargetDirPage( QtIfwUiPage ):
     
         ON_LOAD = (    
 """
-    // patch seems to be needed due to use of RichText?
-    switch( systemInfo.kernelType ){
-    case "darwin": // macOS
+    // patch seems to be needed due to use of RichText?    
+    var wizardStyle = installer.value( "%s", "%s" );
+    switch( wizardStyle ){
+    case "%s": 
         page.warning.minimumSize.width=300;
         break;
-    case "linux": 
+    case "%s": 
+        page.warning.minimumSize.width=475;
+        break;    
+    case "%s": 
         page.warning.minimumSize.width=480;
         break;
-    }    
+    }            
     page.targetDirectory.setText(
         Dir.toNativeSeparator(installer.value("TargetDir")));
     page.targetDirectory.textChanged.connect(this, this.%s);    
     page.targetChooser.released.connect(this, this.%s);
-""") % ( ON_TARGET_CHANGED_NAME, ON_TARGET_BROWSE_CLICKED_NAME )
-        
+""") %  ( _QtIfwScript._WIZARD_STYLE_KEY
+        , QtIfwConfigXml._WizardStyles[QtIfwConfigXml.DEFAULT_WIZARD_STYLE]
+        , QtIfwConfigXml._WizardStyles[QtIfwConfigXml.WizardStyle.MAC]
+        , QtIfwConfigXml._WizardStyles[QtIfwConfigXml.WizardStyle.CLASSIC]
+        , QtIfwConfigXml._WizardStyles[QtIfwConfigXml.WizardStyle.MODERN]   
+        , ON_TARGET_CHANGED_NAME
+        , ON_TARGET_BROWSE_CLICKED_NAME 
+        )
+                
         ON_ENTER = (
 """            
     page.targetDirectory.setText(

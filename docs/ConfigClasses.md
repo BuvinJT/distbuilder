@@ -369,18 +369,21 @@ Attributes set to `None` values will not be written, otherwise they will be.
 Constructor:                
 
     QtIfwConfigXml( name, version, publisher,
-                      iconFilePath=None, 
-                      controlScriptName=None,
-                      primaryContentExe=None,
-                      isPrimaryExeGui=True,
-                      primaryExeWrapper=None,
-                      companyTradeName=None ) 
+                    iconFilePath=None, 
+                    controlScriptName=None,
+                    primaryContentExe=None, isPrimaryExeGui=True,
+                    primaryExeWrapper=None,
+                    companyTradeName=None,
+                    wizardStyle=None, 
+                    logoFilePath=None, bannerFilePath=None ) 
 
 Attributes:    
 
     primaryContentExe (used indirectly w/ isGui)    
-    iconFilePath  (used indirectly)
-    companyTradeName (used indirectly)
+    companyTradeName  (used indirectly)
+    iconFilePath      (used indirectly)    
+    logoFilePath      (used indirectly)
+    bannerFilePath    (used indirectly) 
     
     primaryExeWrapper
     
@@ -388,12 +391,22 @@ Attributes:
     Version                  
     Publisher                
     InstallerApplicationIcon  (icon base name, i.e. omit extension)
+    Title                
+    TitleColor                (HTML color code, such as "#88FF33")    
+    
     ControlScript  
-    Title                    
+       
     TargetDir                
     StartMenuDir             
+    
     RunProgram               
     RunProgramDescription
+    
+    WizardStyle              
+    WizardDefaultWidth           
+    WizardDefaultHeight      
+    Logo                     
+    Banner                          
         
     runProgramArgList  (used indirectly)
     
@@ -416,6 +429,14 @@ Functions:
     exists()            
     path()   
     dirPath() 
+
+Static Constants:
+
+    DEFAULT_WIZARD_STYLE
+	WizardStyle.AERO     <Windows Default>	
+    WizardStyle.MAC      <MacOS Default>
+    WizardStyle.MODERN   <Linux Default>
+	WizardStyle.CLASSIC  <Simliar to MODERN>  
        
 ## QtIfwControlScript
 
