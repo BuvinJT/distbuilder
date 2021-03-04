@@ -186,7 +186,8 @@ from distbuilder.util import \
     , versionStr \
     , versionNo \
     , getPassword \
-    , assertMinVer
+    , assertMinVer \
+    , embedExeVerInfo
     
 def assertBuilderVer( ver ): 
     assertMinVer( __version__, ver, descr="Distribution Builder Library" )

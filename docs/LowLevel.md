@@ -1424,10 +1424,11 @@ Attributes & default values:
     isDebug=True
     
 Functions:   
-
+	
 	filePath()
     fileName()
-        
+
+    exists( dirPath=None )        
     read( dirPath=None )
     write( dirPath=None )
     remove( dirPath=None )

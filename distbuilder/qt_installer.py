@@ -6320,6 +6320,8 @@ echo:}
 
 del /q /f "%TEMP_RC_PATH%"
 del /q /f "%TEMP_RES_PATH%"
+
+exit /b %errorlevel%
 """)            
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "embedExeVerInfo" ), script=script, replacements={

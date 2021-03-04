@@ -633,6 +633,10 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
         self.setupPath = _buildInstaller( 
             ifwConfig, self.configFactory.isSilentSetup )
         
+        if IS_WINDOWS:
+            embedExeVerInfo( self.setupPath, 
+                             self.configFactory.exeVersionInfo() )
+        
         if self.configFactory.codeSignConfig :
             signExe( self.setupPath, self.configFactory.codeSignConfig ) 
         

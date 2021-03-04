@@ -130,12 +130,19 @@ if IS_WINDOWS :
     __SHARED_RET_CODE_TMPLT  = __SHARED_RET_CODE_PREFIX + "%d" 
     __DELAYED_EXPANSION_PREFIX = "@cmd /V:ON /c "
     __ENABLE_DELAYED_EXPANSION = "@SetLocal EnableDelayedExpansion"
+    __BATCH_RETURN_EXIT_CODE   = "exit /b !errorlevel!"
     __SYS_CMD_DELIM_FIND = " & " 
     __SYS_CMD_DELIM_DELAYED_REPLACE = " ^& " 
     __SYS_CMD_REDIRECT_FIND = " > " 
     __SYS_CMD_REDIRECT_DELAYED_REPLACE = " ^> " 
     __NO_ECHO_PREFIX = "@"
+    __RESOURCE_HACKER_EXE_NAME = "ResourceHacker.exe"
+    __RESOURCE_HACKER_QT_IFW_PLACEHOLDER = "@ResourceHacker@"            
+    _INVOKE_NESTED_BATCH_PREFIX = "Call "
+else:
+    _EXECUTE_PREFIX = ". "
 
+__IS_SYS_DEBUG = False
 __CMD_OUTPUT_REDIRECT_TMPT = '"%s" >> "%s" 2>&1'
 if not IS_WINDOWS: __CMD_OUTPUT_REDIRECT_TMPT = ". " + __CMD_OUTPUT_REDIRECT_TMPT
 
@@ -275,38 +282,38 @@ def runPy( pyPath, args=None, isElevated=False ):
 # Under certain conditions, some streams could not be captured via any  "clean" 
 # / "standard" means with popen polling or file descriptor inheritance tricks            
 def _system( cmd, wrkDir=None, logPath=None, defaultRet=None ):
+    
     if isinstance( cmd, list ): cmd = list2cmdline(cmd)
     cmd = __scrubSystemCmd( cmd )       
+
+    retCodPath = reserveTempFilePath()
+    cmd += _RET_CODE_TO_FILE_TMPLT.format( retCodPath )
      
     if wrkDir is not None:
         initWrkDir = getcwd()
         print( 'cd "%s"' % (wrkDir,) )
         chdir( wrkDir )        
-        
-    if logPath is None and isLogging():
-        logPath = Logger.singleton().filePath()                      
-     
-    retCodPath = reserveTempFilePath()
-    cmd += _RET_CODE_TO_FILE_TMPLT.format( retCodPath )
-    if IS_WINDOWS:
-        batch = cmd 
-        cmd = __DELAYED_EXPANSION_PREFIX + cmd.replace(
-            __SYS_CMD_DELIM_FIND, __SYS_CMD_DELIM_DELAYED_REPLACE ).replace(
-            __SYS_CMD_REDIRECT_FIND, __SYS_CMD_REDIRECT_DELAYED_REPLACE )     
-        print( cmd )    
-    
-    if logPath:
-        if IS_WINDOWS: cmd = [ __ENABLE_DELAYED_EXPANSION, batch ]
+
+    if logPath is None and isLogging(): logPath = Logger.singleton().filePath()    
+    if logPath:        
+        baseCmd = cmd
+        if IS_WINDOWS: cmd = [ __ENABLE_DELAYED_EXPANSION, cmd ]
         script = ExecutableScript( rootFileName( mktemp() ), script=cmd,
-                                   isDebug=False )                                 
+                                   isDebug=__IS_SYS_DEBUG )                                 
         script.write( tempDirPath() )        
-        Logger.singleton().pause()
         runScriptCmd = __scrubSystemCmd( __CMD_OUTPUT_REDIRECT_TMPT % (
-            script.filePath(), logPath ) )        
+            script.filePath(), logPath ) )
+        print( runScriptCmd if __IS_SYS_DEBUG else baseCmd )        
+        Logger.singleton().pause()
         system( runScriptCmd )
         Logger.singleton().resume()
         script.remove()
     else:
+        if IS_WINDOWS:
+            cmd = __DELAYED_EXPANSION_PREFIX + cmd.replace(
+                __SYS_CMD_DELIM_FIND, __SYS_CMD_DELIM_DELAYED_REPLACE ).replace(
+                __SYS_CMD_REDIRECT_FIND, __SYS_CMD_REDIRECT_DELAYED_REPLACE )     
+        print( cmd )    
         system( cmd )
         print('')
     
@@ -314,9 +321,13 @@ def _system( cmd, wrkDir=None, logPath=None, defaultRet=None ):
     
     try: 
         with open( retCodPath, 'r' ) as f: retCode = int( f.read().strip() )
-    except: retCode = defaultRet
+    except Exception as e:
+        printErr( "WARNING: Could not parse return code file: %s\n%s" %
+                  (retCodPath, e) ) 
+        retCode = defaultRet
     try: removeFile( retCodPath )
-    except: pass    
+    except: pass
+    if __IS_SYS_DEBUG: print( "retCode: %s" % (str(retCode),) )    
     return retCode
 
 def _isSystemSuccess( cmd, wrkDir=None ):
@@ -1148,11 +1159,14 @@ VSVersionInfo(
 # -----------------------------------------------------------------------------            
 class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all of it   
     
-    __WIN_DEFAULT_EXT = "bat" 
-    __NIX_DEFAULT_EXT = "sh"
+    __WIN_DEFAULT_EXT  = "bat" 
+    __NIX_DEFAULT_EXT  = "sh"    
+    __PLAT_DEFAULT_EXT = __WIN_DEFAULT_EXT if IS_WINDOWS else __NIX_DEFAULT_EXT
+
+    __SUPPORTED_EXECUTE_EXTS = [ __PLAT_DEFAULT_EXT ]
     
     __NIX_DEFAULT_SHEBANG = "#!/bin/sh"
-    __SHEBANG_TEMPLATE = "%s\n%s"
+    __SHEBANG_TEMPLATE    = "%s\n%s"
 
     __PLACEHOLDER_TMPLT = "{%s}" 
     
@@ -1170,8 +1184,7 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
                   replacements=None, isDebug=True ) :
         self.rootName = rootName
         if extension==True:
-            self.extension = ( ExecutableScript.__WIN_DEFAULT_EXT 
-                if IS_WINDOWS else ExecutableScript.__NIX_DEFAULT_EXT )
+            self.extension = ExecutableScript.__PLAT_DEFAULT_EXT
         elif extension==False: self.extension = None
         else: self.extension = extension    
         if shebang==True and scriptPath is None :
@@ -1210,6 +1223,11 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         
     def fileName( self ):
         return joinExt( self.rootName, self.extension )
+
+    def exists( self, dirPath=None ): 
+        if dirPath is None: dirPath=self.dirPath
+        self.dirPath = dirPath if dirPath else THIS_DIR  
+        return isFile( self.filePath() )
                         
     def write( self, dirPath=None ):
         if self.script is None : return
@@ -1258,9 +1276,40 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         self.script = base64.b64decode( data ).decode('utf-8')
         self.shebang = None 
         # TODO: resolve shebang programmatically, and remove it from self.script        
-        
+    
+    def _execute( self, dirPath=None, isOnTheFly=None, isDebug=None ):
+        if self.extension not in ExecutableScript.__SUPPORTED_EXECUTE_EXTS:
+            raise Exception( "Script type not supported: %s" % (self.fileName(),) )                    
+        if isDebug is not None: self.isDebug = isDebug
+        if isOnTheFly is None: isOnTheFly = not self.exists( dirPath )    
+        if isOnTheFly: self.write( dirPath )                    
+        if self.extension==ExecutableScript.__PLAT_DEFAULT_EXT:
+            cmd =( _INVOKE_NESTED_BATCH_PREFIX + self.fileName() 
+                   if IS_WINDOWS else _EXECUTE_PREFIX + self.fileName() )
+            if self.isDebug: print( "Executing %s..." % (self.filePath(),) )                                       
+            retCode = _system( cmd, wrkDir=self.dirPath )
+            if self.isDebug: print( "Return Code: %s" % (str(retCode),) )                                       
+            if retCode is not None and retCode != 0: 
+                raise Exception( "Script failed: %s\nReturn Code: %s" % (
+                                 self.filePath(), str(retCode) ) )
+        if isOnTheFly: self.remove()
+            
 # -----------------------------------------------------------------------------           
-if IS_WINDOWS :
+def embedExeVerInfo( exePath, exeVerInfo ):
+    if not IS_WINDOWS: _onPlatformErr()
+    from distbuilder.qt_installer import QtIfwExternalOp
+    script = QtIfwExternalOp.EmbedExeVerInfoScript( exePath, exeVerInfo )    
+    __injectResourceHackerPath( script )
+    script._execute( isOnTheFly=True, isDebug=True )    
+
+if IS_WINDOWS:
+    def __resourceHackerPath(): 
+        return joinPath( _RES_DIR_PATH, __RESOURCE_HACKER_EXE_NAME )
+
+    def __injectResourceHackerPath( script ):        
+        script.script = script.script.replace( 
+            __RESOURCE_HACKER_QT_IFW_PLACEHOLDER, __resourceHackerPath() )
+    
     class _WindowsSharedFile:
         
         __byref        = ctypes.byref
