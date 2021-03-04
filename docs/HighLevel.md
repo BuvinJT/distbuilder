@@ -130,7 +130,7 @@ Object creation functions:
                      isExe=False ) <Windows Only>
                      
 	<Windows Only>
-		exeVersionInfo()
+		exeVersionInfo( iwfConfig=None )
 		                     
 Cloning:
 

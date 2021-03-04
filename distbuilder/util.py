@@ -1298,8 +1298,12 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
 def embedExeVerInfo( exePath, exeVerInfo ):
     if not IS_WINDOWS: _onPlatformErr()
     from distbuilder.qt_installer import QtIfwExternalOp
-    script = QtIfwExternalOp.EmbedExeVerInfoScript( exePath, exeVerInfo )    
+    script = QtIfwExternalOp.EmbedExeVerInfoScript( absPath( exePath ), exeVerInfo )    
     __injectResourceHackerPath( script )
+    # TODO: Handle ResourceHacker logging:
+    #    This utility sends message to the console (i.e. CON), rather than
+    #    stdout/err.  While these details will appear in a terminal, they will
+    #    not be directed to a log file presently!   
     script._execute( isOnTheFly=True, isDebug=True )    
 
 if IS_WINDOWS:

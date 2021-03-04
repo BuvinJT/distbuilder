@@ -1536,6 +1536,74 @@ That ConfigFactory maybe most easily generated via the convenience function:
         companyLegalName=None, version=(1,0,0,0), iconFilePath=None,    
         isSilent=False, script=None )  
 
+    
+## Module import utilities 
+
+### modulePath
+
+    modulePath( moduleName )
+    
+The absolute path to an importable module's source.
+(Note the moduleName argument should be a string, not 
+an unquoted, direct module reference.)            
+This is useful for dynamically resolving the path to 
+external modules which you may wish to copy / "bundle" 
+for obfuscation.  Returns None if the name is invalid 
+and/or the path cannot be resolved.
+Note that this often resolves the path to a library's
+package entry point (i.e. an __init__.py) file where 
+the module is initially imported, rather than literal 
+module path. Normally modulePackagePath will be more 
+useful...   
+
+### modulePackagePath
+
+    modulePackagePath( moduleName )
+
+Similar to modulePath, but this return the module's 
+parent directory.  More often than not, a module 
+will have dependencies within the package / library
+where it resides. As such, resolving the package path
+can be more useful than the specific module.  
+
+### sitePackagePath
+   
+    sitePackagePath( packageName )
+
+Similar to modulePackagePath, but takes the package
+name rather than a module within it AND is specific
+to the site packages collection of libraries, rather
+than a more universal path resolution.        
+
+### isImportableModule, isImportableFromModule
+
+    isImportableModule( moduleName )
+    isImportableFromModule( moduleName, memberName )            
+ 
+Attempts the import, and returns a boolean indication
+of success without raising an exception upon failure.  
+Like the related functions here, the arguments are 
+expected to be strings (not direct references).  
+The purpose of this to test for library installation
+success, or to preemptively confirm the presence
+of dependencies.
+
+### importFromPath
+
+	importFromPath( path, memberName=None )
+	
+Imports a module, or a select member from it, via the 
+explicit path to that script, and returns the reference.
+Example:
+	
+    myFunc = importFromPath( "/path/to/myscript.py", "myFunc" )
+    myFunc( someArg )
+
+This can be very useful for cross project integrations where
+you want to import modules, or members of them, which are not
+part of an installed system library or if they are located in 
+a path where a standard import cannot be employed directly.
+
 ## Logging
 
 Distbuilder often produces extensive debugging output when running assorted
@@ -1634,7 +1702,7 @@ Static Methods:
 	singleton( name=None, isUniqueFile=False )
 	isSingletonOpen()
 
-## Utilities
+## Utility Functions
 
 The following low level "utilities" are also provided for 
 convenience, as they maybe useful in defining the build 
@@ -1868,63 +1936,22 @@ resembling the following:
 
 	from distbuilder assertBuilderVer
 	assertBuilderVer( "0.7.8.0" )
+
+### embedExeVerInfo
+
+** WINDOWS ONLY**
+
+    embedExeVerInfo( exePath, exeVerInfo )
+
+Set the branding information (e.g. version, copyright, etc.) on to an executable.
+These details can be seen when inspecting the properties of the file.  They may also
+be used for other mechanisms in Windows, when the file is used.
     
-### Module import utilities 
+**Returns**: None
 
-    modulePath( moduleName )
-    
-The absolute path to an importable module's source.
-(Note the moduleName argument should be a string, not 
-an unquoted, direct module reference.)            
-This is useful for dynamically resolving the path to 
-external modules which you may wish to copy / "bundle" 
-for obfuscation.  Returns None if the name is invalid 
-and/or the path cannot be resolved.
-Note that this often resolves the path to a library's
-package entry point (i.e. an __init__.py) file where 
-the module is initially imported, rather than literal 
-module path. Normally modulePackagePath will be more 
-useful...   
+**exePath**:  Absolute or relative path to the executable file.
 
-    modulePackagePath( moduleName )
-
-Similar to modulePath, but this return the module's 
-parent directory.  More often than not, a module 
-will have dependencies within the package / library
-where it resides. As such, resolving the package path
-can be more useful than the specific module.  
-   
-    sitePackagePath( packageName )
-
-Similar to modulePackagePath, but takes the package
-name rather than a module within it AND is specific
-to the site packages collection of libraries, rather
-than a more universal path resolution.        
-
-    isImportableModule( moduleName )
-    isImportableFromModule( moduleName, memberName )            
- 
-Attempts the import, and returns a boolean indication
-of success without raising an exception upon failure.  
-Like the related functions here, the arguments are 
-expected to be strings (not direct references).  
-The purpose of this to test for library installation
-success, or to preemptively confirm the presence
-of dependencies.
-
-	importFromPath( path, memberName=None )
-	
-Imports a module, or a select member from it, via the 
-explicit path to that script, and returns the reference.
-Example:
-	
-    myFunc = importFromPath( "/path/to/myscript.py", "myFunc" )
-    myFunc( someArg )
-
-This can be very useful for cross project integrations where
-you want to import modules, or members of them, which are not
-part of an installed system library or if they are located in 
-a path where a standard import cannot be employed directly.
+**exeVerInfo**: A [WindowsExeVersionInfo](ConfigClasses.md#windowsexeversioninfo) object.   
 
 ### halt
 	
@@ -2001,7 +2028,7 @@ If not enabled, the password input prompt will work via a terminal interface.
         joinExt 			   <custom> inverse of splitExt
         fileExt                <note returns None, rather than "", when there is no extension>  
         
-### General Purpose Constants
+## General Purpose Constants
         
     IS_WINDOWS 
     IS_LINUX 

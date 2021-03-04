@@ -152,17 +152,29 @@ class ConfigFactory:
         return cfg
 
     if IS_WINDOWS :
-        def exeVersionInfo( self ):
+        def exeVersionInfo( self, ifwConfig=None ):
             verInfo = WindowsExeVersionInfo()
-            ( verInfo.major,
-              verInfo.minor,
-              verInfo.micro,
-              verInfo.build
-            ) = self.__versionTuple()
-            verInfo.companyName = self.companyLegalName
-            verInfo.productName = self.productName
-            verInfo.description = self.description
-            verInfo.exeName     = self.binaryName
+            if ifwConfig:
+                xml = ifwConfig.configXml        
+                ( verInfo.major,
+                  verInfo.minor,
+                  verInfo.micro,
+                  verInfo.build
+                ) = versionTuple( xml.Version )
+                verInfo.companyName = xml.Publisher
+                verInfo.productName = xml.Name
+                verInfo.description = xml.Title
+                verInfo.exeName     = ifwConfig.setupExeName                                            
+            else:
+                ( verInfo.major,
+                  verInfo.minor,
+                  verInfo.micro,
+                  verInfo.build
+                ) = self.__versionTuple()
+                verInfo.companyName = self.companyLegalName
+                verInfo.productName = self.productName
+                verInfo.description = self.description
+                verInfo.exeName     = self.binaryName
             return verInfo 
     
     def opyConfig( self ):
@@ -635,7 +647,7 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
         
         if IS_WINDOWS:
             embedExeVerInfo( self.setupPath, 
-                             self.configFactory.exeVersionInfo() )
+                             self.configFactory.exeVersionInfo( ifwConfig ) )
         
         if self.configFactory.codeSignConfig :
             signExe( self.setupPath, self.configFactory.codeSignConfig ) 
