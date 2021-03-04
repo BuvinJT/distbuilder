@@ -155,25 +155,25 @@ class ConfigFactory:
         def exeVersionInfo( self, ifwConfig=None ):
             verInfo = WindowsExeVersionInfo()
             if ifwConfig:
-                xml = ifwConfig.configXml        
+                xml = ifwConfig.configXml
+                verInfo.description = xml._titleDisplayed()        
                 ( verInfo.major,
                   verInfo.minor,
                   verInfo.micro,
                   verInfo.build
                 ) = versionTuple( xml.Version )
-                verInfo.companyName = xml.Publisher
                 verInfo.productName = xml.Name
-                verInfo.description = xml.Title
+                verInfo.companyName = xml.Publisher                
                 verInfo.exeName     = ifwConfig.setupExeName                                            
             else:
+                verInfo.description = self.description
                 ( verInfo.major,
                   verInfo.minor,
                   verInfo.micro,
                   verInfo.build
                 ) = self.__versionTuple()
-                verInfo.companyName = self.companyLegalName
                 verInfo.productName = self.productName
-                verInfo.description = self.description
+                verInfo.companyName = self.companyLegalName                                
                 verInfo.exeName     = self.binaryName
             return verInfo 
     

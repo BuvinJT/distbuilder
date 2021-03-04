@@ -467,7 +467,7 @@ class QtIfwConfigXml( _QtIfwXml ):
     __ARG_TAG      = "Argument"
         
     __RUN_PROG_DESCR_TMPLT = "Run %s now."    
-                          
+                         
     # QtIfwConfigXml
     def __init__( self, name, version, publisher, 
                   iconFilePath=None,                   
@@ -524,7 +524,7 @@ class QtIfwConfigXml( _QtIfwXml ):
         self.Publisher                = publisher
         self.InstallerApplicationIcon = iconRootName
                  
-        self.Title                    = None        
+        self.Title                    = None # defaults to name (+ "Setup")       
         self.TitleColor               = None # HTML color code, such as "#88FF33"
                         
         self.ControlScript            = controlScriptName
@@ -602,7 +602,9 @@ class QtIfwConfigXml( _QtIfwXml ):
 
     def setDefaultTitle( self ) :
         if self.Title is None: self.Title = self.Name
-            #self.Title = "%s Setup" % (self.Name) # New IFW seem to be adding "Setup" suffix?
+        #self.Title = "%s Setup" % (self.Name,) # New versions of IFW add a "Setup" suffix 
+
+    def _titleDisplayed( self ): return "%s Setup" % (self.Title,)
     
     def setDefaultPaths( self ) :
         # NOTE: DON'T USE PATH FUNCTIONS HERE!
@@ -7974,12 +7976,12 @@ def __buildSilentWrapper( qtIfwConfig ) :
         isRunSwitch=isRunSwitch, isRebootSwitch=isRebootSwitch, 
         licenses=licenses, 
         isStartMenu=ctrlScrpt.isStartMenuDirectoryPageVisible,
-        productName=cfgXml.Name, version=cfgXml.Version,
+        setupTitle=cfgXml._titleDisplayed(), version=cfgXml.Version,
         companyLegalName=cfgXml.Publisher )
                                                
     f = configFactory  = ConfigFactory()
     f.productName      = cfgXml.Name
-    f.description      = cfgXml.Name # don't have the exact description with this config
+    f.description      = cfgXml._titleDisplayed()
     f.companyLegalName = cfgXml.Publisher    
     f.binaryName       = wrapperExeName
     f.isGui            = False       
@@ -8004,7 +8006,9 @@ def __buildSilentWrapper( qtIfwConfig ) :
         def onPyInstConfig( self, cfg ):    
             if IS_MACOS: cfg.dataFilePaths   = [ self.__nestedZipPath ]
             else       : cfg.binaryFilePaths = [ absPath( nestedExeName ) ]
-            cfg.isAutoElevated = True # Windows only feature
+            if IS_WINDOWS:
+                cfg.isAutoElevated = True # Windows only feature
+                cfg.versionInfo.exeName = destSetupExeName
             
         def onFinalize( self ):
             removeFromDir( wrapperPyName )            
@@ -8039,7 +8043,7 @@ def __silentQtIfwScript( exeName, componentList=None,
                          wrkDir=None, targetDir=None,
                          isRunSwitch=None, isRebootSwitch=None,
                          licenses=None, isStartMenu=True,
-                         productName=None, version=None, 
+                         setupTitle=None, version=None, 
                          companyLegalName=None ) :
     """
     Runs the IFW exe from inside the PyInstaller MEIPASS directory,
@@ -8050,7 +8054,7 @@ def __silentQtIfwScript( exeName, componentList=None,
     if componentList is None: componentList=[]
     if licenses is None: licenses={}
     
-    versionInfo = productName if productName else ""
+    versionInfo = setupTitle if setupTitle else ""
     if version:
         if len(versionInfo) > 0 : versionInfo += "\\n"
         versionInfo += "Version: %s" % (version,)
