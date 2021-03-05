@@ -106,6 +106,9 @@ _LINUX_LIB_EXT   = ".so"
 __NOT_SUPPORTED_MSG =( 
     "This operation/feature is not supported on the current platform!" )
 
+__IS_SYS_DEBUG = False # INTERNAL DEBUGGING SWITCHING!
+__EXEC_SCRIPT_REDIRECT_TMPT = '%s >> "%s" 2>&1'
+
 __SCRUB_CMD_TMPL = "{0}{1}"
 __DBL_QUOTE      = '"'
 __SPACE          = ' '
@@ -138,13 +141,15 @@ if IS_WINDOWS :
     __NO_ECHO_PREFIX = "@"
     __RESOURCE_HACKER_EXE_NAME = "ResourceHacker.exe"
     __RESOURCE_HACKER_QT_IFW_PLACEHOLDER = "@ResourceHacker@"            
-    _INVOKE_NESTED_BATCH_PREFIX = "Call "
+    _INVOKE_NESTED_BATCH_TMPT = 'Call "%s"'
+    __CAPTURE_CONSOLE_TEXT_TMPT =( 
+        'powershell.exe -NoLogo -ExecutionPolicy Bypass -InputFormat None '
+        '-Command "%s | Out-File "%s" -Append -Encoding ascii"' )
+    __CAPTURE_CONSOLE_PS_SCRIPT_NAME = "Get-ConsoleAsText.ps1"
 else:
     _EXECUTE_PREFIX = ". "
-
-__IS_SYS_DEBUG = False
-__CMD_OUTPUT_REDIRECT_TMPT = '"%s" >> "%s" 2>&1'
-if not IS_WINDOWS: __CMD_OUTPUT_REDIRECT_TMPT = ". " + __CMD_OUTPUT_REDIRECT_TMPT
+    _EXECUTE_TMPT = '. "%s"'
+    __EXEC_SCRIPT_REDIRECT_TMPT = _EXECUTE_PREFIX + __EXEC_SCRIPT_REDIRECT_TMPT
 
 def __toStdOut( msg ):
     if isLogging():
@@ -281,13 +286,16 @@ def runPy( pyPath, args=None, isElevated=False ):
 # While this coding appears a bit ugly, it does seem to work for every context  
 # Under certain conditions, some streams could not be captured via any  "clean" 
 # / "standard" means with popen polling or file descriptor inheritance tricks            
-def _system( cmd, wrkDir=None, logPath=None, defaultRet=None ):
+def _system( cmd, wrkDir=None, 
+             logPath=None, defaultRet=None, isConCapture=False ):
     
     if isinstance( cmd, list ): cmd = list2cmdline(cmd)
     cmd = __scrubSystemCmd( cmd )       
+    baseCmd = cmd
 
-    retCodPath = reserveTempFilePath()
-    cmd += _RET_CODE_TO_FILE_TMPLT.format( retCodPath )
+    retCodePath = reserveTempFilePath()
+    retCodeToFileCmdSuffix = _RET_CODE_TO_FILE_TMPLT.format( retCodePath )    
+    cmd += retCodeToFileCmdSuffix
      
     if wrkDir is not None:
         initWrkDir = getcwd()
@@ -295,14 +303,24 @@ def _system( cmd, wrkDir=None, logPath=None, defaultRet=None ):
         chdir( wrkDir )        
 
     if logPath is None and isLogging(): logPath = Logger.singleton().filePath()    
-    if logPath:        
-        baseCmd = cmd
-        if IS_WINDOWS: cmd = [ __ENABLE_DELAYED_EXPANSION, cmd ]
+    if logPath:                        
+        if IS_WINDOWS:              
+            if isConCapture:
+                cmd = [ __ENABLE_DELAYED_EXPANSION
+                      , ( __EXEC_SCRIPT_REDIRECT_TMPT % ( baseCmd, logPath ) +
+                            retCodeToFileCmdSuffix )                
+                      , ( __CAPTURE_CONSOLE_TEXT_TMPT % 
+                            ( __captureConsoleScriptPath(), logPath ) )
+                      ]
+            else:
+                cmd = [ __ENABLE_DELAYED_EXPANSION, cmd ]
+                
         script = ExecutableScript( rootFileName( mktemp() ), script=cmd,
                                    isDebug=__IS_SYS_DEBUG )                                 
-        script.write( tempDirPath() )        
-        runScriptCmd = __scrubSystemCmd( __CMD_OUTPUT_REDIRECT_TMPT % (
-            script.filePath(), logPath ) )
+        script.write( tempDirPath() )                
+        runScriptCmd = __scrubSystemCmd( script.filePath() if isConCapture else
+            __EXEC_SCRIPT_REDIRECT_TMPT % (
+                '"{0}"'.format( script.filePath() ), logPath ) )        
         print( runScriptCmd if __IS_SYS_DEBUG else baseCmd )        
         Logger.singleton().pause()
         system( runScriptCmd )
@@ -320,12 +338,12 @@ def _system( cmd, wrkDir=None, logPath=None, defaultRet=None ):
     if wrkDir is not None: chdir( initWrkDir )    
     
     try: 
-        with open( retCodPath, 'r' ) as f: retCode = int( f.read().strip() )
+        with open( retCodePath, 'r' ) as f: retCode = int( f.read().strip() )
     except Exception as e:
         printErr( "WARNING: Could not parse return code file: %s\n%s" %
-                  (retCodPath, e) ) 
+                  (retCodePath, e) ) 
         retCode = defaultRet
-    try: removeFile( retCodPath )
+    try: removeFile( retCodePath )
     except: pass
     if __IS_SYS_DEBUG: print( "retCode: %s" % (str(retCode),) )    
     return retCode
@@ -1277,17 +1295,19 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         self.shebang = None 
         # TODO: resolve shebang programmatically, and remove it from self.script        
     
-    def _execute( self, dirPath=None, isOnTheFly=None, isDebug=None ):
+    def _execute( self, dirPath=None, isOnTheFly=None, isDebug=None, 
+                  isConCapture=False ):
         if self.extension not in ExecutableScript.__SUPPORTED_EXECUTE_EXTS:
             raise Exception( "Script type not supported: %s" % (self.fileName(),) )                    
         if isDebug is not None: self.isDebug = isDebug
         if isOnTheFly is None: isOnTheFly = not self.exists( dirPath )    
         if isOnTheFly: self.write( dirPath )                    
         if self.extension==ExecutableScript.__PLAT_DEFAULT_EXT:
-            cmd =( _INVOKE_NESTED_BATCH_PREFIX + self.fileName() 
-                   if IS_WINDOWS else _EXECUTE_PREFIX + self.fileName() )
+            cmd =( _INVOKE_NESTED_BATCH_TMPT % (self.fileName(),) 
+                   if IS_WINDOWS else _EXECUTE_TMPT % (self.fileName(),) )
             if self.isDebug: print( "Executing %s..." % (self.filePath(),) )                                       
-            retCode = _system( cmd, wrkDir=self.dirPath )
+            retCode = _system( cmd, wrkDir=self.dirPath, 
+                               isConCapture=isConCapture )
             if self.isDebug: print( "Return Code: %s" % (str(retCode),) )                                       
             if retCode is not None and retCode != 0: 
                 raise Exception( "Script failed: %s\nReturn Code: %s" % (
@@ -1300,13 +1320,15 @@ def embedExeVerInfo( exePath, exeVerInfo ):
     from distbuilder.qt_installer import QtIfwExternalOp
     script = QtIfwExternalOp.EmbedExeVerInfoScript( absPath( exePath ), exeVerInfo )    
     __injectResourceHackerPath( script )
-    # TODO: Handle ResourceHacker logging:
-    #    This utility sends message to the console (i.e. CON), rather than
-    #    stdout/err.  While these details will appear in a terminal, they will
-    #    not be directed to a log file presently!   
-    script._execute( isOnTheFly=True, isDebug=True )    
+    # Note: ResourceHacker sends message to the console (i.e. CON), rather than
+    # stdout/err.  While those message will naturally appear in a terminal, to 
+    # direct them to a log, the "con capture" feature must be employed:   
+    script._execute( isOnTheFly=True, isDebug=True, isConCapture=isLogging() )    
 
 if IS_WINDOWS:
+    def __captureConsoleScriptPath():         
+        return joinPath( _RES_DIR_PATH, __CAPTURE_CONSOLE_PS_SCRIPT_NAME )
+
     def __resourceHackerPath(): 
         return joinPath( _RES_DIR_PATH, __RESOURCE_HACKER_EXE_NAME )
 
