@@ -1,54 +1,42 @@
-import sys
-import six
-from abc import ABCMeta, abstractmethod
-from datetime import datetime 
-from time import time as curTime
-
 from distbuilder import util    # @UnusedImport
 from distbuilder.util import *  # @UnusedWildImport
 
-from distbuilder.py_installer import \
-      buildExecutable \
-    , makePyInstSpec \
-    , PyInstallerConfig \
+from distbuilder.py_installer import (
+      buildExecutable 
+    , makePyInstSpec 
+    , PyInstallerConfig 
     , PyInstSpec 
+)
 
-from distbuilder.opy_library import \
-      obfuscatePy \
+from distbuilder.opy_library import (
+      obfuscatePy 
     , OpyConfigExt as OpyConfig
+)    
     
-from distbuilder.qt_installer import \
-      _stageInstallerPackages \
-    , _buildInstaller \
-    , joinPathQtIfw \
-    , QtIfwConfig \
-    , QtIfwConfigXml \
-    , QtIfwControlScript \
-    , QtIfwPackage \
-    , QtIfwPackageXml \
-    , QtIfwPackageScript \
-    , QtIfwShortcut \
-    , QtIfwExeWrapper \
-    , QtIfwExternalOp \
-    , _QtIfwScript \
-    , DEFAULT_SETUP_NAME \
-    , DEFAULT_QT_IFW_SCRIPT_NAME \
-    , QT_IFW_VERBOSE_SWITCH \
-    , QT_IFW_SILENT_DEBUG_SWITCH \
-    , _DEBUG_SCRIPTS_ARGS \
-    , QT_IFW_TARGET_DIR \
-    , _SILENT_FORCED_ARGS \
+from distbuilder.qt_installer import(
+      _stageInstallerPackages 
+    , _buildInstaller 
+    , joinPathQtIfw 
+    , QtIfwConfig 
+    , QtIfwConfigXml 
+    , QtIfwControlScript 
+    , QtIfwPackage 
+    , QtIfwPackageXml 
+    , QtIfwPackageScript 
+    , QtIfwShortcut 
+    , QtIfwExeWrapper 
+    , QtIfwExternalOp 
+    , _QtIfwScript 
+    , DEFAULT_SETUP_NAME 
+    , DEFAULT_QT_IFW_SCRIPT_NAME 
+    , QT_IFW_VERBOSE_SWITCH 
+    , QT_IFW_SILENT_DEBUG_SWITCH 
+    , _DEBUG_SCRIPTS_ARGS 
+    , QT_IFW_TARGET_DIR 
+    , _SILENT_FORCED_ARGS 
     , _LOUD_FORCED_ARGS 
-
-# work around for cross dependency 
-__signExe = None
-def signExe( exePath, codeSignConfig ):
-    global __signExe
-    if __signExe is None:
-        from distbuilder.code_sign import signExe
-        __signExe = signExe
-    return __signExe( exePath, codeSignConfig )
-    
+)
+   
 # -----------------------------------------------------------------------------       
 class ConfigFactory:
     
@@ -441,7 +429,7 @@ class ConfigFactory:
         return None
         
 # -----------------------------------------------------------------------------
-@six.add_metaclass(ABCMeta)
+@add_metaclass(ABCMeta)
 class _DistBuildProcessBase:
 
     DIVIDER = "------------------------------------"
@@ -476,7 +464,7 @@ class _DistBuildProcessBase:
         print( "Date/Time: %s" % (str(datetime.now()),) )        
         print( "Distrbution Builder Version: %s" % (ver,) )
         print( "Library Path:\n    %s" % (libPath,) )
-        print( "Python Translator:\n    %s" % (sys.version,) )
+        print( "Python Translator:\n    %s" % (sysVersion,) )
         print( "System Info:\n    %s %s" % (platform.system(), platform.release()) )
         print( _DistBuildProcessBase.DIVIDER )
         print( "" )
@@ -529,7 +517,7 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
             if self.isObfuscationTest:
                 _, obPath = obfuscatePy( opyConfig )
                 runPy( obPath, self.exeTestArgs, self.isElevatedTest )
-                sys.exit()
+                exit()
         else: opyConfig = None
         
         self._pyInstConfig = self.configFactory.pyInstallerConfig()        
@@ -748,7 +736,7 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
         if ifwPackages is None: ifwPackages=[]
 
         binPrcs = []
-        for key, factory in six.iteritems( pyPkgConfigFactoryDict ) :        
+        for key, factory in iteritems( pyPkgConfigFactoryDict ) :        
             if factory is None :
                 factory = ConfigFactory.copy( masterConfigFactory )
                 factory.cfgId = key

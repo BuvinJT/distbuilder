@@ -1,9 +1,9 @@
-import six
 from distbuilder.util import *  # @UnusedWildImport
 try:
     import opy  # Custom Library
-    from opy import OpyConfig, analyze, patch, \
+    from opy import( OpyConfig, analyze, patch, 
         obfuscatedId  # @UnusedImport
+    )        
 except Exception as e:
     obfuscatedId = None # PATCH
     printErr( "OPY import error. Obfuscation features are currently broken!" ) 
@@ -208,7 +208,7 @@ def __runOpy( opyConfig, isAnalysis=False, filesSubset=None ):
         # Use a staging directory if a bundleLibs list was provided 
         if opyConfig.bundleLibs: 
             for i, lib in enumerate(opyConfig.bundleLibs): 
-                if isinstance( lib, six.string_types ):
+                if isinstance( lib, string_types ):
                     opyConfig.bundleLibs[i]=LibToBundle( lib )             
             sourceDir = createStageDir( opyConfig.bundleLibs, 
                                         opyConfig.sourceDir )

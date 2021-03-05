@@ -1,4 +1,4 @@
-from distbuilder.master import ConfigFactory, PyToBinPackageProcess
+from distbuilder.process import ConfigFactory, PyToBinPackageProcess
 from distbuilder import util    # @UnusedImport
 from distbuilder.util import *  # @UnusedWildImport
 

@@ -2,8 +2,8 @@ import ast
 from distbuilder import util 
 from distbuilder.util import *  # @UnusedWildImport
 from distbuilder.pip_installer import installLibrary, uninstallLibrary
-from distbuilder.opy_library import obfuscatePy, \
-    _toObfuscatedPaths, OBFUS_DIR_PATH
+from distbuilder.opy_library import( 
+    obfuscatePy, _toObfuscatedPaths, OBFUS_DIR_PATH )
 
 PYINST_BIN_NAME          = util.normBinaryName( "pyinstaller" )
 PYINST_MAKESPEC_BIN_NAME = util.normBinaryName( "pyi-makespec" )

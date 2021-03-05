@@ -1,9 +1,3 @@
-from abc import ABCMeta, abstractmethod
-import xml.etree.ElementTree as ET
-from xml.dom import minidom
-
-import six
-
 from distbuilder import util
 from distbuilder.util import * # @UnusedWildImport
 
@@ -386,7 +380,7 @@ class _QtIfwXmlElement( ET.Element ):                #attrib={}
         if parent is not None: parent.append( self )                                                        
 
 # -----------------------------------------------------------------------------
-@six.add_metaclass( ABCMeta )
+@add_metaclass( ABCMeta ) 
 class _QtIfwXml:
 
     __HEADER = '<?xml version="1.0" encoding="UTF-8"?>'
@@ -398,14 +392,14 @@ class _QtIfwXml:
         
     def __str__( self ) :        
         root = _QtIfwXmlElement( self.rootTag )
-        for k, v in six.iteritems( self.__dict__ ) :
+        for k, v in iteritems( self.__dict__ ) :
             if k in self.tags and v is not None : 
                 _QtIfwXmlElement( k, str(v), root )                                        
-        for k, v in six.iteritems( self.otherElements ) : 
+        for k, v in iteritems( self.otherElements ) : 
             _QtIfwXmlElement( k, str(v), root )
         self.addCustomTags( root )    
         xml = ET.tostring( root )        
-        return _QtIfwXml.__HEADER + (xml if six.PY2 else xml.decode()) 
+        return _QtIfwXml.__HEADER + (xml if PY2 else xml.decode()) 
 
     def toPrettyXml( self ):
         return minidom.parseString( str(self) ).toprettyxml()
@@ -807,7 +801,7 @@ class QtIfwPackageXml( _QtIfwXml ):
         if self.Licenses is not None :            
             lics = _QtIfwXmlElement( QtIfwPackageXml.__LICENSES_TAG, 
                                     None, root )
-            for name, filePath in six.iteritems( self.Licenses ):
+            for name, filePath in iteritems( self.Licenses ):
                 _QtIfwXmlElement( QtIfwPackageXml.__LICENSE_TAG, None, lics,
                     attrib={ QtIfwPackageXml.__NAME_ATTRIB:name, 
                              QtIfwPackageXml.__FILE_ATTRIB:filePath} )                
@@ -824,7 +818,7 @@ class QtIfwPackageXml( _QtIfwXml ):
 
 
 # -----------------------------------------------------------------------------
-@six.add_metaclass( ABCMeta )
+@add_metaclass( ABCMeta )
 class _QtIfwScript:
 
     TAB         = "    "
@@ -1052,14 +1046,14 @@ class _QtIfwScript:
 
     @staticmethod        
     def andList( conditions ):
-        conditions = [ '(%s)' % (c,) if isinstance(c,six.string_types) 
+        conditions = [ '(%s)' % (c,) if isinstance(c,string_types) 
                        else _QtIfwScript.toBool(c)
                        for c in conditions ]
         return '(%s)' % ( _QtIfwScript.AND.join( conditions ), )
 
     @staticmethod        
     def orList( conditions ):
-        conditions = [ '(%s)' % (c,) if isinstance(c,six.string_types) 
+        conditions = [ '(%s)' % (c,) if isinstance(c,string_types) 
                        else _QtIfwScript.toBool(c)
                        for c in conditions ]
         return '(%s)' % ( _QtIfwScript.OR.join( conditions ), )
@@ -1221,12 +1215,12 @@ class _QtIfwScript:
 
     @staticmethod        
     def toBool( b ):
-        if isinstance( b, six.string_types ): return b                          
+        if isinstance( b, string_types ): return b                          
         return _QtIfwScript.TRUE if b else _QtIfwScript.FALSE   
 
     @staticmethod        
     def boolToString( b ):
-        if isinstance( b, six.string_types ):
+        if isinstance( b, string_types ):
             return '(%s ? "%s":"%s")' % ( 
                 b, _QtIfwScript.TRUE, _QtIfwScript.FALSE )                          
         return '"%s"' % ( _QtIfwScript.TRUE if b else _QtIfwScript.FALSE )  
@@ -3557,12 +3551,12 @@ Controller.prototype.Dynamic%sCallback = function() {
                 (_QT_IFW_FINISHED_PAGE_CALLBACK_NAME, 
                  self.finishedPageCallbackBody) )
 
-        for (funcName, funcBody) in six.itervalues( self.__standardEventSlots ):    
+        for (funcName, funcBody) in itervalues( self.__standardEventSlots ):    
             self.script += ( 
                 QtIfwControlScript.__CONTROLER_CALLBACK_FUNC_TMPLT %
                 (funcName, funcBody) )
 
-        for (funcName, funcBody) in six.itervalues( self.__autoPilotEventSlots ):    
+        for (funcName, funcBody) in itervalues( self.__autoPilotEventSlots ):    
             self.script += ( 
                 QtIfwControlScript.__CONTROLER_CALLBACK_FUNC_TMPLT %
                 (funcName, funcBody) )
@@ -3773,7 +3767,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         EBLK =_QtIfwScript.END_BLOCK
         self.controllerGlobals = 'function initGlobals() ' + SBLK 
         if self.virtualArgs :
-            for k,v in six.iteritems( self.virtualArgs ):            
+            for k,v in iteritems( self.virtualArgs ):            
                 self.controllerGlobals += TAB + _QtIfwScript.setValue(k,v)  
         self.controllerGlobals += EBLK + NEW             
         
@@ -3914,7 +3908,7 @@ Controller.prototype.Dynamic%sCallback = function() {
                         ("installer.finishButtonClicked", "onFinishButtonClicked")                 
                 )            
             
-        for signalName, (slotName, _) in six.iteritems( self.__standardEventSlots ):    
+        for signalName, (slotName, _) in iteritems( self.__standardEventSlots ):    
             self.controllerConstructorBody += ( 
                 QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
                 (signalName, slotName) )            
@@ -3925,7 +3919,7 @@ Controller.prototype.Dynamic%sCallback = function() {
         # auto pilot    
         self.controllerConstructorBody += _QtIfwScript.ifCmdLineSwitch( 
                 _QtIfwScript.AUTO_PILOT_CMD_ARG, isMultiLine=True )             
-        for signalName, (slotName, _) in six.iteritems( self.__autoPilotEventSlots ):    
+        for signalName, (slotName, _) in iteritems( self.__autoPilotEventSlots ):    
             self.controllerConstructorBody += ( 
                 QtIfwControlScript.__CONTROLER_CONNECT_TMPLT %
                 (signalName, slotName) )                                                      
@@ -4655,7 +4649,7 @@ Component.prototype.%s = function(){
     def __appendUiPageCallbacks( self ):    
         if self.uiPages: 
             for p in self.uiPages:
-                for funcName, funcBody in six.iteritems( p.eventHandlers ):
+                for funcName, funcBody in iteritems( p.eventHandlers ):
                     self.script += (  
                         QtIfwPackageScript.__COMPONENT_CALLBACK_FUNC_TMPLT 
                         % (funcName, funcBody) )
@@ -4668,7 +4662,7 @@ Component.prototype.%s = function(){
     def __appendWidgetCallbacks( self ):    
         if self.widgets: 
             for w in self.widgets:
-                for funcName, funcBody in six.iteritems( w.eventHandlers ):
+                for funcName, funcBody in iteritems( w.eventHandlers ):
                     self.script += (  
                         QtIfwPackageScript.__COMPONENT_CALLBACK_FUNC_TMPLT 
                         % (funcName, funcBody) )
@@ -5332,7 +5326,7 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                             self.exeName, self.exeDir )  
                           if self.isExe else QtIfwExeWrapper.__SCRIPT_HDR )                
                 if isinstance( self.envVars, dict ):
-                    for k,v in six.iteritems( self.envVars ):
+                    for k,v in iteritems( self.envVars ):
                         script += ( '\n' + 
                             (QtIfwExeWrapper.__SET_ENV_VAR_TMPLT % (k, v)) )
                     script += '\n'     
@@ -5367,7 +5361,7 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                 psCmd = ""
                 if not isAutoScript :
                     if isinstance( self.envVars, dict ):
-                        for k,v in six.iteritems( self.envVars ):
+                        for k,v in iteritems( self.envVars ):
                             psCmd += ( QtIfwExeWrapper.__WIN_PS_SET_ENV_VAR_TMPLT 
                                        % (k, v) )
                 psCmd += QtIfwExeWrapper.__WIN_PS_START_TMPLT % (targetPath,)
@@ -5393,7 +5387,7 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
             if isAutoScript:
                 script=QtIfwExeWrapper.__SCRIPT_HDR                 
                 if isinstance( self.envVars, dict ):
-                    for k,v in six.iteritems( self.envVars ):
+                    for k,v in iteritems( self.envVars ):
                         script += ( '\n' + 
                             (QtIfwExeWrapper.__SET_ENV_VAR_TMPLT % (k, v)) )
                     script += '\n'     
@@ -5424,7 +5418,7 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                 self._shortcutCmd = QtIfwExeWrapper.__SHELL      
                 setVarsCmd = "" 
                 if isinstance( self.envVars, dict ):
-                    for k,v in six.iteritems( self.envVars ):
+                    for k,v in iteritems( self.envVars ):
                         setVarsCmd += "%s%s" % (
                             (QtIfwExeWrapper.__SET_ENV_VAR_TMPLT % (k, v)),
                             QtIfwExeWrapper.__CMD_DELIM )                                                   
@@ -5460,7 +5454,7 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                 script=( QtIfwExeWrapper.__GUI_SCRIPT_HDR if self.isGui 
                          else QtIfwExeWrapper.__SCRIPT_HDR )                
                 if isinstance( self.envVars, dict ):
-                    for k,v in six.iteritems( self.envVars ):
+                    for k,v in iteritems( self.envVars ):
                         script += ( '\n' + 
                             (QtIfwExeWrapper.__SET_ENV_VAR_TMPLT % (k, v)) )
                     script += '\n'     
@@ -6528,7 +6522,7 @@ class QtIfwExternalResource:
         snippet += _QtIfwScript.setValue( 
             '"%s"' % (self.__targetDirPathKey(),), dirPath, 
             isAutoQuote=False )
-        for key, relPath in six.iteritems(self.contentKeys):        
+        for key, relPath in iteritems(self.contentKeys):        
             snippet += _QtIfwScript.setValue( 
                 '"%s"' % (key,), '(%s + "/%s")' % ( dirPath, relPath ), 
                 isAutoQuote=False )
@@ -6559,7 +6553,7 @@ class QtIfwKillOp:
         self.isElevated  = True  
 
 # -----------------------------------------------------------------------------
-@six.add_metaclass( ABCMeta )
+@add_metaclass( ABCMeta )
 class _QtIfwInterface:
 
     __FILE_EXTENSION  = "ui"
@@ -6612,7 +6606,7 @@ class _QtIfwInterface:
         self.replacements[ _PAGE_NAME_PLACHOLDER ]   = self.name
         self.replacements[ _WIDGET_NAME_PLACHOLDER ] = self.name
         ret = self.content
-        for placeholder, value in six.iteritems( self.replacements ):
+        for placeholder, value in iteritems( self.replacements ):
             ret = ret.replace( placeholder, value )
         return ret    
         
@@ -7786,7 +7780,7 @@ def __addLicenses( package ) :
     destDir = package.metaDirPath()
     fixFormat = not package.isLicenseFormatPreserved
     if not exists( destDir ): makeDir( destDir )
-    for name, filePath in six.iteritems( package.licenses ):
+    for name, filePath in iteritems( package.licenses ):
         fileName = baseFileName( filePath )
         package.pkgXml.Licenses[name] = fileName
         srcPath = absPath( filePath, basePath=package.resBasePath )
@@ -7927,7 +7921,7 @@ def __postBuild( qtIfwConfig ):  # @UnusedVariable
     
 def __buildSilentWrapper( qtIfwConfig ) :
     print( "Building silent wrapper executable...\n" )
-    from distbuilder.master import PyToBinPackageProcess, ConfigFactory
+    from distbuilder.process import PyToBinPackageProcess, ConfigFactory
     
     cfgXml    = qtIfwConfig.configXml
     ctrlScrpt = qtIfwConfig.controlScript
@@ -7954,7 +7948,7 @@ def __buildSilentWrapper( qtIfwConfig ) :
     licenses={}
     for p in qtIfwConfig.packages:
         pkgLics={}
-        for name, filePath in six.iteritems( p.licenses ):
+        for name, filePath in iteritems( p.licenses ):
             srcPath = absPath( filePath, basePath=p.resBasePath )            
             with open( srcPath, 'r' ) as f: 
                 pkgLics[name] = __scrubLicenseText( f.read() )

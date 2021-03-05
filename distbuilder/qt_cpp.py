@@ -1,4 +1,4 @@
-from distbuilder.master import ConfigFactory
+from distbuilder.process import ConfigFactory
 from distbuilder.qt_installer import QtIfwPackage, QtIfwExeWrapper
 from distbuilder.util import * # @UnusedWildImport
 from distbuilder import util 

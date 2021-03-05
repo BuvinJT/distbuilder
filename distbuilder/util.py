@@ -1,37 +1,51 @@
 import string  # @UnusedImport
-from datetime import date
-from six import PY2, PY3, string_types, iteritems  # @UnusedImport
+from datetime import( date, 
+                      datetime ) # @UnusedImport
+from time import time as curTime  # @UnusedImport
+from six import( PY2, PY3, string_types, 
+    iteritems, itervalues, add_metaclass ) # @UnusedImport
 from six.moves import urllib
-from sys import argv, stdout, stderr, exit, \
-    executable as PYTHON_PATH, path as sysPath
-from os import system, sep as PATH_DELIM, \
-    remove as removeFile, \
-    fdopen, getcwd, chdir, walk, environ, devnull, \
-    chmod, getenv, listdir, makedirs as makeDir, rename, pardir as PARENT_DIR # @UnusedImport   
-from os.path import exists, isfile, islink, \
-    dirname as dirPath, normpath, realpath, isabs, abspath, \
-    join as joinPath, split as splitPath, \
-    splitext as splitExt, splitdrive as splitDrive, \
-    expanduser, basename as baseFileName, \
+from sys import( argv, stdout, stderr, exit, 
+    executable as PYTHON_PATH, path as sysPath,
+    version as sysVersion  # @UnusedImport
+)
+from os import( system, sep as PATH_DELIM, 
+    remove as removeFile, 
+    fdopen, getcwd, chdir, walk, environ, devnull, 
+    chmod, listdir, makedirs as makeDir, rename, 
+    getenv, pardir as PARENT_DIR # @UnusedImport
+)   
+from os.path import( exists, isfile, islink, 
+    dirname as dirPath, normpath, realpath, isabs, abspath, 
+    join as joinPath, split as splitPath, 
+    splitext as splitExt, splitdrive as splitDrive, 
+    expanduser, basename as baseFileName, 
     relpath, pathsep  # @UnusedImport
-from shutil import rmtree as removeDir, move, make_archive, \
-    copytree as copyDir, copyfile as copyFile   # @UnusedImport
+)    
+from shutil import( rmtree as removeDir, move, make_archive, 
+    copytree as copyDir, copyfile as copyFile # @UnusedImport
+)
 import platform
-from tempfile import gettempdir, mkstemp, mkdtemp, \
+from tempfile import( gettempdir, mkstemp, mkdtemp, 
     mktemp  # @UnusedImport
-from subprocess import Popen, list2cmdline, check_output, \
-    PIPE, CalledProcessError, \
+)    
+from subprocess import( Popen, list2cmdline, check_output, 
+    PIPE, CalledProcessError, 
     check_call, STDOUT  # @UnusedImport
+)    
 try: from subprocess import DEVNULL 
 except ImportError: DEVNULL = open(devnull, 'wb')    
 import traceback
-from distutils.sysconfig import get_python_lib
+from abc import ABCMeta, abstractmethod # @UnusedImport
 import inspect  # @UnusedImport
 from time import sleep
 from struct import calcsize
 import base64  # @UnusedImport
 from operator import attrgetter, itemgetter # @UnusedImport 
 from copy import deepcopy # @UnusedImport
+from distutils.sysconfig import get_python_lib
+import xml.etree.ElementTree as ET # @UnusedImport
+from xml.dom import minidom # @UnusedImport
 
 from distbuilder.log import Logger, isLogging
 
@@ -1014,7 +1028,7 @@ def printExc( e, isDetailed=False, isFatal=False ):
     if isFatal: exit(1)
 
 def _onPlatformErr(): raise DistBuilderError( __NOT_SUPPORTED_MSG )
-            
+
 # -----------------------------------------------------------------------------           
 def download( url, saveToPath=None, preserveName=True ):
     print( "Downloading: %s..." % (url,) )
@@ -1323,7 +1337,17 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
                 raise DistBuilderError( "Script failed: %s\nReturn Code: %s" % (
                                  self.filePath(), str(retCode) ) )
         if isOnTheFly: self.remove()
-            
+
+# -----------------------------------------------------------------------------                      
+# work around for cross dependency 
+__signExe = None
+def signExe( exePath, codeSignConfig ):
+    global __signExe
+    if __signExe is None:
+        from distbuilder.code_sign import signExe
+        __signExe = signExe
+    return __signExe( exePath, codeSignConfig )
+                        
 # -----------------------------------------------------------------------------           
 def embedExeVerInfo( exePath, exeVerInfo ):
     if not IS_WINDOWS: _onPlatformErr()
