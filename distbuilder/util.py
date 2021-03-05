@@ -83,6 +83,8 @@ DEBUG_ENV_VAR_VALUE = "1"
 _RET_CODE_TO_FILE_TMPLT = ' {0} echo {1} > "{2}"'.format( 
     SYS_CMD_DELIM, SYS_RET_CODE,
     "{0}" ) # setup for subsequent use of format
+
+_REDIRECT_PATH_ENV_VAR_PS_MIN_REQ = 3
 _REDIRECT_PATH_ENV_VAR_NAME = "__pipeto"
 
 # strictly Apple
@@ -228,10 +230,12 @@ def _run( binPath, args=None,
             cmdLogPath=reserveTempFilePath()
         else: cmdLogPath=sharedFilePath
 
-        nestedSubProcOutputPath = reserveTempFilePath()    
-        setEnv( _REDIRECT_PATH_ENV_VAR_NAME, nestedSubProcOutputPath )                             
+        nestedSubProcOutputPath = reserveTempFilePath()
+        if _isPrivateRedirectAvailable():   
+            setEnv( _REDIRECT_PATH_ENV_VAR_NAME, nestedSubProcOutputPath )                             
         retCode = _system( cmdList, wrkDir, logPath=cmdLogPath, defaultRet=-1 )        
-        delEnv( _REDIRECT_PATH_ENV_VAR_NAME )
+        if _isPrivateRedirectAvailable():
+            delEnv( _REDIRECT_PATH_ENV_VAR_NAME )
         
         cmdOutput = ""
         try:
@@ -276,6 +280,10 @@ def _run( binPath, args=None,
     else : pwdCmd = "./" if wrkDir==binDir else ""
     cmd = ('%s %s%s %s' % (elevate, pwdCmd, fileName, args)).strip()
     _system( cmd, wrkDir )
+
+def _isPrivateRedirectAvailable(): 
+    return( IS_WINDOWS and 
+            _powerShellMajorVersion() >= _REDIRECT_PATH_ENV_VAR_PS_MIN_REQ )
     
 def runPy( pyPath, args=None, isElevated=False ):
     wrkDir, fileName = splitPath( pyPath )

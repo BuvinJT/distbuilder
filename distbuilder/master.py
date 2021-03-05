@@ -667,6 +667,14 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
                 ( _SILENT_FORCED_ARGS if self.configFactory.isSilentSetup else
                   _LOUD_FORCED_ARGS ) 
                 if self.isAutoInstallTest else [] )
+            
+            if( self.configFactory.isSilentSetup and  
+                IS_WINDOWS and not util._isPrivateRedirectAvailable() ):
+                printErr( "WARNING: Silent installer debugging messages "
+                          "may not appear in the build log on this LEGACY "
+                          "version of Windows! Manual testing of the installer"
+                          "should still work in this environment though..." )
+            
             run( self.setupPath, verboseArgs + debugArgs + autoArgs,
                  isDebug=True, isElevated=self.isAutoInstallTest )
         
