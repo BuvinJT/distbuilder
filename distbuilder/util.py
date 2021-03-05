@@ -1349,19 +1349,71 @@ def signExe( exePath, codeSignConfig ):
     return __signExe( exePath, codeSignConfig )
                         
 # -----------------------------------------------------------------------------           
+def winScriptToExe( scrScriptPath, destExePath ):
+    if not IS_WINDOWS: _onPlatformErr()   
+    from distbuilder.qt_installer import QtIfwExternalOp
+    scrPath = absPath( scrScriptPath )
+    destPath = absPath( normBinaryName( destExePath, 
+                                        isPathPreserved=True ) )    
+    QtIfwExternalOp.Script2ExeScript( scrPath, destPath )._execute( 
+        isOnTheFly=True, isDebug=True )
+    if not isFile( destPath ):
+        raise DistBuilderError( "Failed to create executable: %s" %
+                                (destPath,) )
+    return dirPath( destPath ), destPath         
+ 
 def embedExeVerInfo( exePath, exeVerInfo ):
     if not IS_WINDOWS: _onPlatformErr()
     from distbuilder.qt_installer import QtIfwExternalOp
-    script = QtIfwExternalOp.EmbedExeVerInfoScript( absPath( exePath ), exeVerInfo )    
-    __injectResourceHackerPath( script )
-    # Note: ResourceHacker sends message to the console (i.e. CON), rather than
-    # stdout/err.  While those message will naturally appear in a terminal, to 
-    # direct them to a log, the "con capture" feature must be employed:   
-    script._execute( isOnTheFly=True, isDebug=True, isConCapture=isLogging() )    
+    __execResourceHackerScript( 
+        QtIfwExternalOp.EmbedExeVerInfoScript( 
+            absPath( exePath ), exeVerInfo ) )    
 
+def embedExeIcon( exePath, iconPath ):
+    if not IS_WINDOWS: _onPlatformErr()
+    from distbuilder.qt_installer import QtIfwExternalOp
+    iconDir, iconName = splitPath( absPath( 
+        normIconName( iconPath,  isPathPreserved=True ) ) )
+    __execResourceHackerScript( 
+        QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
+            absPath( exePath ), iconDir, iconName=iconName ) )
+
+def extractExeIcons( srcExePath, destDirPath ):
+    if not IS_WINDOWS: _onPlatformErr()
+    from distbuilder.qt_installer import QtIfwExternalOp
+    __execResourceHackerScript( 
+        QtIfwExternalOp.ExtractIconsFromExeScript( 
+            absPath( srcExePath ), absPath( destDirPath ) ) )    
+ 
+def copyExeVerInfo( srcExePath, destExePath ):
+    if not IS_WINDOWS: _onPlatformErr()
+    from distbuilder.qt_installer import QtIfwExternalOp
+    __execResourceHackerScript( 
+        QtIfwExternalOp.CopyExeVerInfoScript( 
+            absPath( srcExePath ), absPath( destExePath ) ) )
+
+def copyExeIcon( srcExePath, destExePath, iconName=None ):
+    if not IS_WINDOWS: _onPlatformErr()   
+    iconsTempDirPath = _reserveTempDir()         
+    extractExeIcons( srcExePath, iconsTempDirPath )    
+    from distbuilder.qt_installer import QtIfwExternalOp
+    __execResourceHackerScript( 
+        QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
+            absPath( destExePath ), iconsTempDirPath, 
+                iconName=normIconName( iconName ), 
+                isIconDirRemoved=True ) )
+    
 if IS_WINDOWS:
     def __captureConsoleScriptPath():         
         return joinPath( _RES_DIR_PATH, __CAPTURE_CONSOLE_PS_SCRIPT_NAME )
+
+    def __execResourceHackerScript( script ): 
+        if not IS_WINDOWS: _onPlatformErr()
+        __injectResourceHackerPath( script )
+        # Note: ResourceHacker sends message to the console (i.e. CON), rather than
+        # stdout/err.  While those message will naturally appear in a terminal, to 
+        # direct them to a log, the "con capture" feature must be employed:   
+        script._execute( isOnTheFly=True, isDebug=True, isConCapture=isLogging() )    
 
     def __resourceHackerPath(): 
         return joinPath( _RES_DIR_PATH, __RESOURCE_HACKER_EXE_NAME )

@@ -63,6 +63,11 @@ class ConfigFactory:
         self.entryPointPy  = None               
         self.specFilePath  = None
         self.isOneFile     = True # this differs from the PyInstaller default
+
+        # Other Script to Binary sources 
+        self.entryPointScript = None
+       
+        # Basic resource bundling
         self.distResources = []
 
         # Python Obfuscation
@@ -120,7 +125,7 @@ class ConfigFactory:
        
         # code signing
         self.codeSignConfig = None
-       
+
         # Configurations for specific package types               
         self.__pkgPyInstConfig = None
         self.qtCppConfig = None
@@ -584,6 +589,75 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
     def onOpyConfig( self, cfg ):    """VIRTUAL"""                    
     def onPyInstConfig( self, cfg ): """VIRTUAL"""
     def onMakeSpec( self, spec ):    """VIRTUAL"""
+    def onFinalize( self ):          """VIRTUAL"""
+
+# -----------------------------------------------------------------------------
+class WinScriptToBinPackageProcess( _DistBuildProcessBase ):
+
+    def __init__( self, configFactory,                  
+                  name="WinScript to Binary Package Process",
+                  isZipped=False, isDesktopTarget=False, isHomeDirTarget=False ) :
+        if not IS_WINDOWS: util._onPlatformErr()
+        _DistBuildProcessBase.__init__( self, configFactory, name )                
+        self.isZipped = isZipped
+        self.isDesktopTarget = isDesktopTarget
+        self.isHomeDirTarget = isHomeDirTarget
+
+        self.isExeTest              = False
+        self.isElevatedTest         = False
+        self.exeTestArgs            = []                
+        # Results
+        self.binDir = None
+        self.binPath = None
+        
+    def _body( self ):        
+        
+        # self.configFactory.sourceDir...
+        
+        self.binDir, self.binPath = winScriptToExe( 
+            self.configFactory.entryPointScript, 
+            joinPath( self.configFactory.binaryName, 
+                      self.configFactory.binaryName ) )        
+        embedExeVerInfo( self.binPath, self.configFactory.exeVersionInfo() )        
+        if self.configFactory.iconFilePath: 
+            embedExeIcon( self.binPath, self.configFactory.iconFilePath )
+                
+        if self.configFactory.codeSignConfig :
+            signExe( self.binPath, self.configFactory.codeSignConfig ) 
+        
+        destDirPath =( util._userDesktopDirPath() if self.isDesktopTarget else 
+                       util._userHomeDirPath()    if self.isHomeDirTarget else 
+                       None )          
+        if self.isZipped :
+            # test exe first!
+            if self.isExeTest : self.__testExe() 
+            # bin path is actually the zip now...
+            self.binPath = toZipFile( self.binDir, zipDest=None, removeScr=True )
+            if destDirPath and self.binDir != destDirPath: 
+                self.binPath = moveToDir( self.binPath, destDirPath ) 
+                self.binDir  = destDirPath
+        else:         
+            if destDirPath and self.binDir != destDirPath:
+                binName = baseFileName( self.binPath )
+                isOtherContent = len( [item for item in listdir( self.binDir ) 
+                                      if item != binName] ) > 0                                      
+                if isOtherContent:
+                    self.binDir  = moveToDir( self.binDir, destDirPath )
+                    self.binPath = joinPath( self.binDir, binName )
+                else:
+                    originDirPath = self.binDir 
+                    self.binPath = moveToDir( self.binPath, destDirPath )
+                    self.binDir  = destDirPath 
+                    removeDir( originDirPath )
+            if self.isExeTest : self.__testExe()
+            
+    def __testExe( self ):
+        run( self.binPath, self.exeTestArgs,
+             isElevated=self.isElevatedTest, isDebug=True )
+                    
+    # Override these to further customize the build process once the 
+    # ConfigFactory has produced each initial config object
+    def onInitialize( self ):        """VIRTUAL"""    
     def onFinalize( self ):          """VIRTUAL"""
                             
 # -----------------------------------------------------------------------------                        

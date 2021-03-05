@@ -1937,21 +1937,89 @@ resembling the following:
 	from distbuilder assertBuilderVer
 	assertBuilderVer( "0.7.8.0" )
 
+### winScriptToExe
+
+** WINDOWS ONLY**
+
+     winScriptToExe( scrScriptPath, destExePath )
+
+Create a stand alone executable from a native Windows script.
+
+**Returns**: None (Raising exception on failure)
+
+**scrScriptPath**:  Absolute or relative path to the source script.
+The supported script types are: 
+	Batch (.bat)
+	VBScript (.vbs)
+	PowerShell (.ps1).
+
+**destExePath**: Absolute or relative path where the new executable file 
+should be created.
+  
 ### embedExeVerInfo
 
 ** WINDOWS ONLY**
 
     embedExeVerInfo( exePath, exeVerInfo )
 
-Set the branding information (e.g. version, copyright, etc.) on to an executable.
-These details can be seen when inspecting the properties of the file.  They may also
-be used for other mechanisms in Windows, when the file is used.
+Set the branding information (e.g. version, copyright, etc.) on an 
+executable.
+These details can be seen when inspecting the properties of the file.  
+This meta info may also be used by other mechanisms in the OS.
     
-**Returns**: None
+**Returns**: None (Raising exception on failure)
 
 **exePath**:  Absolute or relative path to the executable file.
 
 **exeVerInfo**: A [WindowsExeVersionInfo](ConfigClasses.md#windowsexeversioninfo) object.   
+  
+### embedExeIcon
+
+** WINDOWS ONLY**
+
+    embedExeIcon( exePath, iconPath )
+    
+**Returns**: None (Raising exception on failure)
+
+**exePath**:  Absolute or relative path to the executable file.
+
+**iconPath**: Absolute or relative path to the `.ico` file.   
+  
+### extractExeIcons
+
+** WINDOWS ONLY**
+
+    extractExeIcons( exePath, targetDirPath )
+
+Extract all the icons contained within an executable.
+    
+**Returns**: None (Raising exception on failure)
+
+**srcExePath**:  Absolute or relative path to the executable file.
+
+**destDirPath**: Absolute or relative directory path where the icons will be copied.    
+
+### copyExeVerInfo
+    
+** WINDOWS ONLY**
+
+    copyExeVerInfo( srcExePath, destExePath )
+
+Copy the version / branding information from one exe to another.
+    
+**Returns**: None (Raising exception on failure)
+
+**srcExePath**:  Absolute or relative path to the executable file 
+which contains the information to be copied.
+
+**destExePath**: Absolute or relative path to the executable file 
+where the information is to be transferred.
+Note, this file must already exist, to receive the branding info, i.e.
+this function doesn't create a new exe.
+
+### copyExeIcon
+
+    copyExeIcon( srcExePath, destExePath, iconName=None )
 
 ### halt
 	

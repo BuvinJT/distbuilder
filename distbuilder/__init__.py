@@ -3,6 +3,7 @@ from ._version import __version__
 from distbuilder.process import( 
       ConfigFactory 
     , PyToBinPackageProcess 
+    , WinScriptToBinPackageProcess
     , PyToBinInstallerProcess 
     , RobustInstallerProcess 
 )
@@ -193,8 +194,13 @@ from distbuilder.util import(
     , versionStr 
     , versionNo 
     , getPassword 
-    , assertMinVer 
+    , assertMinVer
+    , winScriptToExe 
     , embedExeVerInfo
+    , embedExeIcon
+    , extractExeIcons
+    , copyExeVerInfo
+    , copyExeIcon        
 )
 
 def assertBuilderVer( ver ): 
