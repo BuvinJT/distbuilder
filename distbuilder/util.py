@@ -166,6 +166,8 @@ def __toStdErr( msg ):
     else:    
         stderr.write( msg )
         stderr.flush()
+# -----------------------------------------------------------------------------
+class DistBuilderError( Exception ): pass
 
 # -----------------------------------------------------------------------------  
 def isDebug():
@@ -755,7 +757,7 @@ def normIconName( path, isPathPreserved=False ):
     if IS_WINDOWS: return "%s%s" % (base, _WINDOWS_ICON_EXT) 
     elif IS_MACOS: return "%s%s" % (base, _MACOS_ICON_EXT) 
     elif IS_LINUX: return "%s%s" % (base, _LINUX_ICON_EXT) 
-    raise Exception( __NOT_SUPPORTED_MSG )
+    raise DistBuilderError( __NOT_SUPPORTED_MSG )
     return base 
 
 def normLibName( path, isPathPreserved=False ):
@@ -765,7 +767,7 @@ def normLibName( path, isPathPreserved=False ):
     if IS_WINDOWS: return "%s%s" % (base, _WINDOWS_LIB_EXT) 
     elif IS_MACOS: return "%s%s" % (base, _MACOS_LIB_EXT) 
     elif IS_LINUX: return "%s%s" % (base, _LINUX_LIB_EXT) 
-    raise Exception( __NOT_SUPPORTED_MSG )
+    raise DistBuilderError( __NOT_SUPPORTED_MSG )
     return base 
                         
 def _isMacApp( path ):
@@ -865,7 +867,7 @@ def _userDesktopDirPath():
         home = _userHomeDirPath()
         desktop = normpath( joinPath( home, DESKTOP_DIR_NAME ) )
         return desktop if isDir(desktop) else home
-    raise Exception( __NOT_SUPPORTED_MSG )        
+    raise DistBuilderError( __NOT_SUPPORTED_MSG )        
 
 def _winProgsDirPath(): 
     if not IS_WINDOWS : _onPlatformErr()
@@ -915,7 +917,7 @@ def _toSrcDestPair( pathPair, destDir=None, basePath=None ):
     if dest==True : # True=="same"
         if not isabs(src): dest = src 
         else: 
-            raise Exception( "A resource destination cannot be the same "
+            raise DistBuilderError( "A resource destination cannot be the same "
                              "as an ABSOLUTE source path" )
     elif dest is not None: dest = normpath( dest )
     
@@ -1011,7 +1013,7 @@ def printExc( e, isDetailed=False, isFatal=False ):
     else : printErr( e )
     if isFatal: exit(1)
 
-def _onPlatformErr(): raise Exception( __NOT_SUPPORTED_MSG )
+def _onPlatformErr(): raise DistBuilderError( __NOT_SUPPORTED_MSG )
             
 # -----------------------------------------------------------------------------           
 def download( url, saveToPath=None, preserveName=True ):
@@ -1306,7 +1308,7 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
     def _execute( self, dirPath=None, isOnTheFly=None, isDebug=None, 
                   isConCapture=False ):
         if self.extension not in ExecutableScript.__SUPPORTED_EXECUTE_EXTS:
-            raise Exception( "Script type not supported: %s" % (self.fileName(),) )                    
+            raise DistBuilderError( "Script type not supported: %s" % (self.fileName(),) )                    
         if isDebug is not None: self.isDebug = isDebug
         if isOnTheFly is None: isOnTheFly = not self.exists( dirPath )    
         if isOnTheFly: self.write( dirPath )                    
@@ -1318,7 +1320,7 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
                                isConCapture=isConCapture )
             if self.isDebug: print( "Return Code: %s" % (str(retCode),) )                                       
             if retCode is not None and retCode != 0: 
-                raise Exception( "Script failed: %s\nReturn Code: %s" % (
+                raise DistBuilderError( "Script failed: %s\nReturn Code: %s" % (
                                  self.filePath(), str(retCode) ) )
         if isOnTheFly: self.remove()
             
@@ -1384,14 +1386,14 @@ if IS_WINDOWS:
                 _WindowsSharedFile.__byref(dummy) )
             self.chunkSize = bytesPerSector.value
             if self.chunkSize==0:      
-                raise Exception( "Could not determine volume bytes per sector" )                  
+                raise DistBuilderError( "Could not determine volume bytes per sector" )                  
             if isProducer :
                 if self.filePath is None: self.filePath = mktemp()
                 dwDesiredAccess = _WindowsSharedFile.__GENERIC_WRITE  
                 dwCreationDisposition = _WindowsSharedFile.__CREATE_ALWAYS
             else :
                 if not isFile( self.filePath ) :
-                    raise Exception( "Shared file does not exist: %s" 
+                    raise DistBuilderError( "Shared file does not exist: %s" 
                                      % (self.filePath,) )
                 dwDesiredAccess = _WindowsSharedFile.__GENERIC_READ
                 dwCreationDisposition = _WindowsSharedFile.__OPEN_EXISTING            
@@ -1413,7 +1415,7 @@ if IS_WINDOWS:
                None             # template file handle
             )
             if not self.isOpen():
-                raise Exception( "Cannot open %s" % (self.filePath,) )        
+                raise DistBuilderError( "Cannot open %s" % (self.filePath,) )        
     
         def isOpen( self ):
             return self.__handle != _WindowsSharedFile.__INVALID_HANDLE_VALUE
@@ -1429,7 +1431,7 @@ if IS_WINDOWS:
                                             
         def write( self, data ):
             if not self.isProducer or not self.isOpen():
-                raise Exception( "Cannot write to shared file" ) 
+                raise DistBuilderError( "Cannot write to shared file" ) 
             if PY3: data=str(data).encode()
             totalBytesToWrite = len(data)
             totalBytesWritten = 0
@@ -1446,7 +1448,7 @@ if IS_WINDOWS:
                     self.__handle, chunk, bytesToWrite,
                     _WindowsSharedFile.__byref(bytesWritten), None )       
                 if bytesToWrite.value != bytesWritten.value : 
-                    raise Exception( "Error writing to shared file. "
+                    raise DistBuilderError( "Error writing to shared file. "
                                      "Bytes to write: %d / Bytes written: %d" % 
                                      (bytesToWrite.value,bytesWritten.value) )  
                 #_WindowsSharedFile.__FlushFile( self.__handle ) # Don't need per FILE_FLAG_NO_BUFFERING
@@ -1454,7 +1456,7 @@ if IS_WINDOWS:
     
         def read( self ):
             if self.isProducer or not self.isOpen():
-                raise Exception( "Cannot read from shared file" )         
+                raise DistBuilderError( "Cannot read from shared file" )         
             data = ""
             chunkBuffer = ctypes.create_string_buffer( self.chunkSize )
             bytesToRead = _WindowsSharedFile.__DWORD( self.chunkSize ) 
@@ -1496,14 +1498,14 @@ if IS_MACOS :
         _system( 'hdiutil mount "%s"' % (dmgPath,) )
         if isDir( mountPath ) : 
             return _toRet( True, mountPath, appPath, binPath )
-        raise Exception( "Failed to mount %s to %s" % (dmgPath, mountPath) )
+        raise DistBuilderError( "Failed to mount %s to %s" % (dmgPath, mountPath) )
     
     # returns: t/f unmounted an existing path     
     def _macUnMountDmg( mountPath ):    
         if not exists( mountPath ) : return False
         _system( 'hdiutil unmount "%s"' % (mountPath,) )
         if not exists( mountPath ) : return True
-        raise Exception( "Failed to unmount %s" % (mountPath) )
+        raise DistBuilderError( "Failed to unmount %s" % (mountPath) )
         
 # ----------------------------------------------------------------------------- 
 if IS_LINUX:

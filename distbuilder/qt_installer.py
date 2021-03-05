@@ -1084,7 +1084,7 @@ class _QtIfwScript:
                 script = res
                 print( "Embedding script: %s" % (script.rootName,) )
                 if "-" in script.rootName: 
-                    raise Exception( "Embedded script names may not contain dashes!"
+                    raise DistBuilderError( "Embedded script names may not contain dashes!"
                         " (Auto correcting this may produce hard to find bugs)" )
                 varName = script.fileName().replace(".","_dot_")                                
                 b64 = script.toBase64( toString=True )
@@ -4993,12 +4993,12 @@ Component.prototype.%s = function(){
                 if task.successRetCodes: args+=["retCodes"]       
                 if scriptType=="vbs":                     
                     if not IS_WINDOWS: 
-                        raise Exception( 
+                        raise DistBuilderError( 
                             "VBScript is not supported by this platform!" )                                            
                     args+=["vbsInterpreter", "vbsNologo"]
                 elif scriptType=="ps1":
                     if not IS_WINDOWS: 
-                        raise Exception( 
+                        raise DistBuilderError( 
                             "PowerShell scripts are not INHERTENTLY "
                             "supported by this platform!" )                                             
                     args+=["psInterpreter", "psNologo", 
@@ -5007,7 +5007,7 @@ Component.prototype.%s = function(){
                            "psExecScript"]
                 elif scriptType=="scpt":            
                     if not IS_MACOS:
-                        raise Exception( 
+                        raise DistBuilderError( 
                             "AppleScript is not supported by this platform!" )                                                     
                     args+=["osaInterpreter"]                                
                 else: args+=["shellPath", "shellSwitch"]
@@ -5598,7 +5598,7 @@ class QtIfwExternalOp:
                     exeName = normBinaryName( pkg.exeName, pkg.isGui )                        
                 exePath = joinPath( exeDir, exeName ) 
         if exePath is None or displayName is None:
-            raise Exception( "Missing required arguments" )    
+            raise DistBuilderError( "Missing required arguments" )    
         if IS_WINDOWS:
             # TODO: IS THIS SUPPORTED IN LEGACY WINDOWS VERSIONS?
             #     If not, just fall back to shortcuts in startup folders... 
@@ -5800,7 +5800,7 @@ class QtIfwExternalOp:
             # for building operations for clients that may pass AUTO_UNDO
             # events where such is not supported 
             if not isReversible: 
-                raise Exception( 
+                raise DistBuilderError( 
                     "Installer operation cannot be automatically undone." )
             onInstall   = script 
             onUninstall = uninstScript                              
@@ -6493,7 +6493,7 @@ class QtIfwExternalResource:
     def __init__( self, name, srcPath, srcBasePath=None, 
                   isMaintenanceNeed=False, contentKeys=None ):
         if "-" in name:
-            raise Exception( "Resource names may not contain dashes!"
+            raise DistBuilderError( "Resource names may not contain dashes!"
                 " (Auto correcting this may produce hard to find bugs)" )
         self.name = name
         self.srcPath = absPath( srcPath, srcBasePath )        
@@ -6544,7 +6544,7 @@ class QtIfwExternalResource:
             self.contentKeys is not None and len(self.contentKeys)==1 ):
             key=list(self.contentKeys.keys())[0] 
         if self.contentKeys is None or key not in self.contentKeys:
-            raise Exception("Invalid content key")
+            raise DistBuilderError("Invalid content key")
         return key
     
     def __targetDirPathKey( self ): return '%sDir' % (self.name,)
@@ -6618,7 +6618,7 @@ class _QtIfwInterface:
         
     def write( self, dirPath ):
         if self.content is None : 
-            raise Exception( "No content found for interface definition: %s" % 
+            raise DistBuilderError( "No content found for interface definition: %s" % 
                              (self.name,) )
         if not isDir( dirPath ): makeDir( dirPath )
         filePath = joinPath( dirPath, self.fileName() )
@@ -7241,7 +7241,7 @@ class QtIfwOnFinishedDetachedExec:
                 if self.argList else _QtIfwScript.NULL )        
         execTemplate = QtIfwOnFinishedDetachedExec.__SCRIPT_TMPLTS.get( 
             script.extension )
-        if execTemplate is None: raise Exception("Script type not supported")
+        if execTemplate is None: raise DistBuilderError("Script type not supported")
         self._action =( 
             _QtIfwScript.genResources( [script], isTempRootTarget=True ) +
             execTemplate % ( self.runProgram, args ) 
@@ -7389,7 +7389,7 @@ def installQtIfw( installerPath=None, version=None, targetPath=None ):
         isDmgMount, mountPath, _, binPath = util._macMountDmg( dmgPath ) 
         if binPath is None:
             if isDmgMount: util._macUnMountDmg( mountPath ) 
-            raise Exception( "Qt IWF installer binary not found." )
+            raise DistBuilderError( "Qt IWF installer binary not found." )
         installerPath = binPath  
     else : isDmgMount = False        
     if targetPath is None: 
@@ -7398,7 +7398,7 @@ def installQtIfw( installerPath=None, version=None, targetPath=None ):
         print( "targetPath: %s" % (targetPath,) )   
     if isFile( __qtIfwCreatorPath( targetPath ) ):
         if not isLocal: removeFile( installerPath )
-        raise Exception( "A copy of QtIFW is already installed in: %s" 
+        raise DistBuilderError( "A copy of QtIFW is already installed in: %s" 
                          % (targetPath,) )                             
     ifwQScriptPath = __generateQtIfwInstallerQScript()
     ifwPyScriptPath = __generateQtIfwInstallPyScript(                                    
@@ -7494,7 +7494,7 @@ def mergeQtIfwPackages( pkgs, srcId, destId ):
     srcPkg  = findQtIfwPackage( pkgs, srcId )
     destPkg = findQtIfwPackage( pkgs, destId )
     if not srcPkg or not destPkg:
-        raise Exception( "Cannot merge QtIfw packages. " 
+        raise DistBuilderError( "Cannot merge QtIfw packages. " 
                          "Invalid id(s) provided." )     
     mergeDirs( srcPkg.contentTopDirPath(), destPkg.contentDirPath() )    
     __mergePackageObjects( srcPkg, destPkg )    
@@ -7505,7 +7505,7 @@ def nestQtIfwPackage( pkgs, childId, parentId, subDirName=None ):
     childPkg  = findQtIfwPackage( pkgs, childId )
     parentPkg = findQtIfwPackage( pkgs, parentId )
     if not childPkg or not parentPkg:
-        raise Exception( "Cannot nest QtIfw package. " 
+        raise DistBuilderError( "Cannot nest QtIfw package. " 
                          "Invalid id(s) provided." ) 
     if subDirName is None:        
         def prefix( name ): return ".".join( name.split(".")[:-1] ) + "." 
@@ -7601,19 +7601,19 @@ def __validateConfig( qtIfwConfig ):
     # installer definition requirements
     if( qtIfwConfig.installerDefDirPath is not None and
         not isDir(qtIfwConfig.installerDefDirPath) ):        
-        raise Exception( "Installer definition directory path is not valid" )
+        raise DistBuilderError( "Installer definition directory path is not valid" )
     if qtIfwConfig.packages is None :
-        raise Exception( "Package specification(s)/definition(s) required" )
+        raise DistBuilderError( "Package specification(s)/definition(s) required" )
     for p in qtIfwConfig.packages :
         if p.pkgType==QtIfwPackage.Type.RESOURCE: continue
         if p.srcDirPath is None:
             if p.srcExePath is None:
-                raise Exception( "Package Source directory OR exe path required" )
+                raise DistBuilderError( "Package Source directory OR exe path required" )
             elif not ( isFile(p.srcExePath) or 
                   (IS_MACOS and util._isMacApp(p.srcExePath)) ) :        
-                raise Exception( "Package Source exe path is not valid" )    
+                raise DistBuilderError( "Package Source exe path is not valid" )    
         elif not isDir(p.srcDirPath) :        
-            raise Exception( "Package Source directory path is not valid" )
+            raise DistBuilderError( "Package Source directory path is not valid" )
     # resolve or install required utility paths 
     if qtIfwConfig.qtIfwDirPath is None:
         qtIfwConfig.qtIfwDirPath = getenv( QT_IFW_DIR_ENV_VAR )    
@@ -7623,7 +7623,7 @@ def __validateConfig( qtIfwConfig ):
         qtIfwConfig.qtIfwDirPath = installQtIfw()                    
     if( qtIfwConfig.qtIfwDirPath is None or
         not isFile( __qtIfwCreatorPath( qtIfwConfig.qtIfwDirPath ) ) ):        
-        raise Exception( "Valid Qt IFW directory path required" )
+        raise DistBuilderError( "Valid Qt IFW directory path required" )
     for p in qtIfwConfig.packages :
         if not isinstance( p, QtIfwPackage ) : continue
         if p.pkgType == QtIfwPackage.Type.QT_CPP :
@@ -7877,7 +7877,7 @@ def __addArchive( srcPaths, package, qtIfwConfig, archiveRootName=None ):
     if archiveRootName is None:
         if isinstance( srcPaths, list ):            
             if len(srcPaths)==1: archiveRootName = rootFileName( srcPaths[0] ) 
-            else: raise Exception( "An archive root name must be provided" )
+            else: raise DistBuilderError( "An archive root name must be provided" )
         else: 
             archiveRootName = rootFileName( srcPaths )        
     if not isinstance( srcPaths, list ): srcPaths=[srcPaths]  
@@ -7900,7 +7900,7 @@ def __addArchive( srcPaths, package, qtIfwConfig, archiveRootName=None ):
         cmd = '%s "%s" %s' % ( generatorPath, destPath, scrList )
         util._system( cmd )  
         if not exists( destPath ) : 
-            raise Exception( 'FAILED to create "%s"' % (destPath,) )
+            raise DistBuilderError( 'FAILED to create "%s"' % (destPath,) )
 
 def __build( qtIfwConfig ) :
     print( "Building installer using Qt IFW...\n" )
@@ -7913,7 +7913,7 @@ def __build( qtIfwConfig ) :
     setupExePath = normBinaryName( setupExePath, 
                                    isPathPreserved=True, isGui=True )
     if not exists( setupExePath ) : 
-        raise Exception( 'FAILED to create "%s"' % (setupExePath,) )
+        raise DistBuilderError( 'FAILED to create "%s"' % (setupExePath,) )
     print( 'Installer built successfully!\n"%s"!' % (setupExePath,) )
     return setupExePath
 

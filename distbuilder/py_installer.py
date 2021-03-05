@@ -301,7 +301,7 @@ class PyInstHook( ExecutableScript ) :
         self.__resolveHooksPath()
         hookPath = joinPath( self.hooksDirPath, self.fileName() )
         if not isFile( hookPath ):
-            raise Exception( 
+            raise DistBuilderError( 
                 "PyInstaller hook does not exist: %s" % (hookPath,) )                      
         with open( hookPath, 'r' ) as f: self.script = f.read()
                                 
@@ -325,7 +325,7 @@ class PyInstHook( ExecutableScript ) :
             try:
                 pgkDir = modulePackagePath( HOOKS_CONTRIB_PKG_NAME if isContrib
                                             else PYINST_ROOT_PKG_NAME )                            
-                if pgkDir is None: raise Exception()                
+                if pgkDir is None: raise DistBuilderError()                
                 hooksDir = joinPath( pgkDir, HOOKS_DIR_NAME )
                 if isContrib:
                     hooksDir = joinPath( hooksDir, 
@@ -334,9 +334,9 @@ class PyInstHook( ExecutableScript ) :
                 elif self.isRunTimeHook:
                     hooksDir = joinPath( hooksDir, _RUNTIME_HOOKS_DIR_NAME )                         
                 if isDir( hooksDir ): self.hooksDirPath = hooksDir
-                else: raise Exception()
+                else: raise DistBuilderError()
             except:    
-                raise Exception( 
+                raise DistBuilderError( 
                     "PyInstaller hooks directory could not be resolved." )         
                                     
 # -----------------------------------------------------------------------------   
@@ -381,9 +381,9 @@ def buildExecutable( name=None, entryPointPy=None,
     
     # Verify the required parameters are present    
     if not pyInstConfig.name :         
-        raise Exception( "Binary name is required" )
+        raise DistBuilderError( "Binary name is required" )
     if not pyInstConfig.entryPointPy : 
-        raise Exception( "Binary entry point is required" )
+        raise DistBuilderError( "Binary entry point is required" )
     
     # auto assign some pyInstConfig values        
     distDirPath = joinPath( THIS_DIR, pyInstConfig.name ) 
@@ -433,7 +433,7 @@ def buildExecutable( name=None, entryPointPy=None,
         if isFile( exePath ) : removeFile( exePath )
         exePath = normBinaryName( exePath, isPathPreserved=True, isGui=True )   
     if not exists(exePath) : 
-        raise Exception( 'FAILED to create "%s"' % (exePath,) ) 
+        raise DistBuilderError( 'FAILED to create "%s"' % (exePath,) ) 
     print( 'Binary built successfully!\n"%s"' % (exePath,) )
     print('')
 
@@ -479,9 +479,9 @@ def makePyInstSpec( pyInstConfig, opyConfig=None ):
     
     # Verify the required parameters are present    
     if not pyInstConfig.name :         
-        raise Exception( "Binary name is required" )
+        raise DistBuilderError( "Binary name is required" )
     if not pyInstConfig.entryPointPy : 
-        raise Exception( "Binary entry point is required" )
+        raise DistBuilderError( "Binary entry point is required" )
     
     # auto assign some pyInstConfig values        
     pyInstConfig.distDirPath = joinPath( THIS_DIR, pyInstConfig.name )
@@ -499,7 +499,7 @@ def makePyInstSpec( pyInstConfig, opyConfig=None ):
     # Confirm success
     specPath = PyInstSpec.cfgToPath( pyInstConfig )    
     if not exists(specPath) : 
-        raise Exception( 'FAILED to create "%s"' % (specPath,) ) 
+        raise DistBuilderError( 'FAILED to create "%s"' % (specPath,) ) 
     print( 'Spec file generated successfully!\n"%s"' % (specPath,) )
     print('')
 

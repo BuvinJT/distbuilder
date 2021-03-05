@@ -81,14 +81,14 @@ def __useSignTool( exePath, codeSignConfig ):
     cmd = '"%s" %s "%s"' % ( codeSignConfig.signToolPath, 
                              str(codeSignConfig), exePath )
     if not util._isSystemSuccess( cmd ): 
-        raise Exception( 'FAILED to code sign "%s"' % (exePath,) )
+        raise DistBuilderError( 'FAILED to code sign "%s"' % (exePath,) )
     print( "Signed successfully!" )
     return exePath           
 
 def __validateCodeSignConfig( cfg ):
     if( not isFile( cfg.keyFilePath ) or 
         fileExt( cfg.keyFilePath ).lower() != CodeSignConfig._KEY_EXT ):
-        raise Exception( 
+        raise DistBuilderError( 
             "Missing or invalid key path in CodeSignConfig: %s" %
             (cfg.keyFilePath,) )     
            
@@ -100,12 +100,12 @@ def __validateCodeSignConfig( cfg ):
     if cfg.signToolPath is None: 
         cfg.signToolPath = __installSignTool()   
     if cfg.signToolPath is None: 
-        raise Exception( "Valid SignTool path required" )
+        raise DistBuilderError( "Valid SignTool path required" )
 
 def __installSignTool():
     print( "Installing SignTool utility...\n" )
     if not util._isSystemSuccess( CodeSignConfig._builtInSignToolInstallerPath() ): 
-        raise Exception( "SignTool installation FAILED" )
+        raise DistBuilderError( "SignTool installation FAILED" )
     return CodeSignConfig._defaultSignToolPath( isVerified=True )
 
 #------------------------------------------------------------------------------
@@ -205,7 +205,7 @@ def __useMakeCert( certConfig, isOverwrite ):
     if( not util._isSystemSuccess( cmd ) or
         not isFile( certConfig.caCertPath ) or
         not isFile( certConfig.privateKeyPath ) ): 
-        raise Exception( 'FAILED to generate code signing certificates' )
+        raise DistBuilderError( 'FAILED to generate code signing certificates' )
     print( "Generated code signing certificates successfully!" )
     return certConfig.caCertPath, certConfig.privateKeyPath
 
@@ -242,7 +242,7 @@ def __usePsSelfSignedCertScript( certConfig, keyPassword, isOverwrite ):
     })
     if( not isFile( certConfig.caCertPath ) or
         not isFile( certConfig.privateKeyPath ) ): 
-        raise Exception( 'FAILED to generate code signing certificates' )
+        raise DistBuilderError( 'FAILED to generate code signing certificates' )
     print( "Generated code signing certificates successfully!" )
     return certConfig.caCertPath, certConfig.privateKeyPath
 
@@ -253,9 +253,9 @@ def __validateSelfSignedCertConfig( cfg, isOverwrite ):
             removeFromDir( baseFileName(cfg.privateKeyPath), cfg.destDirPath )
         else:
             if isFile( cfg.caCertPath ):
-                raise Exception( "File exists: %s" % (cfg.caCertPath,) )
+                raise DistBuilderError( "File exists: %s" % (cfg.caCertPath,) )
             if isFile( cfg.privateKeyPath ):
-                raise Exception( "File exists: %s" % (cfg.privateKeyPath,) )
+                raise DistBuilderError( "File exists: %s" % (cfg.privateKeyPath,) )
     else: makeDir( cfg.destDirPath )       
                                          
     if cfg._isMakeCertMethod: 
@@ -264,7 +264,7 @@ def __validateSelfSignedCertConfig( cfg, isOverwrite ):
         if cfg.makeCertPath is None: 
             cfg.makeCertPath = SelfSignedCertConfig._builtInMakeCertPath()
         if cfg.makeCertPath is None: 
-            raise Exception( "Valid MakeCert path required" )
+            raise DistBuilderError( "Valid MakeCert path required" )
 
 #------------------------------------------------------------------------------
 PVK2PFX_PATH_ENV_VAR = "PVK2PFX_PATH"
@@ -337,17 +337,17 @@ def __usePvk2Pfx( pvk2PfxConfig, isOverwrite ):
     cmd = '"%s" %s' % ( pvk2PfxConfig.pvk2PfxPath, str(pvk2PfxConfig) )
     if( not util._isSystemSuccess( cmd ) or 
         not isFile( pvk2PfxConfig.keyFilePath ) ): 
-        raise Exception( 'FAILED convert private key to PFX file' )
+        raise DistBuilderError( 'FAILED convert private key to PFX file' )
     print( "Generated Personal Information Exchange (PFX) file successfully!" )
     return pvk2PfxConfig.keyFilePath
 
 def __validatePvk2PfxConfig( cfg, isOverwrite ):
     if not isFile( cfg.privateKeyPath ):
-        raise Exception( 
+        raise DistBuilderError( 
             "Missing or invalid private key path in Pvk2PfxConfig: %s" %
             (cfg.privateKeyPath,) )        
     if not isFile( cfg.caCertPath ):
-        raise Exception( 
+        raise DistBuilderError( 
             "Missing or invalid CA cert path in Pvk2PfxConfig: %s" %
             (cfg.caCertPath,) )
   
@@ -356,7 +356,7 @@ def __validatePvk2PfxConfig( cfg, isOverwrite ):
         if isOverwrite:
             removeFromDir( baseFileName( cfg.keyFilePath ), destDirPath )
         elif isFile( cfg.keyFilePath ):
-            raise Exception( "File exists: %s" % (cfg.keyFilePath,) )
+            raise DistBuilderError( "File exists: %s" % (cfg.keyFilePath,) )
     else: makeDir( destDirPath )                                         
                         
     if cfg.pvk2PfxPath is None: 
@@ -367,12 +367,12 @@ def __validatePvk2PfxConfig( cfg, isOverwrite ):
     if cfg.pvk2PfxPath is None: 
         cfg.pvk2PfxPath = __installPvk2Pfx()   
     if cfg.pvk2PfxPath is None: 
-        raise Exception( "Valid Pvk2Pfx path required" )
+        raise DistBuilderError( "Valid Pvk2Pfx path required" )
 
 def __installPvk2Pfx():
     print( "Installing Pvk2Pfx utility...\n" )
     if not util._isSystemSuccess( Pvk2PfxConfig._builtInInstallerPath() ): 
-        raise Exception( "Pvk2Pfx installation FAILED" )
+        raise DistBuilderError( "Pvk2Pfx installation FAILED" )
     return Pvk2PfxConfig._defaultPvk2PfxPath( isVerified=True )
 
 #------------------------------------------------------------------------------

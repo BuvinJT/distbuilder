@@ -672,7 +672,7 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
                 IS_WINDOWS and not util._isPrivateRedirectAvailable() ):
                 printErr( "WARNING: Silent installer debugging messages "
                           "may not appear in the build log on this LEGACY "
-                          "version of Windows! Manual testing of the installer"
+                          "version of Windows! Manual testing of the installer "
                           "should still work in this environment though..." )
             
             run( self.setupPath, verboseArgs + debugArgs + autoArgs,

@@ -162,7 +162,7 @@ class QtCppConfig:
         if self.qtBinDirPath is None:
             self.qtBinDirPath = getEnv( QT_BIN_DIR_ENV_VAR )    
         if self.qtBinDirPath is None or not isDir( self.qtBinDirPath ):        
-            raise Exception( "Valid Qt Bin directory path required" )
+            raise DistBuilderError( "Valid Qt Bin directory path required" )
     
     # Refer to: https://doc.qt.io/qt-5/deployment.html
     def addDependencies( self, package ) :
@@ -431,6 +431,6 @@ if IS_LINUX:
         
     def _installSnapd():
         # For now, don't even try to do this in a cross distro manner...
-        raise Exception( "Snapd installation must be performed manually."
+        raise DistBuilderError( "Snapd installation must be performed manually."
             "Refer to https://snapcraft.io/docs/installing-snapd" )
     
