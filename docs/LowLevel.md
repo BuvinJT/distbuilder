@@ -1496,10 +1496,12 @@ defense" for virus checkers and security tools.
 Explicitly installing a "Trusted Software Publisher Certificate" maybe necessary 
 for the digital signature on a file to be validated, if the file was signed by an 
 unknown "Certification Authority".  All major operating systems ship with a host 
-of standard "CA certs" preinstalled, but will also allow the manual addition of 
+of standard "CA certs" pre-installed, but will also allow the manual addition of 
 such to supplement those included out-of-the-box.  
 
-### signExe( exePath, codeSignConfig )
+### signExe
+
+    signExe( exePath, codeSignConfig )
 
 **Returns**: exePath
 
