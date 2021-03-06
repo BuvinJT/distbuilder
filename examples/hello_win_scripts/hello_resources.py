@@ -6,16 +6,11 @@ def openTextFileScript( scriptExt, fileName ):
           ExecutableScript.BATCH_EXT : 
             'echo. > "%userprofile%\Desktop\{fileName}"'
         , ExecutableScript.PS_EXT :
-            [
-                  '$DesktopPath = [Environment]::GetFolderPath( "Desktop" )'
-                , '$FilePath    = Join-Path $DesktopPath {fileName}'
-                , 'New-Item $FilePath'
-            ]
-        , ExecutableScript.VBS_EXT:
-r''' 
-Dim oShell : Set oShell = CreateObject( "WScript.Shell" )
-oShell.Exec( "%ComSpec% /c start """" ""%windir%\system32\notepad.exe"" ""{fileName}""" )
-'''
+            r'Start-Process -FilePath "notepad" -ArgumentList "{fileName}"'            
+        , ExecutableScript.VBS_EXT: [
+              r'Dim oShell : Set oShell = CreateObject( "WScript.Shell" )'
+            , r'oShell.Exec( "%ComSpec% /c start """" ""%windir%\system32\notepad.exe"" ""{fileName}""" )'
+        ]
     }
     script = scriptOptions.get( scriptExt )
     if not script: raise Exception( "Invalid Script Type!" )    

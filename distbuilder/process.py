@@ -600,12 +600,17 @@ r'''
 
     PS_IEXPRESS_INIT=(
 r''' 
-$PPID = (gwmi win32_process | ? processid -eq  $PID).parentprocessid
-Write-Host "PPID: $PPID"
+# IExpress Initialization
+$PPID     = (gwmi win32_process -Filter "processid='$PID'").ParentProcessId
+$EXE_PATH = (Get-Process -Id $PPID -FileVersionInfo).FileName
+$THIS_DIR = [System.IO.Path]::GetDirectoryName( $EXE_PATH )
+$RES_DIR  = Get-Location
+Set-Location $THIS_DIR
 ''')
     
     VBS_IEXPRESS_INIT=(
 r''' 
+' IExpress Initialization
 Dim PID, PPID, EXE_PATH, THIS_DIR, RES_DIR
 sub IExpressInit()
     Dim oShell : Set oShell = CreateObject( "WScript.Shell" )
@@ -636,9 +641,6 @@ Call IExpressInit
         self.isZipped = isZipped
         self.isDesktopTarget = isDesktopTarget
         self.isHomeDirTarget = isHomeDirTarget
-        
-        # True==Default Process Info Injection, else the literal value
-        self.scriptHeader = True 
         
         self.isExeTest              = False
         self.isElevatedTest         = False
