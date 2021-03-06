@@ -612,7 +612,7 @@ class WinScriptToBinPackageProcess( _DistBuildProcessBase ):
         
     def _body( self ):        
         
-        # self.configFactory.sourceDir...
+        # TODO: apply self.configFactory.sourceDir...
         
         isOnTheFly = isinstance( 
             self.configFactory.entryPointScript, ExecutableScript )
@@ -632,7 +632,24 @@ class WinScriptToBinPackageProcess( _DistBuildProcessBase ):
                 
         if self.configFactory.codeSignConfig :
             signExe( self.binPath, self.configFactory.codeSignConfig ) 
-        
+            
+        # TODO: Eliminate code duplication from py_installer.buildExecutable        
+        # Add additional distribution resources        
+        for res in self.configFactory.distResources:
+            src, dest = util._toSrcDestPair( res, destDir=self.binDir )
+            print( 'Copying "%s" to "%s"...' % ( src, dest ) )
+            if isFile( src ) :
+                destDir = dirPath( dest )
+                if not exists( destDir ): makeDir( destDir )
+                try: copyFile( src, dest ) 
+                except Exception as e: printExc( e )
+            elif isDir( src ):
+                try: copyDir( src, dest ) 
+                except Exception as e: printExc( e )
+            else:
+                printErr( 'Invalid path: "%s"' % (src,) )                            
+            
+        # TODO: Eliminate code duplication from PyToBinPackageProcess        
         destDirPath =( util._userDesktopDirPath() if self.isDesktopTarget else 
                        util._userHomeDirPath()    if self.isHomeDirTarget else 
                        None )          

@@ -39,8 +39,8 @@ f.companyTradeName = "Some Company"
 f.companyLegalName = "Some Company Inc."    
 f.binaryName       = "HelloDynamicWinScript"
 f.version          = (1,0,0,0)
-f.entryPointScript = demoScript( DEMO_OPTION )
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
+f.entryPointScript = demoScript( DEMO_OPTION )
 
 p = WinScriptToBinPackageProcess( configFactory, isDesktopTarget=True )
 p.run()       

@@ -7,8 +7,8 @@ f.companyTradeName = "Some Company"
 f.companyLegalName = "Some Company Inc."    
 f.binaryName       = "HelloVBScript"
 f.version          = (1,0,0,0)
-f.entryPointScript = "hello.vbs"  
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
+f.entryPointScript = "hello.vbs"  
 
 p = WinScriptToBinPackageProcess( configFactory, isDesktopTarget=True )
 p.run()       
