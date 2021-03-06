@@ -1,5 +1,5 @@
 from distbuilder import util    # @UnusedImport
-from distbuilder.util import *  # @UnusedWildImport
+from distbuilder.util import * # @UnusedWildImport
 
 from distbuilder.py_installer import (
       buildExecutable 
@@ -614,10 +614,18 @@ class WinScriptToBinPackageProcess( _DistBuildProcessBase ):
         
         # self.configFactory.sourceDir...
         
-        self.binDir, self.binPath = winScriptToExe( 
-            self.configFactory.entryPointScript, 
-            joinPath( self.configFactory.binaryName, 
-                      self.configFactory.binaryName ) )        
+        isOnTheFly = isinstance( 
+            self.configFactory.entryPointScript, ExecutableScript )
+        scriptPath =( self.configFactory.entryPointScript.filePath() 
+                      if isOnTheFly else
+                      self.configFactory.entryPointScript )
+        exePath = joinPath( self.configFactory.binaryName, 
+                            self.configFactory.binaryName )    
+
+        if isOnTheFly: self.configFactory.entryPointScript.write()
+        self.binDir, self.binPath = winScriptToExe( scriptPath, exePath )
+        if isOnTheFly: self.configFactory.entryPointScript.remove()
+                
         embedExeVerInfo( self.binPath, self.configFactory.exeVersionInfo() )        
         if self.configFactory.iconFilePath: 
             embedExeIcon( self.binPath, self.configFactory.iconFilePath )
