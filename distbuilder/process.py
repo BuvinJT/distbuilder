@@ -595,22 +595,47 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
 class WinScriptToBinPackageProcess( _DistBuildProcessBase ):
 
     BAT_IEXPRESS_INIT=(
-r''' 
+r'''
+:: >>> IExpress Initialization <<<
+@echo off
+for %%t in ("%temp%\%~nx0.%random%%random%%random%%random%%random%.tmp") do > "%%~ft" (
+    wmic process where "Name='wmic.exe' and CommandLine like '%%_%random%%random%%random%_%%'" get ParentProcessId
+    for /f "skip=1" %%a in ('type "%%~ft"') do set "PID=%%a"
+) & 2>nul del /q "%%~ft"
+for %%t in ("%temp%\%~nx0.%random%%random%%random%%random%%random%.tmp") do > "%%~ft" (
+    wmic process where "ProcessId='%PID%'" get ParentProcessId
+    for /f "skip=1" %%a in ('type "%%~ft"') do set "PPID=%%a"
+) & 2>nul del /q "%%~ft"
+for %%t in ("%temp%\%~nx0.%random%%random%%random%%random%%random%.tmp") do > "%%~ft" (
+    wmic process where "ProcessId='%PPID%'" get ExecutablePath
+    for /f "skip=1" %%a in ('type "%%~ft"') do set "EXE_PATH=%%a"
+) & 2>nul del /q "%%~ft"
+call :__dirname THIS_DIR %EXE_PATH%
+goto :__skip_dirname
+:__dirname <resultVar> <pathVar> 
+( set "%~1=%~dp2" && exit /b )
+:__skip_dirname
+set "THIS_DIR=%THIS_DIR:~0,-1%"
+set "RES_DIR=%CD%"
+cd "%THIS_DIR%"
+:: ------------------------------------------------ 
 ''')
 
     PS_IEXPRESS_INIT=(
 r''' 
-# IExpress Initialization
+# >>> IExpress Initialization <<<
+# $PID is implicitly defined!
 $PPID     = (gwmi win32_process -Filter "processid='$PID'").ParentProcessId
 $EXE_PATH = (Get-Process -Id $PPID -FileVersionInfo).FileName
 $THIS_DIR = [System.IO.Path]::GetDirectoryName( $EXE_PATH )
 $RES_DIR  = Get-Location
 Set-Location $THIS_DIR
+# ------------------------------------------------
 ''')
     
     VBS_IEXPRESS_INIT=(
 r''' 
-' IExpress Initialization
+' >>> IExpress Initialization <<<
 Dim PID, PPID, EXE_PATH, THIS_DIR, RES_DIR
 sub IExpressInit()
     Dim oShell : Set oShell = CreateObject( "WScript.Shell" )
@@ -626,11 +651,12 @@ sub IExpressInit()
     oShell.CurrentDirectory = THIS_DIR
 End Sub
 Call IExpressInit
+' ------------------------------------------------
 ''')
 
     __initSnippets = { ExecutableScript.BATCH_EXT : BAT_IEXPRESS_INIT
-                     , ExecutableScript.PS_EXT    : PS_IEXPRESS_INIT
-                     , ExecutableScript.VBS_EXT   : VBS_IEXPRESS_INIT
+                     , ExecutableScript.POWERSHELL_EXT    : PS_IEXPRESS_INIT
+                     , ExecutableScript.VBSCRIPT_EXT   : VBS_IEXPRESS_INIT
                      }
 
     def __init__( self, configFactory,                  

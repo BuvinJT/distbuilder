@@ -1203,8 +1203,8 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
     
     SHELL_EXT       = "sh"
     BATCH_EXT       = "bat"
-    VBS_EXT         = "vbs"
-    PS_EXT          = "ps1"
+    VBSCRIPT_EXT    = "vbs"
+    POWERSHELL_EXT  = "ps1"
     APPLESCRIPT_EXT = "scpt"
 
     __WIN_DEFAULT_EXT  = BATCH_EXT 
