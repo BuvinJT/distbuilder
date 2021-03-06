@@ -1,6 +1,8 @@
 from distbuilder import( WinScriptToBinPackageProcess, ConfigFactory,
                          ExecutableScript )
 
+DEMO_TYPE = ExecutableScript.BATCH_EXT
+
 def openTextFileScript( scriptExt, fileName ):
     scriptOptions = {
           ExecutableScript.BATCH_EXT : 
@@ -26,11 +28,9 @@ f.binaryName       = "HelloScriptResources"
 f.version          = (1,0,0,0)
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
 f.distResources    = ["../hello_world_tk/LICENSE.TXT"]
-f.entryPointScript = openTextFileScript( ExecutableScript.BATCH_EXT, 
-                                         "LICENSE.TXT" )
+f.entryPointScript = openTextFileScript( DEMO_TYPE, "LICENSE.TXT" )
  
 p = WinScriptToBinPackageProcess( configFactory, isDesktopTarget=True,
-                                  isZipped=False )
-p.isExeTest = True
+                                  isZipped=True )
 p.run()       
 
