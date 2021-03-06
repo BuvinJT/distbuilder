@@ -1201,8 +1201,14 @@ VSVersionInfo(
 # -----------------------------------------------------------------------------            
 class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all of it   
     
-    __WIN_DEFAULT_EXT  = "bat" 
-    __NIX_DEFAULT_EXT  = "sh"    
+    SHELL_EXT       = "sh"
+    BATCH_EXT       = "bat"
+    VBS_EXT         = "vbs"
+    PS_EXT          = "ps"
+    APPLESCRIPT_EXT = "scpt"
+
+    __WIN_DEFAULT_EXT  = BATCH_EXT 
+    __NIX_DEFAULT_EXT  = SHELL_EXT    
     __PLAT_DEFAULT_EXT = __WIN_DEFAULT_EXT if IS_WINDOWS else __NIX_DEFAULT_EXT
 
     __SUPPORTED_EXECUTE_EXTS = [ __PLAT_DEFAULT_EXT ]

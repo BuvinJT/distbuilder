@@ -594,6 +594,40 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
 # -----------------------------------------------------------------------------
 class WinScriptToBinPackageProcess( _DistBuildProcessBase ):
 
+    BAT_IEXPRESS_INIT=(
+r''' 
+''')
+
+    PS_IEXPRESS_INIT=(
+r''' 
+$PPID = (gwmi win32_process | ? processid -eq  $PID).parentprocessid
+Write-Host "PPID: $PPID"
+''')
+    
+    VBS_IEXPRESS_INIT=(
+r''' 
+Dim PID, PPID, EXE_PATH, THIS_DIR, RES_DIR
+sub IExpressInit()
+    Dim oShell : Set oShell = CreateObject( "WScript.Shell" )
+    Dim oFSO   : Set oFSO   = CreateObject( "Scripting.FileSystemObject" )
+    Dim oWMI   : Set oWMI   = GetObject( "winmgmts:root\cimv2" )
+    Dim oCmd   : Set oCmd   = CreateObject( "WScript.Shell" ).Exec( "%ComSpec%" )
+    PID = oWMI.Get( "Win32_Process.Handle='" & oCmd.ProcessID & "'" ).ParentProcessId
+    oCmd.Terminate
+    PPID = oWMI.Get( "Win32_Process.Handle='" & PID & "'" ).ParentProcessId
+    EXE_PATH = oWMI.Get( "Win32_Process.Handle='" & PPID & "'" ).ExecutablePath
+    RES_DIR  = oShell.CurrentDirectory
+    THIS_DIR = oFSO.GetParentFolderName( EXE_PATH )
+    oShell.CurrentDirectory = THIS_DIR
+End Sub
+Call IExpressInit
+''')
+
+    __initSnippets = { ExecutableScript.BATCH_EXT : BAT_IEXPRESS_INIT
+                     , ExecutableScript.PS_EXT    : PS_IEXPRESS_INIT
+                     , ExecutableScript.VBS_EXT   : VBS_IEXPRESS_INIT
+                     }
+
     def __init__( self, configFactory,                  
                   name="WinScript to Binary Package Process",
                   isZipped=False, isDesktopTarget=False, isHomeDirTarget=False ) :
@@ -602,7 +636,10 @@ class WinScriptToBinPackageProcess( _DistBuildProcessBase ):
         self.isZipped = isZipped
         self.isDesktopTarget = isDesktopTarget
         self.isHomeDirTarget = isHomeDirTarget
-
+        
+        # True==Default Process Info Injection, else the literal value
+        self.scriptHeader = True 
+        
         self.isExeTest              = False
         self.isElevatedTest         = False
         self.exeTestArgs            = []                
@@ -614,17 +651,19 @@ class WinScriptToBinPackageProcess( _DistBuildProcessBase ):
         
         # TODO: apply self.configFactory.sourceDir...
         
-        isOnTheFly = isinstance( 
-            self.configFactory.entryPointScript, ExecutableScript )
-        scriptPath =( self.configFactory.entryPointScript.filePath() 
-                      if isOnTheFly else
-                      self.configFactory.entryPointScript )
+        script = self.configFactory.entryPointScript
+        
+        isOnTheFly = isinstance( script, ExecutableScript )
+        scriptPath = script.filePath() if isOnTheFly else script
         exePath = joinPath( self.configFactory.binaryName, 
                             self.configFactory.binaryName )    
-
-        if isOnTheFly: self.configFactory.entryPointScript.write()
+        if isOnTheFly:
+            initSnippet = self.__initSnippets.get( script.extension )
+            if initSnippet: script.script = initSnippet + script.script
+            script.write()
+            
         self.binDir, self.binPath = winScriptToExe( scriptPath, exePath )
-        if isOnTheFly: self.configFactory.entryPointScript.remove()
+        if isOnTheFly: script.remove()
                 
         embedExeVerInfo( self.binPath, self.configFactory.exeVersionInfo() )        
         if self.configFactory.iconFilePath: 
