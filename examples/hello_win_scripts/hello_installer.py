@@ -14,10 +14,13 @@ f.iconFilePath     = "../hello_world_tk/demo.ico"
 f.distResources    = [ LICENSE_FILE_PATH ]
 f.setupName        = "HelloWinScriptSetup"
 f.entryPointScript = ExecutableScript( "openTextFile", 
-    extension=ExecutableScript.POWERSHELL_EXT, script=( 
-    r'Start-Process -FilePath "$env:windir\system32\notepad.exe"'
-        r' -ArgumentList "{fileName}"'
-    ), replacements={ "fileName" : baseFileName(LICENSE_FILE_PATH) } )
+    extension=ExecutableScript.POWERSHELL_EXT, script=([ 
+      r'Add-Type -AssemblyName PresentationCore,PresentationFramework'
+    , r'[System.Windows.MessageBox]::Show( '
+            r'"Click OK to continue..." )'      
+    , r'Start-Process -FilePath "$env:windir\system32\notepad.exe"'
+            r' -ArgumentList "{fileName}"'                        
+    ]), replacements={ "fileName" : baseFileName(LICENSE_FILE_PATH) } )
 
 p = WinScriptToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True

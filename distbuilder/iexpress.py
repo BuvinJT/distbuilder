@@ -1,9 +1,82 @@
 from distbuilder import util 
 from distbuilder.util import *  # @UnusedWildImport
 
-class WinScriptConfig:
+def _IExpressScript( srcPath, destPath, isSrcRemoved=False, name=None ):            
+    script=(
+"""
+;@echo off
+
+;set "SOURCE_PATH={srcPath}"
+;set "TARGET_PATH={destPath}"
+
+;for %%I in ("%TARGET_PATH%") do set "target.exe=%%~I"
+;for %%I in ("%SOURCE_PATH%") do set "script_file=%%~fI"
+;for %%I in ("%SOURCE_PATH%") do set "script_name=%%~nxI"
+;for %%I in ("%SOURCE_PATH%") do set "script_dir=%%~dpI"
+
+;copy /y "%~f0" "%temp%\\2exe.sed" >nul
+
+;(echo()>>"%temp%\\2exe.sed"
+;(echo(AppLaunched={command})>>"%temp%\\2exe.sed"
+;(echo(TargetName="%target.exe%")>>"%temp%\\2exe.sed"
+;(echo(FILE0="%script_name%")>>"%temp%\\2exe.sed"
+;(echo([SourceFiles])>>"%temp%\\2exe.sed"
+;(echo(SourceFiles0="%script_dir%")>>"%temp%\\2exe.sed"
+;(echo([SourceFiles0])>>"%temp%\\2exe.sed"
+;(echo(%%FILE0%%=)>>"%temp%\\2exe.sed"
+
+;iexpress /n /q /m %temp%\\2exe.sed
+
+;del /q /f "%temp%\\2exe.sed"
+;{removeSrc}
+;exit /b 0
+
+[Version]
+Class=IEXPRESS
+SEDVersion=3
+[Options]
+PackagePurpose=InstallApp
+ShowInstallProgramWindow=1
+HideExtractAnimation=1
+UseLongFileName=1
+InsideCompressed=0
+CAB_FixedSize=0
+CAB_ResvCodeSigning=0
+RebootMode=N
+InstallPrompt=%InstallPrompt%
+DisplayLicense=%DisplayLicense%
+FinishMessage=%FinishMessage%
+TargetName=%TargetName%
+FriendlyName=%FriendlyName%
+AppLaunched=%AppLaunched%
+PostInstallCmd=%PostInstallCmd%
+AdminQuietInstCmd=%AdminQuietInstCmd%
+UserQuietInstCmd=%UserQuietInstCmd%
+SourceFiles=SourceFiles
+
+[Strings]
+InstallPrompt=
+DisplayLicense=
+FinishMessage=
+FriendlyName=-
+PostInstallCmd=<None>
+AdminQuietInstCmd=
+UserQuietInstCmd=
+""")
+    ext = fileExt( srcPath ).lower()                        
+    if   ext==".vbs":
+        command = 'cscript.exe "%script_name%"'
+    elif ext==".ps1":
+        command = 'powershell.exe -ExecutionPolicy Bypass -InputFormat None -File "%script_name%"'
+    else:    
+        command = 'cmd.exe /c "%script_name%"'
+    removeSrc = 'del /q /f "%s"' % (srcPath,) if isSrcRemoved else "" 
+    if name is None: name = "iexpress-build"
+    return ExecutableScript( name, script=script, replacements={
+        "srcPath": srcPath, "destPath": destPath,
+        "command": command, "removeSrc": removeSrc } )
     
-    BAT_IEXPRESS_INIT=(
+BATCH_IEXPRESS_EXE_INIT=(
 r'''
 :: >>> IExpress Initialization <<<
 @echo off
@@ -30,7 +103,7 @@ cd "%THIS_DIR%"
 :: ------------------------------------------------ 
 ''')
 
-    PS_IEXPRESS_INIT=(
+POWERSHELL_IEXPRESS_EXE_INIT=(
 r''' 
 # >>> IExpress Initialization <<<
 # $PID is implicitly defined!
@@ -42,7 +115,7 @@ Set-Location $THIS_DIR
 # ------------------------------------------------
 ''')
     
-    VBS_IEXPRESS_INIT=(
+VBSCRIPT_IEXPRESS_EXE_INIT=(
 r''' 
 ' >>> IExpress Initialization <<<
 Dim PID, PPID, EXE_PATH, THIS_DIR, RES_DIR
@@ -63,10 +136,13 @@ Call IExpressInit
 ' ------------------------------------------------
 ''')
 
-    initSnippets = { ExecutableScript.BATCH_EXT      : BAT_IEXPRESS_INIT
-                   , ExecutableScript.POWERSHELL_EXT : PS_IEXPRESS_INIT
-                   , ExecutableScript.VBSCRIPT_EXT   : VBS_IEXPRESS_INIT
-                   }
+class WinScriptConfig:
+
+    initSnippets = { 
+          ExecutableScript.BATCH_EXT      : BATCH_IEXPRESS_EXE_INIT
+        , ExecutableScript.POWERSHELL_EXT : POWERSHELL_IEXPRESS_EXE_INIT
+        , ExecutableScript.VBSCRIPT_EXT   : VBSCRIPT_IEXPRESS_EXE_INIT
+    }
 
     def __init__( self ):
         self.name             = None
@@ -94,7 +170,7 @@ def winScriptToExe( name=None, entryPointScript=None,
     if distDirs is None: distDirs=[]
      
     # Resolve WinScriptConfig and the overlapping parameters passed directly
-    # (PyInstallerConfig values are given priority)    
+    # (WinScriptConfig values are given priority)    
     if winScriptConfig is None: 
         winScriptConfig = WinScriptConfig()
         winScriptConfig.name             = name
@@ -142,7 +218,6 @@ def winScriptToExe( name=None, entryPointScript=None,
             winScriptConfig.iconFilePath,
             basePath=winScriptConfig.sourceDir ) )
         
-    # TODO: Eliminate code duplication from py_installer.pyScriptToExe        
     # Add additional distribution resources        
     for res in winScriptConfig.distResources:
         src, dest = util._toSrcDestPair( res, destDir=destDirPath,
@@ -168,10 +243,9 @@ def winScriptToExe( name=None, entryPointScript=None,
     return dirPath( destPath ), destPath         
 
 def __runIExpress( scrScriptPath, destExePath ):        
-    from distbuilder.qt_installer import QtIfwExternalOp
     scrScriptPath = absPath( scrScriptPath )
     destExePath = absPath( normBinaryName( destExePath,isPathPreserved=True ) )    
-    QtIfwExternalOp.Script2ExeScript( scrScriptPath, destExePath )._execute( 
+    _IExpressScript( scrScriptPath, destExePath )._execute( 
         isOnTheFly=True, isDebug=True )
     if not isFile( destExePath ):
         raise DistBuilderError( "Failed to create executable: %s" %
