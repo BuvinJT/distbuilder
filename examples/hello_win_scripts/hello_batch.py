@@ -11,5 +11,6 @@ f.iconFilePath     = "../hello_world_tk/demo.ico"
 f.entryPointScript = "hello.bat"  
 
 p = WinScriptToBinPackageProcess( configFactory, isDesktopTarget=True )
+p.isExeTest=True
 p.run()       
 

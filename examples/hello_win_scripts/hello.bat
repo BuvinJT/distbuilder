@@ -11,9 +11,11 @@ ECHO "Hello World!" > "%filePath%"
 
 IF EXIST "%filePath%" (
     ECHO "Created: %filePath%" 
+    start "Success" /wait cmd /c "echo Created: %filePath% & pause"
     SET retCode=%SUCCESS_CODE%
 ) else (
     ECHO "Could not create: %filePath%" 1>&2
+    start "Error" /wait cmd /c "echo Could not create: %filePath% & pause"
     SET retCode=%ERROR_CODE%
 )
 

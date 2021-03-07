@@ -31,6 +31,7 @@ f.distResources    = ["../hello_world_tk/LICENSE.TXT"]
 f.entryPointScript = openTextFileScript( DEMO_TYPE, "LICENSE.TXT" )
  
 p = WinScriptToBinPackageProcess( configFactory, isDesktopTarget=True,
-                                  isZipped=True )
+                                  isZipped=False )
+p.isExeTest=True # Can't use with isZipped per the details of this *specific* demo
 p.run()       
 

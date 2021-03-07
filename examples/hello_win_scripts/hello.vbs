@@ -18,10 +18,12 @@ oFile.Close
 Set oFile = Nothing
 
 If oFSO.FileExists( sFilePath ) Then
-    WScript.StdOut.WriteLine ("Created: " & sFilePath)
+    WScript.StdOut.WriteLine "Created: " & sFilePath
+    MsgBox "Created: " & sFilePath, vbOKOnly+vbInformation, "Success"
     nRetCode = SUCCESS_CODE
 Else
-    WScript.StdErr.WriteLine ("Could not create: " & sFilePath)
+    WScript.StdErr.WriteLine "Could not create: " & sFilePath
+    MsgBox "Could not create: " & sFilePath, vbOKOnly+vbCritical, "Error"
     nRetCode = ERROR_CODE    
 End If
 
