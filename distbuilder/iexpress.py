@@ -17,9 +17,9 @@ for %%t in ("%temp%\%~nx0.%random%%random%%random%%random%%random%.tmp") do > "%
 ) & 2>nul del /q "%%~ft"
 for %%t in ("%temp%\%~nx0.%random%%random%%random%%random%%random%.tmp") do > "%%~ft" (
     wmic process where "ProcessId='%PPID%'" get ExecutablePath
-    for /f "skip=1" %%a in ('type "%%~ft"') do set "EXE_PATH=%%a"
+    for /f "delims=" %%a in ('type "%%~ft"') do set "EXE_PATH=%%a"
 ) & 2>nul del /q "%%~ft"
-call :__dirname THIS_DIR %EXE_PATH%
+call :__dirname THIS_DIR "%EXE_PATH%"
 goto :__skip_dirname
 :__dirname <resultVar> <pathVar> 
 ( set "%~1=%~dp2" && exit /b )

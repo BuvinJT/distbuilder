@@ -1,5 +1,7 @@
 from distbuilder import( WinScriptToBinInstallerProcess, ConfigFactory,
-                         ExecutableScript )
+                         ExecutableScript, baseFileName ) 
+
+LICENSE_FILE_PATH = "../hello_world_tk/LICENSE.TXT"
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Windows Script Example"
@@ -9,11 +11,14 @@ f.companyLegalName = "Some Company Inc."
 f.binaryName       = "HelloWinScript"
 f.version          = (1,0,0,0)
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
-f.distResources    = ["../hello_world_tk/LICENSE.TXT"]
-f.entryPointScript = ExecutableScript( "openTextFile", script=( 
-    r'start "" "%windir%\system32\notepad.exe" "LICENSE.TXT"' ) )
+f.distResources    = [ LICENSE_FILE_PATH ]
 f.setupName        = "HelloWinScriptSetup"
- 
+f.entryPointScript = ExecutableScript( "openTextFile", 
+    extension=ExecutableScript.POWERSHELL_EXT, script=( 
+    r'Start-Process -FilePath "$env:windir\system32\notepad.exe"'
+        r' -ArgumentList "{fileName}"'
+    ), replacements={ "fileName" : baseFileName(LICENSE_FILE_PATH) } )
+
 p = WinScriptToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True
 p.run()       

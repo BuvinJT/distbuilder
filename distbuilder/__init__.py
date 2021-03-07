@@ -164,6 +164,7 @@ from distbuilder.util import(
     , splitPath 
     , splitExt 
     , joinExt 
+    , baseFileName
     , rootFileName 
     , normBinaryName 
     , normIconName 
