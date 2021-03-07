@@ -3,29 +3,12 @@
 
 ## Stand Alone Executables 
 
-### installPyInstaller, uninstallPyInstaller
-
-Distbuilder builds executables from Python source via PyInstaller.  For convenience,
-these install/uninstall functions for the tool are provided.  Note, you may install  
-a specific version if desired, in this (example) manner:  
-
-	installPyInstaller( version="3.4" )
-
-### PyInstallerVersion, PyInstallerMajorVer, PyInstallerMajorMinorVer
-
-These functions have been provided to help you in circumstances where you need to 
-pivot on the specific PyInstaller version installed. `PyInstallerVersion()` returns
-the string representation, pulled directly from the library.
-`PyInstallerMajorVer()`, just the major version explicitly cast as an integer.     
-`PyInstallerMajorMinorVer()`, returns a 2 element tuple with major *and* minor versions
-explicitly cast as integers.     
-
-### buildExecutable
+### pyScriptToExe
         
 To build a stand-alone binary distribution of a Python
-program, invoke the buildExecutable function: 
+program, invoke the pyScriptToExe function: 
 
-    buildExecutable( name=None, entryPointPy=None,
+    pyScriptToExe( name=None, entryPointPy=None,
         			 pyInstConfig=PyInstallerConfig(), 
         			 opyConfig=None, 
 				     distResources=[], distDirs=[] )
@@ -83,6 +66,23 @@ program, invoke the buildExecutable function:
     a source to copy.  This additional option is
     for adding new empty directories.  
 
+### installPyInstaller, uninstallPyInstaller
+
+Distbuilder builds executables from Python source via PyInstaller.  For convenience,
+these install/uninstall functions for the tool are provided.  Note, you may install  
+a specific version if desired, in this (example) manner:  
+
+	installPyInstaller( version="3.4" )
+
+### PyInstallerVersion, PyInstallerMajorVer, PyInstallerMajorMinorVer
+
+These functions have been provided to help you in circumstances where you need to 
+pivot on the specific PyInstaller version installed. `PyInstallerVersion()` returns
+the string representation, pulled directly from the library.
+`PyInstallerMajorVer()`, just the major version explicitly cast as an integer.     
+`PyInstallerMajorMinorVer()`, returns a 2 element tuple with major *and* minor versions
+explicitly cast as integers.     
+
 ### makePyInstSpec
 
 To generate a PyInstaller .spec file, using the secondary
@@ -103,7 +103,7 @@ invoke the makePyInstSpec function:
 **opyConfig**: An (optional) [OpyConfig](ConfigClasses.md#opyconfig) object, 
 	providing supplemental details regarding the spec file
 	creation.  Be sure to include this if you desire obfuscation
-	and will be subsequently invoking the buildExecutable function.
+	and will be subsequently invoking the pyScriptToExe function.
       	                    
 ## Installers 
             
@@ -194,7 +194,7 @@ a default version will be assumed.
      the sub directory where your content will be 
      dynamically copied to within the installer, and the 
      `pkgSrcDirPath` (most typically the `binDir` returned 
-     by [buildExecutable](#buildexecutable)), which is source path of the 
+     by [pyScriptToExe](#pyscripttoexe)), which is source path of the 
      content. 
     
 **isSilent**: When `isSilent` is enabled, the QtIFW installer produced will not display 
@@ -1019,7 +1019,7 @@ converting it to binary) invoke obfuscatePy:
     
 Upon invoking this, you will be left with an "obfuscated"
 directory adjacent to your build script.  This is a useful 
-preliminary step to take, prior to running buildExecutable, 
+preliminary step to take, prior to running pyScriptToExe, 
 so that you may inspect and test the obfuscation results 
 before building the final distribution package.
                
@@ -1260,7 +1260,7 @@ following to test the success of the operation:
          wrkDir=None, isElevated=False, isDebug=False )      
 
 **binPath**: The path to the binary to be executed. 
-Note that the path is returned by `buildExecutable`, 
+Note that the path is returned by `pyScriptToExe`, 
 which allows the results of that to flow
 directly into this function.  
 

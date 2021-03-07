@@ -99,7 +99,7 @@ class PyInstallerConfig:
                
         self.otherPyInstArgs = "" # open ended
         
-        # Not directly fed into the utility. Employed by buildExecutable function.       
+        # Not directly fed into the utility. Employed by pyScriptToExe function.       
         self._pngIconResPath   = None
         self.distResources     = []
         self.distDirs          = [] 
@@ -356,10 +356,10 @@ def PyInstallerMajorMinorVer():
     major, minor = versionTuple( PyInstallerVersion(), parts=2 ) 
     return int(major), int(minor)
 
-def buildExecutable( name=None, entryPointPy=None, 
-                     pyInstConfig=PyInstallerConfig(), 
-                     opyConfig=None,                    
-                     distResources=None, distDirs=None ):
+def pyScriptToExe( name=None, entryPointPy=None, 
+                   pyInstConfig=PyInstallerConfig(), 
+                   opyConfig=None,                    
+                   distResources=None, distDirs=None ):
     ''' returns: (binDir, binPath) '''   
     
     if distResources is None: distResources=[]

@@ -2,10 +2,15 @@ from distbuilder import util    # @UnusedImport
 from distbuilder.util import * # @UnusedWildImport
 
 from distbuilder.py_installer import (
-      buildExecutable 
+      pyScriptToExe 
     , makePyInstSpec 
     , PyInstallerConfig 
     , PyInstSpec 
+)
+
+from distbuilder.iexpress import (
+      WinScriptConfig 
+    , winScriptToExe
 )
 
 from distbuilder.opy_library import (
@@ -128,6 +133,7 @@ class ConfigFactory:
 
         # Configurations for specific package types               
         self.__pkgPyInstConfig = None
+        self.__pkgWinScriptConfig = None
         self.qtCppConfig = None
                             
     def pyInstallerConfig( self ): 
@@ -145,6 +151,17 @@ class ConfigFactory:
         return cfg
 
     if IS_WINDOWS :
+
+        def winScriptConfig( self ):        
+            cfg = WinScriptConfig()            
+            cfg.name             = self.binaryName
+            cfg.sourceDir        = self.sourceDir
+            cfg.entryPointScript = self.entryPointScript
+            cfg.versionInfo      = self.exeVersionInfo()
+            cfg.iconFilePath     = self.iconFilePath
+            cfg.distResources    = self.distResources
+            return cfg
+        
         def exeVersionInfo( self, ifwConfig=None ):
             verInfo = WindowsExeVersionInfo()
             if ifwConfig:
@@ -228,8 +245,9 @@ class ConfigFactory:
                                  _QtIfwScript.TARGET_EXISTS_OPT_REMOVE } 
         return script
     
-    def qtIfwPackage( self, pyInstConfig=None, isTempSrc=False ):
-        self.__pkgPyInstConfig = pyInstConfig
+    def qtIfwPackage( self, pyInstConfig=None, winScriptConfig=None, isTempSrc=False ):
+        self.__pkgPyInstConfig = pyInstConfig        
+        self.__pkgWinScriptConfig = winScriptConfig
         pkgType=self.__ifwPkgType()
 
         if IS_WINDOWS and self.startOnBoot in [True, CURRENT_USER, ALL_USERS]:
@@ -396,14 +414,16 @@ class ConfigFactory:
     def __ifwPkgId( self ):
         if self.ifwPkgId : return self.ifwPkgId
         if self.cfgId : return self.cfgId
-        prod = ( self.__pkgPyInstConfig.name if self.__pkgPyInstConfig 
-                 else self.productName )        
+        prod =( self.__pkgPyInstConfig.name if self.__pkgPyInstConfig 
+                else self.__pkgWinScriptConfig.name if self.__pkgWinScriptConfig
+                else self.productName )        
         prod = prod.replace(" ", "").replace(".", "").lower()            
         return prod
 
     def __ifwPkgType( self ):
         if self.pkgType is not None: return self.pkgType
         if self.__pkgPyInstConfig : return QtIfwPackage.Type.PY_INSTALLER
+        if self.__pkgWinScriptConfig: return QtIfwPackage.Type.WINSCRIPT
         if self.pkgSrcExePath is None:
             return ( QtIfwPackage.Type.DATA if self.binaryName is None else
                      QtIfwPackage.Type.PY_INSTALLER )
@@ -414,15 +434,18 @@ class ConfigFactory:
         comp = ( self.companyTradeName if self.companyTradeName
                  else self.companyLegalName )
         comp = comp.replace(" ", "").replace(".", "").lower()
-        prod = ( self.__pkgPyInstConfig.name if self.__pkgPyInstConfig 
-                 else self.productName )        
+        prod =( self.__pkgPyInstConfig.name if self.__pkgPyInstConfig 
+                else self.__pkgWinScriptConfig.name if self.__pkgWinScriptConfig
+                else self.productName )        
         prod = prod.replace(" ", "").replace(".", "").lower()            
         return "%s.%s.%s" % (self.ifwPkgNamePrefix, comp, prod)
 
     def __pkgSrcDirPath( self ):
         if self.__pkgPyInstConfig : return absPath( self.__pkgPyInstConfig.name )
+        if self.__pkgWinScriptConfig : return absPath( self.__pkgWinScriptConfig.name )
         if self.pkgSrcDirPath : return self.pkgSrcDirPath
-        if( self.__ifwPkgType()==QtIfwPackage.Type.PY_INSTALLER and 
+        if( self.__ifwPkgType() in [QtIfwPackage.Type.PY_INSTALLER,
+                                    QtIfwPackage.Type.WINSCRIPT] and             
             self.binaryName ): 
             return absPath( self.binaryName )               
         return None                 
@@ -547,8 +570,8 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
         spec.debug()
             
         self.binDir, self.binPath = (
-            buildExecutable( pyInstConfig=self._pyInstConfig, 
-                             opyConfig=opyConfig ) )
+            pyScriptToExe( pyInstConfig=self._pyInstConfig, 
+                           opyConfig=opyConfig ) )
         
         if self.configFactory.codeSignConfig :
             signExe( self.binPath, self.configFactory.codeSignConfig ) 
@@ -593,72 +616,6 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
 
 # -----------------------------------------------------------------------------
 class WinScriptToBinPackageProcess( _DistBuildProcessBase ):
-
-    BAT_IEXPRESS_INIT=(
-r'''
-:: >>> IExpress Initialization <<<
-@echo off
-for %%t in ("%temp%\%~nx0.%random%%random%%random%%random%%random%.tmp") do > "%%~ft" (
-    wmic process where "Name='wmic.exe' and CommandLine like '%%_%random%%random%%random%_%%'" get ParentProcessId
-    for /f "skip=1" %%a in ('type "%%~ft"') do set "PID=%%a"
-) & 2>nul del /q "%%~ft"
-for %%t in ("%temp%\%~nx0.%random%%random%%random%%random%%random%.tmp") do > "%%~ft" (
-    wmic process where "ProcessId='%PID%'" get ParentProcessId
-    for /f "skip=1" %%a in ('type "%%~ft"') do set "PPID=%%a"
-) & 2>nul del /q "%%~ft"
-for %%t in ("%temp%\%~nx0.%random%%random%%random%%random%%random%.tmp") do > "%%~ft" (
-    wmic process where "ProcessId='%PPID%'" get ExecutablePath
-    for /f "skip=1" %%a in ('type "%%~ft"') do set "EXE_PATH=%%a"
-) & 2>nul del /q "%%~ft"
-call :__dirname THIS_DIR %EXE_PATH%
-goto :__skip_dirname
-:__dirname <resultVar> <pathVar> 
-( set "%~1=%~dp2" && exit /b )
-:__skip_dirname
-set "THIS_DIR=%THIS_DIR:~0,-1%"
-set "RES_DIR=%CD%"
-cd "%THIS_DIR%"
-:: ------------------------------------------------ 
-''')
-
-    PS_IEXPRESS_INIT=(
-r''' 
-# >>> IExpress Initialization <<<
-# $PID is implicitly defined!
-$PPID     = (gwmi win32_process -Filter "processid='$PID'").ParentProcessId
-$EXE_PATH = (Get-Process -Id $PPID -FileVersionInfo).FileName
-$THIS_DIR = [System.IO.Path]::GetDirectoryName( $EXE_PATH )
-$RES_DIR  = Get-Location
-Set-Location $THIS_DIR
-# ------------------------------------------------
-''')
-    
-    VBS_IEXPRESS_INIT=(
-r''' 
-' >>> IExpress Initialization <<<
-Dim PID, PPID, EXE_PATH, THIS_DIR, RES_DIR
-sub IExpressInit()
-    Dim oShell : Set oShell = CreateObject( "WScript.Shell" )
-    Dim oFSO   : Set oFSO   = CreateObject( "Scripting.FileSystemObject" )
-    Dim oWMI   : Set oWMI   = GetObject( "winmgmts:root\cimv2" )
-    Dim oCmd   : Set oCmd   = CreateObject( "WScript.Shell" ).Exec( "%ComSpec%" )
-    PID = oWMI.Get( "Win32_Process.Handle='" & oCmd.ProcessID & "'" ).ParentProcessId
-    oCmd.Terminate
-    PPID = oWMI.Get( "Win32_Process.Handle='" & PID & "'" ).ParentProcessId
-    EXE_PATH = oWMI.Get( "Win32_Process.Handle='" & PPID & "'" ).ExecutablePath
-    RES_DIR  = oShell.CurrentDirectory
-    THIS_DIR = oFSO.GetParentFolderName( EXE_PATH )
-    oShell.CurrentDirectory = THIS_DIR
-End Sub
-Call IExpressInit
-' ------------------------------------------------
-''')
-
-    __initSnippets = { ExecutableScript.BATCH_EXT : BAT_IEXPRESS_INIT
-                     , ExecutableScript.POWERSHELL_EXT    : PS_IEXPRESS_INIT
-                     , ExecutableScript.VBSCRIPT_EXT   : VBS_IEXPRESS_INIT
-                     }
-
     def __init__( self, configFactory,                  
                   name="WinScript to Binary Package Process",
                   isZipped=False, isDesktopTarget=False, isHomeDirTarget=False ) :
@@ -670,52 +627,23 @@ Call IExpressInit
         
         self.isExeTest              = False
         self.isElevatedTest         = False
-        self.exeTestArgs            = []                
+        self.exeTestArgs            = []          
+        
+        self._winScriptConfig = None
+              
         # Results
         self.binDir = None
         self.binPath = None
-        
+                    
     def _body( self ):        
+
+        self._winScriptConfig = self.configFactory.winScriptConfig()         
+        self.binDir, self.binPath = winScriptToExe( 
+                winScriptConfig=self._winScriptConfig )
         
-        # TODO: apply self.configFactory.sourceDir...
-        
-        script = self.configFactory.entryPointScript
-        
-        isOnTheFly = isinstance( script, ExecutableScript )
-        scriptPath = script.filePath() if isOnTheFly else script
-        exePath = joinPath( self.configFactory.binaryName, 
-                            self.configFactory.binaryName )    
-        if isOnTheFly:
-            initSnippet = self.__initSnippets.get( script.extension )
-            if initSnippet: script.script = initSnippet + script.script
-            script.write()
-            
-        self.binDir, self.binPath = winScriptToExe( scriptPath, exePath )
-        if isOnTheFly: script.remove()
-                
-        embedExeVerInfo( self.binPath, self.configFactory.exeVersionInfo() )        
-        if self.configFactory.iconFilePath: 
-            embedExeIcon( self.binPath, self.configFactory.iconFilePath )
-                
         if self.configFactory.codeSignConfig :
             signExe( self.binPath, self.configFactory.codeSignConfig ) 
-            
-        # TODO: Eliminate code duplication from py_installer.buildExecutable        
-        # Add additional distribution resources        
-        for res in self.configFactory.distResources:
-            src, dest = util._toSrcDestPair( res, destDir=self.binDir )
-            print( 'Copying "%s" to "%s"...' % ( src, dest ) )
-            if isFile( src ) :
-                destDir = dirPath( dest )
-                if not exists( destDir ): makeDir( destDir )
-                try: copyFile( src, dest ) 
-                except Exception as e: printExc( e )
-            elif isDir( src ):
-                try: copyDir( src, dest ) 
-                except Exception as e: printExc( e )
-            else:
-                printErr( 'Invalid path: "%s"' % (src,) )                            
-            
+    
         # TODO: Eliminate code duplication from PyToBinPackageProcess        
         destDirPath =( util._userDesktopDirPath() if self.isDesktopTarget else 
                        util._userHomeDirPath()    if self.isHomeDirTarget else 
@@ -757,11 +685,15 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
 
     def __init__( self, configFactory,
                   name="Build Installer Process",  
-                  pyToBinPkgProcesses=None, ifwPackages=None,                                                                                   
+                  pyToBinPkgProcesses=None, 
+                  winScriptToBinPkgProcesses=None,
+                  ifwPackages=None,                                                                                   
                   isDesktopTarget=False, isHomeDirTarget=False ) :
         _DistBuildProcessBase.__init__( self, configFactory, name )
         self.pyToBinPkgProcesses =( pyToBinPkgProcesses 
-                                    if pyToBinPkgProcesses else [] )        
+                                    if pyToBinPkgProcesses else [] )
+        self.winScriptToBinPkgProcesses=( winScriptToBinPkgProcesses
+                                        if winScriptToBinPkgProcesses else [] )        
         self.ifwPackages         = ifwPackages if ifwPackages else [] 
         self.isDesktopTarget     = isDesktopTarget
         self.isHomeDirTarget     = isHomeDirTarget
@@ -778,10 +710,19 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
         for p in self.pyToBinPkgProcesses :
             p.run()
             self.ifwPackages.append(                
-                p.configFactory.qtIfwPackage( p._pyInstConfig, 
-                                              isTempSrc=True )
+                p.configFactory.qtIfwPackage(
+                    pyInstConfig=p._pyInstConfig, isTempSrc=True )
             )
         self.onPyPackagesBuilt( self.ifwPackages )
+        
+        if IS_WINDOWS:
+            for p in self.winScriptToBinPkgProcesses:
+                p.run()
+                self.ifwPackages.append(                
+                    p.configFactory.qtIfwPackage( 
+                        winScriptConfig=p._winScriptConfig, isTempSrc=True )
+                )
+            self.onWinScriptPackagesBuilt( self.ifwPackages )
             
         ifwConfig = self.configFactory.qtIfwConfig( packages=self.ifwPackages )
         self.onQtIfwConfig( ifwConfig )     
@@ -834,11 +775,12 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
         
     # Override these to further customize the build process once the 
     # ConfigFactory has produced the initial config object
-    def onInitialize( self ):                """VIRTUAL"""
-    def onPyPackagesBuilt( self, pkgs ):     """VIRTUAL"""
-    def onQtIfwConfig( self, cfg ):          """VIRTUAL"""
-    def onPackagesStaged( self, cfg, pkgs ): """VIRTUAL"""     
-    def onFinalize( self ):                  """VIRTUAL"""
+    def onInitialize( self ):                   """VIRTUAL"""
+    def onPyPackagesBuilt( self, pkgs ):        """VIRTUAL"""
+    def onWinScriptPackagesBuilt( self, pkgs ): """VIRTUAL"""
+    def onQtIfwConfig( self, cfg ):             """VIRTUAL"""
+    def onPackagesStaged( self, cfg, pkgs ):    """VIRTUAL"""     
+    def onFinalize( self ):                     """VIRTUAL"""
     
 # -----------------------------------------------------------------------------                        
 class PyToBinInstallerProcess( _BuildInstallerProcess ):
@@ -873,13 +815,43 @@ class PyToBinInstallerProcess( _BuildInstallerProcess ):
     def onMakeSpec( self, spec ):         """VIRTUAL"""
     def onQtIfwConfig( self, cfg ):       """VIRTUAL"""                                                                
     def onFinalize( self ):               """VIRTUAL"""
+
+# -----------------------------------------------------------------------------                        
+class WinScriptToBinInstallerProcess( _BuildInstallerProcess ):
+    
+    def __init__( self, configFactory,                  
+                  name="Windows Script to Binary Installer Process",
+                  isDesktopTarget=False, isHomeDirTarget=False ) :
+        
+        class CallbackWinScriptToBinPackageProcess( WinScriptToBinPackageProcess ):
+            def __init__( self, parent, configFactory ):
+                WinScriptToBinPackageProcess.__init__( self, configFactory )
+                self.__parent = parent
+                                   
+        prc = CallbackWinScriptToBinPackageProcess( self, configFactory )
+        self.onWinScriptPackageProcess( prc )
+            
+        _BuildInstallerProcess.__init__( self, 
+            configFactory, name,
+            winScriptToBinPkgProcesses=[ prc ],                                         
+            isDesktopTarget=isDesktopTarget, 
+            isHomeDirTarget=isHomeDirTarget )
+
+    # Override these to further customize the build process once the 
+    # ConfigFactory has produced each initial config object
+    def onInitialize( self ):                    """VIRTUAL"""    
+    def onWinScriptPackageProcess( self, prc ):  """VIRTUAL"""
+    def onQtIfwConfig( self, cfg ):              """VIRTUAL"""                                                                
+    def onFinalize( self ):                      """VIRTUAL"""
                                                                                                 
 # -----------------------------------------------------------------------------                        
 class RobustInstallerProcess( _BuildInstallerProcess ):
     
     def __init__( self, masterConfigFactory, 
-                  name="Multi-Package Python to Binary Installer Process",
-                  pyPkgConfigFactoryDict=None, ifwPackages=None,                                     
+                  name="Robust Installer Process",
+                  pyPkgConfigFactoryDict=None,
+                  winScriptPkgConfigFactoryDict=None, 
+                  ifwPackages=None,                                     
                   isDesktopTarget=False, isHomeDirTarget=False ) :
                 
         class CallbackPyToBinPackageProcess( PyToBinPackageProcess ):
@@ -897,11 +869,23 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
                 self.__parent.onMakeSpec( self.__key, spec )       
             def onFinalize( self ):          
                 self.__parent.onPyPackageFinalize( self.__key )           
+
+        class CallbackWinScriptToBinPackageProcess( WinScriptToBinPackageProcess ):
+            def __init__( self, parent, key, configFactory ):
+                WinScriptToBinPackageProcess.__init__( self, configFactory )
+                self.__parent = parent
+                self.__key    = key                 
+            def onInitialize( self ):
+                self.__parent.onWinScriptPackageInitialize( self.__key )           
+            def onFinalize( self ):          
+                self.__parent.onWinScriptPackageFinalize( self.__key )           
     
         if pyPkgConfigFactoryDict is None: pyPkgConfigFactoryDict={}
+        if winScriptPkgConfigFactoryDict is None: 
+            winScriptPkgConfigFactoryDict={}
         if ifwPackages is None: ifwPackages=[]
 
-        binPrcs = []
+        pyBinPrcs = []
         for key, factory in iteritems( pyPkgConfigFactoryDict ) :        
             if factory is None :
                 factory = ConfigFactory.copy( masterConfigFactory )
@@ -909,25 +893,43 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
                 self.onConfigFactory( key, factory )
             prc = CallbackPyToBinPackageProcess( self, key, factory )
             self.onPyPackageProcess( key, prc )    
-            binPrcs.append( prc )        
+            pyBinPrcs.append( prc )        
+
+        if IS_WINDOWS:
+            winScriptBinPrcs = []
+            for key, factory in iteritems( winScriptPkgConfigFactoryDict ) :        
+                if factory is None :
+                    factory = ConfigFactory.copy( masterConfigFactory )
+                    factory.cfgId = key
+                    self.onConfigFactory( key, factory )
+                prc = CallbackWinScriptToBinPackageProcess( self, key, factory )
+                self.onWinScriptPackageProcess( key, prc )    
+                winScriptBinPrcs.append( prc )        
         
         _BuildInstallerProcess.__init__( self, 
             masterConfigFactory, name,
             ifwPackages=ifwPackages,
-            pyToBinPkgProcesses=binPrcs,                                         
+            pyToBinPkgProcesses=pyBinPrcs,                                         
             isDesktopTarget=isDesktopTarget, 
             isHomeDirTarget=isHomeDirTarget )
 
     # Override these to further customize the build process  
-    def onInitialize( self ):                     """VIRTUAL"""        
-    def onConfigFactory( self, key, factory ):    """VIRTUAL"""
-    def onPyPackageProcess( self, key, prc ):     """VIRTUAL"""
-    def onPyPackageInitialize( self, key ):       """VIRTUAL"""
-    def onOpyConfig( self, key, cfg ):            """VIRTUAL"""                    
-    def onPyInstConfig( self, key, cfg ):         """VIRTUAL"""
-    def onMakeSpec( self, key, spec ):            """VIRTUAL"""
-    def onPyPackageFinalize( self, key ):         """VIRTUAL"""           
-    def onPyPackagesBuilt( self, pkgs ):          """VIRTUAL"""
-    def onQtIfwConfig( self, cfg ):               """VIRTUAL"""     
-    def onPackagesStaged( self, cfg, pkgs ):      """VIRTUAL"""                                                     
-    def onFinalize( self ):                       """VIRTUAL"""
+    def onInitialize( self ):                        """VIRTUAL"""        
+    def onConfigFactory( self, key, factory ):       """VIRTUAL"""
+    
+    def onPyPackageProcess( self, key, prc ):        """VIRTUAL"""
+    def onPyPackageInitialize( self, key ):          """VIRTUAL"""
+    def onOpyConfig( self, key, cfg ):               """VIRTUAL"""                    
+    def onPyInstConfig( self, key, cfg ):            """VIRTUAL"""
+    def onMakeSpec( self, key, spec ):               """VIRTUAL"""
+    def onPyPackageFinalize( self, key ):            """VIRTUAL"""           
+    def onPyPackagesBuilt( self, pkgs ):             """VIRTUAL"""
+    
+    def onWinScriptPackageProcess( self, key, prc ): """VIRTUAL"""
+    def onWinScriptPackageInitialize( self, key ):   """VIRTUAL"""
+    def onWinScriptPackageFinalize( self, key ):     """VIRTUAL"""
+    def onWinScriptPackagesBuilt( self, pkgs ):      """VIRTUAL"""
+        
+    def onQtIfwConfig( self, cfg ):                  """VIRTUAL"""     
+    def onPackagesStaged( self, cfg, pkgs ):         """VIRTUAL"""                                                     
+    def onFinalize( self ):                          """VIRTUAL"""

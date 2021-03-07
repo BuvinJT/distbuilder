@@ -264,14 +264,14 @@ The `distResources` attribute is an optional list of external resources to bundl
 into the distribution package.  You may use a simple list of strings containing 
 file/directory names or paths *relative* to the build script directory. Else, you 
 may provide a list of two element tuples, with a specific source and destination. 
-See **distResources** within [buildExecutable](LowLevel.md#buildExecutable) for
+See **distResources** within [pyScriptToExe](LowLevel.md#pyscripttoexe) for
 more details on this.
     
 Notably, this attribute is used when generating a 
 [PyInstallerConfig](ConfigClasses.md#pyinstconfig)
 object when invoking the `pyInstallerConfig()` function for this class, 
 and then ultimately invoking the low level 
-[buildExecutable](LowLevel.md#buildExecutable) operation with that.
+[pyScriptToExe](LowLevel.md#pyscripttoexe) operation with that.
 Note this may be done for you via various high level process classes.
 
 This attribute is also used for producing a

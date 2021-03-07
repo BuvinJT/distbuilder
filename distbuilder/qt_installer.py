@@ -657,7 +657,7 @@ class QtIfwConfigXml( _QtIfwXml ):
 # -----------------------------------------------------------------------------
 class QtIfwPackage:
 
-    class Type: DATA, RESOURCE, PY_INSTALLER, QT_CPP = range(4)  
+    class Type: DATA, RESOURCE, PY_INSTALLER, WINSCRIPT, QT_CPP = range(5)  
     
     __PACKAGES_PATH_TMPLT       = "%s/packages"
     __DIR_PATH_TMPLT            = "%s/packages/%s"

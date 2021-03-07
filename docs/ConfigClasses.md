@@ -10,7 +10,7 @@ Many of these can be generated for you using the
 
 Objects of this type define *optional* details for building 
 binaries from .py scripts using the PyInstaller utility 
-invoked via the [buildExecutable](LowLevel.md#buildexecutable) function 
+invoked via the [pyScriptToExe](LowLevel.md#pyscripttoexe) function 
 (which maybe employed by higher level  
 [Process Classes](HighLevel.md#process-classes) under the hood).
 
@@ -53,7 +53,7 @@ Attributes & default values:
     isAutoElevated  = False        
     otherPyInstArgs = ""  (open ended argument string)    
 
-    (Not directly fed into the utility. Employed by buildExecutable function.)
+    (Not directly fed into the utility. Employed by pyScriptToExe function.)
     _pngIconResPath = None
     distResources   = []
     distDirs        = [] 

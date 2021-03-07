@@ -1355,19 +1355,6 @@ def signExe( exePath, codeSignConfig ):
     return __signExe( exePath, codeSignConfig )
                         
 # -----------------------------------------------------------------------------           
-def winScriptToExe( scrScriptPath, destExePath ):
-    if not IS_WINDOWS: _onPlatformErr()   
-    from distbuilder.qt_installer import QtIfwExternalOp
-    scrPath = absPath( scrScriptPath )
-    destPath = absPath( normBinaryName( destExePath, 
-                                        isPathPreserved=True ) )    
-    QtIfwExternalOp.Script2ExeScript( scrPath, destPath )._execute( 
-        isOnTheFly=True, isDebug=True )
-    if not isFile( destPath ):
-        raise DistBuilderError( "Failed to create executable: %s" %
-                                (destPath,) )
-    return dirPath( destPath ), destPath         
- 
 def embedExeVerInfo( exePath, exeVerInfo ):
     if not IS_WINDOWS: _onPlatformErr()
     from distbuilder.qt_installer import QtIfwExternalOp

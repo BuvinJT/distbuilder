@@ -4,7 +4,8 @@ from distbuilder.process import(
       ConfigFactory 
     , PyToBinPackageProcess 
     , WinScriptToBinPackageProcess
-    , PyToBinInstallerProcess 
+    , PyToBinInstallerProcess
+    , WinScriptToBinInstallerProcess
     , RobustInstallerProcess 
 )
 
@@ -15,14 +16,18 @@ from distbuilder.py_installer import(
       PyInstallerConfig 
     , PyInstSpec 
     , PyInstHook 
-    , WindowsExeVersionInfo 
-    , buildExecutable 
+    , pyScriptToExe
     , makePyInstSpec 
     , installPyInstaller 
     , uninstallPyInstaller 
     , PyInstallerVersion 
     , PyInstallerMajorVer 
     , PyInstallerMajorMinorVer
+)
+
+from distbuilder.iexpress import( 
+      WinScriptConfig
+    , winScriptToExe 
 )
 
 from distbuilder.qt_installer import( 
@@ -124,7 +129,8 @@ from distbuilder.code_sign import(
 )
             
 from distbuilder.util import( 
-      ExecutableScript 
+      ExecutableScript
+    , WindowsExeVersionInfo        
     , IS_WINDOWS 
     , IS_LINUX 
     , IS_MACOS 
@@ -195,7 +201,6 @@ from distbuilder.util import(
     , versionNo 
     , getPassword 
     , assertMinVer
-    , winScriptToExe 
     , embedExeVerInfo
     , embedExeIcon
     , extractExeIcons
