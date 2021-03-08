@@ -130,6 +130,8 @@ __DBL_QUOTE      = '"'
 __SPACE          = ' '
 __ESC_SPACE      = '\\ '
 _NEWLINE         = '\n'
+__EXT_DELIM      = '.'
+
 if IS_WINDOWS :
     import ctypes        
     from ctypes import wintypes
@@ -796,9 +798,10 @@ def rootFileName( path ):
     if path is None : return None
     return splitExt(baseFileName(path))[0]
 
-def fileExt( path ): 
+def fileExt( path, isDotPrefix=True ): 
     if path is None : return None
     ext = splitExt(path)[1]
+    if not isDotPrefix and len(ext) > 0 and ext[0]==__EXT_DELIM: ext=ext[1:] 
     return None if ext=="" else ext
 
 def joinExt( rootName, extension=None ):
@@ -944,7 +947,7 @@ def _toSrcDestPair( pathPair, destDir=None, basePath=None ):
         srcHead = relSrcDir                                
         src = absPath( src, basePath )
 
-    if destDir is None: # (i.e. PyInstaller Argument)
+    if destDir is None: # (i.e. PyInstaller/IExpress Argument)
         if dest is None: dest = relpath( srcHead, THIS_DIR )                    
     else :
         if dest is None: dest = srcTail         
@@ -1207,6 +1210,14 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
     POWERSHELL_EXT  = "ps1"
     APPLESCRIPT_EXT = "scpt"
 
+    SUPPORTED_EXTS = [     
+          SHELL_EXT
+        , BATCH_EXT
+        , VBSCRIPT_EXT    
+        , POWERSHELL_EXT  
+        , APPLESCRIPT_EXT         
+    ]
+
     __WIN_DEFAULT_EXT  = BATCH_EXT 
     __NIX_DEFAULT_EXT  = SHELL_EXT    
     __PLAT_DEFAULT_EXT = __WIN_DEFAULT_EXT if IS_WINDOWS else __NIX_DEFAULT_EXT
@@ -1217,7 +1228,12 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
     __SHEBANG_TEMPLATE    = "%s\n%s"
 
     __PLACEHOLDER_TMPLT = "{%s}" 
-    
+
+    @staticmethod
+    def typeOf( path ): 
+        ext = fileExt( path, isDotPrefix=False )
+        return ext if ext in ExecutableScript.SUPPORTED_EXTS else None
+        
     @staticmethod
     def strToLines( s ): return s.split( _NEWLINE  ) if s else []
     

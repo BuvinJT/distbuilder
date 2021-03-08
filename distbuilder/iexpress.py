@@ -1,9 +1,8 @@
 from distbuilder import util 
 from distbuilder.util import *  # @UnusedWildImport
 
-def _IExpressScript( srcPath, destPath, isSrcRemoved=False, name=None ):            
-    script=(
-"""
+__IEXPRESS_TMPLT=(
+r"""
 ;@echo off
 
 ;set "SOURCE_PATH={srcPath}"
@@ -19,11 +18,17 @@ def _IExpressScript( srcPath, destPath, isSrcRemoved=False, name=None ):
 ;(echo()>>"%temp%\\2exe.sed"
 ;(echo(AppLaunched={command})>>"%temp%\\2exe.sed"
 ;(echo(TargetName="%target.exe%")>>"%temp%\\2exe.sed"
+
 ;(echo(FILE0="%script_name%")>>"%temp%\\2exe.sed"
+{resFilesNames}
+
 ;(echo([SourceFiles])>>"%temp%\\2exe.sed"
 ;(echo(SourceFiles0="%script_dir%")>>"%temp%\\2exe.sed"
+{resDirPaths}
+
 ;(echo([SourceFiles0])>>"%temp%\\2exe.sed"
 ;(echo(%%FILE0%%=)>>"%temp%\\2exe.sed"
+{resFileTree}
 
 ;iexpress /n /q /m %temp%\\2exe.sed
 
@@ -63,17 +68,66 @@ PostInstallCmd=<None>
 AdminQuietInstCmd=
 UserQuietInstCmd=
 """)
-    ext = fileExt( srcPath ).lower()                        
-    if   ext==".vbs":
-        command = 'cscript.exe "%script_name%"'
-    elif ext==".ps1":
-        command = 'powershell.exe -ExecutionPolicy Bypass -InputFormat None -File "%script_name%"'
-    else:    
-        command = 'cmd.exe /c "%script_name%"'
-    removeSrc = 'del /q /f "%s"' % (srcPath,) if isSrcRemoved else "" 
-    if name is None: name = "iexpress-build"
-    return ExecutableScript( name, script=script, replacements={
-        "srcPath": srcPath, "destPath": destPath,
+
+__FILE_NAME_TMPLT        = r';(echo(FILE{0}="{1}")>>"%temp%\\2exe.sed"'
+__DIR_PATH_TMPLT         = r';(echo(SourceFiles{0}="{1}")>>"%temp%\\2exe.sed"'
+__DIR_TREE_HEADER_TMPLT  = r';(echo([SourceFiles{0}])>>"%temp%\\2exe.sed"'
+__FILE_TREE_HEADER_TMPLT = r';(echo(%%FILE{0}%%=)>>"%temp%\\2exe.sed"'
+
+__DEFAULT_SCRIPT_NAME = "iexpress-build"
+
+__CMDS={ ExecutableScript.BATCH_EXT      : 'cmd.exe /c "%script_name%"'
+       , ExecutableScript.POWERSHELL_EXT : ('powershell.exe '
+            '-ExecutionPolicy Bypass -InputFormat None -File "%script_name%"' )
+       , ExecutableScript.VBSCRIPT_EXT   : 'cscript.exe "%script_name%"'
+       }
+
+__DEL_SRC_TMPT = 'del /q /f "%s"'  
+
+def _IExpressScript( srcPath, destPath, isSrcRemoved=False, name=None,
+                     embeddedResources=None, sourceDir=None ):            
+    command = __CMDS.get( ExecutableScript.typeOf( srcPath ) )
+    if command is None: 
+        raise DistBuilderError( "File type not supported: %s" % (srcPath,) )      
+    
+    if name is None: name = __DEFAULT_SCRIPT_NAME
+    removeSrc = __DEL_SRC_TMPT % (srcPath,) if isSrcRemoved else "" 
+        
+    resFilesNames = ""
+    resDirPaths = ""
+    resFileTree = ""
+    srcDirs=[]
+    srcFilesTreeEntries=[]
+    dirCount=0    
+    fileCount=0
+    if embeddedResources is not None:
+        for res in embeddedResources:
+            src, dest = util._toSrcDestPair( res, destDir=None,
+                                             basePath=sourceDir )        
+            dest = baseFileName(dest) # flatten dest!
+            if   isFile( src ) :
+                fileCount+=1                 
+                resFilesNames += __FILE_NAME_TMPLT.format( fileCount, dest )
+                srcFilesTreeEntries.append( (dirPath(src), fileCount)  )
+            elif isDir( src ): 
+                pass # TODO!
+            else: printErr( 'Invalid path: "%s"' % (src,) )                                    
+            srcDir = dirPath( src )
+            if srcDir not in srcDirs:
+                dirCount=len(srcDirs)
+                resDirPaths += __DIR_PATH_TMPLT.format( dirCount, srcDir )
+                srcDirs.append( srcDir )
+    dirHeaders=[]            
+    for dirPath, fileCount in srcFilesTreeEntries:
+        if dirPath not in dirHeaders:
+            resFileTree += __DIR_TREE_HEADER_TMPLT.format( len(dirHeaders)+1 )
+            dirHeaders.append( dirPath )
+        resFileTree += __FILE_TREE_HEADER_TMPLT.format( fileCount ) 
+    
+    return ExecutableScript( name, script=__IEXPRESS_TMPLT, replacements={
+        "srcPath": srcPath, "destPath": destPath, 
+        "resFileNames": resFilesNames, "resDirPaths": resDirPaths, 
+        "resFileTree": resFileTree,
         "command": command, "removeSrc": removeSrc } )
     
 BATCH_IEXPRESS_EXE_INIT=(
@@ -154,6 +208,9 @@ class IExpressConfig:
         self.versionInfo      = None
         self.iconFilePath     = None
 
+        self.scriptImports     = []
+        self.embeddedResources = []
+
         self.distResources    = []
         self.distDirs         = [] 
         
@@ -222,7 +279,9 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
                               isPathPreserved=True )
     iExpressConfig.destDirPath = destDirPath
         
-    __runIExpress( scriptPath, destPath )
+    __runIExpress( scriptPath, destPath, 
+        iExpressConfig.scriptImports + iExpressConfig.embeddedResources,
+        iExpressConfig.sourceDir )
     
     if isOnTheFly: script.remove()
             
@@ -256,11 +315,12 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
             
     return dirPath( destPath ), destPath         
 
-def __runIExpress( scrScriptPath, destExePath ):        
+def __runIExpress( scrScriptPath, destExePath, embeddedResources, sourceDir ):        
     scrScriptPath = absPath( scrScriptPath )
     destExePath = absPath( normBinaryName( destExePath,isPathPreserved=True ) )    
-    _IExpressScript( scrScriptPath, destExePath )._execute( 
-        isOnTheFly=True, isDebug=True )
+    script = _IExpressScript( scrScriptPath, destExePath, 
+                embeddedResources=embeddedResources, sourceDir=sourceDir )
+    script._execute( isOnTheFly=True, isDebug=True )
     if not isFile( destExePath ):
         raise DistBuilderError( "Failed to create executable: %s" %
                                 (destExePath,) )
