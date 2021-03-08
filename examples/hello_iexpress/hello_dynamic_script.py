@@ -1,4 +1,4 @@
-from distbuilder import( WinScriptToBinPackageProcess, ConfigFactory, 
+from distbuilder import( IExpressPackageProcess, ConfigFactory, 
                          ExecutableScript )
 
 DEMO_TYPE = ExecutableScript.BATCH_EXT
@@ -20,16 +20,16 @@ def popupMessageScript( scriptExt ):
     return ExecutableScript( "popup", extension=scriptExt, script=script ) 
 
 f = configFactory  = ConfigFactory()
-f.productName      = "Hello Dynamic Windows Script Example"
+f.productName      = "Hello Dynamic Script Example"
 f.description      = "A Distribution Builder Example"
 f.companyTradeName = "Some Company"
 f.companyLegalName = "Some Company Inc."    
-f.binaryName       = "HelloDynamicWinScript"
+f.binaryName       = "HelloDynamicScript"
 f.version          = (1,0,0,0)
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
 f.entryPointScript = popupMessageScript( DEMO_TYPE )
 
-p = WinScriptToBinPackageProcess( configFactory, isDesktopTarget=True )
+p = IExpressPackageProcess( configFactory, isDesktopTarget=True )
 p.isExeTest = True
 p.run()       
 

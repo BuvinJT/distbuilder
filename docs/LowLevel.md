@@ -66,6 +66,33 @@ program, invoke the pyScriptToExe function:
     a source to copy.  This additional option is
     for adding new empty directories.  
 
+### batchScriptToExe
+
+** WINDOWS ONLY**
+
+     batchScriptToExe( name=None, entryPointScript=None, iExpressConfig=None,                                     
+                       distResources=None, distDirs=None )
+
+TODO: Fill in
+
+### powerShellScriptToExe  
+
+** WINDOWS ONLY**
+
+     powerShellScriptToExe( name=None, entryPointScript=None, iExpressConfig=None,                                     
+                            distResources=None, distDirs=None )
+
+TODO: Fill in
+
+### vbScriptToExe  
+
+** WINDOWS ONLY**
+
+     vbScriptToExe( name=None, entryPointScript=None, iExpressConfig=None,                                     
+                    distResources=None, distDirs=None )
+
+TODO: Fill in
+
 ### installPyInstaller, uninstallPyInstaller
 
 Distbuilder builds executables from Python source via PyInstaller.  For convenience,
@@ -1936,25 +1963,6 @@ resembling the following:
 
 	from distbuilder assertBuilderVer
 	assertBuilderVer( "0.7.8.0" )
-
-### winScriptToExe
-
-** WINDOWS ONLY**
-
-     winScriptToExe( scrScriptPath, destExePath )
-
-Create a stand alone executable from a native Windows script.
-
-**Returns**: None (Raising exception on failure)
-
-**scrScriptPath**:  Absolute or relative path to the source script.
-The supported script types are: 
-	Batch (.bat)
-	VBScript (.vbs)
-	PowerShell (.ps1).
-
-**destExePath**: Absolute or relative path where the new executable file 
-should be created.
   
 ### embedExeVerInfo
 

@@ -1,18 +1,18 @@
-from distbuilder import( WinScriptToBinInstallerProcess, ConfigFactory,
+from distbuilder import( IExpressInstallerProcess, ConfigFactory,
                          ExecutableScript, baseFileName ) 
 
 LICENSE_FILE_PATH = "../hello_world_tk/LICENSE.TXT"
 
 f = configFactory  = ConfigFactory()
-f.productName      = "Hello Windows Script Example"
+f.productName      = "Hello PowerShell Example"
 f.description      = "A Distribution Builder Example"
 f.companyTradeName = "Some Company"
 f.companyLegalName = "Some Company Inc."    
-f.binaryName       = "HelloWinScript"
+f.binaryName       = "HelloPowerShell"
 f.version          = (1,0,0,0)
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
 f.distResources    = [ LICENSE_FILE_PATH ]
-f.setupName        = "HelloWinScriptSetup"
+f.setupName        = "HelloPowerShellSetup"
 f.entryPointScript = ExecutableScript( "openTextFile", 
     extension=ExecutableScript.POWERSHELL_EXT, script=([ 
       r'Add-Type -AssemblyName PresentationCore,PresentationFramework'
@@ -22,7 +22,7 @@ f.entryPointScript = ExecutableScript( "openTextFile",
             r' -ArgumentList "{fileName}"'                        
     ]), replacements={ "fileName" : baseFileName(LICENSE_FILE_PATH) } )
 
-p = WinScriptToBinInstallerProcess( configFactory, isDesktopTarget=True )
+p = IExpressInstallerProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True
 p.run()       
 

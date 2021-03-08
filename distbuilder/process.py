@@ -9,8 +9,8 @@ from distbuilder.py_installer import (
 )
 
 from distbuilder.iexpress import (
-      WinScriptConfig 
-    , winScriptToExe
+      IExpressConfig 
+    , _scriptToExe
 )
 
 from distbuilder.opy_library import (
@@ -133,7 +133,7 @@ class ConfigFactory:
 
         # Configurations for specific package types               
         self.__pkgPyInstConfig = None
-        self.__pkgWinScriptConfig = None
+        self.__pkgIExpressConfig = None
         self.qtCppConfig = None
                             
     def pyInstallerConfig( self ): 
@@ -152,8 +152,8 @@ class ConfigFactory:
 
     if IS_WINDOWS :
 
-        def winScriptConfig( self ):        
-            cfg = WinScriptConfig()            
+        def iExpressConfig( self ):        
+            cfg = IExpressConfig()            
             cfg.name             = self.binaryName
             cfg.sourceDir        = self.sourceDir
             cfg.entryPointScript = self.entryPointScript
@@ -245,9 +245,9 @@ class ConfigFactory:
                                  _QtIfwScript.TARGET_EXISTS_OPT_REMOVE } 
         return script
     
-    def qtIfwPackage( self, pyInstConfig=None, winScriptConfig=None, isTempSrc=False ):
+    def qtIfwPackage( self, pyInstConfig=None, iExpressConfig=None, isTempSrc=False ):
         self.__pkgPyInstConfig = pyInstConfig        
-        self.__pkgWinScriptConfig = winScriptConfig
+        self.__pkgIExpressConfig = iExpressConfig
         pkgType=self.__ifwPkgType()
 
         if IS_WINDOWS and self.startOnBoot in [True, CURRENT_USER, ALL_USERS]:
@@ -415,7 +415,7 @@ class ConfigFactory:
         if self.ifwPkgId : return self.ifwPkgId
         if self.cfgId : return self.cfgId
         prod =( self.__pkgPyInstConfig.name if self.__pkgPyInstConfig 
-                else self.__pkgWinScriptConfig.name if self.__pkgWinScriptConfig
+                else self.__pkgIExpressConfig.name if self.__pkgIExpressConfig
                 else self.productName )        
         prod = prod.replace(" ", "").replace(".", "").lower()            
         return prod
@@ -423,7 +423,7 @@ class ConfigFactory:
     def __ifwPkgType( self ):
         if self.pkgType is not None: return self.pkgType
         if self.__pkgPyInstConfig : return QtIfwPackage.Type.PY_INSTALLER
-        if self.__pkgWinScriptConfig: return QtIfwPackage.Type.WINSCRIPT
+        if self.__pkgIExpressConfig: return QtIfwPackage.Type.IEXPRESS
         if self.pkgSrcExePath is None:
             return ( QtIfwPackage.Type.DATA if self.binaryName is None else
                      QtIfwPackage.Type.PY_INSTALLER )
@@ -435,17 +435,17 @@ class ConfigFactory:
                  else self.companyLegalName )
         comp = comp.replace(" ", "").replace(".", "").lower()
         prod =( self.__pkgPyInstConfig.name if self.__pkgPyInstConfig 
-                else self.__pkgWinScriptConfig.name if self.__pkgWinScriptConfig
+                else self.__pkgIExpressConfig.name if self.__pkgIExpressConfig
                 else self.productName )        
         prod = prod.replace(" ", "").replace(".", "").lower()            
         return "%s.%s.%s" % (self.ifwPkgNamePrefix, comp, prod)
 
     def __pkgSrcDirPath( self ):
         if self.__pkgPyInstConfig : return absPath( self.__pkgPyInstConfig.name )
-        if self.__pkgWinScriptConfig : return absPath( self.__pkgWinScriptConfig.name )
+        if self.__pkgIExpressConfig : return absPath( self.__pkgIExpressConfig.name )
         if self.pkgSrcDirPath : return self.pkgSrcDirPath
         if( self.__ifwPkgType() in [QtIfwPackage.Type.PY_INSTALLER,
-                                    QtIfwPackage.Type.WINSCRIPT] and             
+                                    QtIfwPackage.Type.IEXPRESS] and             
             self.binaryName ): 
             return absPath( self.binaryName )               
         return None                 
@@ -615,9 +615,9 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
     def onFinalize( self ):          """VIRTUAL"""
 
 # -----------------------------------------------------------------------------
-class WinScriptToBinPackageProcess( _DistBuildProcessBase ):
+class IExpressPackageProcess( _DistBuildProcessBase ):
     def __init__( self, configFactory,                  
-                  name="WinScript to Binary Package Process",
+                  name="IExpress to Binary Package Process",
                   isZipped=False, isDesktopTarget=False, isHomeDirTarget=False ) :
         if not IS_WINDOWS: util._onPlatformErr()
         _DistBuildProcessBase.__init__( self, configFactory, name )                
@@ -629,7 +629,7 @@ class WinScriptToBinPackageProcess( _DistBuildProcessBase ):
         self.isElevatedTest         = False
         self.exeTestArgs            = []          
         
-        self._winScriptConfig = None
+        self._iExpressConfig = None
               
         # Results
         self.binDir = None
@@ -637,9 +637,11 @@ class WinScriptToBinPackageProcess( _DistBuildProcessBase ):
                     
     def _body( self ):        
 
-        self._winScriptConfig = self.configFactory.winScriptConfig()         
-        self.binDir, self.binPath = winScriptToExe( 
-                winScriptConfig=self._winScriptConfig )
+        self._iExpressConfig = self.configFactory.iExpressConfig()       
+        self.onIExpressConfig( self._iExpressConfig )
+          
+        self.binDir, self.binPath = _scriptToExe( 
+                iExpressConfig=self._iExpressConfig )
         
         if self.configFactory.codeSignConfig :
             signExe( self.binPath, self.configFactory.codeSignConfig ) 
@@ -677,8 +679,9 @@ class WinScriptToBinPackageProcess( _DistBuildProcessBase ):
                     
     # Override these to further customize the build process once the 
     # ConfigFactory has produced each initial config object
-    def onInitialize( self ):        """VIRTUAL"""    
-    def onFinalize( self ):          """VIRTUAL"""
+    def onInitialize( self ):          """VIRTUAL"""    
+    def onIExpressConfig( self, cfg ): """VIRTUAL"""
+    def onFinalize( self ):            """VIRTUAL"""
                             
 # -----------------------------------------------------------------------------                        
 class _BuildInstallerProcess( _DistBuildProcessBase ):
@@ -686,14 +689,14 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
     def __init__( self, configFactory,
                   name="Build Installer Process",  
                   pyToBinPkgProcesses=None, 
-                  winScriptToBinPkgProcesses=None,
+                  iexpressPkgProcesses=None,
                   ifwPackages=None,                                                                                   
                   isDesktopTarget=False, isHomeDirTarget=False ) :
         _DistBuildProcessBase.__init__( self, configFactory, name )
         self.pyToBinPkgProcesses =( pyToBinPkgProcesses 
                                     if pyToBinPkgProcesses else [] )
-        self.winScriptToBinPkgProcesses=( winScriptToBinPkgProcesses
-                                        if winScriptToBinPkgProcesses else [] )        
+        self.iexpressPkgProcesses=( iexpressPkgProcesses
+                                        if iexpressPkgProcesses else [] )        
         self.ifwPackages         = ifwPackages if ifwPackages else [] 
         self.isDesktopTarget     = isDesktopTarget
         self.isHomeDirTarget     = isHomeDirTarget
@@ -716,13 +719,13 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
         self.onPyPackagesBuilt( self.ifwPackages )
         
         if IS_WINDOWS:
-            for p in self.winScriptToBinPkgProcesses:
+            for p in self.iexpressPkgProcesses:
                 p.run()
                 self.ifwPackages.append(                
                     p.configFactory.qtIfwPackage( 
-                        winScriptConfig=p._winScriptConfig, isTempSrc=True )
+                        iExpressConfig=p._iExpressConfig, isTempSrc=True )
                 )
-            self.onWinScriptPackagesBuilt( self.ifwPackages )
+            self.onIExpressPackagesBuilt( self.ifwPackages )
             
         ifwConfig = self.configFactory.qtIfwConfig( packages=self.ifwPackages )
         self.onQtIfwConfig( ifwConfig )     
@@ -777,7 +780,7 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
     # ConfigFactory has produced the initial config object
     def onInitialize( self ):                   """VIRTUAL"""
     def onPyPackagesBuilt( self, pkgs ):        """VIRTUAL"""
-    def onWinScriptPackagesBuilt( self, pkgs ): """VIRTUAL"""
+    def onIExpressPackagesBuilt( self, pkgs ):  """VIRTUAL"""
     def onQtIfwConfig( self, cfg ):             """VIRTUAL"""
     def onPackagesStaged( self, cfg, pkgs ):    """VIRTUAL"""     
     def onFinalize( self ):                     """VIRTUAL"""
@@ -817,30 +820,32 @@ class PyToBinInstallerProcess( _BuildInstallerProcess ):
     def onFinalize( self ):               """VIRTUAL"""
 
 # -----------------------------------------------------------------------------                        
-class WinScriptToBinInstallerProcess( _BuildInstallerProcess ):
+class IExpressInstallerProcess( _BuildInstallerProcess ):
     
     def __init__( self, configFactory,                  
                   name="Windows Script to Binary Installer Process",
                   isDesktopTarget=False, isHomeDirTarget=False ) :
         
-        class CallbackWinScriptToBinPackageProcess( WinScriptToBinPackageProcess ):
+        class CallbackIExpressToBinPackageProcess( IExpressPackageProcess ):
             def __init__( self, parent, configFactory ):
-                WinScriptToBinPackageProcess.__init__( self, configFactory )
+                IExpressPackageProcess.__init__( self, configFactory )
                 self.__parent = parent
-                                   
-        prc = CallbackWinScriptToBinPackageProcess( self, configFactory )
-        self.onWinScriptPackageProcess( prc )
+            def onIExpressConfig( self, cfg ): self.__parent.onIExpressConfig( cfg )
+                                       
+        prc = CallbackIExpressToBinPackageProcess( self, configFactory )
+        self.onIExpressPackageProcess( prc )
             
         _BuildInstallerProcess.__init__( self, 
             configFactory, name,
-            winScriptToBinPkgProcesses=[ prc ],                                         
+            iexpressPkgProcesses=[ prc ],                                         
             isDesktopTarget=isDesktopTarget, 
             isHomeDirTarget=isHomeDirTarget )
 
     # Override these to further customize the build process once the 
     # ConfigFactory has produced each initial config object
     def onInitialize( self ):                    """VIRTUAL"""    
-    def onWinScriptPackageProcess( self, prc ):  """VIRTUAL"""
+    def onIExpressPackageProcess( self, prc ):   """VIRTUAL"""
+    def onIExpressConfig( self, cfg ):           """VIRTUAL"""
     def onQtIfwConfig( self, cfg ):              """VIRTUAL"""                                                                
     def onFinalize( self ):                      """VIRTUAL"""
                                                                                                 
@@ -850,7 +855,7 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
     def __init__( self, masterConfigFactory, 
                   name="Robust Installer Process",
                   pyPkgConfigFactoryDict=None,
-                  winScriptPkgConfigFactoryDict=None, 
+                  iExpressPkgConfigFactoryDict=None, 
                   ifwPackages=None,                                     
                   isDesktopTarget=False, isHomeDirTarget=False ) :
                 
@@ -870,19 +875,21 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
             def onFinalize( self ):          
                 self.__parent.onPyPackageFinalize( self.__key )           
 
-        class CallbackWinScriptToBinPackageProcess( WinScriptToBinPackageProcess ):
+        class CallbackIExpressToBinPackageProcess( IExpressPackageProcess ):
             def __init__( self, parent, key, configFactory ):
-                WinScriptToBinPackageProcess.__init__( self, configFactory )
+                IExpressPackageProcess.__init__( self, configFactory )
                 self.__parent = parent
                 self.__key    = key                 
             def onInitialize( self ):
-                self.__parent.onWinScriptPackageInitialize( self.__key )           
+                self.__parent.onIExpressPackageInitialize( self.__key )         
+            def onIExpressConfig( self, cfg ): 
+                self.__parent.onIExpressConfig( self.__key, cfg )                  
             def onFinalize( self ):          
-                self.__parent.onWinScriptPackageFinalize( self.__key )           
+                self.__parent.onIExpressPackageFinalize( self.__key )           
     
         if pyPkgConfigFactoryDict is None: pyPkgConfigFactoryDict={}
-        if winScriptPkgConfigFactoryDict is None: 
-            winScriptPkgConfigFactoryDict={}
+        if iExpressPkgConfigFactoryDict is None: 
+            iExpressPkgConfigFactoryDict={}
         if ifwPackages is None: ifwPackages=[]
 
         pyBinPrcs = []
@@ -896,15 +903,15 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
             pyBinPrcs.append( prc )        
 
         if IS_WINDOWS:
-            winScriptBinPrcs = []
-            for key, factory in iteritems( winScriptPkgConfigFactoryDict ) :        
+            iExpressBinPrcs = []
+            for key, factory in iteritems( iExpressPkgConfigFactoryDict ) :        
                 if factory is None :
                     factory = ConfigFactory.copy( masterConfigFactory )
                     factory.cfgId = key
                     self.onConfigFactory( key, factory )
-                prc = CallbackWinScriptToBinPackageProcess( self, key, factory )
-                self.onWinScriptPackageProcess( key, prc )    
-                winScriptBinPrcs.append( prc )        
+                prc = CallbackIExpressToBinPackageProcess( self, key, factory )
+                self.onIExpressPackageProcess( key, prc )    
+                iExpressBinPrcs.append( prc )        
         
         _BuildInstallerProcess.__init__( self, 
             masterConfigFactory, name,
@@ -925,10 +932,11 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
     def onPyPackageFinalize( self, key ):            """VIRTUAL"""           
     def onPyPackagesBuilt( self, pkgs ):             """VIRTUAL"""
     
-    def onWinScriptPackageProcess( self, key, prc ): """VIRTUAL"""
-    def onWinScriptPackageInitialize( self, key ):   """VIRTUAL"""
-    def onWinScriptPackageFinalize( self, key ):     """VIRTUAL"""
-    def onWinScriptPackagesBuilt( self, pkgs ):      """VIRTUAL"""
+    def onIExpressPackageProcess( self, key, prc ): """VIRTUAL"""
+    def onIExpressPackageInitialize( self, key ):   """VIRTUAL"""
+    def onIExpressConfig( self, key, cfg ):         """VIRTUAL"""
+    def onIExpressPackageFinalize( self, key ):     """VIRTUAL"""
+    def onIExpressPackagesBuilt( self, pkgs ):      """VIRTUAL"""
         
     def onQtIfwConfig( self, cfg ):                  """VIRTUAL"""     
     def onPackagesStaged( self, cfg, pkgs ):         """VIRTUAL"""                                                     

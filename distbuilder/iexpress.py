@@ -136,7 +136,7 @@ Call IExpressInit
 ' ------------------------------------------------
 ''')
 
-class WinScriptConfig:
+class IExpressConfig:
 
     initSnippets = { 
           ExecutableScript.BATCH_EXT      : BATCH_IEXPRESS_EXE_INIT
@@ -158,10 +158,24 @@ class WinScriptConfig:
         self.distDirs         = [] 
         
         self.destDirPath      = None 
+
+def batchScriptToExe( name=None, entryPointScript=None,  iExpressConfig=None,                                     
+                      distResources=None, distDirs=None ):
+    return _scriptToExe( name, entryPointScript, iExpressConfig,                                     
+                         distResources, distDirs )
+
+def powerShellScriptToExe( name=None, entryPointScript=None,  iExpressConfig=None,                                     
+                           distResources=None, distDirs=None ):
+    return _scriptToExe( name, entryPointScript, iExpressConfig,                                     
+                         distResources, distDirs )
+
+def vbScriptToExe( name=None, entryPointScript=None,  iExpressConfig=None,                                     
+                   distResources=None, distDirs=None ):
+    return _scriptToExe( name, entryPointScript, iExpressConfig,                                     
+                         distResources, distDirs )
         
-def winScriptToExe( name=None, entryPointScript=None, 
-                    winScriptConfig=None,                                     
-                    distResources=None, distDirs=None ):
+def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,                                     
+                  distResources=None, distDirs=None ):
     ''' returns: (binDir, binPath) '''   
     
     if not IS_WINDOWS: util._onPlatformErr()   
@@ -169,59 +183,59 @@ def winScriptToExe( name=None, entryPointScript=None,
     if distResources is None: distResources=[]
     if distDirs is None: distDirs=[]
      
-    # Resolve WinScriptConfig and the overlapping parameters passed directly
-    # (WinScriptConfig values are given priority)    
-    if winScriptConfig is None: 
-        winScriptConfig = WinScriptConfig()
-        winScriptConfig.name             = name
-        winScriptConfig.entryPointScript = entryPointScript
-        winScriptConfig.distResources    = distResources
-        winScriptConfig.distDirs         = distDirs
+    # Resolve IExpressConfig and the overlapping parameters passed directly
+    # (IExpressConfig values are given priority)    
+    if iExpressConfig is None: 
+        iExpressConfig = IExpressConfig()
+        iExpressConfig.name             = name
+        iExpressConfig.entryPointScript = entryPointScript
+        iExpressConfig.distResources    = distResources
+        iExpressConfig.distDirs         = distDirs
     else :
-        name             = winScriptConfig.name   
-        entryPointScript = winScriptConfig.entryPointScript
-        distResources    = winScriptConfig.distResources
-        distDirs         = winScriptConfig.distDirs             
+        name             = iExpressConfig.name   
+        entryPointScript = iExpressConfig.entryPointScript
+        distResources    = iExpressConfig.distResources
+        distDirs         = iExpressConfig.distDirs             
     
     # Verify the required parameters are present    
-    if not winScriptConfig.name :         
+    if not iExpressConfig.name :         
         raise DistBuilderError( "Binary name is required" )
-    if not winScriptConfig.entryPointScript : 
+    if not iExpressConfig.entryPointScript : 
         raise DistBuilderError( "Binary entry point is required" )
     
     script = entryPointScript 
     isOnTheFly = isinstance( script, ExecutableScript )
     scriptPath =( absPath( script.filePath(), 
-                    basePath=winScriptConfig.sourceDir )
+                    basePath=iExpressConfig.sourceDir )
                   if isOnTheFly else script )
 
     if isOnTheFly:
-        winScriptConfig.scriptHeader = WinScriptConfig.initSnippets.get( 
+        iExpressConfig.scriptHeader = IExpressConfig.initSnippets.get( 
                                             script.extension ) 
-        if winScriptConfig.scriptHeader: 
-            script.script = winScriptConfig.scriptHeader + script.script
+        if iExpressConfig.scriptHeader: 
+            script.script = iExpressConfig.scriptHeader + script.script
         script.write()
 
-    # auto assign some winScriptConfig values        
-    destDirPath = joinPath( THIS_DIR, winScriptConfig.name ) 
-    destPath= normBinaryName( joinPath( destDirPath, winScriptConfig.name ), 
+    # auto assign some iExpressConfig values        
+    destDirPath = joinPath( THIS_DIR, iExpressConfig.name ) 
+    destPath= normBinaryName( joinPath( destDirPath, iExpressConfig.name ), 
                               isPathPreserved=True )
-    winScriptConfig.destDirPath = destDirPath
+    iExpressConfig.destDirPath = destDirPath
         
     __runIExpress( scriptPath, destPath )
     
     if isOnTheFly: script.remove()
             
-    embedExeVerInfo( destPath, winScriptConfig.versionInfo )        
-    if winScriptConfig.iconFilePath: 
+    embedExeVerInfo( destPath, iExpressConfig.versionInfo )        
+    if iExpressConfig.iconFilePath: 
         embedExeIcon( destPath, absPath( 
-            winScriptConfig.iconFilePath,
-            basePath=winScriptConfig.sourceDir ) )
+            iExpressConfig.iconFilePath,
+            basePath=iExpressConfig.sourceDir ) )
         
     # Add additional distribution resources        
-    for res in winScriptConfig.distResources:
+    for res in iExpressConfig.distResources:
         src, dest = util._toSrcDestPair( res, destDir=destDirPath,
-                            basePath=winScriptConfig.sourceDir )
+                            basePath=iExpressConfig.sourceDir )
         print( 'Copying "%s" to "%s"...' % ( src, dest ) )
         if isFile( src ) :
             destDir = dirPath( dest )

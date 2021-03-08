@@ -1,4 +1,4 @@
-from distbuilder import( WinScriptToBinPackageProcess, ConfigFactory,
+from distbuilder import( IExpressPackageProcess, ConfigFactory,
                          ExecutableScript, baseFileName )
 
 DEMO_TYPE = ExecutableScript.POWERSHELL_EXT
@@ -34,7 +34,7 @@ f.distResources    = ["../hello_world_tk/LICENSE.TXT"]
 f.entryPointScript = openTextFileScript( DEMO_TYPE, 
                                          baseFileName( LICENSE_FILE_PATH ) )
  
-p = WinScriptToBinPackageProcess( configFactory, isDesktopTarget=True,
+p = IExpressPackageProcess( configFactory, isDesktopTarget=True,
                                   isZipped=True )
 # Note to auto test this exe, you must disable isZipped above, per the details  
 # of this *specific* demo. Namely, the zip feature crashes here because it 

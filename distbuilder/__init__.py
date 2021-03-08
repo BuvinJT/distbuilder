@@ -3,9 +3,9 @@ from ._version import __version__
 from distbuilder.process import( 
       ConfigFactory 
     , PyToBinPackageProcess 
-    , WinScriptToBinPackageProcess
+    , IExpressPackageProcess
     , PyToBinInstallerProcess
-    , WinScriptToBinInstallerProcess
+    , IExpressInstallerProcess
     , RobustInstallerProcess 
 )
 
@@ -26,8 +26,10 @@ from distbuilder.py_installer import(
 )
 
 from distbuilder.iexpress import( 
-      WinScriptConfig
-    , winScriptToExe 
+      IExpressConfig
+    , batchScriptToExe
+    , powerShellScriptToExe
+    , vbScriptToExe 
 )
 
 from distbuilder.qt_installer import( 
