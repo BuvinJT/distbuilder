@@ -30,6 +30,7 @@ from distbuilder.iexpress import(
     , batchScriptToExe
     , powerShellScriptToExe
     , vbScriptToExe 
+    , iExpressResPath
 )
 
 from distbuilder.qt_installer import( 

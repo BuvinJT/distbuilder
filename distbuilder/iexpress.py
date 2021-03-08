@@ -20,7 +20,7 @@ r"""
 ;(echo(TargetName="%target.exe%")>>"%temp%\\2exe.sed"
 
 ;(echo(FILE0="%script_name%")>>"%temp%\\2exe.sed"
-{resFilesNames}
+{resFileNames}
 
 ;(echo([SourceFiles])>>"%temp%\\2exe.sed"
 ;(echo(SourceFiles0="%script_dir%")>>"%temp%\\2exe.sed"
@@ -69,10 +69,10 @@ AdminQuietInstCmd=
 UserQuietInstCmd=
 """)
 
-__FILE_NAME_TMPLT        = r';(echo(FILE{0}="{1}")>>"%temp%\\2exe.sed"'
-__DIR_PATH_TMPLT         = r';(echo(SourceFiles{0}="{1}")>>"%temp%\\2exe.sed"'
-__DIR_TREE_HEADER_TMPLT  = r';(echo([SourceFiles{0}])>>"%temp%\\2exe.sed"'
-__FILE_TREE_HEADER_TMPLT = r';(echo(%%FILE{0}%%=)>>"%temp%\\2exe.sed"'
+__FILE_NAME_TMPLT        = ';(echo(FILE{0}="{1}")>>"%temp%\\2exe.sed"\n'
+__DIR_PATH_TMPLT         = ';(echo(SourceFiles{0}="{1}")>>"%temp%\\2exe.sed"\n'
+__DIR_TREE_HEADER_TMPLT  = ';(echo([SourceFiles{0}])>>"%temp%\\2exe.sed"\n'
+__FILE_TREE_HEADER_TMPLT = ';(echo(%%FILE{0}%%=)>>"%temp%\\2exe.sed"\n'
 
 __DEFAULT_SCRIPT_NAME = "iexpress-build"
 
@@ -84,6 +84,25 @@ __CMDS={ ExecutableScript.BATCH_EXT      : 'cmd.exe /c "%script_name%"'
 
 __DEL_SRC_TMPT = 'del /q /f "%s"'  
 
+__EMBEDDED_RES_PATH_TMPLTS={ 
+         ExecutableScript.BATCH_EXT      : '%RES_DIR%\\{0}'
+       , ExecutableScript.POWERSHELL_EXT : '$RES_DIR\\{0}' 
+       , ExecutableScript.VBSCRIPT_EXT   : '(RES_DIR & "\\{0}")'
+       }
+__EXTERNAL_RES_PATH_TMPLTS={ 
+         ExecutableScript.BATCH_EXT      : '%THIS_DIR%\\{0}'
+       , ExecutableScript.POWERSHELL_EXT : '$THIS_DIR\\{0}' 
+       , ExecutableScript.VBSCRIPT_EXT   : '(THIS_DIR & "\\{0}")'
+       }
+def iExpressResPath( scriptExt, path, isEmbedded ):
+    if path is None: raise DistBuilderError( "Path cannot be None" )
+    try:
+        if path[0]=='\\': path[1:]
+    except: path = ""    
+    return( __EMBEDDED_RES_PATH_TMPLTS[scriptExt].format( path )
+            if isEmbedded else
+            __EXTERNAL_RES_PATH_TMPLTS[scriptExt].format( path ) )
+
 def _IExpressScript( srcPath, destPath, isSrcRemoved=False, name=None,
                      embeddedResources=None, sourceDir=None ):            
     command = __CMDS.get( ExecutableScript.typeOf( srcPath ) )
@@ -92,41 +111,41 @@ def _IExpressScript( srcPath, destPath, isSrcRemoved=False, name=None,
     
     if name is None: name = __DEFAULT_SCRIPT_NAME
     removeSrc = __DEL_SRC_TMPT % (srcPath,) if isSrcRemoved else "" 
-        
-    resFilesNames = ""
+    
+    resFileNames = ""
     resDirPaths = ""
     resFileTree = ""
-    srcDirs=[]
-    srcFilesTreeEntries=[]
-    dirCount=0    
-    fileCount=0
     if embeddedResources is not None:
-        for res in embeddedResources:
-            src, dest = util._toSrcDestPair( res, destDir=None,
-                                             basePath=sourceDir )        
-            dest = baseFileName(dest) # flatten dest!
-            if   isFile( src ) :
-                fileCount+=1                 
-                resFilesNames += __FILE_NAME_TMPLT.format( fileCount, dest )
-                srcFilesTreeEntries.append( (dirPath(src), fileCount)  )
-            elif isDir( src ): 
-                pass # TODO!
-            else: printErr( 'Invalid path: "%s"' % (src,) )                                    
-            srcDir = dirPath( src )
-            if srcDir not in srcDirs:
-                dirCount=len(srcDirs)
-                resDirPaths += __DIR_PATH_TMPLT.format( dirCount, srcDir )
-                srcDirs.append( srcDir )
-    dirHeaders=[]            
-    for dirPath, fileCount in srcFilesTreeEntries:
-        if dirPath not in dirHeaders:
-            resFileTree += __DIR_TREE_HEADER_TMPLT.format( len(dirHeaders)+1 )
-            dirHeaders.append( dirPath )
-        resFileTree += __FILE_TREE_HEADER_TMPLT.format( fileCount ) 
+
+        srcFilesTreeEntries=[]
+        if embeddedResources is not None:
+            for res in embeddedResources:
+                src, dest = util._toSrcDestPair( res, destDir=None, # None==relative to base
+                                                 basePath=sourceDir )        
+                if isFile( src ): 
+                    srcDir   = dirPath( src )
+                    fileName = baseFileName( src ) # flatten dest!                
+                    srcFilesTreeEntries.append( (srcDir, fileName) )
+                elif isDir( src ): 
+                    pass # TODO!
+                #else: printErr( 'Invalid path: "%s"' % (src,) )                                                    
+        srcFilesTreeEntries.sort( key=itemgetter(0) ) 
+
+        dirsListed=[]    
+        filesListed=[]        
+        for srcDir, fileName in srcFilesTreeEntries:
+            filesListed.append( fileName )                 
+            resFileNames += __FILE_NAME_TMPLT.format( len(filesListed), fileName )
+            if srcDir not in dirsListed:
+                dirsListed.append( srcDir )
+                resDirPaths += __DIR_PATH_TMPLT.format( len(dirsListed), 
+                                srcDir.replace( '\\', '\\\\' ) )                
+                resFileTree += __DIR_TREE_HEADER_TMPLT.format( len(dirsListed) )
+            resFileTree += __FILE_TREE_HEADER_TMPLT.format( len(filesListed) ) 
     
     return ExecutableScript( name, script=__IEXPRESS_TMPLT, replacements={
         "srcPath": srcPath, "destPath": destPath, 
-        "resFileNames": resFilesNames, "resDirPaths": resDirPaths, 
+        "resFileNames": resFileNames, "resDirPaths": resDirPaths, 
         "resFileTree": resFileTree,
         "command": command, "removeSrc": removeSrc } )
     
@@ -290,7 +309,7 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
         embedExeIcon( destPath, absPath( 
             iExpressConfig.iconFilePath,
             basePath=iExpressConfig.sourceDir ) )
-        
+            
     # Add additional distribution resources        
     for res in iExpressConfig.distResources:
         src, dest = util._toSrcDestPair( res, destDir=destDirPath,
