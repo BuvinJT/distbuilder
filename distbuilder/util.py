@@ -164,6 +164,7 @@ if IS_WINDOWS :
         'powershell.exe -NoLogo -ExecutionPolicy Bypass -InputFormat None '
         '-Command "%s | Out-File "%s" -Append -Encoding ascii"' )
     __CAPTURE_CONSOLE_PS_SCRIPT_NAME = "Get-ConsoleAsText.ps1"
+    __DIR2CAB_BAT_SCRIPT_NAME = "Dir2Cab.bat"
 else:
     _EXECUTE_PREFIX = ". "
     _EXECUTE_TMPT = '. "%s"'
@@ -516,11 +517,12 @@ def __runPowerShell( script, replacements=None,
                      isStdOut=False, asCleanLines=False ):
     if not IS_WINDOWS: _onPlatformErr()
     if isinstance( script, string_types ) or isinstance( script, list ):
-        dirPath, fileName = reserveTempFilePath( suffix=".ps1", isSplitRet=True ) 
+        scriptDirPath, fileName = reserveTempFilePath( 
+            suffix=".ps1", isSplitRet=True ) 
         script = ExecutableScript( rootFileName( fileName ), extension="ps1", 
                                    script=script, replacements=replacements )
-    elif script.dirPath is None: dirPath = tempDirPath()    
-    script.write( dirPath )    
+    elif script.scriptDirPath is None: scriptDirPath = tempDirPath()    
+    script.write( scriptDirPath )    
     cmd =( 'powershell.exe -ExecutionPolicy Bypass -InputFormat None '
            '-File "%s"' % (script.filePath(),) )
     if isStdOut: 
@@ -740,11 +742,10 @@ def __importByStr( moduleName, memberName=None ):
 def toZipFile( sourceDir, zipDest=None, removeScr=True, 
                isWrapperDirIncluded=False ):
     sourceDir = absPath( sourceDir )
-    if zipDest is None :        
-        zipDest = sourceDir # make_archive adds extension
-    else:
-        if isFile( zipDest ) : removeFile( zipDest )
-        zipDest, _ = splitExt(zipDest)           
+    if zipDest is None: zipDest = sourceDir # make_archive adds extension
+    else: zipDest, _ = splitExt( absPath( zipDest ) )
+    dest = joinExt( zipDest, '.zip' )    
+    if isFile( dest ) : removeFile( dest )                   
     if isWrapperDirIncluded:
         filePath = make_archive( zipDest, 'zip', 
             dirPath( sourceDir ), baseFileName( sourceDir ) )
@@ -755,6 +756,27 @@ def toZipFile( sourceDir, zipDest=None, removeScr=True,
         removeDir( sourceDir )
         print( 'Removed directory: "%s"' % (sourceDir,) )        
     return filePath
+
+def toCabFile( sourceDir, cabDest=None, removeScr=True, 
+               isWrapperDirIncluded=False ):
+    if not IS_WINDOWS: _onPlatformErr()
+    sourceDir = absPath( sourceDir )
+    if cabDest is None: cabDest = sourceDir # makeCab adds extension 
+    else: cabDest, _ = splitExt( absPath( cabDest ) )
+    dest = joinExt( cabDest, '.cab' )    
+    destDir = dirPath( cabDest )
+    destRootName = rootFileName( cabDest )
+    if isFile( dest ) : removeFile( dest )                                                  
+    script = ExecutableScript( "Dir2Cab", scriptPath=__dir2CabScriptPath() )
+    wrapArg = "-wrap" if isWrapperDirIncluded else ""
+    script._execute( args=[ sourceDir, destRootName, wrapArg ], wrkDir=destDir )
+    if not isFile( dest ): 
+        raise DistBuilderError( 'Failed to create cab file: "%s"' % (dest,) )
+    print( 'Created cab file: "%s"' % (dest,) )    
+    if removeScr :         
+        removeDir( sourceDir )
+        print( 'Removed directory: "%s"' % (sourceDir,) )        
+    return dest
  
 # -----------------------------------------------------------------------------  
 def normBinaryName( path, isPathPreserved=False, isGui=False ):
@@ -1244,7 +1266,7 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
     def __init__( self, rootName, 
                   extension=True, # True==auto assign, str==what to use, or None
                   shebang=True, # True==auto assign, str==what to use, or None                  
-                  script=None, scriptPath=None, dirPath=None,
+                  script=None, scriptPath=None, scriptDirPath=None,
                   replacements=None, isDebug=True ) :
         self.rootName = rootName
         if extension==True:
@@ -1255,9 +1277,9 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
             self.shebang =( None if IS_WINDOWS else 
                             ExecutableScript.__NIX_DEFAULT_SHEBANG ) 
         else: self.shebang = shebang            
-        self.dirPath = dirPath
+        self.scriptDirPath = scriptDirPath
         if scriptPath:
-            self.dirPath = dirPath( scriptPath ) 
+            self.scriptDirPath = dirPath( scriptPath ) 
             with open( scriptPath, 'r' ) as f: self.script = f.read()
         elif isinstance( script, list ): self.fromLines( script )
         else: self.script = script
@@ -1282,39 +1304,39 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         if self.script: print( str(self) )
 
     def filePath( self ):
-        return( joinPath( self.dirPath, self.fileName() ) 
-                if self.dirPath else absPath( self.fileName() ) )
+        return( joinPath( self.scriptDirPath, self.fileName() ) 
+                if self.scriptDirPath else absPath( self.fileName() ) )
         
     def fileName( self ):
         return joinExt( self.rootName, self.extension )
 
-    def exists( self, dirPath=None ): 
-        if dirPath is None: dirPath=self.dirPath
-        self.dirPath = dirPath if dirPath else THIS_DIR  
+    def exists( self, scriptDirPath=None ): 
+        if scriptDirPath is None: scriptDirPath=self.scriptDirPath
+        self.scriptDirPath = scriptDirPath if scriptDirPath else THIS_DIR  
         return isFile( self.filePath() )
                         
-    def write( self, dirPath=None ):
+    def write( self, scriptDirPath=None ):
         if self.script is None : return
-        if dirPath is None: dirPath=self.dirPath
-        self.dirPath = dirPath if dirPath else THIS_DIR  
-        if not isDir( self.dirPath ): makeDir( self.dirPath )
+        if scriptDirPath is None: scriptDirPath=self.scriptDirPath
+        self.scriptDirPath = scriptDirPath if scriptDirPath else THIS_DIR  
+        if not isDir( self.scriptDirPath ): makeDir( self.scriptDirPath )
         filePath = self.filePath()
         if self.isDebug:
             print( "Writing script: %s\n\n%s\n" % (filePath,str(self)) )                               
         with open( filePath, 'w' ) as f: f.write( str(self) ) 
         if not IS_WINDOWS : chmod( filePath, 0o755 )
         
-    def read( self, dirPath=None ):
+    def read( self, scriptDirPath=None ):
         self.script = None
-        if dirPath is None: dirPath=self.dirPath
-        self.dirPath = dirPath if dirPath else THIS_DIR  
+        if scriptDirPath is None: scriptDirPath=self.scriptDirPath
+        self.scriptDirPath = scriptDirPath if scriptDirPath else THIS_DIR  
         filePath = self.filePath()
         with open( filePath, 'r' ) as f : self.script = f.read() 
 
-    def remove( self, dirPath=None ):
+    def remove( self, scriptDirPath=None ):
         self.script = None
-        if dirPath is None: dirPath=self.dirPath
-        self.dirPath = dirPath if dirPath else THIS_DIR  
+        if scriptDirPath is None: scriptDirPath=self.scriptDirPath
+        self.scriptDirPath = scriptDirPath if scriptDirPath else THIS_DIR  
         filePath = self.filePath()
         if isFile( filePath ): 
             removeFile( filePath )
@@ -1341,23 +1363,29 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         self.shebang = None 
         # TODO: resolve shebang programmatically, and remove it from self.script        
     
-    def _execute( self, dirPath=None, isOnTheFly=None, isDebug=None, 
-                  isConCapture=False ):
+    def _execute( self, args=None, wrkDir=None, 
+                  scriptDirPath=None, isOnTheFly=None, 
+                  isDebug=None, isConCapture=False ):
         if self.extension not in ExecutableScript.__SUPPORTED_EXECUTE_EXTS:
-            raise DistBuilderError( "Script type not supported: %s" % (self.fileName(),) )                    
+            raise DistBuilderError( "Script type not supported: %s" % 
+                                    (self.fileName(),) )                    
         if isDebug is not None: self.isDebug = isDebug
-        if isOnTheFly is None: isOnTheFly = not self.exists( dirPath )    
-        if isOnTheFly: self.write( dirPath )                    
-        if self.extension==ExecutableScript.__PLAT_DEFAULT_EXT:
-            cmd =( _INVOKE_NESTED_BATCH_TMPT % (self.fileName(),) 
-                   if IS_WINDOWS else _EXECUTE_TMPT % (self.fileName(),) )
-            if self.isDebug: print( "Executing %s..." % (self.filePath(),) )                                       
-            retCode = _system( cmd, wrkDir=self.dirPath, 
+        if isOnTheFly is None: isOnTheFly = not self.exists( scriptDirPath )    
+        if isOnTheFly: self.write( scriptDirPath )                    
+        if isinstance( args, list ): args = list2cmdline( args )
+        if self.extension==ExecutableScript.__PLAT_DEFAULT_EXT:   
+            cmd =( _INVOKE_NESTED_BATCH_TMPT % (self.filePath(),) 
+                   if IS_WINDOWS else _EXECUTE_TMPT % (self.filePath(),) )
+            if args: cmd += " " + args                        
+            if wrkDir is None: wrkDir = self.scriptDirPath
+            if self.isDebug: 
+                print( "Executing: %s %s" % (self.fileName(),args) )                                                   
+            retCode = _system( cmd, wrkDir=wrkDir, 
                                isConCapture=isConCapture )
             if self.isDebug: print( "Return Code: %s" % (str(retCode),) )                                       
             if retCode is not None and retCode != 0: 
-                raise DistBuilderError( "Script failed: %s\nReturn Code: %s" % (
-                                 self.filePath(), str(retCode) ) )
+                raise DistBuilderError( "Script failed: %s\nReturn Code: %s" % 
+                                        (self.filePath(), str(retCode)) )
         if isOnTheFly: self.remove()
 
 # -----------------------------------------------------------------------------                      
@@ -1413,8 +1441,14 @@ def copyExeIcon( srcExePath, destExePath, iconName=None ):
                 isIconDirRemoved=True ) )
     
 if IS_WINDOWS:
+    def __resourceHackerPath(): 
+        return joinPath( _RES_DIR_PATH, __RESOURCE_HACKER_EXE_NAME )
+
     def __captureConsoleScriptPath():         
         return joinPath( _RES_DIR_PATH, __CAPTURE_CONSOLE_PS_SCRIPT_NAME )
+
+    def __dir2CabScriptPath():         
+        return joinPath( _RES_DIR_PATH, __DIR2CAB_BAT_SCRIPT_NAME )
 
     def __execResourceHackerScript( script ): 
         if not IS_WINDOWS: _onPlatformErr()
@@ -1423,9 +1457,6 @@ if IS_WINDOWS:
         # stdout/err.  While those message will naturally appear in a terminal, to 
         # direct them to a log, the "con capture" feature must be employed:   
         script._execute( isOnTheFly=True, isDebug=True, isConCapture=isLogging() )    
-
-    def __resourceHackerPath(): 
-        return joinPath( _RES_DIR_PATH, __RESOURCE_HACKER_EXE_NAME )
 
     def __injectResourceHackerPath( script ):        
         script.script = script.script.replace( 

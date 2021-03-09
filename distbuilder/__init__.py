@@ -30,7 +30,7 @@ from distbuilder.iexpress import(
     , batchScriptToExe
     , powerShellScriptToExe
     , vbScriptToExe 
-    , iExpressResPath
+    , iExpressResPath 
 )
 
 from distbuilder.qt_installer import( 
@@ -190,6 +190,7 @@ from distbuilder.util import(
     , run 
     , runPy 
     , toZipFile 
+    , toCabFile        
     , isImportableModule 
     , isImportableFromModule 
     , modulePath 
@@ -209,7 +210,7 @@ from distbuilder.util import(
     , embedExeIcon
     , extractExeIcons
     , copyExeVerInfo
-    , copyExeIcon        
+    , copyExeIcon
 )
 
 def assertBuilderVer( ver ): 

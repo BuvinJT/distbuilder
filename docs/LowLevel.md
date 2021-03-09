@@ -1393,7 +1393,8 @@ preparing the program for distribution:
 
 ### toZipFile
 
-    toZipFile( sourceDir, zipDest=None, removeScr=True )
+    toZipFile( sourceDir, zipDest=None, removeScr=True,
+               isWrapperDirIncluded=False )
 
 **Returns**: the path to the zip file created.         
     
@@ -1406,8 +1407,35 @@ preparing the program for distribution:
     created adjacent to it.          
     
 **removeScr**: Option to delete the sourceDir after
-    creating the zip of it. Note this is the 
+    creating the archive. Note this is the 
     default behavior.
+                
+**isWrapperDirIncluded**: Option to include the outer
+"wrapper" directory, or else put the contents on the root of the archive.
+
+### toCabFile
+
+** WINDOWS ONLY **
+
+    toCabFile( sourceDir, zipDest=None, removeScr=True,
+               isWrapperDirIncluded=False )
+
+**Returns**: the path to the cabinet file created.         
+    
+**sourceDir**: the directory to convert to a cab
+    (typically the binDir).   
+    
+**cabDest**: (optional) full path to the cab file to
+    be created. If not specified, it will be
+    named with same base as the source, and 
+    created adjacent to it.          
+    
+**removeScr**: Option to delete the sourceDir after
+    creating the archive. Note this is the 
+    default behavior.
+                
+**isWrapperDirIncluded**: Option to include the outer
+"wrapper" directory, or else put the contents on the root of the archive.
                 
 *TODO: Add git commit/push...*    
                                                                         
@@ -1436,7 +1464,8 @@ Constructor:
 
 	ExecutableScript( rootName, 
 				  	  extension=True, shebang=True,                   
-                  	  script=None, scriptPath=None, dirPath=None,
+                  	  script=None, 
+                  	  scriptPath=None, scriptDirPath=None,
                   	  replacements={}, isDebug=True )
                   
 Attributes & default values:    
@@ -1445,7 +1474,7 @@ Attributes & default values:
     extension=True  # i.e. True==automatic
     shebang=True    # i.e. True==automatic   
     script=None
-    dirPath=None
+    scriptDirPath=None
     replacements={}  
     isIfwVarEscapeBackslash=False
     isDebug=True
@@ -1455,10 +1484,10 @@ Functions:
 	filePath()
     fileName()
 
-    exists( dirPath=None )        
-    read( dirPath=None )
-    write( dirPath=None )
-    remove( dirPath=None )
+    exists( scriptDirPath=None )        
+    read( scriptDirPath=None )
+    write( scriptDirPath=None )
+    remove( scriptDirPath=None )
     
     toLines()        
     fromLines( lines )
@@ -1496,10 +1525,10 @@ A user supplied string will be applied if custom provided.
 as a file path to source for where it is to be extracted.  Use the 
 filePath() function later if you need this apth again.
 
-**dirPath**: Optional. During construction, this may be explicitly defined, 
+**scriptDirPath**: Optional. During construction, this may be explicitly defined, 
 or left as `None` to imply `THIS_DIR`.  If a `scriptPath` is specified, 
 a directory path extracted from that will be used.
-On subsequent calls to `read( dirPath )`, `write( dirPath )`, or `remove( dirPath )`, the `dirPath` will be updated if supplied (i.e. `not None`).    
+On subsequent calls to `read( scriptDirPath )`, `write( scriptDirPath )`, or `remove( scriptDirPath )`, the `scriptDirPath` will be updated if supplied (i.e. `not None`).    
 
 **replacements**: A dictionary of "placeholder" keys and "substitution" values in 
 the script.  Place holders must defined in the script with the surrounding brackets,
