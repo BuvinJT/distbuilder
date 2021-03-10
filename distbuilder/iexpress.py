@@ -16,7 +16,7 @@ r"""
 ;copy /y "%~f0" "%temp%\\2exe.sed" >nul
 
 ;(echo()>>"%temp%\\2exe.sed"
-;(echo(AppLaunched={command})>>"%temp%\\2exe.sed"
+;(echo(AppLaunched={launchCmd})>>"%temp%\\2exe.sed"
 ;(echo(TargetName="%target.exe%")>>"%temp%\\2exe.sed"
 
 ;(echo(FILE0="%script_name%")>>"%temp%\\2exe.sed"
@@ -69,87 +69,7 @@ AdminQuietInstCmd=
 UserQuietInstCmd=
 """)
 
-__FILE_NAME_TMPLT        = ';(echo(FILE{0}="{1}")>>"%temp%\\2exe.sed"\n'
-__DIR_PATH_TMPLT         = ';(echo(SourceFiles{0}="{1}")>>"%temp%\\2exe.sed"\n'
-__DIR_TREE_HEADER_TMPLT  = ';(echo([SourceFiles{0}])>>"%temp%\\2exe.sed"\n'
-__FILE_TREE_HEADER_TMPLT = ';(echo(%%FILE{0}%%=)>>"%temp%\\2exe.sed"\n'
-
-__DEFAULT_SCRIPT_NAME = "iexpress-build"
-
-__CMDS={ ExecutableScript.BATCH_EXT      : 'cmd.exe /c "%script_name%"'
-       , ExecutableScript.POWERSHELL_EXT : ('powershell.exe '
-            '-ExecutionPolicy Bypass -InputFormat None -File "%script_name%"' )
-       , ExecutableScript.VBSCRIPT_EXT   : 'cscript.exe "%script_name%"'
-       }
-
-__DEL_SRC_TMPT = 'del /q /f "%s"'  
-
-__EMBEDDED_RES_PATH_TMPLTS={ 
-         ExecutableScript.BATCH_EXT      : '%RES_DIR%\\{0}'
-       , ExecutableScript.POWERSHELL_EXT : '$RES_DIR\\{0}' 
-       , ExecutableScript.VBSCRIPT_EXT   : '(RES_DIR & "\\{0}")'
-       }
-__EXTERNAL_RES_PATH_TMPLTS={ 
-         ExecutableScript.BATCH_EXT      : '%THIS_DIR%\\{0}'
-       , ExecutableScript.POWERSHELL_EXT : '$THIS_DIR\\{0}' 
-       , ExecutableScript.VBSCRIPT_EXT   : '(THIS_DIR & "\\{0}")'
-       }
-def iExpressResPath( scriptExt, path, isEmbedded ):
-    if path is None: raise DistBuilderError( "Path cannot be None" )
-    try:
-        if path[0]=='\\': path[1:]
-    except: path = ""    
-    return( __EMBEDDED_RES_PATH_TMPLTS[scriptExt].format( path )
-            if isEmbedded else
-            __EXTERNAL_RES_PATH_TMPLTS[scriptExt].format( path ) )
-
-def _IExpressScript( srcPath, destPath, isSrcRemoved=False, name=None,
-                     embeddedResources=None, sourceDir=None ):            
-    command = __CMDS.get( ExecutableScript.typeOf( srcPath ) )
-    if command is None: 
-        raise DistBuilderError( "File type not supported: %s" % (srcPath,) )      
-    
-    if name is None: name = __DEFAULT_SCRIPT_NAME
-    removeSrc = __DEL_SRC_TMPT % (srcPath,) if isSrcRemoved else "" 
-    
-    resFileNames = ""
-    resDirPaths = ""
-    resFileTree = ""
-    if embeddedResources is not None:
-
-        srcFilesTreeEntries=[]
-        if embeddedResources is not None:
-            for res in embeddedResources:
-                src, dest = util._toSrcDestPair( res, destDir=None, # None==relative to base
-                                                 basePath=sourceDir )        
-                if isFile( src ): 
-                    srcDir   = dirPath( src )
-                    fileName = baseFileName( src ) # flatten dest!                
-                    srcFilesTreeEntries.append( (srcDir, fileName) )
-                elif isDir( src ): 
-                    pass # TODO!
-                #else: printErr( 'Invalid path: "%s"' % (src,) )                                                    
-        srcFilesTreeEntries.sort( key=itemgetter(0) ) 
-
-        dirsListed=[]    
-        filesListed=[]        
-        for srcDir, fileName in srcFilesTreeEntries:
-            filesListed.append( fileName )                 
-            resFileNames += __FILE_NAME_TMPLT.format( len(filesListed), fileName )
-            if srcDir not in dirsListed:
-                dirsListed.append( srcDir )
-                resDirPaths += __DIR_PATH_TMPLT.format( len(dirsListed), 
-                                srcDir.replace( '\\', '\\\\' ) )                
-                resFileTree += __DIR_TREE_HEADER_TMPLT.format( len(dirsListed) )
-            resFileTree += __FILE_TREE_HEADER_TMPLT.format( len(filesListed) ) 
-    
-    return ExecutableScript( name, script=__IEXPRESS_TMPLT, replacements={
-        "srcPath": srcPath, "destPath": destPath, 
-        "resFileNames": resFileNames, "resDirPaths": resDirPaths, 
-        "resFileTree": resFileTree,
-        "command": command, "removeSrc": removeSrc } )
-    
-BATCH_IEXPRESS_EXE_INIT=(
+__BATCH_IEXPRESS_EXE_INIT_TMPLT=(
 r'''
 :: >>> IExpress Initialization <<<
 @echo off
@@ -172,23 +92,25 @@ goto :__skip_dirname
 :__skip_dirname
 set "THIS_DIR=%THIS_DIR:~0,-1%"
 set "RES_DIR=%CD%"
+{extractCmd}
 cd "%THIS_DIR%"
 :: ------------------------------------------------ 
 ''')
 
-POWERSHELL_IEXPRESS_EXE_INIT=(
+__POWERSHELL_IEXPRESS_EXE_INIT_TMPLT=(
 r''' 
 # >>> IExpress Initialization <<<
 # $PID is implicitly defined!
 $PPID     = (gwmi win32_process -Filter "processid='$PID'").ParentProcessId
 $EXE_PATH = (Get-Process -Id $PPID -FileVersionInfo).FileName
 $THIS_DIR = [System.IO.Path]::GetDirectoryName( $EXE_PATH )
-$RES_DIR  = Get-Location
+$RES_DIR  = (Get-Location)
+{extractCmd}
 Set-Location $THIS_DIR
 # ------------------------------------------------
 ''')
     
-VBSCRIPT_IEXPRESS_EXE_INIT=(
+__VBSCRIPT_IEXPRESS_EXE_INIT_TMPLT=(
 r''' 
 ' >>> IExpress Initialization <<<
 Dim PID, PPID, EXE_PATH, THIS_DIR, RES_DIR
@@ -203,20 +125,136 @@ sub IExpressInit()
     EXE_PATH = oWMI.Get( "Win32_Process.Handle='" & PPID & "'" ).ExecutablePath
     RES_DIR  = oShell.CurrentDirectory
     THIS_DIR = oFSO.GetParentFolderName( EXE_PATH )
+    {extractCmd}
     oShell.CurrentDirectory = THIS_DIR
 End Sub
 Call IExpressInit
 ' ------------------------------------------------
 ''')
 
+__IEXRESS_EXE_INIT_TMPLTS = { 
+      ExecutableScript.BATCH_EXT      : __BATCH_IEXPRESS_EXE_INIT_TMPLT
+    , ExecutableScript.POWERSHELL_EXT : __POWERSHELL_IEXPRESS_EXE_INIT_TMPLT
+    , ExecutableScript.VBSCRIPT_EXT   : __VBSCRIPT_IEXPRESS_EXE_INIT_TMPLT
+}
+
+__BATCH_EXTRACT_CAB_CMD_TMPLT =( 
+r'''%windir%\system32\extrac32.exe "{0}" /e /l . 
+del /q /f "{0}"''')
+__POWERSHELL_EXTRACT_CAB_CMD_TMPLT =( 
+r'''Start-Process -Wait -FilePath "$env:windir\system32\extrac32.exe" -ArgumentList '"{0}"','/e','/l','.'
+Remove-Item "{0}"''')    
+__VBSCRIPT_EXTRACT_CAB_CMD_TMPLT=( 
+r'''oShell.Run """%windir%\system32\extrac32.exe"" ""{0}"" /e /l .", 1, True
+oFSO.DeleteFile "{0}"
+''')
+                           
+
+__EXTRACT_CMD_TMPLTS = { 
+      ExecutableScript.BATCH_EXT      : __BATCH_EXTRACT_CAB_CMD_TMPLT
+    , ExecutableScript.POWERSHELL_EXT : __POWERSHELL_EXTRACT_CAB_CMD_TMPLT
+    , ExecutableScript.VBSCRIPT_EXT   : __VBSCRIPT_EXTRACT_CAB_CMD_TMPLT
+}
+
+__FILE_NAME_TMPLT        = ';(echo(FILE{0}="{1}")>>"%temp%\\2exe.sed"\n'
+__DIR_PATH_TMPLT         = ';(echo(SourceFiles{0}="{1}")>>"%temp%\\2exe.sed"\n'
+__DIR_TREE_HEADER_TMPLT  = ';(echo([SourceFiles{0}])>>"%temp%\\2exe.sed"\n'
+__FILE_TREE_HEADER_TMPLT = ';(echo(%%FILE{0}%%=)>>"%temp%\\2exe.sed"\n'
+
+__DEFAULT_SCRIPT_NAME = "iexpress-build"
+
+__LAUNCH_CMDS={ ExecutableScript.BATCH_EXT : 'cmd.exe /c "%script_name%"'
+       , ExecutableScript.POWERSHELL_EXT   : ('powershell.exe '
+            '-ExecutionPolicy Bypass -InputFormat None -File "%script_name%"' )
+       , ExecutableScript.VBSCRIPT_EXT     : 'cscript.exe "%script_name%"'
+       }
+
+__DEL_SRC_TMPT = 'del /q /f "%s"'  
+
+__CAB_SOURCE_DIR_NAME    = "__res"
+__EMBEDDED_CAB_FILE_NAME = "res"
+__FLAT_EMBEDDING_WARNING = (
+    'WARNING: IExpress only directly supports "flat" resource embedding.' 
+    '(Use "isTwoStageEmbedding")'
+    )
+
+__EMBEDDED_RES_PATH_TMPLTS={ 
+         ExecutableScript.BATCH_EXT      : '%RES_DIR%\\{0}'
+       , ExecutableScript.POWERSHELL_EXT : '$RES_DIR\\{0}' 
+       , ExecutableScript.VBSCRIPT_EXT   : '(RES_DIR & "\\{0}")'
+       }
+__EXTERNAL_RES_PATH_TMPLTS={ 
+         ExecutableScript.BATCH_EXT      : '%THIS_DIR%\\{0}'
+       , ExecutableScript.POWERSHELL_EXT : '$THIS_DIR\\{0}' 
+       , ExecutableScript.VBSCRIPT_EXT   : '(THIS_DIR & "\\{0}")'
+       }
+def iExpressResPath( scriptExt, path, isEmbedded ):
+    if path is None: raise DistBuilderError( "Path cannot be None" )
+    try:
+        if path[0]=='\\': path[1:]
+    except: path = ""    
+    return( __EMBEDDED_RES_PATH_TMPLTS[scriptExt].format( path )
+            if isEmbedded else
+            __EXTERNAL_RES_PATH_TMPLTS[scriptExt].format( path ) )
+
+def _IExpressScript( srcPath, destPath, isSrcRemoved=False, name=None,
+                     embeddedResources=None, sourceDir=None ):  
+    launchCmd = __LAUNCH_CMDS.get( ExecutableScript.typeOf( srcPath ) )
+    if launchCmd is None: 
+        raise DistBuilderError( "File type not supported: %s" % (srcPath,) )      
+           
+    if name is None: name = __DEFAULT_SCRIPT_NAME
+    removeSrc =( __DEL_SRC_TMPT % (srcPath.replace( '\\', '\\\\' ),) 
+                 if isSrcRemoved else "" ) 
+        
+    resFileNames = ""
+    resDirPaths = ""
+    resFileTree = ""
+    if embeddedResources is not None:
+
+        fileNamesInTree = []
+        srcFilesTreeEntries=[]
+        if embeddedResources is not None:
+            for res in embeddedResources:
+                src = absPath( res, basePath=sourceDir )        
+                if isFile( src ): 
+                    srcDir   = dirPath( src )
+                    fileName = baseFileName( src ) # flatten dest!
+                    if fileName in fileNamesInTree:
+                        printErr( __FLAT_EMBEDDING_WARNING +
+                                  'Unique filenames are required '
+                                  '(across ALL package sub directories)'
+                                  ': "%s"' % (src,) )
+                    else:          
+                        fileNamesInTree.append( fileName )          
+                        srcFilesTreeEntries.append( (srcDir, fileName) )
+                elif isDir( src ): 
+                    printErr( __FLAT_EMBEDDING_WARNING +
+                              'Cannot embed a *directory*: '
+                              ': "%s"' % (src,) )
+                else: printErr( 'Invalid path: "%s"' % (src,) )
+                                                                    
+        srcFilesTreeEntries.sort( key=itemgetter(0) ) 
+
+        dirsListed=[]    
+        filesListed=[]        
+        for srcDir, fileName in srcFilesTreeEntries:
+            filesListed.append( fileName )                 
+            resFileNames += __FILE_NAME_TMPLT.format( len(filesListed), fileName )
+            if srcDir not in dirsListed:
+                dirsListed.append( srcDir )
+                resDirPaths += __DIR_PATH_TMPLT.format( len(dirsListed), 
+                                srcDir.replace( '\\', '\\\\' ) )                
+                resFileTree += __DIR_TREE_HEADER_TMPLT.format( len(dirsListed) )
+            resFileTree += __FILE_TREE_HEADER_TMPLT.format( len(filesListed) ) 
+    
+    return ExecutableScript( name, script=__IEXPRESS_TMPLT, replacements={
+        "srcPath": srcPath, "destPath": destPath, 
+        "resFileNames": resFileNames, "resDirPaths": resDirPaths, 
+        "resFileTree": resFileTree, 
+        "launchCmd": launchCmd, "removeSrc": removeSrc } )
+
 class IExpressConfig:
-
-    initSnippets = { 
-          ExecutableScript.BATCH_EXT      : BATCH_IEXPRESS_EXE_INIT
-        , ExecutableScript.POWERSHELL_EXT : POWERSHELL_IEXPRESS_EXE_INIT
-        , ExecutableScript.VBSCRIPT_EXT   : VBSCRIPT_IEXPRESS_EXE_INIT
-    }
-
     def __init__( self ):
         self.name             = None
         self.sourceDir        = None
@@ -278,42 +316,84 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
         raise DistBuilderError( "Binary name is required" )
     if not iExpressConfig.entryPointScript : 
         raise DistBuilderError( "Binary entry point is required" )
+
+    destDirPath = joinPath( THIS_DIR, iExpressConfig.name ) 
+    iExpressConfig.destDirPath = destDirPath
+    destPath = normBinaryName( joinPath( destDirPath, iExpressConfig.name ), 
+                               isPathPreserved=True )
     
     script = entryPointScript 
     isOnTheFly = isinstance( script, ExecutableScript )
     scriptPath =( absPath( script.filePath(), 
                     basePath=iExpressConfig.sourceDir )
                   if isOnTheFly else script )
+    sourceDir = iExpressConfig.sourceDir
+    embeddedResources =( iExpressConfig.scriptImports + 
+                         iExpressConfig.embeddedResources )
 
-    if isOnTheFly:
-        iExpressConfig.scriptHeader = IExpressConfig.initSnippets.get( 
-                                            script.extension ) 
+    tempCabSrcDirPath   = None
+    tempCabDestPath     = None
+    isTwoStageEmbedding = False
+    if embeddedResources is not None:
+        for res in embeddedResources:
+            src, dest = util._toSrcDestPair( res, destDir=destDirPath,
+                                             basePath=sourceDir )
+            isNestedDest = dirPath( relpath( dest, destDirPath ) ) != ""                     
+            isTwoStageEmbedding = isDir( src ) or isNestedDest
+            if isTwoStageEmbedding: break 
+    if isTwoStageEmbedding:
+        print( "Using 2 stage resource embedding..." ) 
+        tempCabSrcDirPath = joinPath( destDirPath, __CAB_SOURCE_DIR_NAME )
+        tempCabDestPath   = joinPath( destDirPath, __EMBEDDED_CAB_FILE_NAME )
+        __copyResources( embeddedResources, None, tempCabSrcDirPath, sourceDir )                         
+        embeddedResources = [ toCabFile( tempCabSrcDirPath, tempCabDestPath ) ]       
+
+    if isOnTheFly:                
+        iExpressConfig.scriptHeader = __IEXRESS_EXE_INIT_TMPLTS.get( 
+                                            script.extension )
+        if isTwoStageEmbedding and embeddedResources:
+            extractCmd = __EXTRACT_CMD_TMPLTS.get( script.extension )
+            if extractCmd: 
+                extractCmd = extractCmd.format( 
+                    baseFileName( embeddedResources[0] ), ) 
+        else: extractCmd = ""        
+        try: script.replacements["extractCmd"] = extractCmd
+        except: script.replacements={"extractCmd": extractCmd}
         if iExpressConfig.scriptHeader: 
             script.script = iExpressConfig.scriptHeader + script.script
         script.write()
-
-    # auto assign some iExpressConfig values        
-    destDirPath = joinPath( THIS_DIR, iExpressConfig.name ) 
-    destPath= normBinaryName( joinPath( destDirPath, iExpressConfig.name ), 
-                              isPathPreserved=True )
-    iExpressConfig.destDirPath = destDirPath
         
-    __runIExpress( scriptPath, destPath, 
-        iExpressConfig.scriptImports + iExpressConfig.embeddedResources,
-        iExpressConfig.sourceDir )
+    __runIExpress( scriptPath, destPath, embeddedResources, sourceDir )
+
+    if isDir( tempCabSrcDirPath ): removeDir( tempCabSrcDirPath )
+    if isFile( tempCabDestPath ): removeFile( tempCabDestPath )
     
     if isOnTheFly: script.remove()
             
     embedExeVerInfo( destPath, iExpressConfig.versionInfo )        
     if iExpressConfig.iconFilePath: 
         embedExeIcon( destPath, absPath( 
-            iExpressConfig.iconFilePath,
-            basePath=iExpressConfig.sourceDir ) )
+            iExpressConfig.iconFilePath, basePath=sourceDir ) )
+
+    __copyResources( distResources, distDirs, destDirPath,
+                      iExpressConfig.sourceDir )
             
-    # Add additional distribution resources        
-    for res in iExpressConfig.distResources:
+    return dirPath( destPath ), destPath         
+
+def __runIExpress( scrScriptPath, destExePath, embeddedResources, sourceDir ):        
+    scrScriptPath = absPath( scrScriptPath )
+    destExePath = absPath( normBinaryName( destExePath,isPathPreserved=True ) )        
+    script = _IExpressScript( scrScriptPath, destExePath, 
+        embeddedResources=embeddedResources, sourceDir=sourceDir )
+    script._execute( isOnTheFly=True, isDebug=True )
+    if not isFile( destExePath ):
+        raise DistBuilderError( "Failed to create executable: %s" %
+                                (destExePath,) )
+
+def __copyResources( resources, mkDirs, destDirPath, sourceDir ):
+    for res in resources:
         src, dest = util._toSrcDestPair( res, destDir=destDirPath,
-                            basePath=iExpressConfig.sourceDir )
+                                         basePath=sourceDir )
         print( 'Copying "%s" to "%s"...' % ( src, dest ) )
         if isFile( src ) :
             destDir = dirPath( dest )
@@ -323,23 +403,12 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
         elif isDir( src ):
             try: copyDir( src, dest ) 
             except Exception as e: printExc( e )
-        else:
-            printErr( 'Invalid path: "%s"' % (src,) )                            
-    for d in distDirs:
-        dirToMk = joinPath( destDirPath, d )
-        print( '"Making directory "%s"...' % ( dirToMk ) )
-        try: makeDir( dirToMk ) # works recursively
-        except Exception as e: printExc( e )   
-    print('')
-            
-    return dirPath( destPath ), destPath         
-
-def __runIExpress( scrScriptPath, destExePath, embeddedResources, sourceDir ):        
-    scrScriptPath = absPath( scrScriptPath )
-    destExePath = absPath( normBinaryName( destExePath,isPathPreserved=True ) )    
-    script = _IExpressScript( scrScriptPath, destExePath, 
-                embeddedResources=embeddedResources, sourceDir=sourceDir )
-    script._execute( isOnTheFly=True, isDebug=True )
-    if not isFile( destExePath ):
-        raise DistBuilderError( "Failed to create executable: %s" %
-                                (destExePath,) )
+        else: printErr( 'Invalid path: "%s"' % (src,) )         
+    if mkDirs:
+        for d in mkDirs:
+            dirToMk = joinPath( destDirPath, d )
+            print( '"Making directory "%s"...' % ( dirToMk ) )
+            try: makeDir( dirToMk ) # works recursively
+            except Exception as e: printExc( e )   
+        print('')
+    

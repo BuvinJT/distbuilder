@@ -6,14 +6,16 @@ DEMO_TYPE = ExecutableScript.BATCH_EXT
 def popupMessageScript( scriptExt ):
     scriptOptions = {
           ExecutableScript.BATCH_EXT :    
-            r'start "Message" /wait cmd /c "echo Directory: %CD% & pause"'
+            r'start "Message" /wait cmd /c '
+                '"echo PWD: %CD% & echo RES: %RES_DIR% & pause"'
         , ExecutableScript.POWERSHELL_EXT: [
             r'Add-Type -AssemblyName PresentationCore,PresentationFramework'
-          , r'[System.Windows.MessageBox]::Show("Directory: "+(Get-Location))'
+          , r'[System.Windows.MessageBox]::Show('
+                '"PWD: "+(Get-Location) + "\nRES: $RES_DIR" )'
         ]
         , ExecutableScript.VBSCRIPT_EXT:  
-            r'MsgBox "Directory: " & '
-                r'CreateObject("WScript.Shell").CurrentDirectory'
+            r'MsgBox( "PWD: " & CreateObject("WScript.Shell").CurrentDirectory'
+                r' & vbCRLF & "RES:" & RES_DIR )'
     }    
     script = scriptOptions.get( scriptExt )
     if not script: raise Exception( "Invalid Script Type!" )        

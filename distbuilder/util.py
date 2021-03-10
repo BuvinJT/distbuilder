@@ -165,6 +165,7 @@ if IS_WINDOWS :
         '-Command "%s | Out-File "%s" -Append -Encoding ascii"' )
     __CAPTURE_CONSOLE_PS_SCRIPT_NAME = "Get-ConsoleAsText.ps1"
     __DIR2CAB_BAT_SCRIPT_NAME = "Dir2Cab.bat"
+    __DIR2CAB_WRAPPER_SWITCH = "-w"
 else:
     _EXECUTE_PREFIX = ". "
     _EXECUTE_TMPT = '. "%s"'
@@ -768,7 +769,7 @@ def toCabFile( sourceDir, cabDest=None, removeScr=True,
     destRootName = rootFileName( cabDest )
     if isFile( dest ) : removeFile( dest )                                                  
     script = ExecutableScript( "Dir2Cab", scriptPath=__dir2CabScriptPath() )
-    wrapArg = "-wrap" if isWrapperDirIncluded else ""
+    wrapArg = __DIR2CAB_WRAPPER_SWITCH if isWrapperDirIncluded else ""
     script._execute( args=[ sourceDir, destRootName, wrapArg ], wrkDir=destDir )
     if not isFile( dest ): 
         raise DistBuilderError( 'Failed to create cab file: "%s"' % (dest,) )
@@ -969,7 +970,7 @@ def _toSrcDestPair( pathPair, destDir=None, basePath=None ):
         srcHead = relSrcDir                                
         src = absPath( src, basePath )
 
-    if destDir is None: # (i.e. PyInstaller/IExpress Argument)
+    if destDir is None: # (i.e. PyInstaller Argument)
         if dest is None: dest = relpath( srcHead, THIS_DIR )                    
     else :
         if dest is None: dest = srcTail         

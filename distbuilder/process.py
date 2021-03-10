@@ -10,7 +10,7 @@ from distbuilder.py_installer import (
 
 from distbuilder.iexpress import (
       IExpressConfig 
-    , _scriptToExe
+    , _scriptToExe 
 )
 
 from distbuilder.opy_library import (

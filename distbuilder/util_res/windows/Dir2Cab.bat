@@ -7,21 +7,21 @@
 ;       echo compressing directory to cab file  
 ;       echo Usage:
 ;       echo(
-;       echo %~nx0 "directory" "cabfile"
+;       echo %~nx0 "directory" "cabfile" [-w/-wrapper]
 ;       echo(
 ;       echo to uncompress use:
-;       echo EXPAND cabfile -F:* .
+;       echo EXTRAC32 cabfile.cab /E /L .
 ;       echo(
 ;       echo Example:
 ;       echo(
-;       echo %~nx0 "c:\directory\logs" "logs"
+;       echo %~nx0 "c:\directory\logs" "logs" 
 ;       exit /b 0
 ;   )
 ; )
 ;
-; if "%~2" EQU "" (
+; if "%~2" equ "" (
 ;   echo invalid arguments.For help use:
-;   echo %~nx0 /h
+;   echo %~nx0 -h
 ;   exit /b 1
 ;)
 ;
@@ -37,27 +37,38 @@
 ;   exit /b 1
 ;)
 
+; :: Toggle the wrapper directory option
+;set "wrapperdir="
+;for %%a in (-w -wrapper) do ( 
+;   if /I "%~3" equ "%%~a" set "wrapperdir=%dir_name%"
+;)
+
 ;
 ;break>"%tmp%\makecab.dir.ddf"
 ;
 ;setlocal enableDelayedExpansion
+
+;:: Generate a DDF file via a recursive directory listing
 ;for /d /r "%dir_to_cab%" %%a in (*) do (
 ;   
 ;   set "_dir=%%~pna"
-;   set "destdir=%dir_name%!_dir:%path_to_dir%=!"
+;   set "destdir=%wrapperdir%!_dir:%path_to_dir%=!"
 ;   (echo(.Set DestinationDir=!destdir!>>"%tmp%\makecab.dir.ddf")
 ;   for %%# in ("%%a\*") do (
 ;       (echo("%%~f#"  /inf=no>>"%tmp%\makecab.dir.ddf")
 ;   )
 ;)
-;(echo(.Set DestinationDir=!dir_name!>>"%tmp%\makecab.dir.ddf")
+;(echo(.Set DestinationDir=!wrapperdir!>>"%tmp%\makecab.dir.ddf")
 ;   for %%# in ("%~f1\*") do (
-;       
 ;       (echo("%%~f#"  /inf=no>>"%tmp%\makecab.dir.ddf")
 ;   )
 
+;:: Run makecab against the DDF file 
 ;makecab /F "%~f0" /f "%tmp%\makecab.dir.ddf" /d DiskDirectory1="%cd%" /d CabinetNameTemplate=%cab_file%.cab
-;rem del /q /f "%tmp%\makecab.dir.ddf"
+
+;:: You might comment out this DDF file deletion for debugging purposes...
+;del /q /f "%tmp%\makecab.dir.ddf"
+
 ;exit /b %errorlevel%
 
 ;;

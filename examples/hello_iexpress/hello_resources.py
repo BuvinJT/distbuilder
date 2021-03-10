@@ -51,11 +51,13 @@ f.entryPointScript = openTextFileScript( SCRIPT_TYPE,
                                          IS_EMBEDDED, 
                                          baseFileName( LICENSE_FILE_PATH ) )
 if not IS_EMBEDDED: 
-    f.distResources = ["../hello_world_tk/LICENSE.TXT"]
+    f.distResources = [ LICENSE_FILE_PATH ]
  
 class BuildProcess( IExpressPackageProcess ):
     def onIExpressConfig(self, cfg):
-        if IS_EMBEDDED: cfg.embeddedResources = [ LICENSE_FILE_PATH ]
+        if IS_EMBEDDED:
+            cfg.sourceDir = "../hello_world_tk/" 
+            cfg.embeddedResources = [ LICENSE_FILE_PATH ]
 
 p = BuildProcess( configFactory, isDesktopTarget=True, 
                   isZipped=(not IS_EMBEDDED) )
