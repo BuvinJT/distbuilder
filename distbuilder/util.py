@@ -1274,7 +1274,8 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
             self.extension = ExecutableScript.__PLAT_DEFAULT_EXT
         elif extension==False: self.extension = None
         else: self.extension = extension    
-        if shebang==True and scriptPath is None :
+        #if shebang==True and scriptPath is None :
+        if shebang==True:
             self.shebang =( None if IS_WINDOWS else 
                             ExecutableScript.__NIX_DEFAULT_SHEBANG ) 
         else: self.shebang = shebang            
@@ -1289,8 +1290,8 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         self.isDebug = isDebug
                                                     
     def __str__( self ) :
-        if self.script is None : ""
-        if self.shebang:
+        if self.script is None : return ""
+        if self.shebang is not None:
             return( ExecutableScript.__SHEBANG_TEMPLATE % 
                     (self.shebang, self.__formated()) )
         else: return self.__formated() 

@@ -113,6 +113,7 @@ Set-Location $THIS_DIR
 __VBSCRIPT_IEXPRESS_EXE_INIT_TMPLT=(
 r''' 
 ' >>> IExpress Initialization <<<
+' Option Explicit ' DISABLED to support 3rd party libraries 
 Dim PID, PPID, EXE_PATH, THIS_DIR, RES_DIR
 sub IExpressInit()
     Dim oShell : Set oShell = CreateObject( "WScript.Shell" )
@@ -129,6 +130,146 @@ sub IExpressInit()
     oShell.CurrentDirectory = THIS_DIR
 End Sub
 Call IExpressInit
+
+Const bVALIDATE_IMPORTS    = {isDebug}
+Const bINJECT_LOGGING      = {isDebug}
+Const bSHOW_32BIT_RELAUNCH = {isDebug}
+Const sLOG_PATH            = "%temp%\vbDebug.log"
+Const sRELAUNCH_ENV_VAR    = "__Relaunch"
+
+Sub Import( sRelativeFilePath )    
+    Dim oFs : Set oFs = CreateObject("Scripting.FileSystemObject")
+    Dim sThisFolder : sThisFolder = oFs.GetParentFolderName( WScript.ScriptFullName )
+    Dim sAbsFilePath : sAbsFilePath = oFs.BuildPath( sThisFolder, sRelativeFilePath )
+    Dim sLibrary : sLibrary = oFs.OpenTextFile( sAbsFilePath ).readAll()
+    if bVALIDATE_IMPORTS Then 
+        Force32BitContext
+        ValidateSource sLibrary
+    End If        
+    If bINJECT_LOGGING Then 
+        InjectRoutineLogging sLibrary, _
+            oFs.OpenTextFile( sAbsFilePath ), sRelativeFilePath
+    End If
+    ExecuteGlobal sLibrary
+End Sub
+
+Sub StartLogging()   
+    Force32BitContext 
+    If sLOG_PATH <> "" Then 
+        Dim oShell: Set oShell = CreateObject( "WScript.Shell" )
+        Dim sRelaunchVar: sRelaunchVar = "%" & sRELAUNCH_ENV_VAR & "%"
+        Dim bIsRelaunch: bIsRelaunch = CBool( oShell.ExpandEnvironmentStrings( _
+                                              sRelaunchVar ) <> sRelaunchVar )
+        If Not bIsRelaunch Then Relaunch False, False
+    End If
+End Sub
+
+Sub Force32BitContext()    
+    Dim oShell: Set oShell = CreateObject( "WScript.Shell" )
+    Dim Is32Bit: Is32Bit = CBool( oShell.ExpandEnvironmentStrings( _
+                                  "%PROCESSOR_ARCHITECTURE%" ) = "x86" )
+    If Not Is32Bit Then
+        Dim nShow
+        If bSHOW_32BIT_RELAUNCH Then
+            nShow = 1
+            WScript.StdErr.WriteLine "WARNING: Forced execution in 32 bit context"
+        Else 
+            nShow = 0        
+        End If    
+        Relaunch True, nShow 
+    End If        
+End Sub
+
+Sub Relaunch( bForce32Bit, nShow )    
+    Dim oShell: Set oShell = CreateObject( "WScript.Shell" )
+    Dim ComSpec: ComSpec = "%ComSpec%"
+    If bForce32Bit Then ComSpec = "%windir%\SysWOW64\cmd.exe"
+    Dim sCmd: sCmd = """" & ComSpec & """ /c " & _
+                     "set " & sRELAUNCH_ENV_VAR & "=1 & " & _
+                     "cscript.exe """ & WScript.ScriptFullName & """"
+    If sLOG_PATH <> "" Then 
+        nShow = 0
+        sCmd = sCmd + " > """ & sLOG_PATH & """ 2>&1"          
+        WScript.Echo "Logging To: " & sLOG_PATH
+    End if    
+    Dim nExitCode: nExitCode = oShell.Run( sCmd, nShow, True )  
+    WScript.Quit nExitCode
+End Sub
+
+Sub ValidateSource( ByRef sLibrary )
+    On Error Resume Next
+    Dim oSC : Set oSC = CreateObject("MSScriptControl.ScriptControl")
+    With oSC
+        .Language = "VBScript"
+        .UseSafeSubset = False
+        .AllowUI = False
+        .AddCode sLibrary
+    End With
+    With oSC.Error
+        If .Number <> 0 then
+            WScript.Echo sAbsFilePath & "(" & .Line & "," & .Column & ")" & _
+                " Microsoft VBScript compilation error: " & _
+                "(" & .Number & ") " & .Description
+            WScript.Quit 1
+        End If
+    End With
+    On Error Goto 0
+End Sub
+
+Sub InjectRoutineLogging( ByRef sLibrary, ByRef oFile, sFilePath )
+    sLibrary = ""        
+    Dim sLine, sParseLine, sAppendLine, sPrependLine
+    Dim bIsRoutineBody : bIsRoutineBody = False
+    Dim sRoutineName   : sRoutineName = ""
+    Dim aStartKeywords : aStartKeywords = Array( "SUB", "FUNCTION" )
+    Dim aEndKeywords   : aEndKeywords   = Array( "END SUB", "END FUNCTION" )    
+    Do Until oFile.AtEndOfStream
+        sLine        = oFile.ReadLine            
+        sParseLine   = Trim(sLine)            
+        sPrependLine = ""
+        sAppendLine  = ""                
+        ' Find routine signature starts (and the save name)
+        If sRoutineName = "" Then                                 
+            For Each sKeyword In aStartKeywords                
+                If Left( UCase(sParseLine), Len(sKeyword) ) = sKeyword Then
+                    sParseLine = Right( sParseLine, _
+                                        Len(sParseLine)-Len(sKeyword) )
+                    sRoutineName = Trim(Split( sParseLine, "(" )(0))
+                End If
+            Next            
+        End If                
+        If sRoutineName <> "" Then            
+            If Not bIsRoutineBody Then                   
+                ' Find end of routine signature 
+                ' (figuring in line continuations and eol comments)                
+                ' Inject start log
+                sParseLine = Trim(Split(sParseLine, "'")(0)) 
+                If Right( sParseLine, 1 ) = ")" Then                    
+                    sAppendLine = "WScript.Echo" & _
+                        """Start " & sRoutineName & _
+                        " (" & sFilePath & ")..." & """" & vbCrLF
+                    bIsRoutineBody = True
+                End If    
+            Else                    
+                ' Find routine end
+                ' Inject end log 
+                For Each sKeyword In aEndKeywords                
+                    If Left( UCase(sParseLine), Len(sKeyword) ) = sKeyword Then
+                        sPrependLine = "WScript.Echo ""...End " & _
+                                        sRoutineName & " "" " 
+                        sRoutineName = ""
+                        bIsRoutineBody = False
+                    End If
+                Next                                        
+            End If                            
+        End If
+        ' Append lines
+        If sPrependLine <> "" Then sLibrary = sLibrary & sPrependLine & vbCrLF
+        sLibrary = sLibrary & sLine & vbCrLF
+        If sAppendLine  <> "" Then sLibrary = sLibrary & sAppendLine  & vbCrLF
+    Loop        
+End Sub
+{startLogging}
 ' ------------------------------------------------
 ''')
 
@@ -145,8 +286,10 @@ __POWERSHELL_EXTRACT_CAB_CMD_TMPLT =(
 r'''Start-Process -Wait -FilePath "$env:windir\system32\extrac32.exe" -ArgumentList '"{0}"','/e','/l','.'
 Remove-Item "{0}"''')    
 __VBSCRIPT_EXTRACT_CAB_CMD_TMPLT=( 
-r'''oShell.Run """%windir%\system32\extrac32.exe"" ""{0}"" /e /l .", 1, True
-oFSO.DeleteFile "{0}"
+r'''If oFSO.FileExists( "{0}" ) Then 
+    oShell.Run """%windir%\system32\extrac32.exe"" ""{0}"" /e /l .", 1, True
+    oFSO.DeleteFile "{0}"
+End If    
 ''')
                            
 
@@ -177,6 +320,7 @@ __FLAT_EMBEDDING_WARNING = (
     'WARNING: IExpress only directly supports "flat" resource embedding.' 
     '(Use "isTwoStageEmbedding")'
     )
+
 
 __EMBEDDED_RES_PATH_TMPLTS={ 
          ExecutableScript.BATCH_EXT      : '%RES_DIR%\\{0}'
@@ -258,9 +402,10 @@ class IExpressConfig:
     def __init__( self ):
         self.name             = None
         self.sourceDir        = None
-        
+                
         self.entryPointScript = None
         self.scriptHeader     = None
+        self.isScriptDebug    = False
 
         self.versionInfo      = None
         self.iconFilePath     = None
@@ -271,8 +416,8 @@ class IExpressConfig:
         self.distResources    = []
         self.distDirs         = [] 
         
-        self.destDirPath      = None 
-
+        self.destDirPath      = None
+        
 def batchScriptToExe( name=None, entryPointScript=None,  iExpressConfig=None,                                     
                       distResources=None, distDirs=None ):
     return _scriptToExe( name, entryPointScript, iExpressConfig,                                     
@@ -330,6 +475,7 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
     sourceDir = iExpressConfig.sourceDir
     embeddedResources =( iExpressConfig.scriptImports + 
                          iExpressConfig.embeddedResources )
+    isDebug = iExpressConfig.isScriptDebug
 
     tempCabSrcDirPath   = None
     tempCabDestPath     = None
@@ -346,7 +492,9 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
         tempCabSrcDirPath = joinPath( destDirPath, __CAB_SOURCE_DIR_NAME )
         tempCabDestPath   = joinPath( destDirPath, __EMBEDDED_CAB_FILE_NAME )
         __copyResources( embeddedResources, None, tempCabSrcDirPath, sourceDir )                         
-        embeddedResources = [ toCabFile( tempCabSrcDirPath, tempCabDestPath ) ]       
+        if not isDebug:
+            embeddedResources = [ 
+                toCabFile( tempCabSrcDirPath, tempCabDestPath ) ]       
 
     if isOnTheFly:                
         iExpressConfig.scriptHeader = __IEXRESS_EXE_INIT_TMPLTS.get( 
@@ -359,10 +507,20 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
         else: extractCmd = ""        
         try: script.replacements["extractCmd"] = extractCmd
         except: script.replacements={"extractCmd": extractCmd}
+        script.replacements["isDebug"] = str(isDebug)        
+        if script.extension == ExecutableScript.VBSCRIPT_EXT:
+            script.replacements["startLogging"] =( "StartLogging" 
+                                            if isDebug else "" )                    
         if iExpressConfig.scriptHeader: 
             script.script = iExpressConfig.scriptHeader + script.script
         script.write()
-        
+        if isDebug: 
+            filePath = script.filePath()
+            if isTwoStageEmbedding:
+                filePath = moveToDir( filePath, tempCabSrcDirPath )
+            printErr( "Debug script left at: %s" % (filePath,), 
+                      isFatal=True )
+         
     __runIExpress( scriptPath, destPath, embeddedResources, sourceDir )
 
     if isDir( tempCabSrcDirPath ): removeDir( tempCabSrcDirPath )
