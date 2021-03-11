@@ -1,7 +1,7 @@
 from distbuilder import( IExpressPackageProcess, ConfigFactory, 
                          ExecutableScript )
 
-DEMO_TYPE = ExecutableScript.BATCH_EXT
+DEMO_TYPE = ExecutableScript.POWERSHELL_EXT
 
 def popupMessageScript( scriptExt ):
     scriptOptions = {
