@@ -215,6 +215,8 @@ from distbuilder.util import(
     , extractExeIcons
     , copyExeVerInfo
     , copyExeIcon
+    , embedManifest
+    , embedAutoElevation    
 )
 
 def assertBuilderVer( ver ): 
