@@ -10,9 +10,9 @@ def scriptAndImports( scriptType ):
         , ExecutableScript.VBSCRIPT_EXT   : 'hello_main.vbs'
     }
     scriptImports = {
-          ExecutableScript.BATCH_EXT      : ['popup.bat' ]
-        , ExecutableScript.POWERSHELL_EXT : ['popup.psm1']
-        , ExecutableScript.VBSCRIPT_EXT   : ['popup.vbs' ]
+          ExecutableScript.BATCH_EXT      : ['Popups.bat' ]
+        , ExecutableScript.POWERSHELL_EXT : ['Popups.psm1']
+        , ExecutableScript.VBSCRIPT_EXT   : ['Popups.vbs' ]
     }
     path = entryPointScripts.get( scriptType )     
     if not path: raise Exception( "Invalid Script Type!" )

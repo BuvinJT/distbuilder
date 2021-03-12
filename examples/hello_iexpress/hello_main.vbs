@@ -1,6 +1,6 @@
 ' The IExpress header injected into this script provides the Import sub routine
 
-Import "popup.vbs"
+Import "Popups.vbs"
 
 ShowInfoPopup "Hello World!" 
 ShowErrorPopup "Whoops!" 
