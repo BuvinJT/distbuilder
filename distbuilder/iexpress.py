@@ -91,6 +91,7 @@ goto :__skip_dirname
 ( set "%~1=%~dp2" && exit /b )
 :__skip_dirname
 set "THIS_DIR=%THIS_DIR:~0,-1%"
+set "LIB_DIR=%CD%"
 set "RES_DIR=%CD%"
 {extractCmd}
 cd "%THIS_DIR%"
@@ -104,6 +105,7 @@ r'''
 $PPID     = (gwmi win32_process -Filter "processid='$PID'").ParentProcessId
 $EXE_PATH = (Get-Process -Id $PPID -FileVersionInfo).FileName
 $THIS_DIR = [System.IO.Path]::GetDirectoryName( $EXE_PATH )
+$LIB_DIR  = (Get-Location)
 $RES_DIR  = (Get-Location)
 {extractCmd}
 Set-Location $THIS_DIR
@@ -114,7 +116,7 @@ __VBSCRIPT_IEXPRESS_EXE_INIT_TMPLT=(
 r''' 
 ' >>> IExpress Initialization <<<
 ' Option Explicit ' DISABLED to support 3rd party libraries 
-Dim PID, PPID, EXE_PATH, THIS_DIR, RES_DIR
+Dim PID, PPID, EXE_PATH, THIS_DIR, LIB_DIR, RES_DIR
 sub IExpressInit()
     Dim oShell : Set oShell = CreateObject( "WScript.Shell" )
     Dim oFSO   : Set oFSO   = CreateObject( "Scripting.FileSystemObject" )
@@ -124,6 +126,7 @@ sub IExpressInit()
     oCmd.Terminate
     PPID = oWMI.Get( "Win32_Process.Handle='" & PID & "'" ).ParentProcessId
     EXE_PATH = oWMI.Get( "Win32_Process.Handle='" & PPID & "'" ).ExecutablePath
+    LIB_DIR  = oShell.CurrentDirectory
     RES_DIR  = oShell.CurrentDirectory
     THIS_DIR = oFSO.GetParentFolderName( EXE_PATH )
     {extractCmd}
@@ -291,7 +294,6 @@ r'''If oFSO.FileExists( "{0}" ) Then
     oFSO.DeleteFile "{0}"
 End If    
 ''')
-                           
 
 __EXTRACT_CMD_TMPLTS = { 
       ExecutableScript.BATCH_EXT      : __BATCH_EXTRACT_CAB_CMD_TMPLT
@@ -332,15 +334,21 @@ __EXTERNAL_RES_PATH_TMPLTS={
        , ExecutableScript.POWERSHELL_EXT : '$THIS_DIR\\{0}' 
        , ExecutableScript.VBSCRIPT_EXT   : '(THIS_DIR & "\\{0}")'
        }
-def iExpressResPath( scriptExt, path, isEmbedded ):
-    if path is None: raise DistBuilderError( "Path cannot be None" )
+def iExpResPath( path, scriptType, isEmbedded ):
+    if path is None: return None
     try:
         if path[0]=='\\': path[1:]
     except: path = ""    
-    return( __EMBEDDED_RES_PATH_TMPLTS[scriptExt].format( path )
+    return( __EMBEDDED_RES_PATH_TMPLTS[scriptType].format( path )
             if isEmbedded else
-            __EXTERNAL_RES_PATH_TMPLTS[scriptExt].format( path ) )
+            __EXTERNAL_RES_PATH_TMPLTS[scriptType].format( path ) )
 
+def iExpEmbResPath( path, scriptType ):
+    return iExpResPath( path, scriptType, isEmbedded=True )
+
+def iExpLibPath( path, scriptType ):
+    return iExpResPath( path, scriptType, isEmbedded=True )
+        
 def _IExpressScript( srcPath, destPath, isSrcRemoved=False, name=None,
                      embeddedResources=None, sourceDir=None ):  
     launchCmd = __LAUNCH_CMDS.get( ExecutableScript.typeOf( srcPath ) )
@@ -417,6 +425,20 @@ class IExpressConfig:
         self.distDirs         = [] 
         
         self.destDirPath      = None
+
+    def iExpResPath( self, path, isEmbedded=False ):        
+        return iExpResPath( path, self.scriptType(), isEmbedded )
+
+    def iExpEmbResPath( self, path ): 
+        return iExpResPath( path, self.scriptType(), isEmbedded=True )
+
+    def iExpLibPath( self, path ):        
+        return iExpResPath( path, self.scriptType(), isEmbedded=True )
+
+    def scriptType( self ):
+        try: fileName = self.entryPointScript.fileName()
+        except: fileName = self.entryPointScript 
+        return ExecutableScript.typeOf( fileName )                
         
 def batchScriptToExe( name=None, entryPointScript=None,  iExpressConfig=None,                                     
                       distResources=None, distDirs=None ):

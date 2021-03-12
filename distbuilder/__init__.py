@@ -30,7 +30,9 @@ from distbuilder.iexpress import(
     , batchScriptToExe
     , powerShellScriptToExe
     , vbScriptToExe 
-    , iExpressResPath 
+    , iExpResPath 
+    , iExpEmbResPath
+    , iExpLibPath
 )
 
 from distbuilder.qt_installer import( 
@@ -148,6 +150,8 @@ from distbuilder.util import(
     , CURRENT_USER, ALL_USERS 
     , DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE 
     , absPath 
+    , homePath
+    , desktopPath     
     , toNativePath 
     , exists 
     , isFile 

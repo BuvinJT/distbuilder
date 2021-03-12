@@ -1,12 +1,12 @@
 from distbuilder import( IExpressPackageProcess, ConfigFactory,
-                         ExecutableScript, iExpressResPath, baseFileName )
+                         ExecutableScript, iExpResPath, baseFileName )
 
 IS_EMBEDDED = True
 SCRIPT_TYPE = ExecutableScript.POWERSHELL_EXT
 
 LICENSE_FILE_PATH = "../hello_world_tk/LICENSE.TXT"
 
-def openTextFileScript( scriptType, isEmbedded, fileName ):
+def openTextFileScript( scriptType, fileName, isEmbedded ):
     scriptOptions = {
           ExecutableScript.BATCH_EXT : [ 
             r'start "Message" /wait cmd /c "echo Resource: {filePath} & pause"'              
@@ -32,11 +32,11 @@ def openTextFileScript( scriptType, isEmbedded, fileName ):
     if not script: raise Exception( "Invalid Script Type!" )
     return ExecutableScript( "openTextFile", extension=scriptType, 
         script=script, replacements={
-        # Note: iExpressResPath resolves the absolute path to the resource.
+        # Note: iExpResPath resolves the absolute path to the resource.
         # Referring to the path by the file name alone, would imply it is found  
         # within the current working directory, i.e. the resource is in the 
         # directory where the exe resides.          
-        "filePath" : iExpressResPath( scriptType, fileName, isEmbedded ) 
+        "filePath" : iExpResPath( fileName, scriptType, isEmbedded ) 
     }) 
 
 f = configFactory  = ConfigFactory()
@@ -47,16 +47,15 @@ f.companyLegalName = "Some Company Inc."
 f.binaryName       = "HelloScriptResources"
 f.version          = (1,0,0,0)
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
-f.entryPointScript = openTextFileScript( SCRIPT_TYPE, 
-                                         IS_EMBEDDED, 
-                                         baseFileName( LICENSE_FILE_PATH ) )
+f.entryPointScript = openTextFileScript( 
+    SCRIPT_TYPE, baseFileName( LICENSE_FILE_PATH ), IS_EMBEDDED )
+
 if not IS_EMBEDDED: 
     f.distResources = [ LICENSE_FILE_PATH ]
  
 class BuildProcess( IExpressPackageProcess ):
     def onIExpressConfig(self, cfg):
         if IS_EMBEDDED:
-            cfg.sourceDir = "../hello_world_tk/" 
             cfg.embeddedResources = [ LICENSE_FILE_PATH ]
 
 p = BuildProcess( configFactory, isDesktopTarget=True, 

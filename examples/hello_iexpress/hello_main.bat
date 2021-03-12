@@ -1,8 +1,8 @@
 :: Uncomment for raw/direct script development
 :: Comment out for IExpress Context...
-::set "RES_DIR=."
+::set "LIB_DIR=."
 
-set "PopupLib=%RES_DIR%\popup.bat"
+set "PopupLib=%LIB_DIR%\popup.bat"
 
 Call %PopupLib% ShowInfoPopup "Hello World!"
 Call %PopupLib% ShowErrorPopup "Whoops!" 

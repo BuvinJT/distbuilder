@@ -878,7 +878,17 @@ def _rootVolumePath( path ):
     try:    return splitDrive( abspath( path ) )[0] + PATH_DELIM
     except: return None 
 
-# -----------------------------------------------------------------------------                          
+# -----------------------------------------------------------------------------
+def homePath( relPath=None ):
+    dirPath = _userHomeDirPath() 
+    if relPath is None: return dirPath        
+    return absPath( relPath, basePath=dirPath )
+
+def desktopPath( relPath=None ):
+    dirPath = _userDesktopDirPath() 
+    if relPath is None: return dirPath        
+    return absPath( relPath, basePath=dirPath )
+                          
 def _pythonPath( relativePath ):    
     return normpath( joinPath( PY_DIR, relativePath ) )
 
