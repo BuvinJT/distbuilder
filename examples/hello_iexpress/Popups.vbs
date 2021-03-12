@@ -1,5 +1,5 @@
 Sub ShowInfoPopup( sMsg )
-    MsgBox sMsg, vbOKOnly+vbInformation, "Success"
+    MsgBox sMsg, vbOKOnly+vbInformation, "Information"
 End Sub 
 
 Sub ShowErrorPopup( sMsg )
