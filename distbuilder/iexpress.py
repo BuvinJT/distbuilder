@@ -424,6 +424,8 @@ class IExpressConfig:
         self.distResources    = []
         self.distDirs         = [] 
         
+        self.isAutoElevated  = False
+        
         self.destDirPath      = None
 
     def iExpResPath( self, path, isEmbedded=False ):        
@@ -554,6 +556,8 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
     if iExpressConfig.iconFilePath: 
         embedExeIcon( destPath, absPath( 
             iExpressConfig.iconFilePath, basePath=sourceDir ) )
+
+    if iExpressConfig.isAutoElevated: embedAutoElevation( destPath )
 
     __copyResources( distResources, distDirs, destDirPath,
                       iExpressConfig.sourceDir )

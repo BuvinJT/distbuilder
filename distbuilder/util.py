@@ -1134,6 +1134,9 @@ class PlasticFile:
             
     def write( self ):
         with open( self.path(), 'w' ) as f : f.write( str(self) )
+    
+    def remove( self ):  
+        if isFile( self.filePath ): removeFile( self.filePath )
                 
     def toLines( self ):        
         return self.content.split( '\n' ) if self.content else []
@@ -1451,6 +1454,22 @@ def copyExeIcon( srcExePath, destExePath, iconName=None ):
             absPath( destExePath ), iconsTempDirPath, 
                 iconName=normIconName( iconName ), 
                 isIconDirRemoved=True ) )
+
+def embedManifest( exePath, manifestPath ):
+    print( "Embedding manifest: %s..." % (manifestPath,) )
+    __useMt( EmbedManifestConfig( exePath, manifestPath ) )
+
+def embedAutoElevation( exePath ):
+    if not IS_WINDOWS: _onPlatformErr()
+    manifestPath = joinPath( tempDirPath(), 
+        joinExt( baseFileName( exePath ), "manifest" ) )
+    manifestContent = EmbedManifestConfig.manifestContent( 
+        baseFileName( exePath ), execLevel="requireAdministrator" )  
+    f = PlasticFile( filePath=manifestPath, content=manifestContent )
+    f.write()    
+    print( "Generated manifest content:\n\n%s\n" % (manifestContent,) ) 
+    embedManifest( exePath, manifestPath )
+    f.remove()
     
 if IS_WINDOWS:
     def __resourceHackerPath(): 
@@ -1474,6 +1493,7 @@ if IS_WINDOWS:
         script.script = script.script.replace( 
             __RESOURCE_HACKER_QT_IFW_PLACEHOLDER, __resourceHackerPath() )
     
+    #--------------------------------------------------------------------------
     class _WindowsSharedFile:
         
         __byref        = ctypes.byref
@@ -1598,6 +1618,104 @@ if IS_WINDOWS:
                     _WindowsSharedFile.__FILLER_BYTE, b'' )                
                 data += chunk.decode() if PY3 else chunk                            
             return None if data=="" else data
+        
+    #--------------------------------------------------------------------------
+    MT_PATH_ENV_VAR = "MT_PATH"
+    
+    class EmbedManifestConfig:
+    
+        __RES_DIR_NAME = "mt"
+    
+        __INTEL_32BIT_DIR  = "x86"
+        __INTEL_64BIT_DIR  = "x64"
+        __ARM_32BIT_DIR    = "arm" # Not actually present...
+        __ARM_64BIT_DIR    = "arm64"
+        __MT_NAME          = "mt.exe"
+
+        __BASIC_MANIFEST_TMPTL=(
+r"""
+Executable: {0} 
+Manifest: {1}
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0"> 
+  <assemblyIdentity version="{2}"
+     processorArchitecture="{3}"
+     name="{4}"
+     type="{5}"/> 
+  <description>{6}</description> 
+  <!-- Identify the application security requirements. -->
+  <ms_asmv2:trustInfo xmlns:ms_asmv2="urn:schemas-microsoft-com:asm.v2">
+    <ms_asmv2:security>
+      <ms_asmv2:requestedPrivileges>
+        <ms_asmv2:requestedExecutionLevel
+          level="{7}" 
+          {8}/>
+        </ms_asmv2:requestedPrivileges>
+       </ms_asmv2:security>
+  </ms_asmv2:trustInfo>
+</assembly>    
+""")
+
+        @staticmethod
+        def manifestContent( exeName, manifestName=None, 
+                             version="1.0.0.0", descr=None,  
+                             arch="*", exeType="win32", 
+                             execLevel="asInvoker", execLevelExt="" ):
+            name = rootFileName( exeName )
+            if descr is None: descr = name
+            if manifestName is None: 
+                manifestName = joinExt( exeName, "manifest" )                                                            
+            return EmbedManifestConfig.__BASIC_MANIFEST_TMPTL.format(
+                exeName, manifestName, 
+                version, arch, name, exeType, descr,
+                execLevel, execLevelExt )
+    
+        @staticmethod
+        def _builtInMtPath( isVerified=False ):    
+            if IS_ARM_CPU:
+                subDirName =( EmbedManifestConfig.__ARM_32BIT_DIR 
+                              if IS_32_BIT_CONTEXT else 
+                              EmbedManifestConfig.__ARM_64BIT_DIR )
+            else:
+                subDirName =( EmbedManifestConfig.__INTEL_32BIT_DIR 
+                              if IS_32_BIT_CONTEXT else 
+                              EmbedManifestConfig.__INTEL_64BIT_DIR )                  
+            path = joinPath( _RES_DIR_PATH, 
+                EmbedManifestConfig.__RES_DIR_NAME, subDirName, 
+                EmbedManifestConfig.__MT_NAME)
+            if isVerified and not isFile( path ): path = None            
+            return path 
+    
+        def __init__( self, exePath, manifestPath ):
+            self.exePath      = exePath        
+            self.manifestPath = manifestPath
+            self.mtPath       = None # if None, this will be auto resolved 
+    
+        def __str__( self ) :
+            manifest       = '-manifest "%s"' % (self.manifestPath,)
+            # NOTE: the use of outputresource NOT updateresource...
+            # MS documentation on manifest embedding incorrectly indicates 
+            # the use of updateresource!
+            outputresource = '-outputresource:"%s;#1"' % (self.exePath,)                       
+            tokens = ( manifest, outputresource )            
+            return ' '.join( (('%s ' * len(tokens)) % tokens).split() )
+    
+    def __useMt( embedManifestConfig ):
+        __validateEmbedManifestConfig( embedManifestConfig )
+        cmd = '"%s" %s' % ( embedManifestConfig.mtPath, 
+                            str(embedManifestConfig) )
+        if not _isSystemSuccess( cmd ):
+            raise DistBuilderError( 'FAILED to embed manifest' )
+        print( "Manifest embedded successfully!" )
+        return embedManifestConfig.exePath
+                
+    def __validateEmbedManifestConfig( cfg ):                                             
+        if cfg.mtPath is None: 
+            cfg.mtPath = getenv( MT_PATH_ENV_VAR )    
+        if cfg.mtPath is None: 
+            cfg.mtPath = EmbedManifestConfig._builtInMtPath()
+        if cfg.mtPath is None: 
+            raise DistBuilderError( "Valid MT path required" )
     
 # ----------------------------------------------------------------------------- 
 if IS_MACOS :
