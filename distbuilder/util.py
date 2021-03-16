@@ -42,7 +42,7 @@ from time import sleep
 from struct import calcsize
 import base64  # @UnusedImport
 from operator import attrgetter, itemgetter # @UnusedImport 
-from copy import deepcopy # @UnusedImport
+from copy import copy, deepcopy # @UnusedImport
 from distutils.sysconfig import get_python_lib
 import xml.etree.ElementTree as ET # @UnusedImport
 from xml.dom import minidom # @UnusedImport

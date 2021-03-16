@@ -417,15 +417,18 @@ class IExpressConfig:
 
         self.versionInfo      = None
         self.iconFilePath     = None
+        self.isAutoElevated   = False
 
-        self.scriptImports     = []
-        self.embeddedResources = []
+        self.scriptImports     = [] #Embedded
+        self.embeddedResources = [] #Embedded       
+        
+        self.distResources    = []  #External
+        self.distDirs         = []  #External (mkDir) 
 
-        self.distResources    = []
-        self.distDirs         = [] 
-        
-        self.isAutoElevated  = False
-        
+        self.codeSignConfig    = []
+        self.codeSignTargets   = []
+                
+        # result 
         self.destDirPath      = None
 
     def iExpResPath( self, path, isEmbedded=False ):        
@@ -501,8 +504,26 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
                          iExpressConfig.embeddedResources )
     isDebug = iExpressConfig.isScriptDebug
 
-    tempCabSrcDirPath   = None
-    tempCabDestPath     = None
+    # split code signing target types into embedded vs external 
+    codeSignConfig  = iExpressConfig.codeSignConfig
+    codeSignTargets = iExpressConfig.codeSignTargets 
+    embeddedSignTargets = []
+    externalSignTargets = []                      
+    if embeddedResources is None:
+        externalSignTargets = copy( codeSignTargets ) 
+    else:   
+        embeddedResDests=[]
+        for res in embeddedResources:
+            _, dest = util._toSrcDestPair( res, destDir=destDirPath,
+                                           basePath=sourceDir )
+            embeddedResDests.append( relpath(dest, destDirPath) )                                               
+        for target in codeSignTargets:
+            if target in embeddedResDests: embeddedSignTargets.append( target )            
+            else:                          externalSignTargets.append( target )
+    
+    # Detect 2 Stage Embedding i.e. (Compression / Decompression) 
+    stageDirPath    = None
+    stageCabDestPath = None
     isTwoStageEmbedding = False
     if embeddedResources is not None:
         for res in embeddedResources:
@@ -511,15 +532,31 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
             isNestedDest = dirPath( relpath( dest, destDirPath ) ) != ""                     
             isTwoStageEmbedding = isDir( src ) or isNestedDest
             if isTwoStageEmbedding: break 
-    if isTwoStageEmbedding:
-        print( "Using 2 stage resource embedding..." ) 
-        tempCabSrcDirPath = joinPath( destDirPath, __CAB_SOURCE_DIR_NAME )
-        tempCabDestPath   = joinPath( destDirPath, __EMBEDDED_CAB_FILE_NAME )
-        __copyResources( embeddedResources, None, tempCabSrcDirPath, sourceDir )                         
-        if not isDebug:
-            embeddedResources = [ 
-                toCabFile( tempCabSrcDirPath, tempCabDestPath ) ]       
+    
+    # Conditionally "stage" copies of the files to be embedded in the exe
+    if isTwoStageEmbedding or len(embeddedSignTargets) > 0:
+        
+        print( "Staging resources to embed..." )
+        stageDirPath = joinPath( destDirPath, __CAB_SOURCE_DIR_NAME )
+        stageCabDestPath = joinPath( destDirPath, __EMBEDDED_CAB_FILE_NAME )
+        __copyResources( embeddedResources, None, stageDirPath, sourceDir )
 
+        # Code sign staged files prior to compression        
+        for target in embeddedSignTargets:
+            targetPath = absPath( target, stageDirPath )
+            signExe( targetPath, codeSignConfig ) 
+        
+        if isTwoStageEmbedding and not isDebug:
+            print( "Compressing embedded resources (1st round)..." )
+            embeddedResources=[ toCabFile(stageDirPath, stageCabDestPath) ]       
+        else:
+            # Update the flat file list, converting each item to the new, 
+            # absolute source path in the stage dir
+            embeddedResources = [ 
+                joinPath( stageDirPath, res ) for res in embeddedResDests ]
+            
+            
+    # Fill in the template, and write the primary exe source    
     if isOnTheFly:                
         iExpressConfig.scriptHeader = __IEXRESS_EXE_INIT_TMPLTS.get( 
                                             script.extension )
@@ -538,30 +575,44 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
         if iExpressConfig.scriptHeader: 
             script.script = iExpressConfig.scriptHeader + script.script
         script.write()
+        
+        # Optional Debugging HALT
         if isDebug: 
             filePath = script.filePath()
             if isTwoStageEmbedding:
-                filePath = moveToDir( filePath, tempCabSrcDirPath )
-            printErr( "Debug script left at: %s" % (filePath,), 
-                      isFatal=True )
-         
+                filePath = moveToDir( filePath, stageDirPath )
+            printErr( "Debug script found at: %s" % (filePath,), 
+                      isFatal=True )       
+
+    # Create the exe!                 
     __runIExpress( scriptPath, destPath, embeddedResources, sourceDir )
 
-    if isDir( tempCabSrcDirPath ): removeDir( tempCabSrcDirPath )
-    if isFile( tempCabDestPath ): removeFile( tempCabDestPath )
-    
+    # Clean up
+    if isDir( stageDirPath ): removeDir( stageDirPath )
+    if isFile( stageCabDestPath ): removeFile( stageCabDestPath )    
     if isOnTheFly: script.remove()
-            
+       
+    # Apply post build, exe resource embedding        
     embedExeVerInfo( destPath, iExpressConfig.versionInfo )        
     if iExpressConfig.iconFilePath: 
         embedExeIcon( destPath, absPath( 
             iExpressConfig.iconFilePath, basePath=sourceDir ) )
-
     if iExpressConfig.isAutoElevated: embedAutoElevation( destPath )
 
+    # Package external resources
     __copyResources( distResources, distDirs, destDirPath,
-                      iExpressConfig.sourceDir )
-            
+                     iExpressConfig.sourceDir )
+   
+    if iExpressConfig.codeSignConfig:
+        # Code sign the exe
+        signExe( destPath, iExpressConfig.codeSignConfig )
+        
+        # Code sign external resource targets         
+        for target in codeSignTargets:
+            if target in distResources:            
+                targetPath = absPath( target, sourceDir )
+                signExe( targetPath, codeSignConfig )
+         
     return dirPath( destPath ), destPath         
 
 def __runIExpress( scrScriptPath, destExePath, embeddedResources, sourceDir ):        

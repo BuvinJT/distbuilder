@@ -160,6 +160,8 @@ class ConfigFactory:
             cfg.versionInfo      = self.exeVersionInfo()
             cfg.iconFilePath     = self.iconFilePath
             cfg.distResources    = self.distResources
+            cfg.codeSignConfig   = self.codeSignConfig
+            cfg.codeSignTargets  = self.pkgCodeSignTargets 
             return cfg
         
         def exeVersionInfo( self, ifwConfig=None ):
@@ -303,9 +305,12 @@ class ConfigFactory:
                 self.distResources if self.distResources else [] ) )
         
         if self.codeSignConfig:
-            if pkgType != QtIfwPackage.Type.PY_INSTALLER:          
+            # These package types already signed the primary exe
+            if( pkgType != QtIfwPackage.Type.PY_INSTALLER and          
+                pkgType != QtIfwPackage.Type.IEXPRESS ):
                 try: self.pkgCodeSignTargets.append( pkg.exeName )
                 except: self.pkgCodeSignTargets=[ pkg.exeName ]
+            # EXE wrappers can't be signed (a design limitation)    
             if( isinstance( pkg.exeWrapper, QtIfwExeWrapper ) and 
                 pkg.exeWrapper.isExe ):
                 exeName = pkg.exeWrapper.wrapperExeName
@@ -639,13 +644,10 @@ class IExpressPackageProcess( _DistBuildProcessBase ):
 
         self._iExpressConfig = self.configFactory.iExpressConfig()       
         self.onIExpressConfig( self._iExpressConfig )
-          
-        self.binDir, self.binPath = _scriptToExe( 
-                iExpressConfig=self._iExpressConfig )
+                      
+        self.binDir, self.binPath = _scriptToExe( iExpressConfig=
+                                                  self._iExpressConfig )
         
-        if self.configFactory.codeSignConfig :
-            signExe( self.binPath, self.configFactory.codeSignConfig ) 
-    
         # TODO: Eliminate code duplication from PyToBinPackageProcess        
         destDirPath =( util._userDesktopDirPath() if self.isDesktopTarget else 
                        util._userHomeDirPath()    if self.isHomeDirTarget else 
