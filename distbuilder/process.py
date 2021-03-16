@@ -636,7 +636,7 @@ class PyToBinPackageProcess( _BuildPackageProcess ):
 # -----------------------------------------------------------------------------
 class IExpressPackageProcess( _BuildPackageProcess ):
     def __init__( self, configFactory,                  
-                  name="IExpress to Binary Package Process",
+                  name="Windows Script to Binary Package Process",
                   isZipped=False, isDesktopTarget=False, isHomeDirTarget=False ) :
         if not IS_WINDOWS: util._onPlatformErr()
         _BuildPackageProcess.__init__( self, configFactory, name,
@@ -891,7 +891,8 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
         _BuildInstallerProcess.__init__( self, 
             masterConfigFactory, name,
             ifwPackages=ifwPackages,
-            pyToBinPkgProcesses=pyBinPrcs,                                         
+            pyToBinPkgProcesses=pyBinPrcs,          
+            iexpressPkgProcesses=iExpressBinPrcs,                               
             isDesktopTarget=isDesktopTarget, 
             isHomeDirTarget=isHomeDirTarget )
 

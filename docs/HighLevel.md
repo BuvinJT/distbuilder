@@ -51,8 +51,15 @@ Attributes & default values:
 	    entryPointPy  = None               
 	    specFilePath  = None
 	    isOneFile     = True (note this differs from PyInstaller default)
-	    distResources = []
-         
+
+     <Other Script to Binary sources>
+      
+        entryPointScript = None
+
+	<External resource bundling>
+	        
+    	distResources = []
+                 
     <Python Obfuscation>
     
 		isObfuscating = False             
@@ -130,6 +137,7 @@ Object creation functions:
                      isExe=False ) <Windows Only>
                      
 	<Windows Only>
+	 	iExpressConfig()      
 		exeVersionInfo( iwfConfig=None )
 		                     
 Cloning:
@@ -209,11 +217,31 @@ containing the build script (NOT the current working directory!).
 
 This attribute is most notably used when producing a 
 [Stand Alone Executable](LowLevel.md#stand-alone-executables).
-In that context, it points PyInstaller to the starting point for the source from which 
-to build a binary.
+In that context, it points PyInstaller to the starting point for the source 
+from which to build a binary.
 
 This is also used during an [Executable Obfuscation](LowLevel.md#executable-obfuscation)
 process.  The entry point module **name** is **not** obfuscated (though its contents are). 
+
+#### entryPointScript 
+
+This attribute is used when producing a 
+[Stand Alone Executable](LowLevel.md#stand-alone-executables) 
+via an implementation of *IExpress*. Using this mechanism, you may convert a program written in a native Windows 
+script (currently supporting Batch, PowerShell, or VBScript), into a
+binary executable. 
+
+Note this argument may be simple file path, pointing to source script, 
+or an object of type [ExecutableScript](LowLevel.md#executablescript).
+
+When using an `ExecutableScript`, a "script header" will automatically be 
+injected.  This header modifies the context so that the implied working
+directory will be where the exe's is launched from.  Without this code, 
+the script will run from a (pseudo random) temporary location.  
+This is a critical detail when resources are bundled with the program. 
+Additionally the header provides the following global variables 
+(which are named identically across the supported scripting languages):
+`PID`, `PPID`, `EXE_PATH`, `THIS_DIR`, `LIB_DIR`, `RES_DIR` 
 
 #### specFilePath
 
@@ -584,13 +612,16 @@ Constructor:
 
     PyToBinPackageProcess( configFactory,                  
 	   name="Python to Binary Package Process",
-	   isZipped=False )
+	   isZipped=False, isDesktopTarget=False, isHomeDirTarget=False )
                                  
 Attributes & default values:
 
     configFactory          = <required>                              
     name                   = "Python to Binary Package Process"
+
 	isZipped               = False
+	isDesktopTarget        = False
+	isHomeDirTarget        = False
 	
 	isWarningSuppression   = True	      
 	isUnBufferedStdIo      = False          
@@ -743,6 +774,55 @@ manipulations of the results.
 
 These notable object attributes will now be set for you to potentially use at this 
 stage: `binDir`, `binPath`.         
+                
+## IExpressPackageProcess
+
+**WINDOWS ONLY**
+
+This "simple" process class converts a program written in a native Windows 
+script (currently supporting Batch, PowerShell, or VBScript), into a 
+stand-alone executable binary.  It additionally has built-in options for
+testing the resulting product, for "resource bundling", and for packaging into 
+an archive file.
+ 
+The process uses a [ConfigFactory](#configfactory) to automatically 
+produce the config objects it requires, but allows a client to modify
+those objects before they are implemented by defining a derived class 
+and overriding certain functions as needed for this purpose.       
+
+Constructor:
+
+    IExpressPackageProcess( configFactory,                  
+	   name="Windows Script to Binary Package Process",
+	   isZipped=False, isDesktopTarget=False, isHomeDirTarget=False )
+                                 
+Attributes & default values:
+
+    configFactory          = <required>                              
+    name                   = "Windows Script to Binary Package Process"
+
+	isZipped               = False
+	isDesktopTarget        = False
+	isHomeDirTarget        = False
+	
+	isExeTest              = False
+	isElevatedTest         = False      
+	exeTestArgs            = []        
+        
+    # Results 
+    binDir  = None
+    binPath = None
+        
+"Virtual" configuration functions to optionally override:  
+(Note the order shown is that in which these functions are invoked)
+
+    onInitialize()    
+    onIExpressConfig( cfg )
+    onFinalize()
+
+Use:
+
+Simply invoke the `run()` function to execute the process. 
         
 ## PyToBinInstallerProcess
 
@@ -870,7 +950,58 @@ sub components are nested inside of that (e.g. [QtIfwPackage](ConfigClasses.md#q
 Before running the process to build the installer, that master config object
 is passed through this function, where you can manipulate it as needed for your 
 implementation.  
-	
+
+## IExpressInstallerProcess
+
+A IExpressInstallerProcess process *contains* an 
+[IExpressPackageProcess](#iexpresspackageprocess)
+within it, and thus provides the full functionality of that to begin with.
+In addition, however, it rolls the product of that lower level process within
+a full fledged installer.  Like the other process classes, this uses a
+[ConfigFactory](#configfactory) to automatically produce the config 
+objects it requires, but allows a client to modify those objects before 
+they are implemented by defining a derived class and overriding certain 
+functions as needed for this purpose.       
+
+This process is basically a simplified version of a
+[RobustInstallerProcess](#robustinstallerprocess).  Use *that* class instead
+if you need to build an installable distribution if
+you have more comprehensive needs such as producing multiple 
+binaries or installable "packages" bundled together. 
+
+Constructor:
+
+    IExpressInstallerProcess( configFactory, 
+	     name="Windows Script to Binary Installer Process",
+	     isDesktopTarget=False, isHomeDirTarget=False )
+                                 
+Attributes & default values:
+                                               
+    configFactory = <required>  
+    
+    name = "Windows Script to Binary Installer Process"
+            
+    isDesktopTarget = False
+    isHomeDirTarget = False
+            
+    isInstallTest            = False
+    isAutoInstallTest        = False
+    isVerboseInstallTest     = True
+    isScriptDebugInstallTest = False
+        
+"Virtual" configuration functions to override:  
+(Note the order shown is that in which these functions are invoked)
+
+	onInitialize()   
+	onIExpressPackageProcess( prc )
+    onIExpressConfig( cfg )
+    onQtIfwConfig( cfg )              
+	onFinalize()
+    
+Use:
+
+Simply invoke the `run()` function to execute the process. 
+  	
 ## RobustInstallerProcess
 
 A RobustInstallerProcess is the most advanced and intricate of these processes.  
@@ -911,8 +1042,10 @@ Constructor:
 
     RobustInstallerProcess( masterConfigFactory, 
       name="Multi-Package Python to Binary Installer Process",
-      pyPkgConfigFactoryDict={}, ifwPackages=[],                                     
-      isDesktopTarget=False, isHomeDirTarget=False  )
+      pyPkgConfigFactoryDict={},
+      iExpressPkgConfigFactoryDict={},  
+      ifwPackages=[],                                     
+      isDesktopTarget=False, isHomeDirTarget=False )
                                  
 Attributes & default values:
                                                
@@ -920,8 +1053,9 @@ Attributes & default values:
     
     name = "Multi-Package Python to Binary Installer Process"
     
-    pyToBinPkgProcesses = []        
-    ifwPackages         = []    
+    pyToBinPkgProcesses  = []        
+    iexpressPkgProcesses = []
+    ifwPackages          = []    
             
     isDesktopTarget = False
     isHomeDirTarget = False
@@ -936,6 +1070,7 @@ Attributes & default values:
 
 	onInitialize()   
     onConfigFactory( key, factory )
+    
     onPyPackageProcess( key, prc )
     onPyPackageInitialize( key )
     onOpyConfig( key, cfg )                    
@@ -943,6 +1078,13 @@ Attributes & default values:
     onMakeSpec( key, spec )   
     onPyPackageFinalize( key )
     onPyPackagesBuilt( pkgs )
+    
+    onIExpressPackageProcess( key, prc )
+    onIExpressPackageInitialize( key )
+    onIExpressConfig( key, cfg )
+    onIExpressPackageFinalize( key )
+    onIExpressPackagesBuilt( pkgs )
+    
     onQtIfwConfig( cfg )
     onPackagesStaged( cfg, pkgs )            
     onFinalize()
@@ -964,7 +1106,7 @@ See the documentation for these attributes as provided for the
 Note `configFactory` == "Master Config Factory" for this class. 
 See the class overview for an explanation of what that means.
 
-#### pyToBinPkgProcesses, ifwPackages          
+#### pyToBinPkgProcesses, iexpressPkgProcesses, ifwPackages          
 
 While technically exposed for access by an implementation,
 **it is not generally advised that you directly modify these attributes**.
@@ -974,6 +1116,8 @@ need to manipulate a given sub process definition before its use,
 it is recommended that you do so via `onPyPackageProcess( key, prc )`.
 If you wish to manipulate the packages after they have all been 
 built, that should normally be done via `onPyPackagesBuilt( pkgs )`.   
+
+`iexpressPkgProcesses` ...
 
 The `ifwPackages` attribute should normally be defined prior to
 creating this class, and simply be passed to its constructor. 

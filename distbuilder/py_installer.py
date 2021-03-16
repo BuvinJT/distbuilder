@@ -97,8 +97,8 @@ class PyInstallerConfig:
         self.dataFilePaths   = [] #Embedded
         self.binaryFilePaths = [] #Embedded
 
-        self.distResources   = []  #External 
-        self.distDirs        = []  #External (mkDir) 
+        self.distResources   = [] #External 
+        self.distDirs        = [] #External (mkDir) 
 
         self.codeSignConfig  = []
         self.codeSignTargets = []
@@ -107,7 +107,6 @@ class PyInstallerConfig:
                
         self.otherPyInstArgs = "" # open ended
         
-        # Not directly fed into the utility. Employed by pyScriptToExe function.       
         self._pngIconResPath   = None
         self.isSpecFileRemoved = False
                 

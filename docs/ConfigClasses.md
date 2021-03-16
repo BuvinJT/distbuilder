@@ -41,22 +41,28 @@ Attributes & default values:
       
     versionInfo     = None
     versionFilePath = None
+
+    isAutoElevated  = False
            
-    distDirPath     = None    
     isOneFile       = True     (note this differs from PyInstaller default)
       
     importPaths     = []
     hiddenImports   = []
+
     dataFilePaths   = []
     binaryFilePaths = []
-      
-    isAutoElevated  = False        
-    otherPyInstArgs = ""  (open ended argument string)    
 
-    (Not directly fed into the utility. Employed by pyScriptToExe function.)
-    _pngIconResPath = None
     distResources   = []
     distDirs        = [] 
+
+    codeSignConfig  = []
+    codeSignTargets = []
+                          
+    otherPyInstArgs = ""  (open ended argument string)    
+
+    distDirPath     = None    
+
+    _pngIconResPath = None
     isSpecFileRemoved = False
 
 ## PyInstHook
@@ -173,6 +179,50 @@ Object Methods:
     injectDuplicateDataPatch()
     
     _parseAssigments() 
+
+## IExpressConfig
+
+**WINDOWS ONLY**
+
+Objects of this type define *optional* details for building 
+binaries from native Windows scripts
+(currently supporting Batch, PowerShell, or VBScript), using the 
+IExpress utility built into the OS, as invoked via the [batchScriptToExe](LowLevel.md#batchscripttoexe), 
+[powerShellScriptToExe](LowLevel.md#powershellscripttoexe), 
+or [vbScriptToExe](LowLevel.md#vbscripttoexe) functions 
+(which maybe employed by higher level  
+[Process Classes](HighLevel.md#process-classes) under the hood).
+ 
+Constructor: 
+
+    IExpressConfig()
+
+Attributes & default values:        
+
+    name             = None
+    sourceDir        = None
+            
+    entryPointScript = None
+    scriptHeader     = None
+    isScriptDebug    = False
+
+    versionInfo      = None
+    iconFilePath     = None
+    isAutoElevated   = False
+
+    scriptImports     = [] #Embedded
+    embeddedResources = [] #Embedded       
+    
+    distResources     = []  #External
+    distDirs          = []  #External (mkDir) 
+
+    codeSignConfig    = []
+    codeSignTargets   = []
+            
+    # result 
+    destDirPath      = None
+
+**isScriptDebug** : TODO: Fill-in - Note the extended VbScript functionality
 
 ## CodeSignConfig
 

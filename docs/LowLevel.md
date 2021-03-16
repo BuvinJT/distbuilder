@@ -70,7 +70,18 @@ program, invoke the pyScriptToExe function:
 
 ** WINDOWS ONLY**
 
-     batchScriptToExe( name=None, entryPointScript=None, iExpressConfig=None,                                     
+This function ultimately produces an executable via *IExpress*.
+
+For more information on that tool, see:
+
+https://docs.microsoft.com/en-us/internet-explorer/ie11-ieak/iexpress-wizard-for-win-server
+https://en.wikipedia.org/wiki/IExpress
+https://ss64.com/nt/iexpress.html
+http://www.mdgx.com/INF_web/
+ 
+
+     batchScriptToExe( name=None, entryPointScript=None, 
+                       iExpressConfig=None,                                     
                        distResources=None, distDirs=None )
 
 TODO: Fill in
@@ -79,7 +90,8 @@ TODO: Fill in
 
 ** WINDOWS ONLY**
 
-     powerShellScriptToExe( name=None, entryPointScript=None, iExpressConfig=None,                                     
+     powerShellScriptToExe( name=None, entryPointScript=None, 
+                            iExpressConfig=None,                                     
                             distResources=None, distDirs=None )
 
 TODO: Fill in
@@ -88,7 +100,8 @@ TODO: Fill in
 
 ** WINDOWS ONLY**
 
-     vbScriptToExe( name=None, entryPointScript=None, iExpressConfig=None,                                     
+     vbScriptToExe( name=None, entryPointScript=None, 
+                    iExpressConfig=None,                                     
                     distResources=None, distDirs=None )
 
 TODO: Fill in
@@ -1773,9 +1786,17 @@ The path to the directory which contains the build script.
 
     absPath( relativePath, basePath=None )
     
-Covert a relative path to an absolute path. If a `basePath` 
+Convert a relative path to an absolute path. If a `basePath` 
 is not specified, the path is re resolved relative to `THIS_DIR` 
 (which may or **MAY NOT** be the *current working directory*).  
+
+### homePath, desktopPath
+
+    homePath( relPath=None )
+    desktopPath( relPath=None )
+    
+Convert a relative path to an absolute path, within the current user's
+home directory or desktop directory.       
 
 ### joinPathQtIfw
 
@@ -2056,7 +2077,53 @@ this function doesn't create a new exe.
 
 ### copyExeIcon
 
+** WINDOWS ONLY**
+
     copyExeIcon( srcExePath, destExePath, iconName=None )
+
+Copy an embedded icon from one exe to another.
+    
+**Returns**: None (Raising exception on failure)
+
+**srcExePath**:  Absolute or relative path to the executable file 
+which contains the icon to be copied.
+
+**destExePath**: Absolute or relative path to the executable file 
+where the icon is to be transferred.
+Note, this file must already exist, to receive the icon, i.e.
+this function doesn't create a new exe.
+
+**iconName**: If the source exe contains multiple icons, this
+argument allows the specification of which one of those is
+to be copied.  This maybe figure out manually by first exacting 
+the icons.  If none is specified, the "first" icon in an directory
+listing will be automatically selected.     
+    
+### embedManifest
+
+** WINDOWS ONLY**
+
+    embedManifest( exePath, manifestPath )
+
+**Returns**: None (Raising exception on failure)
+
+**exePath**:  Absolute or relative path to the executable file.
+
+**manifestPath**:  Absolute or relative path to a manifest file.
+
+### embedAutoElevation        
+
+** WINDOWS ONLY**
+
+    embedAutoElevation( exePath )
+
+Cause an executable to auto elevate (i.e. request admin priviledges) 
+every time it is run, by embedding this requirement for the OS to 
+enforce via a manifest.
+
+**Returns**: None (Raising exception on failure)    
+
+**exePath**:  Absolute or relative path to the executable file.
 
 ### halt
 	
