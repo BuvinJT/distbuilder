@@ -16,6 +16,7 @@ SPEC_EXT = ".spec"
 BUILD_DIR_PATH = absPath( "build" )
 DIST_DIR_PATH  = absPath( "dist" )
 CACHE_DIR_PATH = absPath( "__pycache__" )
+TEMP_RES_DIR_PATH = absPath( "__res" )
 
 HOOKS_DIR_NAME = "hooks"
 
@@ -85,24 +86,29 @@ class PyInstallerConfig:
 
         self.versionInfo     = None 
         self.versionFilePath = None 
-                     
+ 
+        self.isAutoElevated  = False        
+                            
         self.isOneFile       = True # this differs from the PyInstaller default
         
         self.importPaths     = []
         self.hiddenImports   = []
-        self.dataFilePaths   = []
-        self.binaryFilePaths = []
         
-        self.isAutoElevated  = False        
-        
+        self.dataFilePaths   = [] #Embedded
+        self.binaryFilePaths = [] #Embedded
+
+        self.distResources   = []  #External 
+        self.distDirs        = []  #External (mkDir) 
+
+        self.codeSignConfig  = []
+        self.codeSignTargets = []
+                
         self.distDirPath     = None
                
         self.otherPyInstArgs = "" # open ended
         
         # Not directly fed into the utility. Employed by pyScriptToExe function.       
         self._pngIconResPath   = None
-        self.distResources     = []
-        self.distDirs          = [] 
         self.isSpecFileRemoved = False
                 
     def toArgs( self, isMakeSpec=False ) :
@@ -138,7 +144,8 @@ class PyInstallerConfig:
             importsSpec += '--hidden-import "%s"' % (importMod,)
                 
         def toPyInstallerSrcDestSpec( pyInstArg, paths ):
-            src, dest = self._toSrcDestPair( paths ) 
+            src, dest = util._toSrcDestPair( paths, destDir=None, 
+                                             basePath=self.sourceDir )            
             return '%s "%s%s%s" ' % (pyInstArg, src, pathsep, dest)
         
         dataSpec = ""
@@ -189,10 +196,6 @@ class PyInstallerConfig:
 
     def _absPath( self, path ): return absPath( path, self.sourceDir )
     
-    def _toSrcDestPair( self, pathPair, destDir=None ):
-        return util._toSrcDestPair( pathPair, destDir, 
-                                    basePath=self.sourceDir )
-
 class PyInstSpec( util.PlasticFile ):
 
     WARN_IGNORE, WARN_ONCE, WARN_ERROR = range(3) 
@@ -386,6 +389,7 @@ def pyScriptToExe( name=None, entryPointPy=None,
         raise DistBuilderError( "Binary entry point is required" )
     
     # auto assign some pyInstConfig values        
+    sourceDir = pyInstConfig.sourceDir 
     distDirPath = joinPath( THIS_DIR, pyInstConfig.name ) 
     pyInstConfig.distDirPath = distDirPath
     if IS_WINDOWS and pyInstConfig.versionInfo is not None: 
@@ -405,7 +409,26 @@ def pyScriptToExe( name=None, entryPointPy=None,
                (pyInstConfig.versionInfo.path(),) )
         pyInstConfig.versionInfo.debug() 
         pyInstConfig.versionInfo.write()
-        
+                     
+    codeSignConfig  = pyInstConfig.codeSignConfig
+    codeSignTargets = pyInstConfig.codeSignTargets 
+
+    # Duplicate and sign any *embedded* code sign targets 
+    if codeSignTargets:        
+        revResources = []
+        embeddedRes = pyInstConfig.dataFilePaths + pyInstConfig.binaryFilePaths      
+        for res in embeddedRes:
+            src, dest = util._toSrcDestPair( res, destDir=TEMP_RES_DIR_PATH,
+                                             basePath=sourceDir )
+            relDest = relpath( dest, TEMP_RES_DIR_PATH )        
+            if relDest in codeSignTargets:
+                tempSrcPath = copyToDir( src, TEMP_RES_DIR_PATH )    
+                signExe( tempSrcPath, codeSignConfig )                        
+                codeSignTargets.pop( relDest )
+                revResources.append( (tempSrcPath, relDest) )
+            else: revResources.append( res )    
+        distResources = revResources
+            
     # Build the executable using PyInstaller        
     __runPyInstaller( pyInstConfig )
 
@@ -452,8 +475,27 @@ def pyScriptToExe( name=None, entryPointPy=None,
         except: pass
             
     # Add additional distribution resources        
-    for res in distResources:
-        src, dest = pyInstConfig._toSrcDestPair( res, destDir=distDirPath )
+    __copyResources( distResources, distDirs, distDirPath, sourceDir )
+
+    if pyInstConfig.codeSignConfig:
+        # Code sign the exe
+        signExe( exePath, pyInstConfig.codeSignConfig )
+                
+        # Code sign external resource targets
+        if codeSignTargets:         
+            for target in codeSignTargets:
+                if target in distResources:            
+                    targetPath = absPath( target, sourceDir )
+                    signExe( targetPath, codeSignConfig )
+                
+    # Return the paths generated    
+    return distDirPath, exePath
+
+
+def __copyResources( resources, mkDirs, destDirPath, sourceDir ):
+    for res in resources:
+        src, dest = util._toSrcDestPair( res, destDir=destDirPath,
+                                         basePath=sourceDir )
         print( 'Copying "%s" to "%s"...' % ( src, dest ) )
         if isFile( src ) :
             destDir = dirPath( dest )
@@ -463,17 +505,15 @@ def pyScriptToExe( name=None, entryPointPy=None,
         elif isDir( src ):
             try: copyDir( src, dest ) 
             except Exception as e: printExc( e )
-        else:
-            printErr( 'Invalid path: "%s"' % (src,) )                            
-    for d in distDirs:
-        dirToMk = joinPath( distDirPath, d )
-        print( '"Making directory "%s"...' % ( dirToMk ) )
-        try: makeDir( dirToMk ) # works recursively
-        except Exception as e: printExc( e )   
-    print('')
+        else: printErr( 'Invalid path: "%s"' % (src,) )         
+    if mkDirs:
+        for d in mkDirs:
+            dirToMk = joinPath( destDirPath, d )
+            print( '"Making directory "%s"...' % ( dirToMk ) )
+            try: makeDir( dirToMk ) # works recursively
+            except Exception as e: printExc( e )   
+        print('')
     
-    # Return the paths generated    
-    return distDirPath, exePath
 
 def makePyInstSpec( pyInstConfig, opyConfig=None ):
     
@@ -528,10 +568,12 @@ def __runPyInstaller( pyInstConfig, isMakeSpec=False ) :
                   (THIS_DIR, SYS_CMD_DELIM, runAsScriptPrefix, progPath, args) )   
 
 def __clean( pyInstConfig, isBuildPrep ) :     
-    if exists( OBFUS_DIR_PATH ) : removeDir( OBFUS_DIR_PATH )    
-    if exists( BUILD_DIR_PATH ) : removeDir( BUILD_DIR_PATH )
-    if exists( DIST_DIR_PATH )  : removeDir( DIST_DIR_PATH )
-    if exists( CACHE_DIR_PATH ) : removeDir( CACHE_DIR_PATH )
+    if exists( OBFUS_DIR_PATH )    : removeDir( OBFUS_DIR_PATH )    
+    if exists( TEMP_RES_DIR_PATH ) : removeDir( TEMP_RES_DIR_PATH )
+    if exists( BUILD_DIR_PATH )    : removeDir( BUILD_DIR_PATH )
+    if exists( DIST_DIR_PATH )     : removeDir( DIST_DIR_PATH )
+    if exists( CACHE_DIR_PATH )    : removeDir( CACHE_DIR_PATH )
+    
     if( pyInstConfig.versionInfo is not None and
         pyInstConfig.versionFilePath is not None and
         isFile( pyInstConfig.versionFilePath ) ) : 

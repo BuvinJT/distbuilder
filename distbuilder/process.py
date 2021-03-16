@@ -145,6 +145,8 @@ class ConfigFactory:
         cfg.isGui         = self.isGui
         cfg.iconFilePath  = self.iconFilePath        
         cfg.distResources = self.distResources 
+        cfg.codeSignConfig   = self.codeSignConfig
+        cfg.codeSignTargets  = self.pkgCodeSignTargets         
         if self.specFilePath :
             cfg.pyInstSpec = PyInstSpec( self.specFilePath )
         if IS_WINDOWS: cfg.versionInfo = self .exeVersionInfo()
@@ -517,31 +519,74 @@ class _DistBuildProcessBase:
     def onFinalize( self ):   """VIRTUAL"""
 
 # -----------------------------------------------------------------------------
-class PyToBinPackageProcess( _DistBuildProcessBase ):
+@add_metaclass(ABCMeta)
+class _BuildPackageProcess( _DistBuildProcessBase ):
+    def __init__( self, configFactory,                  
+                  name="Binary Package Process",
+                  isZipped=False, isDesktopTarget=False, isHomeDirTarget=False ) :
+        _DistBuildProcessBase.__init__( self, configFactory, name )                
+        
+        self.isZipped        = isZipped        
+        self.isDesktopTarget = isDesktopTarget
+        self.isHomeDirTarget = isHomeDirTarget
+        
+        self.isExeTest       = False
+        self.isElevatedTest  = False
+        self.exeTestArgs     = []          
+                      
+        # Results
+        self.binDir = None
+        self.binPath = None
+                    
+    def _moveToDestAndTest( self ):        
+          
+        destDirPath =( util._userDesktopDirPath() if self.isDesktopTarget else 
+                       util._userHomeDirPath()    if self.isHomeDirTarget else 
+                       None )          
+        if self.isZipped :
+            # test exe first!
+            if self.isExeTest : self.__testExe() 
+            # bin path is actually the zip now...
+            self.binPath = toZipFile( self.binDir, zipDest=None, removeScr=True )
+            if destDirPath and self.binDir != destDirPath: 
+                self.binPath = moveToDir( self.binPath, destDirPath ) 
+                self.binDir  = destDirPath
+        else:         
+            if destDirPath and self.binDir != destDirPath:
+                binName = baseFileName( self.binPath )
+                isOtherContent = len( [item for item in listdir( self.binDir ) 
+                                      if item != binName] ) > 0                                      
+                if isOtherContent:
+                    self.binDir  = moveToDir( self.binDir, destDirPath )
+                    self.binPath = joinPath( self.binDir, binName )
+                else:
+                    originDirPath = self.binDir 
+                    self.binPath = moveToDir( self.binPath, destDirPath )
+                    self.binDir  = destDirPath 
+                    removeDir( originDirPath )
+            if self.isExeTest : self.__testExe()
+            
+    def __testExe( self ):
+        run( self.binPath, self.exeTestArgs,
+             isElevated=self.isElevatedTest, isDebug=True )
+                    
+# -----------------------------------------------------------------------------
+class PyToBinPackageProcess( _BuildPackageProcess ):
 
     def __init__( self, configFactory,                  
                   name="Python to Binary Package Process",
                   isZipped=False, isDesktopTarget=False, isHomeDirTarget=False ) :
-        _DistBuildProcessBase.__init__( self, configFactory, name )        
-        self.isZipped = isZipped
-        self.isDesktopTarget = isDesktopTarget
-        self.isHomeDirTarget = isHomeDirTarget
+        _BuildPackageProcess.__init__( self, configFactory, name,
+            isZipped, isDesktopTarget, isHomeDirTarget )        
+
+        self.isObfuscationTest      = False
 
         self.isWarningSuppression   = True
         self.isUnBufferedStdIo      = False                
         self.isPyInstDupDataPatched = None
-
-        self.isObfuscationTest      = False
-        self.isExeTest              = False
-        self.isElevatedTest         = False
-        self.exeTestArgs            = []        
                         
         self._pyInstConfig = None
-        
-        # Results
-        self.binDir = None
-        self.binPath = None
-        
+                
     def _body( self ):        
         
         if self.configFactory.isObfuscating :
@@ -578,38 +623,7 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
             pyScriptToExe( pyInstConfig=self._pyInstConfig, 
                            opyConfig=opyConfig ) )
         
-        if self.configFactory.codeSignConfig :
-            signExe( self.binPath, self.configFactory.codeSignConfig ) 
-        
-        destDirPath =( util._userDesktopDirPath() if self.isDesktopTarget else 
-                       util._userHomeDirPath()    if self.isHomeDirTarget else 
-                       None )          
-        if self.isZipped :
-            # test exe first!
-            if self.isExeTest : self.__testExe() 
-            # bin path is actually the zip now...
-            self.binPath = toZipFile( self.binDir, zipDest=None, removeScr=True )
-            if destDirPath and self.binDir != destDirPath: 
-                self.binPath = moveToDir( self.binPath, destDirPath ) 
-                self.binDir  = destDirPath
-        else:         
-            if destDirPath and self.binDir != destDirPath:
-                binName = baseFileName( self.binPath )
-                isOtherContent = len( [item for item in listdir( self.binDir ) 
-                                      if item != binName] ) > 0                                      
-                if isOtherContent:
-                    self.binDir  = moveToDir( self.binDir, destDirPath )
-                    self.binPath = joinPath( self.binDir, binName )
-                else:
-                    originDirPath = self.binDir 
-                    self.binPath = moveToDir( self.binPath, destDirPath )
-                    self.binDir  = destDirPath 
-                    removeDir( originDirPath )
-            if self.isExeTest : self.__testExe()
-            
-    def __testExe( self ):
-        run( self.binPath, self.exeTestArgs,
-             isElevated=self.isElevatedTest, isDebug=True )
+        self._moveToDestAndTest()
                     
     # Override these to further customize the build process once the 
     # ConfigFactory has produced each initial config object
@@ -620,64 +634,22 @@ class PyToBinPackageProcess( _DistBuildProcessBase ):
     def onFinalize( self ):          """VIRTUAL"""
 
 # -----------------------------------------------------------------------------
-class IExpressPackageProcess( _DistBuildProcessBase ):
+class IExpressPackageProcess( _BuildPackageProcess ):
     def __init__( self, configFactory,                  
                   name="IExpress to Binary Package Process",
                   isZipped=False, isDesktopTarget=False, isHomeDirTarget=False ) :
         if not IS_WINDOWS: util._onPlatformErr()
-        _DistBuildProcessBase.__init__( self, configFactory, name )                
-        self.isZipped = isZipped
-        self.isDesktopTarget = isDesktopTarget
-        self.isHomeDirTarget = isHomeDirTarget
-        
-        self.isExeTest              = False
-        self.isElevatedTest         = False
-        self.exeTestArgs            = []          
-        
+        _BuildPackageProcess.__init__( self, configFactory, name,
+            isZipped, isDesktopTarget, isHomeDirTarget )        
+
         self._iExpressConfig = None
-              
-        # Results
-        self.binDir = None
-        self.binPath = None
                     
     def _body( self ):        
-
         self._iExpressConfig = self.configFactory.iExpressConfig()       
-        self.onIExpressConfig( self._iExpressConfig )
-                      
+        self.onIExpressConfig( self._iExpressConfig )                      
         self.binDir, self.binPath = _scriptToExe( iExpressConfig=
-                                                  self._iExpressConfig )
-        
-        # TODO: Eliminate code duplication from PyToBinPackageProcess        
-        destDirPath =( util._userDesktopDirPath() if self.isDesktopTarget else 
-                       util._userHomeDirPath()    if self.isHomeDirTarget else 
-                       None )          
-        if self.isZipped :
-            # test exe first!
-            if self.isExeTest : self.__testExe() 
-            # bin path is actually the zip now...
-            self.binPath = toZipFile( self.binDir, zipDest=None, removeScr=True )
-            if destDirPath and self.binDir != destDirPath: 
-                self.binPath = moveToDir( self.binPath, destDirPath ) 
-                self.binDir  = destDirPath
-        else:         
-            if destDirPath and self.binDir != destDirPath:
-                binName = baseFileName( self.binPath )
-                isOtherContent = len( [item for item in listdir( self.binDir ) 
-                                      if item != binName] ) > 0                                      
-                if isOtherContent:
-                    self.binDir  = moveToDir( self.binDir, destDirPath )
-                    self.binPath = joinPath( self.binDir, binName )
-                else:
-                    originDirPath = self.binDir 
-                    self.binPath = moveToDir( self.binPath, destDirPath )
-                    self.binDir  = destDirPath 
-                    removeDir( originDirPath )
-            if self.isExeTest : self.__testExe()
-            
-    def __testExe( self ):
-        run( self.binPath, self.exeTestArgs,
-             isElevated=self.isElevatedTest, isDebug=True )
+                                                  self._iExpressConfig )        
+        self._moveToDestAndTest()
                     
     # Override these to further customize the build process once the 
     # ConfigFactory has produced each initial config object
@@ -695,6 +667,7 @@ class _BuildInstallerProcess( _DistBuildProcessBase ):
                   ifwPackages=None,                                                                                   
                   isDesktopTarget=False, isHomeDirTarget=False ) :
         _DistBuildProcessBase.__init__( self, configFactory, name )
+        
         self.pyToBinPkgProcesses =( pyToBinPkgProcesses 
                                     if pyToBinPkgProcesses else [] )
         self.iexpressPkgProcesses=( iexpressPkgProcesses

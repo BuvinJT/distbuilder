@@ -422,8 +422,8 @@ class IExpressConfig:
         self.scriptImports     = [] #Embedded
         self.embeddedResources = [] #Embedded       
         
-        self.distResources    = []  #External
-        self.distDirs         = []  #External (mkDir) 
+        self.distResources     = []  #External
+        self.distDirs          = []  #External (mkDir) 
 
         self.codeSignConfig    = []
         self.codeSignTargets   = []
