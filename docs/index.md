@@ -5,7 +5,7 @@
 
 "Distribution Builder" (distbuilder) is an open source Python library.
 It is a "meta tool", which wraps and combines other related libraries and utilities 
-including [PyInstaller](http://www.pyinstaller.org), 
+including [PyInstaller](http://www.pyinstaller.org), [IExpress](https://en.wikipedia.org/wiki/IExpress),
 the [Qt Installer Framework](http://doc.qt.io/qtinstallerframework), 
 [Opy](https://pypi.org/project/opy-distbuilder/) (Obfuscator for Python), 
 [pip](https://pypi.org/project/pip/), and more.  
@@ -13,12 +13,14 @@ the [Qt Installer Framework](http://doc.qt.io/qtinstallerframework),
 As one might guess, the primary role which Distribution Builder can serve for your development 
 needs is packaging and deploying Python based programs. It can, however, be employed for 
 distributing software written in other languages as well.  To this end, a dedicated module, 
-has been provided which is specific for [Qt C++ Integration](QtCpp.md).  More cross language / 
+has been provided which is specific for [Qt C++ Integration](QtCpp.md).  The library also
+includes the means to transform simple Windows scripts (Batch, PowerShell, or VBScript) 
+into full blown executable programs.  More cross language / 
 cross framework integration modules will become available in the future.
 
 This library is compatible with both Python 2 and 3.  It has been tested on recent versions of 
 Windows, macOS, and multiple Linux distros. It features the ability to create stand-alone 
-binaries from Python scripts (via PyInstaller), and is capable of building installers in a 
+binaries, and is capable of building installers in a 
 cross platform manner (via QtIFW). These installers can be produced for either gui or 
 *non-gui* (i.e terminal interface) contexts. Note that the later is a feature QtIFW does not naturally provide. 
 The library can also be used to **obfuscate** code (via Opy), so as to protect proprietary work.
