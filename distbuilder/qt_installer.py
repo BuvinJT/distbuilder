@@ -657,7 +657,7 @@ class QtIfwConfigXml( _QtIfwXml ):
 # -----------------------------------------------------------------------------
 class QtIfwPackage:
 
-    class Type: DATA, RESOURCE, PY_INSTALLER, QT_CPP = range(4)  
+    class Type: DATA, RESOURCE, PY_INSTALLER, IEXPRESS, QT_CPP = range(5)  
     
     __PACKAGES_PATH_TMPLT       = "%s/packages"
     __DIR_PATH_TMPLT            = "%s/packages/%s"
@@ -6198,81 +6198,11 @@ Start-Process $prog {wait}{hide}-ArgumentList $args
                 replacements=replacements )
  
         @staticmethod
-        def Script2ExeScript( srcPath, destPath, isSrcRemoved=False ):            
-            script=(
-"""
-;@echo off
-
-;set "SOURCE_PATH={srcPath}"
-;set "TARGET_PATH={destPath}"
-
-;for %%I in ("%TARGET_PATH%") do set "target.exe=%%~I"
-;for %%I in ("%SOURCE_PATH%") do set "script_file=%%~fI"
-;for %%I in ("%SOURCE_PATH%") do set "script_name=%%~nxI"
-;for %%I in ("%SOURCE_PATH%") do set "script_dir=%%~dpI"
-
-;copy /y "%~f0" "%temp%\\2exe.sed" >nul
-
-;(echo()>>"%temp%\\2exe.sed"
-;(echo(AppLaunched={command})>>"%temp%\\2exe.sed"
-;(echo(TargetName="%target.exe%")>>"%temp%\\2exe.sed"
-;(echo(FILE0="%script_name%")>>"%temp%\\2exe.sed"
-;(echo([SourceFiles])>>"%temp%\\2exe.sed"
-;(echo(SourceFiles0="%script_dir%")>>"%temp%\\2exe.sed"
-;(echo([SourceFiles0])>>"%temp%\\2exe.sed"
-;(echo(%%FILE0%%=)>>"%temp%\\2exe.sed"
-
-;iexpress /n /q /m %temp%\\2exe.sed
-
-;del /q /f "%temp%\\2exe.sed"
-;{removeSrc}
-;exit /b 0
-
-[Version]
-Class=IEXPRESS
-SEDVersion=3
-[Options]
-PackagePurpose=InstallApp
-ShowInstallProgramWindow=1
-HideExtractAnimation=1
-UseLongFileName=1
-InsideCompressed=0
-CAB_FixedSize=0
-CAB_ResvCodeSigning=0
-RebootMode=N
-InstallPrompt=%InstallPrompt%
-DisplayLicense=%DisplayLicense%
-FinishMessage=%FinishMessage%
-TargetName=%TargetName%
-FriendlyName=%FriendlyName%
-AppLaunched=%AppLaunched%
-PostInstallCmd=%PostInstallCmd%
-AdminQuietInstCmd=%AdminQuietInstCmd%
-UserQuietInstCmd=%UserQuietInstCmd%
-SourceFiles=SourceFiles
-
-[Strings]
-InstallPrompt=
-DisplayLicense=
-FinishMessage=
-FriendlyName=-
-PostInstallCmd=<None>
-AdminQuietInstCmd=
-UserQuietInstCmd=
-""")
-            ext = fileExt( srcPath ).lower()                        
-            if   ext==".vbs":
-                command = 'cscript.exe "%script_name%"'
-            elif ext==".ps1":
-                command = 'powershell.exe -ExecutionPolicy Bypass -InputFormat None -File "%script_name%"'
-            else:    
-                command = 'cmd.exe /c "%script_name%"'
-            removeSrc =( 'del /q /f "%s"' % (srcPath,) 
-                         if isSrcRemoved else "" )
-            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "script2exe" ), script=script, replacements={
-                "srcPath": srcPath, "destPath": destPath,
-                "command": command, "removeSrc": removeSrc } )
+        def Script2ExeScript( srcPath, destPath, isSrcRemoved=False ):   
+            from distbuilder import iexpress
+            return iexpress._IExpressScript(
+                srcPath, destPath, isSrcRemoved=isSrcRemoved,
+                name=QtIfwExternalOp.__scriptRootName( "script2exe" ) )
 
         @staticmethod
         def EmbedExeVerInfoScript( exePath, exeVerInfo ):

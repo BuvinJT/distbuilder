@@ -42,7 +42,7 @@ from time import sleep
 from struct import calcsize
 import base64  # @UnusedImport
 from operator import attrgetter, itemgetter # @UnusedImport 
-from copy import deepcopy # @UnusedImport
+from copy import copy, deepcopy # @UnusedImport
 from distutils.sysconfig import get_python_lib
 import xml.etree.ElementTree as ET # @UnusedImport
 from xml.dom import minidom # @UnusedImport
@@ -130,6 +130,8 @@ __DBL_QUOTE      = '"'
 __SPACE          = ' '
 __ESC_SPACE      = '\\ '
 _NEWLINE         = '\n'
+__EXT_DELIM      = '.'
+
 if IS_WINDOWS :
     import ctypes        
     from ctypes import wintypes
@@ -162,6 +164,8 @@ if IS_WINDOWS :
         'powershell.exe -NoLogo -ExecutionPolicy Bypass -InputFormat None '
         '-Command "%s | Out-File "%s" -Append -Encoding ascii"' )
     __CAPTURE_CONSOLE_PS_SCRIPT_NAME = "Get-ConsoleAsText.ps1"
+    __DIR2CAB_BAT_SCRIPT_NAME = "Dir2Cab.bat"
+    __DIR2CAB_WRAPPER_SWITCH = "-w"
 else:
     _EXECUTE_PREFIX = ". "
     _EXECUTE_TMPT = '. "%s"'
@@ -514,11 +518,12 @@ def __runPowerShell( script, replacements=None,
                      isStdOut=False, asCleanLines=False ):
     if not IS_WINDOWS: _onPlatformErr()
     if isinstance( script, string_types ) or isinstance( script, list ):
-        dirPath, fileName = reserveTempFilePath( suffix=".ps1", isSplitRet=True ) 
+        scriptDirPath, fileName = reserveTempFilePath( 
+            suffix=".ps1", isSplitRet=True ) 
         script = ExecutableScript( rootFileName( fileName ), extension="ps1", 
                                    script=script, replacements=replacements )
-    elif script.dirPath is None: dirPath = tempDirPath()    
-    script.write( dirPath )    
+    elif script.scriptDirPath is None: scriptDirPath = tempDirPath()    
+    script.write( scriptDirPath )    
     cmd =( 'powershell.exe -ExecutionPolicy Bypass -InputFormat None '
            '-File "%s"' % (script.filePath(),) )
     if isStdOut: 
@@ -738,11 +743,10 @@ def __importByStr( moduleName, memberName=None ):
 def toZipFile( sourceDir, zipDest=None, removeScr=True, 
                isWrapperDirIncluded=False ):
     sourceDir = absPath( sourceDir )
-    if zipDest is None :        
-        zipDest = sourceDir # make_archive adds extension
-    else:
-        if isFile( zipDest ) : removeFile( zipDest )
-        zipDest, _ = splitExt(zipDest)           
+    if zipDest is None: zipDest = sourceDir # make_archive adds extension
+    else: zipDest, _ = splitExt( absPath( zipDest ) )
+    dest = joinExt( zipDest, '.zip' )    
+    if isFile( dest ) : removeFile( dest )                   
     if isWrapperDirIncluded:
         filePath = make_archive( zipDest, 'zip', 
             dirPath( sourceDir ), baseFileName( sourceDir ) )
@@ -753,6 +757,27 @@ def toZipFile( sourceDir, zipDest=None, removeScr=True,
         removeDir( sourceDir )
         print( 'Removed directory: "%s"' % (sourceDir,) )        
     return filePath
+
+def toCabFile( sourceDir, cabDest=None, removeScr=True, 
+               isWrapperDirIncluded=False ):
+    if not IS_WINDOWS: _onPlatformErr()
+    sourceDir = absPath( sourceDir )
+    if cabDest is None: cabDest = sourceDir # makeCab adds extension 
+    else: cabDest, _ = splitExt( absPath( cabDest ) )
+    dest = joinExt( cabDest, '.cab' )    
+    destDir = dirPath( cabDest )
+    destRootName = rootFileName( cabDest )
+    if isFile( dest ) : removeFile( dest )                                                  
+    script = ExecutableScript( "Dir2Cab", scriptPath=__dir2CabScriptPath() )
+    wrapArg = __DIR2CAB_WRAPPER_SWITCH if isWrapperDirIncluded else ""
+    script._execute( args=[ sourceDir, destRootName, wrapArg ], wrkDir=destDir )
+    if not isFile( dest ): 
+        raise DistBuilderError( 'Failed to create cab file: "%s"' % (dest,) )
+    print( 'Created cab file: "%s"' % (dest,) )    
+    if removeScr :         
+        removeDir( sourceDir )
+        print( 'Removed directory: "%s"' % (sourceDir,) )        
+    return dest
  
 # -----------------------------------------------------------------------------  
 def normBinaryName( path, isPathPreserved=False, isGui=False ):
@@ -796,9 +821,10 @@ def rootFileName( path ):
     if path is None : return None
     return splitExt(baseFileName(path))[0]
 
-def fileExt( path ): 
+def fileExt( path, isDotPrefix=True ): 
     if path is None : return None
     ext = splitExt(path)[1]
+    if not isDotPrefix and len(ext) > 0 and ext[0]==__EXT_DELIM: ext=ext[1:] 
     return None if ext=="" else ext
 
 def joinExt( rootName, extension=None ):
@@ -852,7 +878,17 @@ def _rootVolumePath( path ):
     try:    return splitDrive( abspath( path ) )[0] + PATH_DELIM
     except: return None 
 
-# -----------------------------------------------------------------------------                          
+# -----------------------------------------------------------------------------
+def homePath( relPath=None ):
+    dirPath = _userHomeDirPath() 
+    if relPath is None: return dirPath        
+    return absPath( relPath, basePath=dirPath )
+
+def desktopPath( relPath=None ):
+    dirPath = _userDesktopDirPath() 
+    if relPath is None: return dirPath        
+    return absPath( relPath, basePath=dirPath )
+                          
 def _pythonPath( relativePath ):    
     return normpath( joinPath( PY_DIR, relativePath ) )
 
@@ -1098,6 +1134,9 @@ class PlasticFile:
             
     def write( self ):
         with open( self.path(), 'w' ) as f : f.write( str(self) )
+    
+    def remove( self ):  
+        if isFile( self.filePath ): removeFile( self.filePath )
                 
     def toLines( self ):        
         return self.content.split( '\n' ) if self.content else []
@@ -1201,8 +1240,24 @@ VSVersionInfo(
 # -----------------------------------------------------------------------------            
 class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all of it   
     
-    __WIN_DEFAULT_EXT  = "bat" 
-    __NIX_DEFAULT_EXT  = "sh"    
+    SHELL_EXT       = "sh"
+    BATCH_EXT       = "bat"
+    VBSCRIPT_EXT    = "vbs"
+    JSCRIPT_EXT     = "js"
+    POWERSHELL_EXT  = "ps1"
+    APPLESCRIPT_EXT = "scpt"
+
+    SUPPORTED_EXTS = [     
+          SHELL_EXT
+        , BATCH_EXT
+        , VBSCRIPT_EXT
+        , JSCRIPT_EXT    
+        , POWERSHELL_EXT  
+        , APPLESCRIPT_EXT         
+    ]
+
+    __WIN_DEFAULT_EXT  = BATCH_EXT 
+    __NIX_DEFAULT_EXT  = SHELL_EXT    
     __PLAT_DEFAULT_EXT = __WIN_DEFAULT_EXT if IS_WINDOWS else __NIX_DEFAULT_EXT
 
     __SUPPORTED_EXECUTE_EXTS = [ __PLAT_DEFAULT_EXT ]
@@ -1211,7 +1266,12 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
     __SHEBANG_TEMPLATE    = "%s\n%s"
 
     __PLACEHOLDER_TMPLT = "{%s}" 
-    
+
+    @staticmethod
+    def typeOf( path ): 
+        ext = fileExt( path, isDotPrefix=False )
+        return ext if ext in ExecutableScript.SUPPORTED_EXTS else None
+        
     @staticmethod
     def strToLines( s ): return s.split( _NEWLINE  ) if s else []
     
@@ -1222,20 +1282,21 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
     def __init__( self, rootName, 
                   extension=True, # True==auto assign, str==what to use, or None
                   shebang=True, # True==auto assign, str==what to use, or None                  
-                  script=None, scriptPath=None, dirPath=None,
+                  script=None, scriptPath=None, scriptDirPath=None,
                   replacements=None, isDebug=True ) :
         self.rootName = rootName
         if extension==True:
             self.extension = ExecutableScript.__PLAT_DEFAULT_EXT
         elif extension==False: self.extension = None
         else: self.extension = extension    
-        if shebang==True and scriptPath is None :
+        #if shebang==True and scriptPath is None :
+        if shebang==True:
             self.shebang =( None if IS_WINDOWS else 
                             ExecutableScript.__NIX_DEFAULT_SHEBANG ) 
         else: self.shebang = shebang            
-        self.dirPath = dirPath
+        self.scriptDirPath = scriptDirPath
         if scriptPath:
-            self.dirPath = dirPath( scriptPath ) 
+            self.scriptDirPath = dirPath( scriptPath ) 
             with open( scriptPath, 'r' ) as f: self.script = f.read()
         elif isinstance( script, list ): self.fromLines( script )
         else: self.script = script
@@ -1244,8 +1305,8 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         self.isDebug = isDebug
                                                     
     def __str__( self ) :
-        if self.script is None : ""
-        if self.shebang:
+        if self.script is None : return ""
+        if self.shebang is not None:
             return( ExecutableScript.__SHEBANG_TEMPLATE % 
                     (self.shebang, self.__formated()) )
         else: return self.__formated() 
@@ -1260,39 +1321,39 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         if self.script: print( str(self) )
 
     def filePath( self ):
-        return( joinPath( self.dirPath, self.fileName() ) 
-                if self.dirPath else absPath( self.fileName() ) )
+        return( joinPath( self.scriptDirPath, self.fileName() ) 
+                if self.scriptDirPath else absPath( self.fileName() ) )
         
     def fileName( self ):
         return joinExt( self.rootName, self.extension )
 
-    def exists( self, dirPath=None ): 
-        if dirPath is None: dirPath=self.dirPath
-        self.dirPath = dirPath if dirPath else THIS_DIR  
+    def exists( self, scriptDirPath=None ): 
+        if scriptDirPath is None: scriptDirPath=self.scriptDirPath
+        self.scriptDirPath = scriptDirPath if scriptDirPath else THIS_DIR  
         return isFile( self.filePath() )
                         
-    def write( self, dirPath=None ):
+    def write( self, scriptDirPath=None ):
         if self.script is None : return
-        if dirPath is None: dirPath=self.dirPath
-        self.dirPath = dirPath if dirPath else THIS_DIR  
-        if not isDir( self.dirPath ): makeDir( self.dirPath )
+        if scriptDirPath is None: scriptDirPath=self.scriptDirPath
+        self.scriptDirPath = scriptDirPath if scriptDirPath else THIS_DIR  
+        if not isDir( self.scriptDirPath ): makeDir( self.scriptDirPath )
         filePath = self.filePath()
         if self.isDebug:
             print( "Writing script: %s\n\n%s\n" % (filePath,str(self)) )                               
         with open( filePath, 'w' ) as f: f.write( str(self) ) 
         if not IS_WINDOWS : chmod( filePath, 0o755 )
         
-    def read( self, dirPath=None ):
+    def read( self, scriptDirPath=None ):
         self.script = None
-        if dirPath is None: dirPath=self.dirPath
-        self.dirPath = dirPath if dirPath else THIS_DIR  
+        if scriptDirPath is None: scriptDirPath=self.scriptDirPath
+        self.scriptDirPath = scriptDirPath if scriptDirPath else THIS_DIR  
         filePath = self.filePath()
         with open( filePath, 'r' ) as f : self.script = f.read() 
 
-    def remove( self, dirPath=None ):
+    def remove( self, scriptDirPath=None ):
         self.script = None
-        if dirPath is None: dirPath=self.dirPath
-        self.dirPath = dirPath if dirPath else THIS_DIR  
+        if scriptDirPath is None: scriptDirPath=self.scriptDirPath
+        self.scriptDirPath = scriptDirPath if scriptDirPath else THIS_DIR  
         filePath = self.filePath()
         if isFile( filePath ): 
             removeFile( filePath )
@@ -1319,23 +1380,29 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         self.shebang = None 
         # TODO: resolve shebang programmatically, and remove it from self.script        
     
-    def _execute( self, dirPath=None, isOnTheFly=None, isDebug=None, 
-                  isConCapture=False ):
+    def _execute( self, args=None, wrkDir=None, 
+                  scriptDirPath=None, isOnTheFly=None, 
+                  isDebug=None, isConCapture=False ):
         if self.extension not in ExecutableScript.__SUPPORTED_EXECUTE_EXTS:
-            raise DistBuilderError( "Script type not supported: %s" % (self.fileName(),) )                    
+            raise DistBuilderError( "Script type not supported: %s" % 
+                                    (self.fileName(),) )                    
         if isDebug is not None: self.isDebug = isDebug
-        if isOnTheFly is None: isOnTheFly = not self.exists( dirPath )    
-        if isOnTheFly: self.write( dirPath )                    
-        if self.extension==ExecutableScript.__PLAT_DEFAULT_EXT:
-            cmd =( _INVOKE_NESTED_BATCH_TMPT % (self.fileName(),) 
-                   if IS_WINDOWS else _EXECUTE_TMPT % (self.fileName(),) )
-            if self.isDebug: print( "Executing %s..." % (self.filePath(),) )                                       
-            retCode = _system( cmd, wrkDir=self.dirPath, 
+        if isOnTheFly is None: isOnTheFly = not self.exists( scriptDirPath )    
+        if isOnTheFly: self.write( scriptDirPath )                    
+        if isinstance( args, list ): args = list2cmdline( args )
+        if self.extension==ExecutableScript.__PLAT_DEFAULT_EXT:   
+            cmd =( _INVOKE_NESTED_BATCH_TMPT % (self.filePath(),) 
+                   if IS_WINDOWS else _EXECUTE_TMPT % (self.filePath(),) )
+            if args: cmd += " " + args                        
+            if wrkDir is None: wrkDir = self.scriptDirPath
+            if self.isDebug: 
+                print( "Executing: %s %s" % (self.fileName(),args) )                                                   
+            retCode = _system( cmd, wrkDir=wrkDir, 
                                isConCapture=isConCapture )
             if self.isDebug: print( "Return Code: %s" % (str(retCode),) )                                       
             if retCode is not None and retCode != 0: 
-                raise DistBuilderError( "Script failed: %s\nReturn Code: %s" % (
-                                 self.filePath(), str(retCode) ) )
+                raise DistBuilderError( "Script failed: %s\nReturn Code: %s" % 
+                                        (self.filePath(), str(retCode)) )
         if isOnTheFly: self.remove()
 
 # -----------------------------------------------------------------------------                      
@@ -1352,24 +1419,83 @@ def signExe( exePath, codeSignConfig ):
 def embedExeVerInfo( exePath, exeVerInfo ):
     if not IS_WINDOWS: _onPlatformErr()
     from distbuilder.qt_installer import QtIfwExternalOp
-    script = QtIfwExternalOp.EmbedExeVerInfoScript( absPath( exePath ), exeVerInfo )    
-    __injectResourceHackerPath( script )
-    # Note: ResourceHacker sends message to the console (i.e. CON), rather than
-    # stdout/err.  While those message will naturally appear in a terminal, to 
-    # direct them to a log, the "con capture" feature must be employed:   
-    script._execute( isOnTheFly=True, isDebug=True, isConCapture=isLogging() )    
+    __execResourceHackerScript( 
+        QtIfwExternalOp.EmbedExeVerInfoScript( 
+            absPath( exePath ), exeVerInfo ) )    
 
+def embedExeIcon( exePath, iconPath ):
+    if not IS_WINDOWS: _onPlatformErr()
+    from distbuilder.qt_installer import QtIfwExternalOp
+    iconDir, iconName = splitPath( absPath( 
+        normIconName( iconPath,  isPathPreserved=True ) ) )
+    __execResourceHackerScript( 
+        QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
+            absPath( exePath ), iconDir, iconName=iconName ) )
+
+def extractExeIcons( srcExePath, destDirPath ):
+    if not IS_WINDOWS: _onPlatformErr()
+    from distbuilder.qt_installer import QtIfwExternalOp
+    __execResourceHackerScript( 
+        QtIfwExternalOp.ExtractIconsFromExeScript( 
+            absPath( srcExePath ), absPath( destDirPath ) ) )    
+ 
+def copyExeVerInfo( srcExePath, destExePath ):
+    if not IS_WINDOWS: _onPlatformErr()
+    from distbuilder.qt_installer import QtIfwExternalOp
+    __execResourceHackerScript( 
+        QtIfwExternalOp.CopyExeVerInfoScript( 
+            absPath( srcExePath ), absPath( destExePath ) ) )
+
+def copyExeIcon( srcExePath, destExePath, iconName=None ):
+    if not IS_WINDOWS: _onPlatformErr()   
+    iconsTempDirPath = _reserveTempDir()         
+    extractExeIcons( srcExePath, iconsTempDirPath )    
+    from distbuilder.qt_installer import QtIfwExternalOp
+    __execResourceHackerScript( 
+        QtIfwExternalOp.ReplacePrimaryIconInExeScript( 
+            absPath( destExePath ), iconsTempDirPath, 
+                iconName=normIconName( iconName ), 
+                isIconDirRemoved=True ) )
+
+def embedManifest( exePath, manifestPath ):
+    print( "Embedding manifest: %s..." % (manifestPath,) )
+    __useMt( EmbedManifestConfig( exePath, manifestPath ) )
+
+def embedAutoElevation( exePath ):
+    if not IS_WINDOWS: _onPlatformErr()
+    manifestPath = joinPath( tempDirPath(), 
+        joinExt( baseFileName( exePath ), "manifest" ) )
+    manifestContent = EmbedManifestConfig.manifestContent( 
+        baseFileName( exePath ), execLevel="requireAdministrator" )  
+    f = PlasticFile( filePath=manifestPath, content=manifestContent )
+    f.write()    
+    print( "Generated manifest content:\n\n%s\n" % (manifestContent,) ) 
+    embedManifest( exePath, manifestPath )
+    f.remove()
+    
 if IS_WINDOWS:
+    def __resourceHackerPath(): 
+        return joinPath( _RES_DIR_PATH, __RESOURCE_HACKER_EXE_NAME )
+
     def __captureConsoleScriptPath():         
         return joinPath( _RES_DIR_PATH, __CAPTURE_CONSOLE_PS_SCRIPT_NAME )
 
-    def __resourceHackerPath(): 
-        return joinPath( _RES_DIR_PATH, __RESOURCE_HACKER_EXE_NAME )
+    def __dir2CabScriptPath():         
+        return joinPath( _RES_DIR_PATH, __DIR2CAB_BAT_SCRIPT_NAME )
+
+    def __execResourceHackerScript( script ): 
+        if not IS_WINDOWS: _onPlatformErr()
+        __injectResourceHackerPath( script )
+        # Note: ResourceHacker sends message to the console (i.e. CON), rather than
+        # stdout/err.  While those message will naturally appear in a terminal, to 
+        # direct them to a log, the "con capture" feature must be employed:   
+        script._execute( isOnTheFly=True, isDebug=True, isConCapture=isLogging() )    
 
     def __injectResourceHackerPath( script ):        
         script.script = script.script.replace( 
             __RESOURCE_HACKER_QT_IFW_PLACEHOLDER, __resourceHackerPath() )
     
+    #--------------------------------------------------------------------------
     class _WindowsSharedFile:
         
         __byref        = ctypes.byref
@@ -1494,6 +1620,104 @@ if IS_WINDOWS:
                     _WindowsSharedFile.__FILLER_BYTE, b'' )                
                 data += chunk.decode() if PY3 else chunk                            
             return None if data=="" else data
+        
+    #--------------------------------------------------------------------------
+    MT_PATH_ENV_VAR = "MT_PATH"
+    
+    class EmbedManifestConfig:
+    
+        __RES_DIR_NAME = "mt"
+    
+        __INTEL_32BIT_DIR  = "x86"
+        __INTEL_64BIT_DIR  = "x64"
+        __ARM_32BIT_DIR    = "arm" # Not actually present...
+        __ARM_64BIT_DIR    = "arm64"
+        __MT_NAME          = "mt.exe"
+
+        __BASIC_MANIFEST_TMPTL=(
+r"""
+Executable: {0} 
+Manifest: {1}
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0"> 
+  <assemblyIdentity version="{2}"
+     processorArchitecture="{3}"
+     name="{4}"
+     type="{5}"/> 
+  <description>{6}</description> 
+  <!-- Identify the application security requirements. -->
+  <ms_asmv2:trustInfo xmlns:ms_asmv2="urn:schemas-microsoft-com:asm.v2">
+    <ms_asmv2:security>
+      <ms_asmv2:requestedPrivileges>
+        <ms_asmv2:requestedExecutionLevel
+          level="{7}" 
+          {8}/>
+        </ms_asmv2:requestedPrivileges>
+       </ms_asmv2:security>
+  </ms_asmv2:trustInfo>
+</assembly>    
+""")
+
+        @staticmethod
+        def manifestContent( exeName, manifestName=None, 
+                             version="1.0.0.0", descr=None,  
+                             arch="*", exeType="win32", 
+                             execLevel="asInvoker", execLevelExt="" ):
+            name = rootFileName( exeName )
+            if descr is None: descr = name
+            if manifestName is None: 
+                manifestName = joinExt( exeName, "manifest" )                                                            
+            return EmbedManifestConfig.__BASIC_MANIFEST_TMPTL.format(
+                exeName, manifestName, 
+                version, arch, name, exeType, descr,
+                execLevel, execLevelExt )
+    
+        @staticmethod
+        def _builtInMtPath( isVerified=False ):    
+            if IS_ARM_CPU:
+                subDirName =( EmbedManifestConfig.__ARM_32BIT_DIR 
+                              if IS_32_BIT_CONTEXT else 
+                              EmbedManifestConfig.__ARM_64BIT_DIR )
+            else:
+                subDirName =( EmbedManifestConfig.__INTEL_32BIT_DIR 
+                              if IS_32_BIT_CONTEXT else 
+                              EmbedManifestConfig.__INTEL_64BIT_DIR )                  
+            path = joinPath( _RES_DIR_PATH, 
+                EmbedManifestConfig.__RES_DIR_NAME, subDirName, 
+                EmbedManifestConfig.__MT_NAME)
+            if isVerified and not isFile( path ): path = None            
+            return path 
+    
+        def __init__( self, exePath, manifestPath ):
+            self.exePath      = exePath        
+            self.manifestPath = manifestPath
+            self.mtPath       = None # if None, this will be auto resolved 
+    
+        def __str__( self ) :
+            manifest       = '-manifest "%s"' % (self.manifestPath,)
+            # NOTE: the use of outputresource NOT updateresource...
+            # MS documentation on manifest embedding incorrectly indicates 
+            # the use of updateresource!
+            outputresource = '-outputresource:"%s;#1"' % (self.exePath,)                       
+            tokens = ( manifest, outputresource )            
+            return ' '.join( (('%s ' * len(tokens)) % tokens).split() )
+    
+    def __useMt( embedManifestConfig ):
+        __validateEmbedManifestConfig( embedManifestConfig )
+        cmd = '"%s" %s' % ( embedManifestConfig.mtPath, 
+                            str(embedManifestConfig) )
+        if not _isSystemSuccess( cmd ):
+            raise DistBuilderError( 'FAILED to embed manifest' )
+        print( "Manifest embedded successfully!" )
+        return embedManifestConfig.exePath
+                
+    def __validateEmbedManifestConfig( cfg ):                                             
+        if cfg.mtPath is None: 
+            cfg.mtPath = getenv( MT_PATH_ENV_VAR )    
+        if cfg.mtPath is None: 
+            cfg.mtPath = EmbedManifestConfig._builtInMtPath()
+        if cfg.mtPath is None: 
+            raise DistBuilderError( "Valid MT path required" )
     
 # ----------------------------------------------------------------------------- 
 if IS_MACOS :

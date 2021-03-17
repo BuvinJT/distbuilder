@@ -3,32 +3,15 @@
 
 ## Stand Alone Executables 
 
-### installPyInstaller, uninstallPyInstaller
-
-Distbuilder builds executables from Python source via PyInstaller.  For convenience,
-these install/uninstall functions for the tool are provided.  Note, you may install  
-a specific version if desired, in this (example) manner:  
-
-	installPyInstaller( version="3.4" )
-
-### PyInstallerVersion, PyInstallerMajorVer, PyInstallerMajorMinorVer
-
-These functions have been provided to help you in circumstances where you need to 
-pivot on the specific PyInstaller version installed. `PyInstallerVersion()` returns
-the string representation, pulled directly from the library.
-`PyInstallerMajorVer()`, just the major version explicitly cast as an integer.     
-`PyInstallerMajorMinorVer()`, returns a 2 element tuple with major *and* minor versions
-explicitly cast as integers.     
-
-### buildExecutable
+### pyScriptToExe
         
 To build a stand-alone binary distribution of a Python
-program, invoke the buildExecutable function: 
+program, invoke the pyScriptToExe function: 
 
-    buildExecutable( name=None, entryPointPy=None,
-        			 pyInstConfig=PyInstallerConfig(), 
-        			 opyConfig=None, 
-				     distResources=[], distDirs=[] )
+    pyScriptToExe( name=None, entryPointPy=None,
+                   pyInstConfig=PyInstallerConfig(), 
+                   opyConfig=None, 
+                   distResources=[], distDirs=[] )
                              
 **Returns (binDir, binPath)**: a tuple containing:
     the absolute path to the package created,
@@ -83,6 +66,65 @@ program, invoke the buildExecutable function:
     a source to copy.  This additional option is
     for adding new empty directories.  
 
+### batchScriptToExe
+
+** WINDOWS ONLY**
+
+This function ultimately produces an executable via *IExpress*.
+
+     batchScriptToExe( name=None, entryPointScript=None, 
+                       iExpressConfig=None,                                     
+                       distResources=None, distDirs=None )
+
+TODO: Fill in
+
+### powerShellScriptToExe  
+
+** WINDOWS ONLY**
+
+     powerShellScriptToExe( name=None, entryPointScript=None, 
+                            iExpressConfig=None,                                     
+                            distResources=None, distDirs=None )
+
+TODO: Fill in
+
+### vbScriptToExe  
+
+** WINDOWS ONLY**
+
+     vbScriptToExe( name=None, entryPointScript=None, 
+                    iExpressConfig=None,                                     
+                    distResources=None, distDirs=None )
+
+TODO: Fill in
+
+### jScriptToExe  
+
+** WINDOWS ONLY**
+
+     jScriptToExe( name=None, entryPointScript=None, 
+                   iExpressConfig=None,                                     
+                   distResources=None, distDirs=None )
+
+TODO: Fill in
+
+### installPyInstaller, uninstallPyInstaller
+
+Distbuilder builds executables from Python source via PyInstaller.  For convenience,
+these install/uninstall functions for the tool are provided.  Note, you may install  
+a specific version if desired, in this (example) manner:  
+
+	installPyInstaller( version="3.4" )
+
+### PyInstallerVersion, PyInstallerMajorVer, PyInstallerMajorMinorVer
+
+These functions have been provided to help you in circumstances where you need to 
+pivot on the specific PyInstaller version installed. `PyInstallerVersion()` returns
+the string representation, pulled directly from the library.
+`PyInstallerMajorVer()`, just the major version explicitly cast as an integer.     
+`PyInstallerMajorMinorVer()`, returns a 2 element tuple with major *and* minor versions
+explicitly cast as integers.     
+
 ### makePyInstSpec
 
 To generate a PyInstaller .spec file, using the secondary
@@ -103,7 +145,7 @@ invoke the makePyInstSpec function:
 **opyConfig**: An (optional) [OpyConfig](ConfigClasses.md#opyconfig) object, 
 	providing supplemental details regarding the spec file
 	creation.  Be sure to include this if you desire obfuscation
-	and will be subsequently invoking the buildExecutable function.
+	and will be subsequently invoking the pyScriptToExe function.
       	                    
 ## Installers 
             
@@ -194,7 +236,7 @@ a default version will be assumed.
      the sub directory where your content will be 
      dynamically copied to within the installer, and the 
      `pkgSrcDirPath` (most typically the `binDir` returned 
-     by [buildExecutable](#buildexecutable)), which is source path of the 
+     by [pyScriptToExe](#pyscripttoexe)), which is source path of the 
      content. 
     
 **isSilent**: When `isSilent` is enabled, the QtIFW installer produced will not display 
@@ -1019,7 +1061,7 @@ converting it to binary) invoke obfuscatePy:
     
 Upon invoking this, you will be left with an "obfuscated"
 directory adjacent to your build script.  This is a useful 
-preliminary step to take, prior to running buildExecutable, 
+preliminary step to take, prior to running pyScriptToExe, 
 so that you may inspect and test the obfuscation results 
 before building the final distribution package.
                
@@ -1260,7 +1302,7 @@ following to test the success of the operation:
          wrkDir=None, isElevated=False, isDebug=False )      
 
 **binPath**: The path to the binary to be executed. 
-Note that the path is returned by `buildExecutable`, 
+Note that the path is returned by `pyScriptToExe`, 
 which allows the results of that to flow
 directly into this function.  
 
@@ -1366,7 +1408,8 @@ preparing the program for distribution:
 
 ### toZipFile
 
-    toZipFile( sourceDir, zipDest=None, removeScr=True )
+    toZipFile( sourceDir, zipDest=None, removeScr=True,
+               isWrapperDirIncluded=False )
 
 **Returns**: the path to the zip file created.         
     
@@ -1379,8 +1422,35 @@ preparing the program for distribution:
     created adjacent to it.          
     
 **removeScr**: Option to delete the sourceDir after
-    creating the zip of it. Note this is the 
+    creating the archive. Note this is the 
     default behavior.
+                
+**isWrapperDirIncluded**: Option to include the outer
+"wrapper" directory, or else put the contents on the root of the archive.
+
+### toCabFile
+
+** WINDOWS ONLY **
+
+    toCabFile( sourceDir, zipDest=None, removeScr=True,
+               isWrapperDirIncluded=False )
+
+**Returns**: the path to the cabinet file created.         
+    
+**sourceDir**: the directory to convert to a cab
+    (typically the binDir).   
+    
+**cabDest**: (optional) full path to the cab file to
+    be created. If not specified, it will be
+    named with same base as the source, and 
+    created adjacent to it.          
+    
+**removeScr**: Option to delete the sourceDir after
+    creating the archive. Note this is the 
+    default behavior.
+                
+**isWrapperDirIncluded**: Option to include the outer
+"wrapper" directory, or else put the contents on the root of the archive.
                 
 *TODO: Add git commit/push...*    
                                                                         
@@ -1409,7 +1479,8 @@ Constructor:
 
 	ExecutableScript( rootName, 
 				  	  extension=True, shebang=True,                   
-                  	  script=None, scriptPath=None, dirPath=None,
+                  	  script=None, 
+                  	  scriptPath=None, scriptDirPath=None,
                   	  replacements={}, isDebug=True )
                   
 Attributes & default values:    
@@ -1418,7 +1489,7 @@ Attributes & default values:
     extension=True  # i.e. True==automatic
     shebang=True    # i.e. True==automatic   
     script=None
-    dirPath=None
+    scriptDirPath=None
     replacements={}  
     isIfwVarEscapeBackslash=False
     isDebug=True
@@ -1428,10 +1499,10 @@ Functions:
 	filePath()
     fileName()
 
-    exists( dirPath=None )        
-    read( dirPath=None )
-    write( dirPath=None )
-    remove( dirPath=None )
+    exists( scriptDirPath=None )        
+    read( scriptDirPath=None )
+    write( scriptDirPath=None )
+    remove( scriptDirPath=None )
     
     toLines()        
     fromLines( lines )
@@ -1444,9 +1515,21 @@ Functions:
 
 Static Functions:
 
+	typeOf( path )
     strToLines( s )
     linesToStr( lines )    
-        
+
+Static Constants:
+
+    SHELL_EXT       
+    BATCH_EXT       
+    VBSCRIPT_EXT    
+    JSCRIPT_EXT     
+    POWERSHELL_EXT  
+    APPLESCRIPT_EXT 
+
+    SUPPORTED_EXTS <list>
+            
 Details:
 
 **rootName**: The name of script without the extension.  If this is used
@@ -1469,10 +1552,10 @@ A user supplied string will be applied if custom provided.
 as a file path to source for where it is to be extracted.  Use the 
 filePath() function later if you need this apth again.
 
-**dirPath**: Optional. During construction, this may be explicitly defined, 
+**scriptDirPath**: Optional. During construction, this may be explicitly defined, 
 or left as `None` to imply `THIS_DIR`.  If a `scriptPath` is specified, 
 a directory path extracted from that will be used.
-On subsequent calls to `read( dirPath )`, `write( dirPath )`, or `remove( dirPath )`, the `dirPath` will be updated if supplied (i.e. `not None`).    
+On subsequent calls to `read( scriptDirPath )`, `write( scriptDirPath )`, or `remove( scriptDirPath )`, the `scriptDirPath` will be updated if supplied (i.e. `not None`).    
 
 **replacements**: A dictionary of "placeholder" keys and "substitution" values in 
 the script.  Place holders must defined in the script with the surrounding brackets,
@@ -1719,9 +1802,17 @@ The path to the directory which contains the build script.
 
     absPath( relativePath, basePath=None )
     
-Covert a relative path to an absolute path. If a `basePath` 
+Convert a relative path to an absolute path. If a `basePath` 
 is not specified, the path is re resolved relative to `THIS_DIR` 
 (which may or **MAY NOT** be the *current working directory*).  
+
+### homePath, desktopPath
+
+    homePath( relPath=None )
+    desktopPath( relPath=None )
+    
+Convert a relative path to an absolute path, within the current user's
+home directory or desktop directory.       
 
 ### joinPathQtIfw
 
@@ -1938,22 +2029,117 @@ resembling the following:
 
 	from distbuilder assertBuilderVer
 	assertBuilderVer( "0.7.8.0" )
-
+  
 ### embedExeVerInfo
 
 ** WINDOWS ONLY**
 
     embedExeVerInfo( exePath, exeVerInfo )
 
-Set the branding information (e.g. version, copyright, etc.) on to an executable.
-These details can be seen when inspecting the properties of the file.  They may also
-be used for other mechanisms in Windows, when the file is used.
+Set the branding information (e.g. version, copyright, etc.) on an 
+executable.
+These details can be seen when inspecting the properties of the file.  
+This meta info may also be used by other mechanisms in the OS.
     
-**Returns**: None
+**Returns**: None (Raising exception on failure)
 
 **exePath**:  Absolute or relative path to the executable file.
 
 **exeVerInfo**: A [WindowsExeVersionInfo](ConfigClasses.md#windowsexeversioninfo) object.   
+  
+### embedExeIcon
+
+** WINDOWS ONLY**
+
+    embedExeIcon( exePath, iconPath )
+    
+**Returns**: None (Raising exception on failure)
+
+**exePath**:  Absolute or relative path to the executable file.
+
+**iconPath**: Absolute or relative path to the `.ico` file.   
+  
+### extractExeIcons
+
+** WINDOWS ONLY**
+
+    extractExeIcons( exePath, targetDirPath )
+
+Extract all the icons contained within an executable.
+    
+**Returns**: None (Raising exception on failure)
+
+**srcExePath**:  Absolute or relative path to the executable file.
+
+**destDirPath**: Absolute or relative directory path where the icons will be copied.    
+
+### copyExeVerInfo
+    
+** WINDOWS ONLY**
+
+    copyExeVerInfo( srcExePath, destExePath )
+
+Copy the version / branding information from one exe to another.
+    
+**Returns**: None (Raising exception on failure)
+
+**srcExePath**:  Absolute or relative path to the executable file 
+which contains the information to be copied.
+
+**destExePath**: Absolute or relative path to the executable file 
+where the information is to be transferred.
+Note, this file must already exist, to receive the branding info, i.e.
+this function doesn't create a new exe.
+
+### copyExeIcon
+
+** WINDOWS ONLY**
+
+    copyExeIcon( srcExePath, destExePath, iconName=None )
+
+Copy an embedded icon from one exe to another.
+    
+**Returns**: None (Raising exception on failure)
+
+**srcExePath**:  Absolute or relative path to the executable file 
+which contains the icon to be copied.
+
+**destExePath**: Absolute or relative path to the executable file 
+where the icon is to be transferred.
+Note, this file must already exist, to receive the icon, i.e.
+this function doesn't create a new exe.
+
+**iconName**: If the source exe contains multiple icons, this
+argument allows the specification of which one of those is
+to be copied.  This maybe figure out manually by first exacting 
+the icons.  If none is specified, the "first" icon in an directory
+listing will be automatically selected.     
+    
+### embedManifest
+
+** WINDOWS ONLY**
+
+    embedManifest( exePath, manifestPath )
+
+**Returns**: None (Raising exception on failure)
+
+**exePath**:  Absolute or relative path to the executable file.
+
+**manifestPath**:  Absolute or relative path to a manifest file.
+
+### embedAutoElevation        
+
+** WINDOWS ONLY**
+
+    embedAutoElevation( exePath )
+
+Cause an executable to auto elevate (i.e. request admin priviledges) 
+every time it is run, by embedding this requirement for the OS to 
+enforce via a manifest.
+
+**Returns**: None (Raising exception on failure)    
+
+**exePath**:  Absolute or relative path to the executable file.
 
 ### halt
 	

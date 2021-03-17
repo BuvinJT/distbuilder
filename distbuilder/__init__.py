@@ -3,7 +3,9 @@ from ._version import __version__
 from distbuilder.process import( 
       ConfigFactory 
     , PyToBinPackageProcess 
-    , PyToBinInstallerProcess 
+    , IExpressPackageProcess
+    , PyToBinInstallerProcess
+    , IExpressInstallerProcess
     , RobustInstallerProcess 
 )
 
@@ -14,14 +16,24 @@ from distbuilder.py_installer import(
       PyInstallerConfig 
     , PyInstSpec 
     , PyInstHook 
-    , WindowsExeVersionInfo 
-    , buildExecutable 
+    , pyScriptToExe
     , makePyInstSpec 
     , installPyInstaller 
     , uninstallPyInstaller 
     , PyInstallerVersion 
     , PyInstallerMajorVer 
     , PyInstallerMajorMinorVer
+)
+
+from distbuilder.iexpress import( 
+      IExpressConfig
+    , batchScriptToExe
+    , powerShellScriptToExe
+    , vbScriptToExe
+    , jScriptToExe  
+    , iExpResPath 
+    , iExpEmbResPath
+    , iExpLibPath
 )
 
 from distbuilder.qt_installer import( 
@@ -123,7 +135,8 @@ from distbuilder.code_sign import(
 )
             
 from distbuilder.util import( 
-      ExecutableScript 
+      ExecutableScript
+    , WindowsExeVersionInfo        
     , IS_WINDOWS 
     , IS_LINUX 
     , IS_MACOS 
@@ -138,6 +151,8 @@ from distbuilder.util import(
     , CURRENT_USER, ALL_USERS 
     , DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE 
     , absPath 
+    , homePath
+    , desktopPath     
     , toNativePath 
     , exists 
     , isFile 
@@ -157,6 +172,7 @@ from distbuilder.util import(
     , splitPath 
     , splitExt 
     , joinExt 
+    , baseFileName
     , rootFileName 
     , normBinaryName 
     , normIconName 
@@ -179,6 +195,7 @@ from distbuilder.util import(
     , run 
     , runPy 
     , toZipFile 
+    , toCabFile        
     , isImportableModule 
     , isImportableFromModule 
     , modulePath 
@@ -193,8 +210,14 @@ from distbuilder.util import(
     , versionStr 
     , versionNo 
     , getPassword 
-    , assertMinVer 
+    , assertMinVer
     , embedExeVerInfo
+    , embedExeIcon
+    , extractExeIcons
+    , copyExeVerInfo
+    , copyExeIcon
+    , embedManifest
+    , embedAutoElevation    
 )
 
 def assertBuilderVer( ver ): 
