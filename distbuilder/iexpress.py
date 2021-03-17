@@ -508,18 +508,21 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
     codeSignConfig  = iExpressConfig.codeSignConfig
     codeSignTargets = iExpressConfig.codeSignTargets 
     embeddedSignTargets = []
-    externalSignTargets = []                      
-    if embeddedResources is None:
-        externalSignTargets = copy( codeSignTargets ) 
-    else:   
-        embeddedResDests=[]
-        for res in embeddedResources:
-            _, dest = util._toSrcDestPair( res, destDir=destDirPath,
-                                           basePath=sourceDir )
-            embeddedResDests.append( relpath(dest, destDirPath) )                                               
-        for target in codeSignTargets:
-            if target in embeddedResDests: embeddedSignTargets.append( target )            
-            else:                          externalSignTargets.append( target )
+    externalSignTargets = []     
+    if codeSignTargets:                 
+        if embeddedResources is None:
+            externalSignTargets = copy( codeSignTargets ) 
+        else:   
+            embeddedResDests=[]
+            for res in embeddedResources:
+                _, dest = util._toSrcDestPair( res, destDir=destDirPath,
+                                               basePath=sourceDir )
+                embeddedResDests.append( relpath(dest, destDirPath) )                                               
+            for target in codeSignTargets:
+                if target in embeddedResDests: 
+                    embeddedSignTargets.append( target )            
+                else:                          
+                    externalSignTargets.append( target )
     
     # Detect 2 Stage Embedding i.e. (Compression / Decompression) 
     stageDirPath    = None
