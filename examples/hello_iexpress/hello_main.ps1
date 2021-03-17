@@ -1,6 +1,4 @@
-# Uncomment for raw/direct script development
-# Comment out for IExpress Context...
-#$LIB_DIR="."
+if( !(Test-Path variable:global:LIB_DIR) ){ $LIB_DIR="." } # support raw testing context
 
 Import-Module -Name "$LIB_DIR\Popups.psm1"
 
