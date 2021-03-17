@@ -1515,9 +1515,21 @@ Functions:
 
 Static Functions:
 
+	typeOf( path )
     strToLines( s )
     linesToStr( lines )    
-        
+
+Static Constants:
+
+    SHELL_EXT       
+    BATCH_EXT       
+    VBSCRIPT_EXT    
+    JSCRIPT_EXT     
+    POWERSHELL_EXT  
+    APPLESCRIPT_EXT 
+
+    SUPPORTED_EXTS <list>
+            
 Details:
 
 **rootName**: The name of script without the extension.  If this is used
