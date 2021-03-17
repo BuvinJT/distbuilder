@@ -29,7 +29,8 @@ from distbuilder.iexpress import(
       IExpressConfig
     , batchScriptToExe
     , powerShellScriptToExe
-    , vbScriptToExe 
+    , vbScriptToExe
+    , jScriptToExe  
     , iExpResPath 
     , iExpEmbResPath
     , iExpLibPath

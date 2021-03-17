@@ -9,9 +9,9 @@ To build a stand-alone binary distribution of a Python
 program, invoke the pyScriptToExe function: 
 
     pyScriptToExe( name=None, entryPointPy=None,
-        			 pyInstConfig=PyInstallerConfig(), 
-        			 opyConfig=None, 
-				     distResources=[], distDirs=[] )
+                   pyInstConfig=PyInstallerConfig(), 
+                   opyConfig=None, 
+                   distResources=[], distDirs=[] )
                              
 **Returns (binDir, binPath)**: a tuple containing:
     the absolute path to the package created,
@@ -72,14 +72,6 @@ program, invoke the pyScriptToExe function:
 
 This function ultimately produces an executable via *IExpress*.
 
-For more information on that tool, see:
-
-https://docs.microsoft.com/en-us/internet-explorer/ie11-ieak/iexpress-wizard-for-win-server
-https://en.wikipedia.org/wiki/IExpress
-https://ss64.com/nt/iexpress.html
-http://www.mdgx.com/INF_web/
- 
-
      batchScriptToExe( name=None, entryPointScript=None, 
                        iExpressConfig=None,                                     
                        distResources=None, distDirs=None )
@@ -103,6 +95,16 @@ TODO: Fill in
      vbScriptToExe( name=None, entryPointScript=None, 
                     iExpressConfig=None,                                     
                     distResources=None, distDirs=None )
+
+TODO: Fill in
+
+### jScriptToExe  
+
+** WINDOWS ONLY**
+
+     jScriptToExe( name=None, entryPointScript=None, 
+                   iExpressConfig=None,                                     
+                   distResources=None, distDirs=None )
 
 TODO: Fill in
 

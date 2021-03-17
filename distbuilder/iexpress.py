@@ -276,10 +276,44 @@ End Sub
 ' ------------------------------------------------
 ''')
 
+__JSCRIPT_IEXPRESS_EXE_INIT_TMPLT=(
+r''' 
+// >>> IExpress Initialization <<<
+var PID, PPID, EXE_PATH, THIS_DIR, LIB_DIR, RES_DIR;
+function IExpressInit() {
+    var oShell = WScript.CreateObject( "WScript.Shell" );
+    var oFSO   = WScript.CreateObject( "Scripting.FileSystemObject" );
+    var oWMI   = GetObject( "winmgmts:root\\cimv2" );
+    var oCmd   = WScript.CreateObject( "WScript.Shell" ).Exec( "%ComSpec%" );
+    PID = oWMI.Get( "Win32_Process.Handle='" + oCmd.ProcessID + "'" ).ParentProcessId;
+    oCmd.Terminate();
+    PPID = oWMI.Get( "Win32_Process.Handle='" + PID + "'" ).ParentProcessId;
+    EXE_PATH = oWMI.Get( "Win32_Process.Handle='" + PPID + "'" ).ExecutablePath;
+    LIB_DIR  = oShell.CurrentDirectory;
+    RES_DIR  = oShell.CurrentDirectory;
+    THIS_DIR = oFSO.GetParentFolderName( EXE_PATH );
+    {extractCmd}
+    oShell.CurrentDirectory = THIS_DIR;
+}
+IExpressInit();
+
+function fetchSource( sRelativeFilePath ){
+    var oFs = WScript.CreateObject("Scripting.FileSystemObject");
+    var sThisFolder = oFs.GetParentFolderName( WScript.ScriptFullName );
+    var sAbsFilePath = oFs.BuildPath( sThisFolder, sRelativeFilePath );
+    try{ return oFs.OpenTextFile( sAbsFilePath ).readAll(); }
+    catch(e){ 
+        WScript.StdErr.WriteLine( "INVALID IMPORT: " + sAbsFilePath );
+        WScript.Quit( 1 );
+    }
+}
+''')
+
 __IEXRESS_EXE_INIT_TMPLTS = { 
       ExecutableScript.BATCH_EXT      : __BATCH_IEXPRESS_EXE_INIT_TMPLT
     , ExecutableScript.POWERSHELL_EXT : __POWERSHELL_IEXPRESS_EXE_INIT_TMPLT
     , ExecutableScript.VBSCRIPT_EXT   : __VBSCRIPT_IEXPRESS_EXE_INIT_TMPLT
+    , ExecutableScript.JSCRIPT_EXT    : __JSCRIPT_IEXPRESS_EXE_INIT_TMPLT
 }
 
 __BATCH_EXTRACT_CAB_CMD_TMPLT =( 
@@ -294,11 +328,18 @@ r'''If oFSO.FileExists( "{0}" ) Then
     oFSO.DeleteFile "{0}"
 End If    
 ''')
+__JSCRIPT_EXTRACT_CAB_CMD_TMPLT=( 
+r'''if( oFSO.FileExists( "{0}" ) ) { 
+    oShell.Run( "\"%windir%\\system32\\extrac32.exe\" \"{0}\" /e /l .", 1, true )
+    oFSO.DeleteFile( "{0}" )
+}
+''')
 
 __EXTRACT_CMD_TMPLTS = { 
       ExecutableScript.BATCH_EXT      : __BATCH_EXTRACT_CAB_CMD_TMPLT
     , ExecutableScript.POWERSHELL_EXT : __POWERSHELL_EXTRACT_CAB_CMD_TMPLT
     , ExecutableScript.VBSCRIPT_EXT   : __VBSCRIPT_EXTRACT_CAB_CMD_TMPLT
+    , ExecutableScript.JSCRIPT_EXT   : __JSCRIPT_EXTRACT_CAB_CMD_TMPLT
 }
 
 __FILE_NAME_TMPLT        = ';(echo(FILE{0}="{1}")>>"%temp%\\2exe.sed"\n'
@@ -308,10 +349,12 @@ __FILE_TREE_HEADER_TMPLT = ';(echo(%%FILE{0}%%=)>>"%temp%\\2exe.sed"\n'
 
 __DEFAULT_SCRIPT_NAME = "iexpress-build"
 
-__LAUNCH_CMDS={ ExecutableScript.BATCH_EXT : 'cmd.exe /c "%script_name%"'
-       , ExecutableScript.POWERSHELL_EXT   : ('powershell.exe '
+__LAUNCH_CMDS={ 
+        ExecutableScript.BATCH_EXT       : 'cmd.exe /c "%script_name%"'
+       , ExecutableScript.POWERSHELL_EXT : ('powershell.exe '
             '-ExecutionPolicy Bypass -InputFormat None -File "%script_name%"' )
-       , ExecutableScript.VBSCRIPT_EXT     : 'cscript.exe "%script_name%"'
+       , ExecutableScript.VBSCRIPT_EXT   : 'cscript.exe "%script_name%"'
+       , ExecutableScript.JSCRIPT_EXT    : 'cscript.exe "%script_name%"'
        }
 
 __DEL_SRC_TMPT = 'del /q /f "%s"'  
@@ -328,11 +371,13 @@ __EMBEDDED_RES_PATH_TMPLTS={
          ExecutableScript.BATCH_EXT      : '%RES_DIR%\\{0}'
        , ExecutableScript.POWERSHELL_EXT : '$RES_DIR\\{0}' 
        , ExecutableScript.VBSCRIPT_EXT   : '(RES_DIR & "\\{0}")'
+       , ExecutableScript.JSCRIPT_EXT    : '(RES_DIR + "\\\\{0}")'
        }
 __EXTERNAL_RES_PATH_TMPLTS={ 
          ExecutableScript.BATCH_EXT      : '%THIS_DIR%\\{0}'
        , ExecutableScript.POWERSHELL_EXT : '$THIS_DIR\\{0}' 
        , ExecutableScript.VBSCRIPT_EXT   : '(THIS_DIR & "\\{0}")'
+       , ExecutableScript.JSCRIPT_EXT    : '(THIS_DIR + "\\\\{0}")'
        }
 def iExpResPath( path, scriptType, isEmbedded ):
     if path is None: return None
@@ -457,6 +502,11 @@ def powerShellScriptToExe( name=None, entryPointScript=None,  iExpressConfig=Non
 
 def vbScriptToExe( name=None, entryPointScript=None,  iExpressConfig=None,                                     
                    distResources=None, distDirs=None ):
+    return _scriptToExe( name, entryPointScript, iExpressConfig,                                     
+                         distResources, distDirs )
+
+def jScriptToExe( name=None, entryPointScript=None,  iExpressConfig=None,                                     
+                  distResources=None, distDirs=None ):
     return _scriptToExe( name, entryPointScript, iExpressConfig,                                     
                          distResources, distDirs )
         

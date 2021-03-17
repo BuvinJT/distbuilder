@@ -2,7 +2,7 @@ from distbuilder import( IExpressPackageProcess, ConfigFactory,
                          ExecutableScript, iExpResPath, baseFileName )
 
 IS_EMBEDDED = True
-SCRIPT_TYPE = ExecutableScript.POWERSHELL_EXT
+SCRIPT_TYPE = ExecutableScript.JSCRIPT_EXT
 
 LICENSE_FILE_PATH = "../hello_world_tk/LICENSE.TXT"
 
@@ -19,13 +19,22 @@ def openTextFileScript( scriptType, fileName, isEmbedded ):
                 r'-ArgumentList "{filePath}"'
         ]            
         , ExecutableScript.VBSCRIPT_EXT: [
-              r'const nShowWindow=1, bWait=True'
+              r'const nShowWindow=1, bWait=true'
             , r'Dim sFilePath : sFilePath = {filePath}'
             , r'MsgBox "Resource: " & sFilePath'
             , r'Dim oShell : Set oShell = CreateObject( "WScript.Shell" )'
             , r'oShell.Run '
                 r'"""%windir%\system32\notepad.exe"" """ & sFilePath & """", '
                 r'nShowWindow, bWait'
+        ]
+        , ExecutableScript.JSCRIPT_EXT: [
+              r'var nShowWindow=1, bWait=true;'
+            , r'var sFilePath = {filePath};'
+            , r'var oShell = WScript.CreateObject( "WScript.Shell" );' 
+            , r'oShell.Popup( "Resource: " + sFilePath );'
+            , r'oShell.Run( '
+                r'"\"%windir%\\system32\\notepad.exe\" \"" + sFilePath + "\"", '
+                r'nShowWindow, bWait );'                
         ]
     }
     script = scriptOptions.get( scriptType )     

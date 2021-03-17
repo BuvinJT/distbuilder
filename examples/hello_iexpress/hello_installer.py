@@ -16,8 +16,7 @@ f.setupName        = "HelloPowerShellSetup"
 f.entryPointScript = ExecutableScript( "openTextFile", 
     extension=ExecutableScript.POWERSHELL_EXT, script=([ 
       r'Add-Type -AssemblyName PresentationCore,PresentationFramework'
-    , r'[System.Windows.MessageBox]::Show( '
-            r'"Click OK to continue..." )'      
+    , r'[System.Windows.MessageBox]::Show( "Click OK to continue..." )'      
     , r'Start-Process -FilePath "$env:windir\system32\notepad.exe"'
             r' -ArgumentList "{fileName}"'                        
     ]), replacements={ "fileName" : baseFileName(LICENSE_FILE_PATH) } )

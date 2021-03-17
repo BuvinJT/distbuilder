@@ -186,10 +186,11 @@ Object Methods:
 
 Objects of this type define *optional* details for building 
 binaries from native Windows scripts
-(currently supporting Batch, PowerShell, or VBScript), using the 
+(currently supporting Batch, PowerShell, VBScript, and JScript), using the 
 IExpress utility built into the OS, as invoked via the [batchScriptToExe](LowLevel.md#batchscripttoexe), 
 [powerShellScriptToExe](LowLevel.md#powershellscripttoexe), 
-or [vbScriptToExe](LowLevel.md#vbscripttoexe) functions 
+[vbScriptToExe](LowLevel.md#vbscripttoexe),
+or [jScriptToExe](LowLevel.md#jscripttoexe) functions 
 (which maybe employed by higher level  
 [Process Classes](HighLevel.md#process-classes) under the hood).
  

@@ -14,7 +14,8 @@ As one might guess, the primary role which Distribution Builder can serve for yo
 needs is packaging and deploying Python based programs. It can, however, be employed for 
 distributing software written in other languages as well.  To this end, a dedicated module, 
 has been provided which is specific for [Qt C++ Integration](QtCpp.md).  The library also
-includes the means to transform simple Windows scripts (Batch, PowerShell, or VBScript) 
+includes the means to transform simple Windows scripts 
+(Batch, PowerShell, VBScript, or JScript) 
 into full blown executable programs.  More cross language / 
 cross framework integration modules will become available in the future.
 

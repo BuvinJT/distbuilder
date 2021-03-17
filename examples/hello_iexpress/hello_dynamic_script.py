@@ -15,7 +15,12 @@ def popupMessageScript( scriptExt ):
         ]
         , ExecutableScript.VBSCRIPT_EXT:  
             r'MsgBox( "PWD: " & CreateObject("WScript.Shell").CurrentDirectory'
-                r' & vbCRLF & "RES:" & RES_DIR )'
+                r' & vbCRLF & "RES: " & RES_DIR )'
+        , ExecutableScript.JSCRIPT_EXT: [
+            r'var oShell = WScript.CreateObject( "WScript.Shell" );' 
+          , r'oShell.Popup( "PWD: " + oShell.CurrentDirectory'
+                r' + "\nRES: " + RES_DIR )'
+        ]                
     }    
     script = scriptOptions.get( scriptExt )
     if not script: raise Exception( "Invalid Script Type!" )        

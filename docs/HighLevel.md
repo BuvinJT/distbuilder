@@ -228,8 +228,16 @@ process.  The entry point module **name** is **not** obfuscated (though its cont
 This attribute is used when producing a 
 [Stand Alone Executable](LowLevel.md#stand-alone-executables) 
 via an implementation of *IExpress*. Using this mechanism, you may convert a program written in a native Windows 
-script (currently supporting Batch, PowerShell, or VBScript), into a
+script (currently supporting Batch, PowerShell, VBScript, and JScript), into a
 binary executable. 
+
+For more information on *IExpress*, see:
+
+https://en.wikipedia.org/wiki/IExpress
+https://docs.microsoft.com/en-us/internet-explorer/ie11-ieak/iexpress-wizard-for-win-server
+https://ss64.com/nt/iexpress.html
+http://www.mdgx.com/INF_web/
+ 
 
 Note this argument may be simple file path, pointing to source script, 
 or an object of type [ExecutableScript](LowLevel.md#executablescript).
@@ -780,7 +788,7 @@ stage: `binDir`, `binPath`.
 **WINDOWS ONLY**
 
 This "simple" process class converts a program written in a native Windows 
-script (currently supporting Batch, PowerShell, or VBScript), into a 
+script (currently supporting Batch, PowerShell, VBScript, and JScript), into a 
 stand-alone executable binary.  It additionally has built-in options for
 testing the resulting product, for "resource bundling", and for packaging into 
 an archive file.

@@ -1243,13 +1243,15 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
     SHELL_EXT       = "sh"
     BATCH_EXT       = "bat"
     VBSCRIPT_EXT    = "vbs"
+    JSCRIPT_EXT     = "js"
     POWERSHELL_EXT  = "ps1"
     APPLESCRIPT_EXT = "scpt"
 
     SUPPORTED_EXTS = [     
           SHELL_EXT
         , BATCH_EXT
-        , VBSCRIPT_EXT    
+        , VBSCRIPT_EXT
+        , JSCRIPT_EXT    
         , POWERSHELL_EXT  
         , APPLESCRIPT_EXT         
     ]
