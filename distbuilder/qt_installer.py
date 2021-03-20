@@ -7327,7 +7327,7 @@ def installQtIfw( installerPath=None, version=None, targetPath=None ):
     ifwQScriptPath = __generateQtIfwInstallerQScript()
     ifwPyScriptPath = __generateQtIfwInstallPyScript(                                    
         installerPath, ifwQScriptPath, targetPath )    
-    runPy( ifwPyScriptPath )
+    runPy( ifwPyScriptPath, isElevated=True )
     removeFile( ifwPyScriptPath )
     removeFile( ifwQScriptPath )
     if IS_MACOS: 

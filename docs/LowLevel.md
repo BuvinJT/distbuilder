@@ -1299,7 +1299,8 @@ Upon creating a binary with PyInstaller, use the
 following to test the success of the operation:  
     
     run( binPath, args=[], 
-         wrkDir=None, isElevated=False, isDebug=False )      
+         wrkDir=None, isElevated=False, isDebug=False,
+         askpassPath=None )      
 
 **binPath**: The path to the binary to be executed. 
 Note that the path is returned by `pyScriptToExe`, 
@@ -1340,7 +1341,7 @@ require this in order to allow this mode to work correctly.
 You may wish to include your own custom logic within your
 program to pivot on this environmental condition as well.
 
-While distbuilder provides convenience constants/methods to determine if you 
+While distbuilder provides convenience constants/methods to determine if you are 
 running in this context, to avoid any "tight coupling" to the build system within 
 your program's source (which may cause build failures in addition to being a 
 questionable design choice), you may wish to employ the following code: 
@@ -1348,7 +1349,7 @@ questionable design choice), you may wish to employ the following code:
     def isDebug(): 
         try: return isDebug.__CACHE
         except:
-        	from os import environ
+            from os import environ
             isDebug.__CACHE = environ.get("DEBUG_MODE")=="1"
             return isDebug.__CACHE
             
@@ -1360,10 +1361,19 @@ as an admin. On macOS, this will occur whenever using a "wrapper script"
 (see [QtIfwExeWrapper](ConfigClasses.md#qtifwexewrapper)) over the binary.
 
 Note: some IDE / platform combinations may render this feature 
-inoperable due to a conflict with output stream handling 
-(e.g. Eclipse/PyDev on Windows), in which case 
+inoperable due to a conflict with output stream handling, in which case 
 simply execute the build script, or the `run` function, from a terminal
 outside of the IDE when employing `isDebug`.  
+
+**askpassPath**: This argument is only applicable on **LINUX**.  If you
+needed to invoke this function from a non-tty **gui** context, e.g. via your IDE,
+while `isElevated` is enabled, an "ask password" utility e.g. "OpenSSH Askpass" 
+will be required in order for you to input your password to gain sudo rights.  
+If this is required for given task under the hood within the library, but your system
+is not yet configured for this, this function will fail with a fatal error, and 
+output instructions to your console or log file for how to proceed.  
+In the event you wish to employ a *specific* / custom "ask pass" program, when invoking
+this run function directly, you may specify the path to it via this argument.
 
 ### runPy   
 
@@ -1371,7 +1381,8 @@ Perhaps most notable, upon creating a Python obfuscation, you may wish the
 to test the success of that operation. The following
 was provided with that in mind specifically:    
 
-    runPy( pyPath, args=[], isElevated=False )
+    runPy( pyPath, args=[], isElevated=False,
+           askpassPath=None )
 
 **pyPath**: The path to the script to be executed. 
 Note that the path is returned by `obfuscatePy`, which allows 
@@ -1382,6 +1393,9 @@ the results of that to flow directly into this function.
 
 **isElevated**: Boolean (option) to run the binary with 
 elevated privileges.
+
+**askpassPath**: This argument is only applicable on **LINUX**. See the 
+description for this in the [run](#run) function documentation.
    
 The working directory will be automatically set to 
 the directory of the python script.  

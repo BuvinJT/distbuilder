@@ -195,12 +195,14 @@ def isDebug():
         return isDebug.__CACHE
 
 def run( binPath, args=None, 
-         wrkDir=None, isElevated=False, isDebug=False ):
-    _run( binPath, args, wrkDir, isElevated, isDebug )
+         wrkDir=None, isElevated=False, isDebug=False, 
+         askpassPath=None ):
+    _run( binPath, args, wrkDir, isElevated, isDebug, askpassPath )
          
 def _run( binPath, args=None, 
          wrkDir=None, isElevated=False, 
-         isDebug=False, sharedFilePath=None ):
+         isDebug=False, 
+         askpassPath=None, sharedFilePath=None ):
     
     def __printCmd( elevate, binPath, args, wrkDir ):
         cmdList = [binPath] if elevate=="" else [elevate, binPath]
@@ -211,6 +213,8 @@ def _run( binPath, args=None,
 
     def __printRetCode( retCode ):
         print( "\nReturn code: %s\n" % (str(retCode),) )
+    
+    if IS_LINUX: _assertAskPassAvailable( askpassPath=askpassPath )
     
     if args is None: args=[]
             
@@ -305,11 +309,12 @@ def _isPrivateRedirectAvailable():
     return( IS_WINDOWS and 
             _powerShellMajorVersion() >= _REDIRECT_PATH_ENV_VAR_PS_MIN_REQ )
     
-def runPy( pyPath, args=None, isElevated=False ):
+def runPy( pyPath, args=None, isElevated=False, askpassPath=None ):
     wrkDir, fileName = splitPath( pyPath )
     pyArgs = [fileName]
     if isinstance(args,list): pyArgs.extend( args )
-    run( PYTHON_PATH, pyArgs, wrkDir, isElevated, isDebug=False )
+    run( PYTHON_PATH, pyArgs, wrkDir, isElevated, isDebug=False, 
+         askpassPath=askpassPath )
 
 # While this coding appears a bit ugly, it does seem to work for every context  
 # Under certain conditions, some streams could not be captured via any  "clean" 
@@ -1791,7 +1796,7 @@ if IS_LINUX:
             'A GUI "askpass" program must be manually installed '
             'to run this script within this context (e.g. inside an IDE...?). ' 
             'Common paths were searched without success. '
-            'Here is an example installation command to you might execute'
+            'Here is an example installation command to you might execute '
             'to solve this problem:\n\n'
             'sudo apt-get install ssh-askpass-gnome\n\n', 
             isFatal=True )
