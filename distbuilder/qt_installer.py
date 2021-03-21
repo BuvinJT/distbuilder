@@ -1786,7 +1786,9 @@ class _QtIfwScript:
             TAB + 'if( realUserName === "" ) ' + SBLK +            
             (2*TAB) + 'realUserName = installer.environmentVariable("USER");' + END +
             (2*TAB) + 'installer.setValue( "__realUserName", realUserName )' + END +
-            EBLK + NEW +                              
+            (2*TAB) + _QtIfwScript.log( '"__realUserName: " + realUserName', 
+                                        isAutoQuote=False ) +                             
+            EBLK + NEW +                                          
             TAB + 'return realUserName' + END +
             EBLK + NEW +                                                   
             'var Dir = new function () ' + SBLK +
@@ -2053,14 +2055,14 @@ class _QtIfwScript:
               EBLK +           
             EBLK +                                         
             EBLK + NEW +          
-            'function isElevated() ' + SBLK +      # TODO: Test in NIX/MAC
+            'function isElevated() ' + SBLK +      # TODO: Test on MAC
             TAB + 'var successEcho="success"' + END +
             TAB + 'var elevatedTestCmd = "' +
                 ('echo off\\n' 
                  'fsutil dirty query %systemdrive% >nul'
                  ' && echo " + successEcho + "\\n"' 
                  if IS_WINDOWS else
-                 '[ $(id -u) = 0 ] && echo " + successEcho' ) + END + #TODO: FILL IN      
+                 '[ $(id -u) = 0 ] && echo " + successEcho' ) + END + #TODO: Test on MAC      
             TAB + 'var result = installer.execute( ' +
                 ('"cmd.exe", ["/k"], elevatedTestCmd' if IS_WINDOWS else
                  '"sh", ["-c", elevatedTestCmd]' ) + ' )' + END +
@@ -2310,8 +2312,9 @@ class _QtIfwScript:
                 (3*TAB) + '" \\"" + path + "\\"' + ('\\n"' if IS_WINDOWS else ';"' ) + END +
             (2*TAB) + 'redirect = " >>"' + END +                                               
             TAB + EBLK + 
-            ( TAB + 'writeCmd += "chmod 777 \\"" + path + "\\";"' + END +
-              TAB + 'writeCmd += "chown " + __realUserName() + " \\"" + path + "\\";"' + END 
+            ( TAB + 'var uname = __realUserName()' + END +
+              TAB + 'writeCmd += "chown " + uname + ":" + uname + " \\"" + path + "\\";"' + END +
+              TAB + 'writeCmd += "chmod 777 \\"" + path + "\\";"' + END 
               if not IS_WINDOWS else '' ) + 
             TAB + 'writeCmd += "echo " + path' + 
                     ( '+ "\\n"' if IS_WINDOWS else '' ) + END +                                  
