@@ -838,7 +838,7 @@ following add-on **QT SCRIPT** functions:
     Dir.fromNativeSparator( path )
 
     resolveQtIfwPath( path )		
-    resolveNativePath( path )
+    resolveNativePath( path, isSpaceEscaped ) <isSpaceEscaped NA on Windows>
     
     getEnv( varName )
     
@@ -846,7 +846,7 @@ following add-on **QT SCRIPT** functions:
     fileName( filePath )
     rootFileName( filePath )
 	
-	dirList( path, isSortedByTime ) <path can include native env vars, and wild cards>
+	dirList( path, isSortByModTimeAsc ) <path can include native env vars, and wild cards>
 		
     makeDir( path ) <recursive>
     removeDir( path )

@@ -247,7 +247,8 @@ def _run( binPath, args=None,
             cmdList = [elevate] + cmdList
         else: elevate = ""      
 
-        isWindowsSharedFile = fileExt( sharedFilePath ) == __WIN_SHARED_FILE_EXT
+        isWindowsSharedFile =( IS_WINDOWS and 
+            fileExt( sharedFilePath ) == __WIN_SHARED_FILE_EXT )
         if isWindowsSharedFile:                
             sharedFile = _WindowsSharedFile( isProducer=True, 
                                              filePath=sharedFilePath )

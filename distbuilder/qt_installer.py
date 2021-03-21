@@ -1779,7 +1779,16 @@ class _QtIfwScript:
             EBLK + NEW +
             'var dynamicVars = [ ' + varsList + ' ]' + END +
             'var dynamicPathVars = [ ' + pathVarsList + ' ]' + END +
-            NEW +                                                         
+            NEW +                              
+            'function __realUserName()' + SBLK +
+            TAB + 'if( isWindows() ) return ""; // not currently using this in Windows' + END +
+            TAB + 'var realUserName = installer.value( "__realUserName", "" )' + END +
+            TAB + 'if( realUserName === "" ) ' + SBLK +            
+            (2*TAB) + 'realUserName = installer.environmentVariable("USER");' + END +
+            (2*TAB) + 'installer.setValue( "__realUserName", realUserName )' + END +
+            EBLK + NEW +                              
+            TAB + 'return realUserName' + END +
+            EBLK + NEW +                                                   
             'var Dir = new function () ' + SBLK +
             TAB + 'this.temp = function () ' + SBLK +
             (2*TAB) + 'return isMaintenanceTool() ? __maintenanceTempPath() : ' + 
@@ -1820,7 +1829,7 @@ class _QtIfwScript:
             (2*TAB) + 'var lockFileName = ""' + END +
             (2*TAB) + 'var instPrefix = __installerPrefix()' + END +
             (2*TAB) + 'var toolPrefix = __maintenanceToolPrefix()' + END +
-            (2*TAB) + 'var lockFileDir = getEnv("temp")' + END +
+            (2*TAB) + 'var lockFileDir = __envTempPath()' + END + 
             (2*TAB) + 'var lockFileGlob = Dir.toNativeSeparator( lockFileDir + "/*.lock" )' + END +
             (2*TAB) + 'var sortByTime = true' + END +            
             (2*TAB) + 'var lockFiles = dirList( lockFileGlob, sortByTime )' + END +
@@ -1862,20 +1871,23 @@ class _QtIfwScript:
             if IS_WINDOWS else 
             TAB + '' + END) + # TODO: FILLIN!!            
             EBLK + NEW +
-            'function __tempRootFilePath( extension ) ' + SBLK +  # TODO: Test in NIX/MAC
-            TAB + 'return __tempPath( "." + (extension ? extension : "tmp") ) ' + END +                                                                              
-            EBLK + NEW +            
+            'function __envTempPath() ' + SBLK +              
+            TAB + 'return isWindows() ? getEnv("temp") : "/tmp"' + END +                  
+            EBLK + NEW +                                                                                                                  
             'function __tempPath( suffix ) ' + SBLK +  # TODO: Test in NIX/MAC            
             TAB + 'return (isMaintenanceTool() ? ' +
                     '__maintenanceTempPath() : __installerTempPath()) + ' +
                                                 '(suffix ? suffix : "")' + END +                  
             EBLK + NEW +
+            'function __tempRootFilePath( extension ) ' + SBLK +  # TODO: Test in NIX/MAC
+            TAB + 'return __tempPath( "." + (extension ? extension : "tmp") ) ' + END +                                                                              
+            EBLK + NEW +                        
             'function __installerTempPath( suffix ) ' + SBLK +  # TODO: Test in NIX/MAC            
             TAB + 'var dirPath = installer.value( ' + 
                 ('"%s"' % (_QT_IFW_INSTALLER_TEMP_DIR,)) + ', "" )' + END +
             TAB + 'if( dirPath === "" ) ' + SBLK +            
             (2*TAB) + 'dirPath = Dir.toNativeSeparator( ' +
-                'getEnv("temp") + "/__" + __installerPrefix() + "-install" )' + END +
+                '__envTempPath() + "/__" + __installerPrefix() + "-install" )' + END +
             (2*TAB) + 'installer.setValue( ' + 
             ('"%s"' % (_QT_IFW_INSTALLER_TEMP_DIR,)) + ', dirPath )' + END +
             (2*TAB) + _QtIfwScript.log( ('"%s' % (_QT_IFW_INSTALLER_TEMP_DIR,)) + 
@@ -1888,7 +1900,7 @@ class _QtIfwScript:
                 ('"%s"' % (_QT_IFW_MAINTENANCE_TEMP_DIR,)) + ', "" )' + END +
             TAB + 'if( dirPath === "" ) ' + SBLK +            
             (2*TAB) + 'dirPath = Dir.toNativeSeparator( ' + # NOTE: __installerPrefix() is CORRECT HERE!
-                'getEnv("temp") + "/__" + __installerPrefix() + "-maintenance" )' + END +
+                '__envTempPath() + "/__" + __installerPrefix() + "-maintenance" )' + END +
             (2*TAB) + 'installer.setValue( ' + 
             ('"%s"' % (_QT_IFW_MAINTENANCE_TEMP_DIR,)) + ', dirPath )' + END +
             (2*TAB) + _QtIfwScript.log( ('"%s' % (_QT_IFW_MAINTENANCE_TEMP_DIR,)) + 
@@ -1901,7 +1913,7 @@ class _QtIfwScript:
             EBLK + NEW +
             'function __maintenanceToolPrefix() ' + SBLK +  # TODO: Test in NIX/MAC            
             TAB + ('return rootFileName( "%s" )' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END +                  
-            EBLK + NEW +                                                                                     
+            EBLK + NEW +       
             'function resolveQtIfwPath( path ) ' + SBLK +
             TAB + 'path = Dir.fromNativeSeparator( path )' + END +
             TAB + 'for( var i=0; i != dynamicPathVars.length; ++i ) ' + SBLK +                                    
@@ -2046,9 +2058,9 @@ class _QtIfwScript:
             TAB + 'var elevatedTestCmd = "' +
                 ('echo off\\n' 
                  'fsutil dirty query %systemdrive% >nul'
-                 ' && echo " + successEcho + "\\n' 
+                 ' && echo " + successEcho + "\\n"' 
                  if IS_WINDOWS else
-                 '' ) + '"' + END + #TODO: FILL IN      
+                 '[ $(id -u) = 0 ] && echo " + successEcho' ) + END + #TODO: FILL IN      
             TAB + 'var result = installer.execute( ' +
                 ('"cmd.exe", ["/k"], elevatedTestCmd' if IS_WINDOWS else
                  '"sh", ["-c", elevatedTestCmd]' ) + ' )' + END +
@@ -2079,7 +2091,7 @@ class _QtIfwScript:
             'function rootFileName( filePath ) ' + SBLK +
             TAB + 'return fileName( filePath ).split(".")[0]' + END +
             EBLK + NEW +                                                            
-            'function resolveNativePath( path ) ' + SBLK +    # TODO: Test in NIX/MAC  
+            'function resolveNativePath( path, isSpaceEscaped ) ' + SBLK +    # TODO: Test in NIX/MAC  
             TAB + 'path = Dir.toNativeSeparator( path )' + END +            
             TAB + 'var echoCmd = "' +
                 ('echo off\\n'                     
@@ -2097,20 +2109,22 @@ class _QtIfwScript:
             EBLK +
             TAB + 'catch(e){ path = "";' + EBLK +
             TAB + 'if( path=="" ) ' + NEW +
-            (2*TAB) + 'throw new Error("resolveNativePath failed.")' + END +
+            (2*TAB) + 'throw new Error("resolveNativePath failed.")' + END +            
+            TAB + 'if( isSpaceEscaped && !isWindows() ) ' + NEW +
+            (2*TAB) + 'path = path.replace(/ /g, \'\\\\ \')' + END +            
             TAB + 'return path' + END +                                                                                                                          
             EBLK + NEW +                        
-            'function dirList( path, isSortedByTime ) ' + SBLK +    # TODO: Test in NIX/MAC
+            'function dirList( path, isSortByModTimeAsc ) ' + SBLK +    # TODO: Test in NIX/MAC
             TAB + 'var retList=[]' + END +
-            TAB + 'var sortByTime = isSortedByTime ? ' + 
-                ( '" /O:D"' if IS_WINDOWS else '' ) + 
+            TAB + 'var sortByTime = isSortByModTimeAsc ? ' + 
+                ( '" /O:D"' if IS_WINDOWS else '"tr"' ) + 
                 ' : ""' + END +
-            TAB + 'path = resolveNativePath( path )' + END +
+            TAB + 'path = resolveNativePath( path, true )' + END +
             TAB + 'var dirLsCmd = "' +
                 ('echo off\\n'                     
                  'dir \\"" + path + "\\" /A /B" + sortByTime + "\\n'
                  if IS_WINDOWS else
-                 'ls -a \\"" + path + "\\" ' ) + '"' + END +      
+                'ls -a" + sortByTime + " " + path + " | cat' ) + '"' + END +                
             TAB + 'var result = installer.execute( ' +
                 ('"cmd.exe", ["/k"], dirLsCmd' if IS_WINDOWS else
                  '"sh", ["-c", dirLsCmd]' ) + ' )' + END +                
@@ -2118,9 +2132,10 @@ class _QtIfwScript:
             (2*TAB) + 'throw new Error("dir list failed.")' + END +
             TAB + 'try' + SBLK +
             (2*TAB) + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
-            (2*TAB) + 'cmdOutLns.splice(0, 2)' + END +                                 
+            ((2*TAB) + 'cmdOutLns.splice(0, 2)' + END if IS_WINDOWS else '' ) +                                                                                    
             (2*TAB) + 'for( var i=0; i < cmdOutLns.length; i++ )' + SBLK +
-                (3*TAB) + 'var entry = cmdOutLns[i].trim()' + END +
+                (3*TAB) + 'var entry = cmdOutLns[i].trim()' + END +                
+                ((3*TAB) + 'entry = fileName( entry )' + END if not IS_WINDOWS else '' ) +                
                 (3*TAB) + 'if( entry ) retList.push( entry );' + END +
             (2*TAB) + EBLK +
             EBLK +
@@ -2147,14 +2162,14 @@ class _QtIfwScript:
                 ('"cmd.exe", ["/k"], mkDirCmd' if IS_WINDOWS else
                  '"sh", ["-c", mkDirCmd]' ) + ' )' + END +                
             TAB + 'if( result[1] != 0 ) ' + NEW +
-            (2*TAB) + 'throw new Error("makeDir failed.")' + END +
+            (2*TAB) + 'throw new Error("makeDir failed. path: " + path )' + END +
             TAB + 'try' + SBLK +
             TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
             TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
             EBLK +
             TAB + 'catch(e){ path = "";' + EBLK +
             TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-            (2*TAB) + 'throw new Error("makeDir failed. (file does not exists)")' + END +
+            (2*TAB) + 'throw new Error("makeDir failed. path: " + path )' + END +
             TAB + _QtIfwScript.log( '"made dir: " + path', isAutoQuote=False ) + 
             TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                
@@ -2174,14 +2189,14 @@ class _QtIfwScript:
                 ('"cmd.exe", ["/k"], rmDirCmd' if IS_WINDOWS else
                  '"sh", ["-c", rmDirCmd]' ) + ' )' + END +                
             TAB + 'if( result[1] != 0 ) ' + NEW +
-            (2*TAB) + 'throw new Error("removeDir failed.")' + END +
+            (2*TAB) + 'throw new Error("removeDir failed. path: " + path )' + END +
             TAB + 'try' + SBLK +
             TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
             TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + 
             EBLK +
             TAB + 'catch(e){ path = "";' + EBLK +
             TAB + 'if( path=="" || ' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-            (2*TAB) + 'throw new Error("removeDir failed. (file does not exists)")' + END +
+            (2*TAB) + 'throw new Error("removeDir failed. path: " + path )' + END +
             TAB + _QtIfwScript.log( '"removed dir: " + path', isAutoQuote=False ) + 
             TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                            
@@ -2190,7 +2205,7 @@ class _QtIfwScript:
             TAB + 'replaceDynamicVarsInFile( path, varNames, isDoubleBackslash )' +  END +            
             EBLK + NEW +                                                                         
             'function __writeFileFromBase64( fileName, b64, isTempRootTarget, isB64Removed ) ' + SBLK +      # TODO: Test in NIX/MAC
-            TAB + 'var dirPath = isTempRootTarget ? getEnv("temp") : Dir.temp()' + END +            
+            TAB + 'var dirPath = isTempRootTarget ? __envTempPath() : Dir.temp()' + END +            
             TAB + 'var tempPath = Dir.toNativeSeparator( dirPath + "/" + fileName + ".b64" )' + END +
             TAB + 'var path = Dir.toNativeSeparator( dirPath + "/" + fileName )' + END +            
             (TAB + 'b64 = "-----BEGIN CERTIFICATE-----\\n" + '
@@ -2295,19 +2310,22 @@ class _QtIfwScript:
                 (3*TAB) + '" \\"" + path + "\\"' + ('\\n"' if IS_WINDOWS else ';"' ) + END +
             (2*TAB) + 'redirect = " >>"' + END +                                               
             TAB + EBLK + 
+            ( TAB + 'writeCmd += "chmod 777 \\"" + path + "\\";"' + END +
+              TAB + 'writeCmd += "chown " + __realUserName() + " \\"" + path + "\\";"' + END 
+              if not IS_WINDOWS else '' ) + 
             TAB + 'writeCmd += "echo " + path' + 
                     ( '+ "\\n"' if IS_WINDOWS else '' ) + END +                                  
             TAB + 'var result = installer.execute( ' +
                 ('"cmd.exe", ["/k"], writeCmd' if IS_WINDOWS else
                  '"sh", ["-c", writeCmd]' ) + ' )' + END +                
             TAB + 'if( result[1] != 0 ) ' + NEW +
-            (2*TAB) + 'throw new Error("Write file failed.")' + END +
+            (2*TAB) + 'throw new Error("Write file failed. path: " + path )' + END +
             TAB + 'try' + SBLK +
             TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +                
             TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
             TAB + 'catch(e){ path = "";' + EBLK +
             TAB + 'if( path=="" || !' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-            (2*TAB) + 'throw new Error("Write file failed. (file does not exists)")' + END +
+            (2*TAB) + 'throw new Error("Write file failed. path: " + path )' + END +
             TAB + _QtIfwScript.log( '"Wrote file to: " + path', isAutoQuote=False ) +
             TAB + 'return path' + END +
             EBLK + NEW +                   
@@ -2319,18 +2337,18 @@ class _QtIfwScript:
             TAB + 'var deleteCmd = "' +                    
                 ('echo off && del \\"" + path + "\\" /q\\necho " + path + "\\n"' 
                  if IS_WINDOWS else
-                 'rm \\"" + path + "\\"; echo " + path' ) + END +                                                                                                
+                 '[ -f \\"" + path + "\\" ] && rm -f \\"" + path + "\\"; echo " + path' ) + END +                                                                                                
             TAB + 'var result = installer.execute( ' +
                 ('"cmd.exe", ["/k"], deleteCmd' if IS_WINDOWS else
                  '"sh", ["-c", deleteCmd]' ) + ' )' + END +             
             TAB + 'if( result[1] != 0 ) ' + NEW +
-            (2*TAB) + 'throw new Error("Delete file failed.")' + END +
+            (2*TAB) + 'throw new Error("Delete file failed. path: " + path )' + END +
             TAB + 'try' + SBLK +
             TAB + TAB + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
             TAB + TAB + 'path = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
             TAB + 'catch(e){ path = "";' + EBLK +                
             TAB + 'if( path=="" || ' + _QtIfwScript.pathExists( 'path', isAutoQuote=False ) + ' ) ' + NEW +
-            (2*TAB) + 'throw new Error("Delete file failed. (file exists)")' + END +
+            (2*TAB) + 'throw new Error("Delete file failed. path: " + path )' + END +
             TAB + _QtIfwScript.log( '"Deleted file: " + path', isAutoQuote=False ) + 
             TAB + 'return path' + END +                                                                                                                                       
             EBLK + NEW +                                                                     
@@ -3794,6 +3812,7 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + 'installer.setValue( "__isMaintenance", "" )' + END +            
             TAB + 'installer.setValue( "__lockFilePath", "" )' + END +
             TAB + 'installer.setValue( "__watchDogPath", "" )' + END +
+            TAB + 'installer.setValue( "__realUserName", "" )' + END +            
             TAB + 'installer.setValue( "' + 
                 _QtIfwScript.IS_NET_CONNECTED_KEY + '", "" )' + END +
             TAB + 'installer.setValue( ' +
@@ -3825,6 +3844,7 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + _QtIfwScript.logValue( _QtIfwScript.OUT_LOG_PATH_CMD_ARG ) +            
             TAB + _QtIfwScript.logValue( _KEEP_TEMP_SWITCH ) + 
             TAB + _QtIfwScript.logValue( _QtIfwScript._KEEP_ALIVE_PATH_CMD_ARG ) +            
+            TAB + '__realUserName()' + END +
             TAB + '__installerTempPath()' + END +
             TAB + '__maintenanceTempPath()' + END +            
             TAB + 'makeDir( Dir.temp() )' + END +
@@ -4587,13 +4607,13 @@ Component.prototype.%s = function(){
                     (2*TAB) + 'pkg="ssh-askpass-gnome"' + END +
                     (2*TAB) + 'progPath="/usr/bin/ssh-askpass"' + END +
                     EBLK +
-                    TAB + _QtIfwScript.ifFileExists( 'progPath', isAutoQuote=False ) + NEW +
+                    TAB + _QtIfwScript.ifPathExists( 'progPath', isAutoQuote=False ) + NEW +
                     (2*TAB) + 'return progPath' + END +                    
                     TAB + 'if( !isPackageInstalled( pkg ) )' + SBLK +
                     (2*TAB) + 'if( !installPackage( pkg ) )' + NEW +                    
                         (3*TAB) + 'throw new Error("Could not install package: " + pkg )' + END +
                     EBLK +                                                                    
-                    TAB + _QtIfwScript.ifFileExists( 'progPath', isAutoQuote=False ) + NEW +
+                    TAB + _QtIfwScript.ifPathExists( 'progPath', isAutoQuote=False ) + NEW +
                     (2*TAB) + 'return progPath' + END +
                     TAB + 'else' + NEW +
                     (2*TAB) + 'throw new Error("Ask Pass program path is not valid: " + progPath )' + END +
