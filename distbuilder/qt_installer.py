@@ -1752,15 +1752,15 @@ class _QtIfwScript:
         self.qtScriptLib = None
 
     def _genLib( self ):
-        NEW = _QtIfwScript.NEW_LINE
-        END = _QtIfwScript.END_LINE
-        TAB = _QtIfwScript.TAB
-        SBLK =_QtIfwScript.START_BLOCK
-        EBLK =_QtIfwScript.END_BLOCK
+        NEW   = _QtIfwScript.NEW_LINE
+        END   = _QtIfwScript.END_LINE
+        TAB   = _QtIfwScript.TAB
+        SBLK  = _QtIfwScript.START_BLOCK
+        EBLK  = _QtIfwScript.END_BLOCK
         TRY   = _QtIfwScript.TRY
         CATCH = _QtIfwScript.CATCH
-        #IF    = _QtIfwScript.ELSE
-        #ELSE  = _QtIfwScript.ELSE
+        #IF    = _QtIfwScript.IF
+        ELSE  = _QtIfwScript.ELSE
         
         varsList = ",".join([ '"%s"' % (v,) 
                               for v in QT_IFW_DYNAMIC_VARS ])
@@ -2503,7 +2503,43 @@ class _QtIfwScript:
             (2*TAB) + 'ps += " -ArgumentList " + "\'" + args.join("\',\'") + "\'"' + END +            
             TAB + 'executePowerShell( ps )' + END ) 
             if IS_WINDOWS else 
-            (TAB + 'var shell = ""' + END)# TODO: Fill in! 
+            (TAB + 'var shell = ""' + END +            
+            TAB + 'var wasXvfbInstalled = isPackageInstalled( "Xvfb" ) ||'
+                                     + ' isPackageInstalled( "xvfb" )' + END +
+            TAB + 'if( !wasXvfbInstalled )' + SBLK +
+            (2*TAB) + _QtIfwScript.log( 'Installing Xvfb utility (temporarily)...') +            
+            (2*TAB) + 'var isXvfbInstalled = installPackage( "Xvfb" ) ||'
+                                         + ' installPackage( "xvfb" )' + END +
+            (2*TAB) + 'if( isXvfbInstalled ) ' + NEW +
+                (3*TAB) + _QtIfwScript.log( '...Installed Xvfb.') +
+            (2*TAB) + ELSE + NEW +
+                (3*TAB) + 'quit( "Could not install required utility: Xvfb", true )' + END +                                         
+            EBLK +
+            NEW +                  
+            TAB + '// Note: isElevated is already applied in the standard use case context. ' + NEW +
+            TAB + '// *Dropping back to the real user* would be the thing to optionally enforce...' + NEW +
+            TAB + 'var XVFB_RUN = "xvfb-run"' +  END +            
+            TAB + 'var xvfbArgs = []' +  END +
+            TAB + 'xvfbArgs.push( binPath )' +  END +
+            TAB + 'for( i=0; i < args.length; i++ ) xvfbArgs.push( args[i] )' + END +
+            TAB + 'var xvfbCmd = XVFB_RUN + " " + binPath' +  END +            
+            TAB + 'for( i=0; i < xvfbArgs.length; i++ ) xvfbCmd += " " + xvfbArgs[i]' + END +
+            _QtIfwScript.log( '"Invoking gui process on an offscreen frame buffer with: " '
+                              '+ xvfbCmd', isAutoQuote=False ) +                                             
+            TAB + 'var result = installer.execute( XVFB_RUN, xvfbArgs )' +  END +
+            NEW +
+            TAB + 'if( !wasXvfbInstalled )' + SBLK +
+            (2*TAB) + _QtIfwScript.log( '(Politely) Uninstalling Xvfb...') +            
+            (2*TAB) + 'var isXvfbUnInstall = unInstallPackage( "Xvfb" ) ||'
+                   + ' unInstallPackage( "xvfb" )' + END +
+            (2*TAB) + 'if( isXvfbUnInstall ) ' + NEW +
+                (3*TAB) + _QtIfwScript.log( '...Uninstalled Xvfb.') +    
+            (2*TAB) + ELSE + NEW +                   
+                (3*TAB) + _QtIfwScript.log( 'Could NOT uninstall Xvfb!') +
+            TAB + EBLK +                                  
+            TAB + 'if( result[1] != 0 ) ' + NEW  +
+                'quit( "Could not run xvfb sub process", true )' + END                                                                                                                      
+            )
             if IS_LINUX else
             (TAB + '// The hidden feature is not yet supported on macOS!' + NEW +
             TAB + 'execute( binPath, args )' + END )
