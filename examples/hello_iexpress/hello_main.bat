@@ -1,4 +1,4 @@
-if "%LIB_DIR%" == "" set "LIB_DIR=."
+if "%LIB_DIR%" == "" set "LIB_DIR=%~dp0"
 
 set "PopupLib=%LIB_DIR%\Popups.bat"
 

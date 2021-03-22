@@ -660,11 +660,12 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
         # Code sign the exe
         signExe( destPath, iExpressConfig.codeSignConfig )
         
-        # Code sign external resource targets         
-        for target in codeSignTargets:
-            if target in distResources:            
-                targetPath = absPath( target, sourceDir )
-                signExe( targetPath, codeSignConfig )
+        # Code sign external resource targets
+        if codeSignTargets:          
+            for target in codeSignTargets:
+                if target in distResources:            
+                    targetPath = absPath( target, sourceDir )
+                    signExe( targetPath, codeSignConfig )
          
     return dirPath( destPath ), destPath         
 
