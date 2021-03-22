@@ -1870,8 +1870,15 @@ class _QtIfwScript:
             (2*TAB) + '"oFSO.DeleteFolder \\"" + Dir.temp() + "\\"\\n" + ' + NEW +
             (2*TAB) + '"oFSO.DeleteFile WScript.ScriptFullName\\n" ' + END +            
             TAB + 'executeVbScriptDetached( watchDogPath, vbs )' + END 
-            if IS_WINDOWS else 
-            TAB + '' + END) + # TODO: FILLIN!!            
+            if IS_WINDOWS else
+            TAB + 'var sh = ' + NEW +
+            (2*TAB) + '"while [ -f \\"" + __lockFilePath() + "\\" ]; do\\n" + ' + NEW +            
+            (2*TAB) + '"    sleep 3\\n" + ' + NEW +
+            (2*TAB) + '"done\\n" + ' + NEW +
+            (2*TAB) + '"rm -R \\"" + Dir.temp() + "\\"\\n" + ' + NEW +
+            (2*TAB) + '"rm -f \\"" + watchDogPath + "\\"\\n" ' + END +                         
+            TAB + 'executeShellScriptDetached( watchDogPath, sh )' + END
+            ) + # TODO: FILLIN!!            
             EBLK + NEW +
             'function __envTempPath() ' + SBLK +              
             TAB + 'return isWindows() ? getEnv("temp") : "/tmp"' + END +                  
@@ -2292,8 +2299,8 @@ class _QtIfwScript:
             (2*TAB) + 'throw new Error("Sleep operation failed.")' + END +
             EBLK + NEW +      
             'function __escapeEchoText( echo ) ' + SBLK +
-            (TAB + 'if( echo.trim()=="" ) return "."' + END if IS_WINDOWS else '' ) +
-            TAB + 'var escaped = echo' + END +                      
+            TAB + 'if( echo.trim()=="" ) return ' + ('"."' if IS_WINDOWS else '"\\"\\""' ) + END  + 
+            TAB + 'var escaped = ' + ('echo' if IS_WINDOWS else '"\\"" + echo + "\\""' ) + END  +                      
             TAB + 'return " " + escaped' + END +                                                                                          
             EBLK + NEW +      
             'function writeFile( path, content ) ' + SBLK +    
@@ -2309,7 +2316,8 @@ class _QtIfwScript:
             TAB + 'for( i=0; i < lines.length; i++ )' + SBLK +                
             (2*TAB) + 'var echo = __escapeEchoText( lines[i] )' + END +
             (2*TAB) + 'writeCmd += "echo" + echo + redirect + ' + NEW +
-                (3*TAB) + '" \\"" + path + "\\"' + ('\\n"' if IS_WINDOWS else ';"' ) + END +
+                (3*TAB) + '" \\"" + path + "\\"' + 
+                ('\\n"' if IS_WINDOWS else ';"' ) + END +
             (2*TAB) + 'redirect = " >>"' + END +                                               
             TAB + EBLK + 
             ( TAB + 'var uname = __realUserName()' + END +
@@ -2494,7 +2502,7 @@ class _QtIfwScript:
                 ('"cmd.exe", ["/c", cmd]' if IS_WINDOWS else
                  '"sh", ["-c", cmd]' ) + ' )' + END +                                  
             EBLK + NEW +              
-            'function executeHidden( binPath, args, isElevated ) ' + SBLK + # TODO: Test in NIX/MAC 
+            'function executeHidden( binPath, args, isElevated ) ' + SBLK + # TODO: Test on MAC 
             (                 
             (TAB+ 'var ps = "Start-Process -FilePath \'" + binPath + "\' ' +
                             '-Wait -WindowStyle Hidden"' + END +
@@ -2850,7 +2858,17 @@ class _QtIfwScript:
             EBLK + NEW                                                          
             )
         elif IS_LINUX:
-            self.qtScriptLib += (    
+            self.qtScriptLib += (
+            'function executeShellScriptDetached( scriptPath, script, args ) ' + SBLK +
+            TAB + _QtIfwScript.log( "Executing Detached ShellScript:" ) +
+            TAB + _QtIfwScript.log( "scriptPath", isAutoQuote=False ) +                
+            TAB + _QtIfwScript.log( "script", isAutoQuote=False ) +          
+            TAB + 'var path = script ? writeFile( scriptPath, script ) : '
+                        'Dir.toNativeSeparator( scriptPath )' + END +                 
+            TAB + 'if( !args ) args=[]' + END +
+            TAB + 'args.unshift( path )' + END +
+            TAB + 'var result = installer.executeDetached( "sh", args )' + END +
+            EBLK + NEW +                                            
             'function isPackageManagerInstalled( prog ) ' + SBLK +
             TAB + 'return installer.execute( prog, ["--help"] )[1] == 0' + END +
             EBLK + NEW +
