@@ -7509,12 +7509,13 @@ def _stageInstallerPackages( qtIfwConfig, isSilent ):
     __initBuild( qtIfwConfig )    
     __addInstallerResources( qtIfwConfig )     
 
-def _buildInstaller( qtIfwConfig, isSilent ):    
+def _buildInstaller( qtIfwConfig, isSilent, codeSignConfig ):    
     for pkg in qtIfwConfig.packages:
         if pkg._isMergeProduct:
             __genQtIfwCntrlRes( qtIfwConfig )
             break          
     setupExePath = __build( qtIfwConfig )    
+    if isSilent and codeSignConfig: signExe( setupExePath, codeSignConfig )
     __postBuild( qtIfwConfig )
     if isSilent : setupExePath = __buildSilentWrapper( qtIfwConfig )
     return setupExePath
