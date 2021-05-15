@@ -55,8 +55,9 @@ IS_WINDOWS = __plat == "Windows"
 IS_LINUX   = __plat == "Linux"
 IS_MACOS   = __plat == "Darwin"
 
+# over simplified - see https://stackoverflow.com/questions/45125516/possible-values-for-uname-m
 __arch = platform.machine()
-IS_ARM_CPU   = "arm" in __arch or "aarch" in __arch
+IS_ARM_CPU   = "arm" in __arch or "aarch" in __arch 
 IS_INTEL_CPU = not IS_ARM_CPU
 
 BIT_CONTEXT = calcsize('P') * 8
@@ -993,6 +994,26 @@ def _toSrcDestPair( pathPair, destDir=None, basePath=None ):
 
     #print( "result: src=%s, dest=%s" % (src, dest) )
     return (src, dest) 
+
+def _destTargetsInSrcDestPairs( targets, pathPairs, destDir, basePath ):
+    destTargets = []
+    if targets is None or len(targets)==0: return destTargets
+    if pathPairs is None or len(pathPairs)==0: return destTargets            
+    for pair in pathPairs:
+        src, dest = _toSrcDestPair( pair, destDir=destDir, basePath=basePath )        
+        relDest = relpath( dest, destDir )
+        if relDest in targets:
+            destTargets.append( relDest )
+        elif isDir( src ):
+            srcDirPrefix = normpath( src ) + PATH_DELIM
+            destDirPrefix = normpath( dest ) + PATH_DELIM 
+            for target in targets:
+                destTargetPath = absPath( target, basePath=destDir )
+                if destTargetPath.startswith( destDirPrefix ):
+                    srcPath = (srcDirPrefix + 
+                               destTargetPath[len(destDirPrefix):])
+                    if isFile( srcPath ): destTargets.append( target )                            
+    return destTargets    
 
 # -----------------------------------------------------------------------------    
 def versionTuple( ver, parts=4 ): return tuple( __versionList( ver, parts ) )

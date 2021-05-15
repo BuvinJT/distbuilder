@@ -557,22 +557,10 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
     # split code signing target types into embedded vs external 
     codeSignConfig  = iExpressConfig.codeSignConfig
     codeSignTargets = iExpressConfig.codeSignTargets 
-    embeddedSignTargets = []
-    externalSignTargets = []     
-    if codeSignTargets:                 
-        if embeddedResources is None:
-            externalSignTargets = copy( codeSignTargets ) 
-        else:   
-            embeddedResDests=[]
-            for res in embeddedResources:
-                _, dest = util._toSrcDestPair( res, destDir=destDirPath,
-                                               basePath=sourceDir )
-                embeddedResDests.append( relpath(dest, destDirPath) )                                               
-            for target in codeSignTargets:
-                if target in embeddedResDests: 
-                    embeddedSignTargets.append( target )            
-                else:                          
-                    externalSignTargets.append( target )
+    embeddedSignTargets = util._destTargetsInSrcDestPairs( 
+        codeSignTargets, embeddedResources, destDirPath, sourceDir )
+    externalSignTargets = util._destTargetsInSrcDestPairs( 
+        codeSignTargets, distResources, destDirPath, sourceDir )
     
     # Detect 2 Stage Embedding i.e. (Compression / Decompression) 
     stageDirPath    = None
@@ -581,7 +569,7 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
     if embeddedResources is not None:
         for res in embeddedResources:
             src, dest = util._toSrcDestPair( res, destDir=destDirPath,
-                                             basePath=sourceDir )
+                                             basePath=sourceDir )          
             isNestedDest = dirPath( relpath( dest, destDirPath ) ) != ""                     
             isTwoStageEmbedding = isDir( src ) or isNestedDest
             if isTwoStageEmbedding: break 
@@ -605,9 +593,12 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
         else:
             # Update the flat file list, converting each item to the new, 
             # absolute source path in the stage dir
-            embeddedResources = [ 
-                joinPath( stageDirPath, res ) for res in embeddedResDests ]
-            
+            embeddedResDests=[]
+            for res in embeddedResources:
+                _, dest = util._toSrcDestPair( res, destDir=stageDirPath,
+                                                 basePath=sourceDir )      
+                embeddedResDests.append( dest )                
+            embeddedResources = embeddedResDests
             
     # Fill in the template, and write the primary exe source    
     if isOnTheFly:                
@@ -658,14 +649,9 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
    
     if iExpressConfig.codeSignConfig:
         # Code sign the exe
-        signExe( destPath, iExpressConfig.codeSignConfig )
-        
+        signExe( destPath, iExpressConfig.codeSignConfig )        
         # Code sign external resource targets
-        if codeSignTargets:          
-            for target in codeSignTargets:
-                if target in distResources:            
-                    targetPath = absPath( target, sourceDir )
-                    signExe( targetPath, codeSignConfig )
+        for target in externalSignTargets: signExe( target, codeSignConfig )
          
     return dirPath( destPath ), destPath         
 

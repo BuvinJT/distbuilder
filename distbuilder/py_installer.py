@@ -137,10 +137,10 @@ class PyInstallerConfig:
                 
         pathsSpec = ""
         for path in self.importPaths:
-            pathsSpec += '--paths "%s"' % (self._absPath(path),)
+            pathsSpec += ' --paths "%s"' % (self._absPath(path),)
         importsSpec = ""
         for importMod in self.hiddenImports:
-            importsSpec += '--hidden-import "%s"' % (importMod,)
+            importsSpec += ' --hidden-import "%s"' % (importMod,)
                 
         def toPyInstallerSrcDestSpec( pyInstArg, paths ):
             src, dest = util._toSrcDestPair( paths, destDir=None, 
@@ -149,12 +149,10 @@ class PyInstallerConfig:
         
         dataSpec = ""
         for path in self.dataFilePaths:
-            dataSpec += toPyInstallerSrcDestSpec( "--add-data", 
-                                                  self._absPath(path) )
+            dataSpec += toPyInstallerSrcDestSpec( " --add-data", path )
         binarySpec = ""
         for path in self.binaryFilePaths:
-            binarySpec += toPyInstallerSrcDestSpec( "--add-binary", 
-                                                    self._absPath(path) )
+            binarySpec += toPyInstallerSrcDestSpec( " --add-binary", path )
     
         try:
             if IS_LINUX : 
@@ -411,22 +409,10 @@ def pyScriptToExe( name=None, entryPointPy=None,
                      
     codeSignConfig  = pyInstConfig.codeSignConfig
     codeSignTargets = pyInstConfig.codeSignTargets 
+    externalSignTargets = util._destTargetsInSrcDestPairs( 
+        codeSignTargets, distResources, TEMP_RES_DIR_PATH, sourceDir )
 
-    # Duplicate and sign any *embedded* code sign targets 
-    if codeSignTargets:        
-        revResources = []
-        embeddedRes = pyInstConfig.dataFilePaths + pyInstConfig.binaryFilePaths      
-        for res in embeddedRes:
-            src, dest = util._toSrcDestPair( res, destDir=TEMP_RES_DIR_PATH,
-                                             basePath=sourceDir )
-            relDest = relpath( dest, TEMP_RES_DIR_PATH )        
-            if relDest in codeSignTargets:
-                tempSrcPath = copyToDir( src, TEMP_RES_DIR_PATH )    
-                signExe( tempSrcPath, codeSignConfig )                        
-                codeSignTargets.pop( relDest )
-                revResources.append( (tempSrcPath, relDest) )
-            else: revResources.append( res )    
-        distResources = revResources
+    __signEmbeddedResources( pyInstConfig )
             
     # Build the executable using PyInstaller        
     __runPyInstaller( pyInstConfig )
@@ -478,18 +464,15 @@ def pyScriptToExe( name=None, entryPointPy=None,
 
     if pyInstConfig.codeSignConfig:
         # Code sign the exe
-        signExe( exePath, pyInstConfig.codeSignConfig )
-                
+        signExe( exePath, pyInstConfig.codeSignConfig )                
         # Code sign external resource targets
-        if codeSignTargets:         
-            for target in codeSignTargets:
-                if target in distResources:            
-                    targetPath = absPath( target, sourceDir )
-                    signExe( targetPath, codeSignConfig )
+        for target in externalSignTargets:
+            if target in distResources:            
+                targetPath = absPath( target, sourceDir )
+                signExe( targetPath, codeSignConfig )
                 
     # Return the paths generated    
     return distDirPath, exePath
-
 
 def __copyResources( resources, mkDirs, destDirPath, sourceDir ):
     for res in resources:
@@ -513,7 +496,6 @@ def __copyResources( resources, mkDirs, destDirPath, sourceDir ):
             except Exception as e: printExc( e )   
         print('')
     
-
 def makePyInstSpec( pyInstConfig, opyConfig=None ):
     
     # Verify the required parameters are present    
@@ -531,6 +513,13 @@ def makePyInstSpec( pyInstConfig, opyConfig=None ):
     # Optionally, get what will be the obfuscated paths
     if opyConfig is not None: 
         _, pyInstConfig.entryPointPy = _toObfuscatedPaths( opyConfig ) 
+    
+    # A Dry Run of __signEmbeddedResources modifies the 
+    # binaryFilePaths, and dataFilePaths, but doesn't actually
+    # modify (sign) any files 
+    binaryFilePaths = deepcopy( pyInstConfig.binaryFilePaths ) 
+    dataFilePaths   = deepcopy( pyInstConfig.dataFilePaths )             
+    __signEmbeddedResources( pyInstConfig, isDryRun=True )
         
     # Generate the .spec file using the PyInstaller
     __runPyInstaller( pyInstConfig, isMakeSpec=True )
@@ -545,9 +534,46 @@ def makePyInstSpec( pyInstConfig, opyConfig=None ):
     # Create a PyInstSpec object and return it indirectly 
     # by updating the pyInstConfig
     pyInstConfig.pyInstSpec = PyInstSpec( specPath )
-    
+
+    # Restore any temporarily modified config attributes 
+    # to the original input
+    pyInstConfig.binaryFilePaths = binaryFilePaths 
+    pyInstConfig.dataFilePaths   = dataFilePaths    
+                  
     # return the path to the .spec file
     return specPath
+
+def __signEmbeddedResources( pyInstConfig, isDryRun=False ):   
+
+    sourceDir       = pyInstConfig.sourceDir
+    codeSignConfig  = pyInstConfig.codeSignConfig
+    codeSignTargets = pyInstConfig.codeSignTargets 
+
+    # Duplicate and sign any *embedded* code sign targets 
+    if codeSignTargets:                                
+        def signEmbeddedResources( embeddedResources ):
+            if not embeddedResources: return      
+            revResources = []
+            for res in embeddedResources:
+                src, dest = util._toSrcDestPair( res, destDir=TEMP_RES_DIR_PATH,
+                                                 basePath=sourceDir )
+                relDest = relpath( dest, TEMP_RES_DIR_PATH )        
+                if relDest in codeSignTargets:
+                    tempSrcPath = joinPath( TEMP_RES_DIR_PATH, relDest )
+                    if not isDryRun and not isFile( tempSrcPath ):
+                        if not exists( TEMP_RES_DIR_PATH ): 
+                            makeDir( TEMP_RES_DIR_PATH )
+                        tempSrcPath = copyToDir( src, TEMP_RES_DIR_PATH )    
+                        signExe( tempSrcPath, codeSignConfig )                                                
+                    revResources.append( (tempSrcPath, dirPath(relDest) ) )
+                else: revResources.append( res )    
+            embeddedResources.clear()
+            embeddedResources.extend( revResources )            
+        # note, unlike the external sign targets, or iexpress context,
+        # these are straight up files, never directories, and never targets 
+        # on nested destination paths...          
+        signEmbeddedResources( pyInstConfig.binaryFilePaths )
+        signEmbeddedResources( pyInstConfig.dataFilePaths )        
     
 # -----------------------------------------------------------------------------    
 def __runPyInstaller( pyInstConfig, isMakeSpec=False ) :   
