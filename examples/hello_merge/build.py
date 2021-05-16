@@ -45,10 +45,10 @@ class BuildProcess( RobustInstallerProcess ):
         comboPkg = mergeQtIfwPackages( pkgs, CLI_CONFIG_KEY, TK_CONFIG_KEY )
         #comboPkg = nestQtIfwPackage( pkgs, CLI_CONFIG_KEY, TK_CONFIG_KEY )
 
-        # Note: it may be slightly more efficient to set these to the desired 
-        # values prior to the package merge, but this illustrates how you can  
-        # revise these configurations manually at this point in the build 
-        # process.  
+        # Note: it would be more efficient coding to set these to the desired 
+        # values prior to the package merge from a higher level, but this 
+        # illustrates how you might manually twiddle such low level details in 
+        # a processes in it's later stages (e.g. this context).  
         configXml = cfg.configXml
         configXml.RunProgramDescription = "Start Hello World Tk Example"
         print( "Regenerating {0}...".format( configXml.path() ) )

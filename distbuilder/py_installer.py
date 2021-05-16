@@ -384,7 +384,7 @@ def pyScriptToExe( name=None, entryPointPy=None,
         raise DistBuilderError( "Binary name is required" )
     if not pyInstConfig.entryPointPy : 
         raise DistBuilderError( "Binary entry point is required" )
-    
+   
     # auto assign some pyInstConfig values        
     sourceDir = pyInstConfig.sourceDir 
     distDirPath = joinPath( THIS_DIR, pyInstConfig.name ) 
@@ -392,7 +392,17 @@ def pyScriptToExe( name=None, entryPointPy=None,
     if IS_WINDOWS and pyInstConfig.versionInfo is not None: 
         pyInstConfig.versionFilePath = util.WindowsExeVersionInfo.defaultPath()
     else : pyInstConfig.versionInfo = None
-        
+   
+    # Expand any path specifications provided using wild cards  
+    distResources = pyInstConfig.distResources = util._expandSrcDestPairs( 
+        distResources, destDir=distDirPath, basePath=sourceDir ) 
+    distDirs = pyInstConfig.distDirs = util._expandSrcDestPairs( 
+        distDirs, destDir=distDirPath, basePath=sourceDir )     
+    pyInstConfig.binaryFilePaths = util._expandSrcDestPairs( 
+        pyInstConfig.binaryFilePaths, destDir=distDirPath, basePath=sourceDir )
+    pyInstConfig.dataFilePaths = util._expandSrcDestPairs( 
+        pyInstConfig.dataFilePaths, destDir=distDirPath, basePath=sourceDir )
+                
     # Prepare to build (discard old build files)       
     __clean( pyInstConfig, True )
     
@@ -505,7 +515,9 @@ def makePyInstSpec( pyInstConfig, opyConfig=None ):
         raise DistBuilderError( "Binary entry point is required" )
     
     # auto assign some pyInstConfig values        
-    pyInstConfig.distDirPath = joinPath( THIS_DIR, pyInstConfig.name )
+    sourceDir = pyInstConfig.sourceDir 
+    distDirPath = joinPath( THIS_DIR, pyInstConfig.name ) 
+    pyInstConfig.distDirPath = distDirPath
     if IS_WINDOWS and pyInstConfig.versionInfo is not None: 
         pyInstConfig.versionFilePath = WindowsExeVersionInfo.defaultPath()
     else : pyInstConfig.versionInfo = None
@@ -514,11 +526,19 @@ def makePyInstSpec( pyInstConfig, opyConfig=None ):
     if opyConfig is not None: 
         _, pyInstConfig.entryPointPy = _toObfuscatedPaths( opyConfig ) 
     
+    # Save these for later restoration
+    binaryFilePaths = deepcopy( pyInstConfig.binaryFilePaths ) 
+    dataFilePaths   = deepcopy( pyInstConfig.dataFilePaths )                     
+    
+    # Expand any path specifications provided using wild cards  
+    pyInstConfig.binaryFilePaths = util._expandSrcDestPairs( 
+        pyInstConfig.binaryFilePaths, destDir=distDirPath, basePath=sourceDir )
+    pyInstConfig.dataFilePaths = util._expandSrcDestPairs( 
+        pyInstConfig.dataFilePaths, destDir=distDirPath, basePath=sourceDir )
+
     # A Dry Run of __signEmbeddedResources modifies the 
     # binaryFilePaths, and dataFilePaths, but doesn't actually
     # modify (sign) any files 
-    binaryFilePaths = deepcopy( pyInstConfig.binaryFilePaths ) 
-    dataFilePaths   = deepcopy( pyInstConfig.dataFilePaths )             
     __signEmbeddedResources( pyInstConfig, isDryRun=True )
         
     # Generate the .spec file using the PyInstaller

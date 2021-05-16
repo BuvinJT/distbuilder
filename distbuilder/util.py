@@ -19,12 +19,13 @@ from os.path import( exists, isfile, islink,
     dirname as dirPath, normpath, realpath, isabs, abspath, 
     join as joinPath, split as splitPath, 
     splitext as splitExt, splitdrive as splitDrive, 
-    expanduser, basename as baseFileName, 
+    expanduser, expandvars, basename as baseFileName, 
     relpath, pathsep  # @UnusedImport
 )    
 from shutil import( rmtree as removeDir, move, make_archive, 
     copytree as copyDir, copyfile as copyFile # @UnusedImport
 )
+from glob import glob, has_magic as isGlob   
 import platform
 from tempfile import( gettempdir, mkstemp, mkdtemp, 
     mktemp  # @UnusedImport
@@ -937,8 +938,28 @@ def __getFolderPathByCSIDL( csidl ):
     return buf.value 
 
 # -----------------------------------------------------------------------------
+def _expandSrcDestPairs( pathPairs, destDir=None, basePath=None ):
+    expanded=[]
+    for pair in pathPairs:
+        _, inputDest, src, _ = __parseSrcDestPair( pair, destDir, basePath )
+        srcExpanded = expanduser( expandvars( src ) )        
+        if isGlob( srcExpanded ):            
+            paths = glob( srcExpanded )
+            for p in paths:
+                if inputDest: expanded.append( (p,inputDest) )
+                else: expanded.append( p )               
+        elif srcExpanded != src:
+            if inputDest: expanded.append( (srcExpanded,inputDest) )
+            else: expanded.append( srcExpanded )               
+        else: expanded.append( pair )
+    return expanded 
+
 def _toSrcDestPair( pathPair, destDir=None, basePath=None ):
-    #print( "_toSrcDestPair: pathPair=%s, destDir=%s, basePath=%s" % (pathPair, destDir, basePath) )
+    _, _, src, dest = __parseSrcDestPair( pathPair, destDir, basePath )
+    return (src, dest)
+        
+def __parseSrcDestPair( pathPair, destDir=None, basePath=None ):
+    #print( "__parseSrcDestPair: pathPair=%s, destDir=%s, basePath=%s" % (pathPair, destDir, basePath) )
     
     src = dest = None             
     if isinstance( pathPair, string_types ):  
@@ -963,13 +984,16 @@ def _toSrcDestPair( pathPair, destDir=None, basePath=None ):
         try : dest = pathPair[1] 
         except: pass
     
+    inputSrc  = src
+    inputDest = dest
+    
     if src is None: return None
     src = normpath( src )
     if dest==True : # True=="same"
         if not isabs(src): dest = src 
         else: 
             raise DistBuilderError( "A resource destination cannot be the same "
-                             "as an ABSOLUTE source path" )
+                                    "as an ABSOLUTE source path" )
     elif dest is not None: dest = normpath( dest )
     
     relSrcDir = basePath if basePath else THIS_DIR  
@@ -993,7 +1017,7 @@ def _toSrcDestPair( pathPair, destDir=None, basePath=None ):
         dest = absPath( joinPath( destDir, dest ), relSrcDir )
 
     #print( "result: src=%s, dest=%s" % (src, dest) )
-    return (src, dest) 
+    return (inputSrc, inputDest, src, dest) 
 
 def _destTargetsInSrcDestPairs( targets, pathPairs, destDir, basePath ):
     destTargets = []

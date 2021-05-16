@@ -1,5 +1,5 @@
 from distbuilder import( RobustInstallerProcess, ConfigFactory,
-                         findQtIfwPackage )
+                         QtIfwPackage, findQtIfwPackage, desktopPath )
   
 f = masterConfigFactory = ConfigFactory()
 f.productName      = "Hello Packages Example"
@@ -9,13 +9,30 @@ f.iconFilePath     = "../hello_world_tk/demo.ico"
 f.version          = (1,0,0,0)
 f.setupName        = "HelloPackagesSetup"
 
-# Define a "Package Factory Dictionary" 
+TK_CONFIG_KEY   = "tk"
+CLI_CONFIG_KEY  = "cli"
+DATA_CONFIG_KEY = "data"
+
+# Define a "Python Package Factory Dictionary" 
 # Note: None values for a ConfigFactory results in making a clone of the 
 # master, which can then be customization from that "base" within 
 # RobustInstallerProcess.onConfigFactory
-TK_CONFIG_KEY  = "tk"
-CLI_CONFIG_KEY = "cli"
-pkgFactories={ TK_CONFIG_KEY:None, CLI_CONFIG_KEY:None }
+pyPkgFactories={ TK_CONFIG_KEY:None, CLI_CONFIG_KEY:None }
+
+# OPTIONAL DEMO, UNCOMMENT TO TEST
+"""
+# Define a raw DATA package
+d = dataPkgCfgFactory = ConfigFactory.copy( masterConfigFactory )
+d.cfgId         = DATA_CONFIG_KEY
+d.pkgType       = QtIfwPackage.Type.DATA
+d.productName   = "Data"
+d.description   = "Raw File Collection"
+d.version       = (1,0,0,0)
+d.sourceDir     = "test_res" # or try: desktopPath( "test_res" )
+d.distResources = [ "*" ]
+dataPkg = d.qtIfwPackage()
+ifwPackages=[ dataPkg ]
+"""
 
 class BuildProcess( RobustInstallerProcess ):
     
@@ -28,7 +45,8 @@ class BuildProcess( RobustInstallerProcess ):
             f.isGui            = True        
             f.sourceDir        = "../hello_world_tk"
             f.entryPointPy     = "hello.py"  
-            f.iconFilePath     = "demo.ico"             
+            f.iconFilePath     = "demo.ico"            
+            f.distResources    = ["*.txt","*.md"] 
         elif key==CLI_CONFIG_KEY: 
             f.productName      = "Hello World CLI Example"
             f.description      = "CLI Example"
@@ -38,28 +56,32 @@ class BuildProcess( RobustInstallerProcess ):
             f.sourceDir        = "../hello_world"
             f.entryPointPy     = "hello.py"  
             f.iconFilePath     = None             
-            f.distResources    = ["LICENSE.TXT"]
-           
+            f.distResources    = ["LICENSE.TXT"]           
+                
     def onQtIfwConfig( self, cfg ):     
 
-        def defineComponentsOrder( tkPkg, cliPkg ):
+        def defineComponentsOrder( tkPkg, cliPkg, dataPkg ):
             # Listed / installed in descending order 
             # (i.e. highest *priority* first)
-            tkPkg.pkgXml.SortingPriority  = 10
-            cliPkg.pkgXml.SortingPriority = 1
+            tkPkg.pkgXml.SortingPriority   = 100
+            cliPkg.pkgXml.SortingPriority  = 10
+            dataPkg.pkgXml.SortingPriority = 1
             
         def customizeFinishedPage( cfg, tkPkg ):
             # Explicitly enforce which package exe is "primary" 
             # and should be run post installation 
             cfg.configXml.setPrimaryContentExe( tkPkg )           
             
-        pkgs   = cfg.packages
-        tkPkg  = findQtIfwPackage( pkgs, TK_CONFIG_KEY )            
-        cliPkg = findQtIfwPackage( pkgs, CLI_CONFIG_KEY )        
-        defineComponentsOrder( tkPkg, cliPkg )       
+        pkgs    = cfg.packages
+        tkPkg   = findQtIfwPackage( pkgs, TK_CONFIG_KEY )            
+        cliPkg  = findQtIfwPackage( pkgs, CLI_CONFIG_KEY )        
+        dataPkg = findQtIfwPackage( pkgs, DATA_CONFIG_KEY )
+        defineComponentsOrder( tkPkg, cliPkg, dataPkg )       
         customizeFinishedPage( cfg, tkPkg )
             
-p = BuildProcess( masterConfigFactory, pyPkgConfigFactoryDict=pkgFactories, 
+p = BuildProcess( masterConfigFactory, 
+                  pyPkgConfigFactoryDict=pyPkgFactories, 
+                  ifwPackages=ifwPackages, 
                   isDesktopTarget=True )
 p.isInstallTest = True
 p.run()       

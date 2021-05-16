@@ -305,7 +305,11 @@ class ConfigFactory:
             pkg.distResources = list( set().union(
                 pkg.distResources if pkg.distResources else [], 
                 self.distResources if self.distResources else [] ) )
-        
+            if pkg.pkgType == QtIfwPackage.Type.DATA:
+                pkg.distResources = util._expandSrcDestPairs( 
+                    pkg.distResources, destDir=None, 
+                    basePath=pkg.resBasePath ) 
+
         if self.codeSignConfig:
             # These package types already signed the primary exe
             if( pkgType != QtIfwPackage.Type.PY_INSTALLER and          

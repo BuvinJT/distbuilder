@@ -539,6 +539,16 @@ def _scriptToExe( name=None, entryPointScript=None, iExpressConfig=None,
     if not iExpressConfig.entryPointScript : 
         raise DistBuilderError( "Binary entry point is required" )
 
+    # Expand any path specifications provided using wild cards  
+    distResources = iExpressConfig.distResources = (
+        util._expandSrcDestPairs( distResources ) )
+    distDirs = iExpressConfig.distDirs = (
+        util._expandSrcDestPairs( distDirs ) )    
+    iExpressConfig.scriptImports = util._expandSrcDestPairs( 
+        iExpressConfig.scriptImports )
+    iExpressConfig.embeddedResources = util._expandSrcDestPairs( 
+        iExpressConfig.embeddedResources )
+    
     destDirPath = joinPath( THIS_DIR, iExpressConfig.name ) 
     iExpressConfig.destDirPath = destDirPath
     destPath = normBinaryName( joinPath( destDirPath, iExpressConfig.name ), 

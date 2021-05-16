@@ -7531,6 +7531,7 @@ def __validateConfig( qtIfwConfig ):
         raise DistBuilderError( "Package specification(s)/definition(s) required" )
     for p in qtIfwConfig.packages :
         if p.pkgType==QtIfwPackage.Type.RESOURCE: continue
+        if p.pkgType==QtIfwPackage.Type.DATA: continue
         if p.srcDirPath is None:
             if p.srcExePath is None:
                 raise DistBuilderError( "Package Source directory OR exe path required" )
