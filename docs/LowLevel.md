@@ -48,17 +48,21 @@ program, invoke the pyScriptToExe function:
     names or paths *relative* to the build script
     directory. Else, you may provide a list of two 
     element tuples, with a specific source and 
-    destination.  The source may be a relative or 
-    absolute path from another location on your file 
-    system. The destination maybe whatever name/path 
-    you want specified relative to the package being 
-    created. Note that the default destination path is
+    destination.  The source path may be either a relative or 
+    absolute path on your file system. The (optional) destination 
+    path should be specified relative to the package being 
+    created. In addition, source paths may be specified with globing *wildcards*
+    if desired.  They may even include environmental variables or 
+    path symbols e.g. `~` (as would be written 
+    in a given platform specific shell).
+    Several convenience functions have been provided for building 
+    globing patterns. See [Globing pattern builders](#globing-pattern-builders).         
+    Regarding the destination argument, note that its default path is
     the root directory of the package, using the same 
-    file name. To package a resource within a sub directory, 
-    or with an alternate name, you must *either* explictly provide
-    a full (relative) destination path *or* **use the 
-    "shortcut value" `True` to indicate the source 
-    and destination are the same relative paths**.      
+    file name as in the source. To package a resource within a *sub directory*, 
+    or with an *alternate name*: you must either explicitly provide
+    the relative destination path *or* **use the "shortcut value" `True` to 
+    indicate the source and destination are the same relative paths**.      
     
 **distDirs**: An (optional) list of directories to 
     create within the package.  Note distResources
@@ -1960,6 +1964,20 @@ in a ".dll" extension, where on macOS and Linux ".so" is employed.
 When `isPathPreserved` is `True`, the entire path is returned rather 
 than only the file name. When `False` (the default) a full path 
 is stripped down to the base name.
+
+### Globing pattern builders 
+
+The following functions provide pattern strings, containing wild cards. 
+
+	allPathPattern( basePath )
+    extPathPattern( ext, basePath=None ) 
+    startsWithPathPattern( match, basePath=None )
+    endsWithPathPattern( match, basePath=None )
+    containsPathPattern( match, basePath=None )	
+
+Note: If the primary (first) argument supplied to any of these is a list, 
+the return value is a corresponding list.  Otherwise, a single string 
+is returned.   
 
 ### getEnv, setEnv, delEnv
 

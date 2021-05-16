@@ -305,7 +305,10 @@ class ConfigFactory:
             pkg.distResources = list( set().union(
                 pkg.distResources if pkg.distResources else [], 
                 self.distResources if self.distResources else [] ) )
-            if pkg.pkgType == QtIfwPackage.Type.DATA:
+            if pkg.pkgType in [ QtIfwPackage.Type.RAW
+                              , QtIfwPackage.Type.DATA  
+                              #, QtIfwPackage.Type.RESOURCE #?
+                              ]:                 
                 pkg.distResources = util._expandSrcDestPairs( 
                     pkg.distResources, destDir=None, 
                     basePath=pkg.resBasePath ) 
@@ -437,7 +440,7 @@ class ConfigFactory:
         if self.__pkgIExpressConfig: return QtIfwPackage.Type.IEXPRESS
         if self.pkgSrcExePath is None:
             return ( QtIfwPackage.Type.DATA if self.binaryName is None else
-                     QtIfwPackage.Type.PY_INSTALLER )
+                     QtIfwPackage.Type.RAW )
         return None
     
     def __ifwPkgName( self ):
@@ -455,8 +458,11 @@ class ConfigFactory:
         if self.__pkgPyInstConfig : return absPath( self.__pkgPyInstConfig.name )
         if self.__pkgIExpressConfig : return absPath( self.__pkgIExpressConfig.name )
         if self.pkgSrcDirPath : return self.pkgSrcDirPath
-        if( self.__ifwPkgType() in [QtIfwPackage.Type.PY_INSTALLER,
-                                    QtIfwPackage.Type.IEXPRESS] and             
+        if( self.__ifwPkgType() in [QtIfwPackage.Type.RAW
+                                   ,QtIfwPackage.Type.PY_INSTALLER
+                                   ,QtIfwPackage.Type.IEXPRESS
+                                   #,QtIfwPackage.Type.QT_CPP # ?
+                                   ] and             
             self.binaryName ): 
             return absPath( self.binaryName )               
         return None                 

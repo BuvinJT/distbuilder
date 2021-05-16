@@ -300,6 +300,8 @@ The `distResources` attribute is an optional list of external resources to bundl
 into the distribution package.  You may use a simple list of strings containing 
 file/directory names or paths *relative* to the build script directory. Else, you 
 may provide a list of two element tuples, with a specific source and destination. 
+In addition, source paths may be specified with globing *wildcards* if desired.  
+They may even include environmental variables or path symbols.
 See **distResources** within [pyScriptToExe](LowLevel.md#pyscripttoexe) for
 more details on this.
     
@@ -509,11 +511,13 @@ even seeing the component as separate entity when enabled.
 This specifies the type (`QtIfwPackage.Type`) of package being built.  
 The options for this include:  
 
-	QtIfwPackage.Type.PY_INSTALLER
+	QtIfwPackage.Type.RAW
 	QtIfwPackage.Type.DATA
 	QtIfwPackage.Type.RESOURCE
-	QtIfwPackage.Type.QT_CPP
-
+	QtIfwPackage.Type.PY_INSTALLER
+	QtIfwPackage.Type.IEXPRESS
+	QtIfwPackage.Type.QT_CPP         
+          
 If this is omitted, and a `binaryName` attribute is specified, type `PY_INSTALLER` is assumed.  If this is omitted, but no `binaryName` is specified, the `DATA` type is assumed.  
 
 The `RESOURCE` type indicates that the package does not contain any "directly installed 

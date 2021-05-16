@@ -657,7 +657,9 @@ class QtIfwConfigXml( _QtIfwXml ):
 # -----------------------------------------------------------------------------
 class QtIfwPackage:
 
-    class Type: DATA, RESOURCE, PY_INSTALLER, IEXPRESS, QT_CPP = range(5)  
+    class Type: 
+        ( RAW, DATA, RESOURCE, 
+          PY_INSTALLER, IEXPRESS, QT_CPP ) = range(5)  
     
     __PACKAGES_PATH_TMPLT       = "%s/packages"
     __DIR_PATH_TMPLT            = "%s/packages/%s"
@@ -7530,8 +7532,10 @@ def __validateConfig( qtIfwConfig ):
     if qtIfwConfig.packages is None :
         raise DistBuilderError( "Package specification(s)/definition(s) required" )
     for p in qtIfwConfig.packages :
-        if p.pkgType==QtIfwPackage.Type.RESOURCE: continue
-        if p.pkgType==QtIfwPackage.Type.DATA: continue
+        if p.pkgType in( QtIfwPackage.Type.RAW
+                       , QtIfwPackage.Type.DATA  
+                       , QtIfwPackage.Type.RESOURCE
+                       ): continue
         if p.srcDirPath is None:
             if p.srcExePath is None:
                 raise DistBuilderError( "Package Source directory OR exe path required" )
@@ -7598,7 +7602,9 @@ def __initBuild( qtIfwConfig ) :
                     __addArchive( res.srcPath, p, qtIfwConfig, 
                                   archiveRootName=res.name )        
         
-        if not p.pkgType==QtIfwPackage.Type.RESOURCE: stageContent( p )
+        if p.pkgType not in ( QtIfwPackage.Type.RESOURCE 
+                            , QtIfwPackage.Type.DATA ): 
+            stageContent( p )
         stageAdditionalResources( p )
                                         
     print( "Build directory created: %s" % (BUILD_SETUP_DIR_PATH,) )
