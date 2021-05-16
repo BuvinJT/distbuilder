@@ -1,5 +1,5 @@
 from distbuilder import( IExpressPackageProcess, ConfigFactory, 
-                         ExecutableScript, joinPath, desktopPath )
+                         ExecutableScript, allPathPattern, extPathPattern )
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Wildcards Example"
@@ -19,14 +19,13 @@ f.entryPointScript = ExecutableScript(
 # script.  It will be deleted when the program has terminated.     
 IS_EMBEDDED = True
 
-# Demo 1: Straight forward, literal globs. Paths are implicitly relative 
-# to the executing script's directory. 
-RES_PATTERN     = "test_res/*"
-SCRIPTS_PATTERN = "test_scr/*.bat"
-
-# Demo 2: Resolve paths via path Building functions
-#RES_PATTERN     = joinPath( desktopPath( "test_res" ), '*' )
-#SCRIPTS_PATTERN = joinPath( desktopPath( "test_scr" ), '*.bat' )
+# Note: Paths are implicitly relative to the executing script's directory. 
+# You may use straight forward, literal glob patterns. 
+#RES_PATTERN     = "test_res/*"
+#SCRIPTS_PATTERN = "test_scr/*.bat"
+# Or, you may employ path / pattern building functions.  
+RES_PATTERN     = allPathPattern( "test_res" )
+SCRIPTS_PATTERN = extPathPattern( "bat", "test_scr" )
 
 if not IS_EMBEDDED: 
     f.distResources = [ RES_PATTERN, SCRIPTS_PATTERN ]

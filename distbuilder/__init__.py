@@ -149,7 +149,8 @@ from distbuilder.util import(
     , IS_INTEL_CPU 
     , THIS_DIR 
     , CURRENT_USER, ALL_USERS 
-    , DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE 
+    , DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE
+    , ALL 
     , absPath 
     , homePath
     , desktopPath     
@@ -176,7 +177,12 @@ from distbuilder.util import(
     , rootFileName 
     , normBinaryName 
     , normIconName 
-    , normLibName 
+    , normLibName
+    , allPathPattern
+    , extPathPattern 
+    , startsWithPathPattern
+    , endsWithPathPattern
+    , containsPathPattern
     , copyToDir 
     , moveToDir 
     , removeFromDir 

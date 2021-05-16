@@ -76,6 +76,7 @@ THIS_DIR           = dirPath( realpath( argv[0] ) )
 
 __THIS_LIB_DIR     = dirPath( realpath( __file__ ) ) 
 
+ALL="*"
 PATH_PAIR_DELIMITER=";"
 SYS_CMD_DELIM = "&" if IS_WINDOWS else ";"
 SYS_CMD_COND_DELIM = "&&"
@@ -937,6 +938,37 @@ def __getFolderPathByCSIDL( csidl ):
         None, csidl, None, SHGFP_TYPE_CURRENT, buf )
     return buf.value 
 
+# -----------------------------------------------------------------------------
+def allPathPattern( basePath ):
+    if basePath is None: basePath=""
+    def pat( b ): return joinPath( b.replace(ALL,""), ALL )          
+    return( [ pat(b) for b in basePath ] if isinstance( basePath, list ) else
+            pat(basePath) )
+
+def extPathPattern( ext, basePath=None ):
+    if basePath is None: basePath=""
+    def pat( m ): return joinPath( basePath, joinExt( ALL, m.replace(ALL,"") ) )          
+    return( [ pat(e) for e in ext ] if isinstance( ext, list ) else
+            pat(ext) )
+
+def startsWithPathPattern( match, basePath=None ):
+    if basePath is None: basePath=""
+    def pat( m ): return joinPath( basePath, m.replace(ALL,"") + ALL )          
+    return( [ pat(m) for m in match ] if isinstance( match, list ) else
+            pat(match) )
+
+def endsWithPathPattern( match, basePath=None ):
+    if basePath is None: basePath=""
+    def pat( m ): return joinPath( basePath, ALL + m.replace(ALL,"") )          
+    return( [ pat(m) for m in match ] if isinstance( match, list ) else
+            pat(match) )
+    
+def containsPathPattern( match, basePath=None ):
+    if basePath is None: basePath=""
+    def pat( m ): return joinPath( basePath, ALL + m.replace(ALL,"") + ALL )          
+    return( [ pat(m) for m in match ] if isinstance( match, list ) else
+            pat(match) )
+    
 # -----------------------------------------------------------------------------
 def _expandSrcDestPairs( pathPairs, destDir=None, basePath=None ):
     expanded=[]

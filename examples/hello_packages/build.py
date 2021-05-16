@@ -1,5 +1,6 @@
 from distbuilder import( RobustInstallerProcess, ConfigFactory,
-                         QtIfwPackage, findQtIfwPackage, desktopPath )
+                         QtIfwPackage, findQtIfwPackage,  
+                         ALL, extPathPattern )
   
 f = masterConfigFactory = ConfigFactory()
 f.productName      = "Hello Packages Example"
@@ -19,8 +20,6 @@ DATA_CONFIG_KEY = "data"
 # RobustInstallerProcess.onConfigFactory
 pyPkgFactories={ TK_CONFIG_KEY:None, CLI_CONFIG_KEY:None }
 
-# OPTIONAL DEMO, UNCOMMENT TO TEST
-"""
 # Define a raw DATA package
 d = dataPkgCfgFactory = ConfigFactory.copy( masterConfigFactory )
 d.cfgId         = DATA_CONFIG_KEY
@@ -28,11 +27,10 @@ d.pkgType       = QtIfwPackage.Type.DATA
 d.productName   = "Data"
 d.description   = "Raw File Collection"
 d.version       = (1,0,0,0)
-d.sourceDir     = "test_res" # or try: desktopPath( "test_res" )
-d.distResources = [ "*" ]
+d.sourceDir     = "optional_demo_data" 
+d.distResources = [ALL]
 dataPkg = d.qtIfwPackage()
 ifwPackages=[ dataPkg ]
-"""
 
 class BuildProcess( RobustInstallerProcess ):
     
@@ -46,7 +44,7 @@ class BuildProcess( RobustInstallerProcess ):
             f.sourceDir        = "../hello_world_tk"
             f.entryPointPy     = "hello.py"  
             f.iconFilePath     = "demo.ico"            
-            f.distResources    = ["*.txt","*.md"] 
+            f.distResources    = extPathPattern( ["txt", "md"] ) 
         elif key==CLI_CONFIG_KEY: 
             f.productName      = "Hello World CLI Example"
             f.description      = "CLI Example"
