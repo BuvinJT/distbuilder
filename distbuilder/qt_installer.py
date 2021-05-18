@@ -659,7 +659,7 @@ class QtIfwPackage:
 
     class Type: 
         ( RAW, DATA, RESOURCE, 
-          PY_INSTALLER, IEXPRESS, QT_CPP ) = range(5)  
+          PY_INSTALLER, IEXPRESS, QT_CPP ) = range(6)  
     
     __PACKAGES_PATH_TMPLT       = "%s/packages"
     __DIR_PATH_TMPLT            = "%s/packages/%s"
@@ -5501,6 +5501,8 @@ class QtIfwExternalOp:
     __SCRIPT_ROOT_NAME_TMPLT = "%s_%d"
 
     __NOT_FOUND_EXIT_CODE = 100
+    __NO_WAIT_EXIT_CODE   = 101
+    __TIMEOUT_EXIT_CODE   = 900
 
     __WIN_PATH_SEP = "\\"
     __NIX_PATH_SEP = "/"
@@ -5547,7 +5549,7 @@ class QtIfwExternalOp:
         return QtIfwExternalOp.__genScriptOp( event, 
             script=QtIfwExternalOp.RemoveDirScript( dirPath ), 
             isElevated=isElevated )
-     
+
     # TODO: Test in NIX/MAC 
     #
     # TODO: Fix a glitch on Windows with employing isHidden.  This is a problem
@@ -5573,6 +5575,22 @@ class QtIfwExternalOp:
                 runConditionFileName, isRunConditionNegated, 
                 isAutoBitContext ), 
             isElevated=isElevated )
+    
+
+    @staticmethod
+    def WaitForProcess( event, exeName=None, pidFileName=None,
+                        timeOutSeconds=30, isWaitForStart=False,  
+                        isSuccessNoWait=True, 
+                        isAutoBitContext=True ): # Windows only
+        op = QtIfwExternalOp.__genScriptOp( event, 
+            script=QtIfwExternalOp.WaitForProcessScript( 
+                exeName, pidFileName, timeOutSeconds, isWaitForStart,                  
+                isAutoBitContext=isAutoBitContext ), 
+            isReversible=False, isElevated=True )
+        if isSuccessNoWait:
+            op.successRetCodes=[ 0, QtIfwExternalOp.__NO_WAIT_EXIT_CODE ]
+            op.uninstRetCodes =[ 0, QtIfwExternalOp.__NO_WAIT_EXIT_CODE ]
+        return op
     
     @staticmethod
     def CreateStartupEntry( pkg=None, 
@@ -5611,7 +5629,7 @@ class QtIfwExternalOp:
             util._onPlatformErr()
 
     if IS_WINDOWS:
-
+                
         @staticmethod
         def CreateWindowsAppFoundFlagFile( event, appName, fileName, 
                                            isAutoBitContext=True ):
@@ -5899,7 +5917,35 @@ class QtIfwExternalOp:
             else: script=[exitSnippet, runCmd ]
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "runProgram" ), script=script, replacements=replacements )
-                     
+
+    @staticmethod
+    def WaitForProcessScript( exeName=None, pidFileName=None, 
+           timeOutSeconds=30, isWaitForStart=False,  
+           isExitOnSuccess=True, isExitOnNoWait=True, isExitOnTimeout=True,
+           isSelfDestruct=False, 
+           isAutoBitContext=True ): # Windows Only                        
+        return ExecutableScript( 
+            QtIfwExternalOp.__scriptRootName( "waitForProcess" ), 
+            extension=( ExecutableScript.POWERSHELL_EXT if IS_WINDOWS else
+                        ExecutableScript.SHELL_EXT), 
+            script=(
+                QtIfwExternalOp.__psWaitForProcessScript( 
+                    exeName, pidFileName, timeOutSeconds, isWaitForStart,                    
+                    isExitOnSuccess=isExitOnSuccess, 
+                    isExitOnNoWait=isExitOnNoWait,
+                    isExitOnTimeout=isExitOnTimeout,
+                    isSelfDestruct=isSelfDestruct, 
+                    isAutoBitContext=isAutoBitContext ) 
+                if IS_WINDOWS else    
+                QtIfwExternalOp.__shWaitForProcessScript( 
+                    exeName, pidFileName, timeOutSeconds, isWaitForStart, 
+                    isExitOnSuccess=isExitOnSuccess, 
+                    isExitOnNoWait=isExitOnNoWait,
+                    isExitOnTimeout=isExitOnTimeout,
+                    isSelfDestruct=isSelfDestruct ) 
+            )
+        )
+                                    
     if IS_WINDOWS:
 
         @staticmethod
@@ -5977,11 +6023,90 @@ if( $env:PROCESSOR_ARCHITEW6432 -eq "AMD64" ) {
         def __psSetBitContext( isAutoBitContext ): 
             return( "" if isAutoBitContext else 
                     QtIfwExternalOp.__PS_32_TO_64_BIT_CONTEXT_HEADER )
+       
+        @staticmethod
+        def __toPsBool( b ): return "$" + str(b).lower()
+       
+        @staticmethod
+        def __psWaitForProcessScript( exeName, pidFileName, 
+           timeOutSeconds=30, isWaitForStart=False,  
+           isExitOnSuccess=False, isExitOnNoWait=False, 
+           isExitOnTimeout=False, # Note: $isWaitTimeout can be checked 
+           isSelfDestruct=False,
+           isAutoBitContext=True ):            
+            psScriptTemplate=(
+r"""
+{setBitContext}
+
+if( (Test-Path "{pidFilePath}" -PathType Leaf) ) 
+    { $waitForPid = ( Get-Content -Path "{pidFilePath}" ) }              
+$waitForExeName    = "{exeName}"
+$isWaitForStart    = {isWaitForStart}
+$waitTimeOutSecs   = {timeOutSeconds}
+$isWaitTimeout     = $false
+
+if( $waitForPid ){ $filter = "ProcessId = " + $waitForPid }
+else {             $filter = "Name = '" + $waitForExeName + "'" } # case insensitive
+
+$queryResult = Get-WmiObject win32_process -Filter $filter  
+if( ($isWaitForStart && $queryResult) || 
+    (!$isWaitForStart && !$queryResult) ){ 
+    {selfDestructOnNoWait}
+    {exitOnNoWait}
+}
+else{    
+    if( $waitForPid ){ Write-Host "Waiting for: " + $waitForPid }
+    else {             Write-Host "Waiting for: " + $waitForExeName }
+    $waitedForProcSecs = 0    
+    while( !$isWaitTimeout &&
+           (($isWaitForStart && $queryResult) || 
+            (!$isWaitForStart && !$queryResult)) ){
+        Write-Host "." -NoNewline
+        Start-Sleep -s 1
+        if( $waitTimeOutSecs ) {
+            $waitedForProcSecs += 1
+            $isWaitTimeout = $waitedForProcSecs==$waitTimeOutSecs
+        }
+        if( $isWaitTimeout ) 
+            { $queryResult = Get-WmiObject win32_process -Filter $filter }
+    }
+    Write-Host "Done!"
+}
+{selfDestruct}
+if( $isWaitTimeout ){ {exitOnTimeout} }
+{exitOnSuccess}
+""") 
+            selfDestruct = QtIfwExternalOp.powerShellSelfDestructSnippet()
+            
+            return str( ExecutableScript( "", script=psScriptTemplate,
+                replacements={
+                      "setBitContext": QtIfwExternalOp.__psSetBitContext( 
+                        isAutoBitContext )
+                    , "isWaitForStart": QtIfwExternalOp.__toPsBool(
+                        isWaitForStart )
+                    , "timeOutSeconds":( timeOutSeconds if timeOutSeconds 
+                        else QtIfwExternalOp.__toPsBool( False ) )
+                    , "exeName": exeName if exeName else "" 
+                    , "pidFilePath": QtIfwExternalOp.opDataPath( pidFileName )                    
+                    , "exitOnNoWait": ( 
+                        "[Environment]::Exit( %d )" % 
+                        (QtIfwExternalOp.__NO_WAIT_EXIT_CODE,)
+                        if isExitOnNoWait else "" )     
+                    , "selfDestructOnNoWait" : ( selfDestruct
+                        if isExitOnNoWait and isSelfDestruct else "" )
+                    , "selfDestruct": selfDestruct if isSelfDestruct else ""
+                    , "{exitOnTimeout}": ( 
+                        "[Environment]::Exit( %d )" % 
+                        (QtIfwExternalOp.__TIMEOUT_EXIT_CODE,)
+                        if isExitOnTimeout else "" )
+                    , "exitOnSuccess" : ( "[Environment]::Exit( 0 )" 
+                        if isExitOnSuccess else "" )                                                                                  
+                } ) )
                     
         @staticmethod
         def __psFindWindowsAppUninstallCmd( appName, isAutoBitContext,
                                             isExitOnNotFound=False,
-                                            isSelfDestruct=False ):            
+                                            isSelfDestructOnNotFound=False ):            
             psScriptTemplate=(
 r"""
 {setBitContext}
@@ -6019,18 +6144,19 @@ else{
     Write-Host "OS registered uninstall command for {appName}: $UninstallCmd"
 }
 """) 
-            exitOnNotFound =( "[Environment]::Exit( %d )" % 
-                              (QtIfwExternalOp.__NOT_FOUND_EXIT_CODE,)
-                              if isExitOnNotFound else "" ) 
             return str( ExecutableScript( "", script=psScriptTemplate,
                 replacements={
                       "setBitContext": QtIfwExternalOp.__psSetBitContext( 
                                             isAutoBitContext )
                     , "appName" : appName
-                    , "exitOnNotFound": exitOnNotFound     
+                    , "exitOnNotFound": ( 
+                        "[Environment]::Exit( %d )" % 
+                        (QtIfwExternalOp.__NOT_FOUND_EXIT_CODE,)
+                        if isExitOnNotFound else "" )     
                     , "selfDestructOnNotFound" : (
                         QtIfwExternalOp.powerShellSelfDestructSnippet()
-                        if isSelfDestruct and exitOnNotFound else "" )                                                             
+                        if isExitOnNotFound and isSelfDestructOnNotFound 
+                        else "" )                                                             
                 } ) )
 
         @staticmethod
@@ -6063,7 +6189,7 @@ if( $UninstallCmd ){ Out-File -FilePath "{tempFilePath}" }
             psScriptTemplate=(
                 QtIfwExternalOp.__psFindWindowsAppUninstallCmd( 
                     appName, isAutoBitContext, isExitOnNotFound=True,
-                    isSelfDestruct=isSelfDestruct ) +                 
+                    isSelfDestructOnNotFound=isSelfDestruct ) +                 
 r"""
 # Tweak QtIFW / Distbuilder commands
 if( $UninstallCmd.tolower().Contains( "maintenancetool.exe" ) ){
@@ -6360,6 +6486,15 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
                 , 'filePath' : QtIfwExternalOp.opDataPath( fileName )
                 , 'errorCode': errorCode
             }) )
+
+        # TODO: FILL IN!         
+        @staticmethod
+        def __shWaitForProcessScript( exeName, pidFileName, 
+           timeOutSeconds=30, isWaitForStart=False, 
+           isExitOnSuccess=False, isExitOnNoWait=False, 
+           isExitOnTimeout=False,
+           isSelfDestruct=False ):            
+            return ""
 
     # QtIfwExternalOp
     def __init__( self,                                                       # [0]
