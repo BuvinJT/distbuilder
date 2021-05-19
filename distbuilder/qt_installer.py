@@ -74,6 +74,7 @@ QT_IFW_INSTALLER_DIR      = "@InstallerDirPath@"
 QT_IFW_INTALLER_PATH      = "@InstallerFilePath@"   
 
 _QT_IFW_DEFAULT_TARGET_DIR   = "DefaultTargetDir"   # CUSTOM!
+_QT_IFW_TEMP_DIR             = "TempDir"            # CUSTOM!
 _QT_IFW_SCRIPTS_DIR          = "ScriptsDir"         # CUSTOM!
 _QT_IFW_INSTALLER_TEMP_DIR   = "InstallerTempDir"   # CUSTOM!
 _QT_IFW_MAINTENANCE_TEMP_DIR = "MaintenanceTempDir" # CUSTOM!
@@ -81,6 +82,7 @@ _QT_IFW_MAINTENANCE_TEMP_DIR = "MaintenanceTempDir" # CUSTOM!
 _QT_IFW_VAR_TMPLT = "@%s@"
 
 QT_IFW_DEFAULT_TARGET_DIR   = _QT_IFW_VAR_TMPLT % (_QT_IFW_DEFAULT_TARGET_DIR,)   # CUSTOM!
+QT_IFW_TEMP_DIR             = _QT_IFW_VAR_TMPLT % (_QT_IFW_TEMP_DIR,)             # CUSTOM!
 QT_IFW_SCRIPTS_DIR          = _QT_IFW_VAR_TMPLT % (_QT_IFW_SCRIPTS_DIR,)          # CUSTOM! 
 QT_IFW_INSTALLER_TEMP_DIR   = _QT_IFW_VAR_TMPLT % (_QT_IFW_INSTALLER_TEMP_DIR,)   # CUSTOM!
 QT_IFW_MAINTENANCE_TEMP_DIR = _QT_IFW_VAR_TMPLT % (_QT_IFW_MAINTENANCE_TEMP_DIR,) # CUSTOM!
@@ -158,6 +160,7 @@ QT_IFW_DYNAMIC_PATH_VARS = [
     , "AllUsersStartMenuProgramsPath" 
     , "ApplicationsDirX86" 
     , "ApplicationsDirX64" 
+    , "TempDir"
     , "InstallerTempDir"
     , "MaintenanceTempDir"
     , "ScriptsDir"
@@ -190,8 +193,12 @@ def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
 def qtIfwDynamicValue( name ): return "@%s@" % (name,)
     
 def qtIfwOpDataPath( rootFileName ): 
-    return joinExt( joinPathQtIfw( QT_IFW_SCRIPTS_DIR, rootFileName ), 
-                    _QT_IFW_TEMP_DATA_EXT )
+    return joinPathQtIfw( QT_IFW_SCRIPTS_DIR, 
+                          joinExt( rootFileName, _QT_IFW_TEMP_DATA_EXT ) ) 
+                    
+def qtIfwDetachedOpDataPath( rootFileName ): 
+    return joinPathQtIfw( QT_IFW_TEMP_DIR, 
+                          joinExt( rootFileName, _QT_IFW_TEMP_DATA_EXT ) ) 
 
 # -----------------------------------------------------------------------------
 class QtIfwConfig:   
@@ -1525,6 +1532,17 @@ class _QtIfwScript:
         return _QtIfwScript.deleteFile( qtIfwOpDataPath( fileName ) ) 
 
     @staticmethod        
+    def writeDetachedOpDataFile( fileName, content, isAutoQuote=True ):                  
+        return _QtIfwScript.writeFile( 
+            _QtIfwScript.quote( qtIfwDetachedOpDataPath( fileName ) ), 
+            _QtIfwScript._autoQuote( content, isAutoQuote ),
+            isAutoQuote=False ) 
+
+    @staticmethod        
+    def deleteDetachedOpDataFile( fileName ):                  
+        return _QtIfwScript.deleteFile( qtIfwDetachedOpDataPath( fileName ) ) 
+
+    @staticmethod        
     def assertInternetConnected( isRefresh=False, errMsg=None, 
                                  isAutoQuote=True ): 
         return _QtIfwScript.__ASSERT_INTERNET_TMPL % (
@@ -2078,6 +2096,9 @@ class _QtIfwScript:
             TAB + 'return isElev' + END +
             EBLK + NEW +                            
             'function getEnv( varName ) ' + SBLK +
+            ( '' if IS_WINDOWS else
+                (TAB + 'if( varName == "temp" ) return "/tmp"' + END)               
+            ) +
             TAB + 'return installer.environmentVariable( varName )' + END +
             EBLK + NEW +
             'function parentDir( path ) ' + SBLK +
@@ -3800,6 +3821,8 @@ Controller.prototype.Dynamic%sCallback = function() {
             )
         self.controllerConstructorBody += (            
             TAB + 'installer.setValue( ' + 
+                ('"%s"' % (_QT_IFW_TEMP_DIR,)) + ', "" )' + END +                         
+            TAB + 'installer.setValue( ' + 
                 ('"%s"' % (_QT_IFW_SCRIPTS_DIR,)) + ', "" )' + END + 
             TAB + 'installer.setValue( ' + 
                 ('"%s"' % (_QT_IFW_INSTALLER_TEMP_DIR,)) + ', "" )' + END + 
@@ -3843,7 +3866,9 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + '__maintenanceTempPath()' + END +            
             TAB + 'makeDir( Dir.temp() )' + END +
             TAB + 'installer.setValue( ' + 
-                ('"%s"' % (_QT_IFW_SCRIPTS_DIR,)) + ', Dir.temp() )' + END + 
+                ('"%s"' % (_QT_IFW_SCRIPTS_DIR,)) + ', Dir.temp() )' + END +
+            TAB + 'installer.setValue( ' + 
+                ('"%s"' % (_QT_IFW_TEMP_DIR,)) + ', getEnv("temp") )' + END +             
             _QtIfwScript.ifInstalling( isMultiLine=True ) +
                 _QtIfwScript.setValue( '"%s"' % (_QT_IFW_DEFAULT_TARGET_DIR,),                     
                     _QtIfwScript.lookupValue( _QtIfwScript.TARGET_DIR_KEY ), 
@@ -5523,9 +5548,11 @@ class QtIfwExternalOp:
     
     @staticmethod
     def opDataPath( rootFileName, isNative=True, 
-                    quotes=None, isDoubleBackslash=False ): 
-        path = joinExt( joinPath( QT_IFW_SCRIPTS_DIR, rootFileName ), 
-                        _QT_IFW_TEMP_DATA_EXT )
+                    quotes=None, isDoubleBackslash=False ):
+        isBaseFileName = baseFileName(rootFileName)==rootFileName
+        path =( joinPath( QT_IFW_SCRIPTS_DIR, 
+                          joinExt( rootFileName, _QT_IFW_TEMP_DATA_EXT ) ) 
+                if isBaseFileName else rootFileName )        
         if isNative:
             path = path.replace( QtIfwExternalOp.__FOREIGN_PATH_SEP, 
                                  QtIfwExternalOp.__NATIVE_PATH_SEP )

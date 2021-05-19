@@ -466,6 +466,7 @@ and attributes for many higher level functions and objects in this library.
     QT_IFW_USER_STARTMENU_DIR
     QT_IFW_ALLUSERS_STARTMENU_DIR
     
+    QT_IFW_TEMP_DIR
     QT_IFW_SCRIPTS_DIR
     QT_IFW_INSTALLER_TEMP_DIR
     QT_IFW_MAINTENANCE_TEMP_DIR
@@ -640,6 +641,9 @@ Static Functions:
     writeOpDataFile( fileName, content, isAutoQuote=True )                  
     deleteOpDataFile( fileName )
 
+     writeDetachedOpDataFile( fileName, content, isAutoQuote=True )
+     deleteDetachedOpDataFile( fileName )
+ 
     assertInternetConnected( isRefresh=False, errMsg=None, isAutoQuote=True )
     isInternetConnected( isRefresh=False ) 
     ifInternetConnected( isRefresh=False, isNegated=False, isMultiLine=False )
@@ -1845,9 +1849,15 @@ containing *any* content, which the installer knows how to resolve.
 ### qtIfwOpDataPath
 
 	qtIfwOpDataPath( rootFileName )
+    qtIfwDetachedOpDataPath( rootFileName )
 
-Use this function, within QtScript building contexts, to produce the resolution 
-of dynamic temp paths at runtime, which are utilized by installer operations.
+Use these functions, within QtScript building contexts, to resolve 
+dynamic temp paths at runtime, which are utilized by installer operations.
+
+Only use `qtIfwDetachedOpDataPath` if you need the temp file to exist
+after the installer/uninstaller has terminated, i.e. for "detached" 
+operations.  Note that such a temp path becomes the responsibility of the 
+client operation to purge.
 	
 ### isParentDir 
 
