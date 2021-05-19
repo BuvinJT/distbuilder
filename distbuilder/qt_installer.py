@@ -5618,12 +5618,14 @@ class QtIfwExternalOp:
 
     @staticmethod
     def WaitForProcess( event, exeName=None, pidFileName=None,
-                        timeOutSeconds=30, isWaitForStart=False,  
+                        timeOutSeconds=30,  
+                        isWaitForStart=False,                          
                         isSuccessNoWait=True, 
                         isAutoBitContext=True ): # Windows only
         op = QtIfwExternalOp.__genScriptOp( event, 
             script=QtIfwExternalOp.WaitForProcessScript( 
-                exeName, pidFileName, timeOutSeconds, isWaitForStart,                  
+                exeName, pidFileName, 
+                timeOutSeconds, isWaitForStart,
                 isAutoBitContext=isAutoBitContext ), 
             isReversible=False, isElevated=True )
         if isSuccessNoWait:
@@ -5958,9 +5960,11 @@ class QtIfwExternalOp:
                 "runProgram" ), script=script, replacements=replacements )
 
     @staticmethod
-    def WaitForProcessScript( exeName=None, pidFileName=None, 
-           timeOutSeconds=30, isWaitForStart=False,  
-           isExitOnSuccess=True, isExitOnNoWait=True, isExitOnTimeout=True,
+    def WaitForProcessScript( exeName=None, pidFileName=None,            
+           timeOutSeconds=30, onTimeout=None, 
+           isWaitForStart=False,  
+           isDeletePidFile=False,
+           isExitOnSuccess=True, isExitOnNoWait=True, isExitOnTimeout=True, 
            isSelfDestruct=False, 
            isAutoBitContext=True ): # Windows Only                        
         return ExecutableScript( 
@@ -5969,18 +5973,24 @@ class QtIfwExternalOp:
                         ExecutableScript.SHELL_EXT), 
             script=(
                 QtIfwExternalOp.__psWaitForProcessScript( 
-                    exeName, pidFileName, timeOutSeconds, isWaitForStart,                    
+                    exeName, pidFileName, 
+                    timeOutSeconds, onTimeout,
+                    isWaitForStart,
+                    isDeletePidFile=isDeletePidFile,                    
                     isExitOnSuccess=isExitOnSuccess, 
                     isExitOnNoWait=isExitOnNoWait,
-                    isExitOnTimeout=isExitOnTimeout,
+                    isExitOnTimeout=isExitOnTimeout, onTimeout=onTimeout,
                     isSelfDestruct=isSelfDestruct, 
                     isAutoBitContext=isAutoBitContext ) 
                 if IS_WINDOWS else    
                 QtIfwExternalOp.__shWaitForProcessScript( 
-                    exeName, pidFileName, timeOutSeconds, isWaitForStart, 
+                    exeName, pidFileName, 
+                    timeOutSeconds, onTimeout,
+                    isWaitForStart, 
+                    isDeletePidFile=isDeletePidFile,
                     isExitOnSuccess=isExitOnSuccess, 
                     isExitOnNoWait=isExitOnNoWait,
-                    isExitOnTimeout=isExitOnTimeout,
+                    isExitOnTimeout=isExitOnTimeout, 
                     isSelfDestruct=isSelfDestruct ) 
             )
         )
@@ -6068,21 +6078,28 @@ if( $env:PROCESSOR_ARCHITEW6432 -eq "AMD64" ) {
        
         @staticmethod
         def __psWaitForProcessScript( exeName, pidFileName, 
-           timeOutSeconds=30, isWaitForStart=False,  
-           isExitOnSuccess=False, isExitOnNoWait=False, 
-           isExitOnTimeout=False, # Note: $isWaitTimeout can be checked 
-           isSelfDestruct=False,
-           isAutoBitContext=True ):            
+               timeOutSeconds=30, onTimeout=None,  
+               isWaitForStart=False,
+               isDeletePidFile=False,  
+               isExitOnSuccess=False, isExitOnNoWait=False, isExitOnTimeout=False, # Note: $isWaitTimeout can be checked           
+               isSelfDestruct=False,
+               isAutoBitContext=True ):            
             psScriptTemplate=(
 r"""
 {setBitContext}
 
-if( (Test-Path "{pidFilePath}" -PathType Leaf) ) 
-    { $waitForPid = ( Get-Content -Path "{pidFilePath}" ) }              
 $waitForExeName    = "{exeName}"
-$isWaitForStart    = {isWaitForStart}
 $waitTimeOutSecs   = {timeOutSeconds}
+$isWaitForStart    = {isWaitForStart}
+$isDeletePidFile   = {isDeletePidFile}
 $isWaitTimeout     = $false
+
+$waitForPid=$null
+if( (Test-Path "{pidFilePath}" -PathType Leaf) ) { 
+    $waitForPid = ( Get-Content -Path "{pidFilePath}" )
+    if( $waitForPid ){ $waitForPid = $waitForPid.Trim() }    
+    if( $isDeletePidFile ){ Remove-Item -Path "{pidFilePath}" -Force } 
+}              
 
 if( $waitForPid ){ $filter = "ProcessId = $waitForPid" }
 else {             $filter = "Name = '$waitForExeName'" } # case insensitive
@@ -6115,21 +6132,26 @@ else{
     Write-Host "Done!"
 }
 {selfDestruct}
-if( $isWaitTimeout ){ {exitOnTimeout} }
+if( $isWaitTimeout ){
+{onTimeout} 
+{exitOnTimeout} 
+}
 {exitOnSuccess}
 """) 
-            selfDestruct = QtIfwExternalOp.powerShellSelfDestructSnippet()
             
+            selfDestruct = QtIfwExternalOp.powerShellSelfDestructSnippet()            
             return str( ExecutableScript( "", script=psScriptTemplate,
                 replacements={
                       "setBitContext": QtIfwExternalOp.__psSetBitContext( 
-                        isAutoBitContext )
-                    , "isWaitForStart": QtIfwExternalOp.__toPsBool(
-                        isWaitForStart )
+                        isAutoBitContext )                      
+                    , "exeName": exeName if exeName else ""
+                    , "pidFilePath": QtIfwExternalOp.opDataPath( pidFileName )                                         
                     , "timeOutSeconds":( timeOutSeconds if timeOutSeconds 
                         else QtIfwExternalOp.__toPsBool( False ) )
-                    , "exeName": exeName if exeName else "" 
-                    , "pidFilePath": QtIfwExternalOp.opDataPath( pidFileName )                    
+                    , "isWaitForStart": QtIfwExternalOp.__toPsBool(
+                        isWaitForStart )
+                    , "isDeletePidFile": QtIfwExternalOp.__toPsBool(
+                        isDeletePidFile )                      
                     , "exitOnNoWait": ( 
                         "[Environment]::Exit( %d )" % 
                         (QtIfwExternalOp.__NO_WAIT_EXIT_CODE,)
@@ -6141,6 +6163,7 @@ if( $isWaitTimeout ){ {exitOnTimeout} }
                         "[Environment]::Exit( %d )" % 
                         (QtIfwExternalOp.__TIMEOUT_EXIT_CODE,)
                         if isExitOnTimeout else "" )
+                    , "onTimeout": onTimeout if onTimeout else ""
                     , "exitOnSuccess" : ( "[Environment]::Exit( 0 )" 
                         if isExitOnSuccess else "" )                                                                                  
                 } ) )
@@ -6532,12 +6555,13 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
         # TODO: FILL IN!         
         @staticmethod
         def __shWaitForProcessScript( exeName, pidFileName, 
-           timeOutSeconds=30, isWaitForStart=False, 
-           isExitOnSuccess=False, isExitOnNoWait=False, 
-           isExitOnTimeout=False,
-           isSelfDestruct=False ):            
+               timeOutSeconds=30, onTimeout=None, 
+               isWaitForStart=False,
+               isDeletePidFile=False, 
+               isExitOnSuccess=False, isExitOnNoWait=False, isExitOnTimeout=False, 
+               isSelfDestruct=False ):            
             return ""
-
+    
     # QtIfwExternalOp
     def __init__( self,                                                       # [0]
               script=None,       exePath=None,       args=None, successRetCodes=None,  

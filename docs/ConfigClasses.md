@@ -1011,13 +1011,16 @@ program from the installer's 32 bit context.
 #### QtIfwExternalOp.WaitForProcess
 
     WaitForProcess( event, exeName=None, pidFileName=None,
-                    timeOutSeconds=30, isWaitForStart=False,  
+                    timeOutSeconds=30, onTimeOut=None,   
+                    isWaitForStart=False,  
                     isSuccessNoWait=True, 
                     isAutoBitContext=True )
 
 **pidFileName**: This optional "op data file" argument, takes precedence over the exeName when provided. It should contain a process id to query. 
 Such a file would normally be created via a prior [QtIfwExternalOp.WriteOpDataFile](#qtifwexternalop-writeopdatafile)  operation or via a
 [writeFile()](LowLevel.md#python-qt-script-builders) invocation from QScript (leaning on [QtIfwExternalOp.opDataPath()](#opdatapath) to dynamically resolve the path). 
+
+**onTimeOut**: Additional script snippet to inject.  Will be invoked on the event.
 
 On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
 program from the installer's 32 bit context.
@@ -1178,7 +1181,8 @@ rather embedded within it.
 #### QtIfwExternalOp.WaitForProcessScript
 
     WaitForProcessScript( exeName=None, pidFileName=None, 
-           timeOutSeconds=30, isWaitForStart=False,  
+           timeOutSeconds=30, onTimeout=None, 
+           isWaitForStart=False,  
            isExitOnSuccess=True, isExitOnNoWait=True, isExitOnTimeout=True,
            isSelfDestruct=False, 
            isAutoBitContext=True )
