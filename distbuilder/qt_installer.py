@@ -1512,6 +1512,18 @@ class _QtIfwScript:
         return _QtIfwScript.__DELETE_FILE_TMPL % (
             _QtIfwScript._autoQuote( path, isAutoQuote ),) 
 
+
+    @staticmethod        
+    def writeOpDataFile( fileName, content, isAutoQuote=True ):                  
+        return _QtIfwScript.writeFile( 
+            _QtIfwScript.quote( qtIfwOpDataPath( fileName ) ), 
+            _QtIfwScript._autoQuote( content, isAutoQuote ),
+            isAutoQuote=False ) 
+
+    @staticmethod        
+    def deleteOpDataFile( fileName ):                  
+        return _QtIfwScript.deleteFile( qtIfwOpDataPath( fileName ) ) 
+
     @staticmethod        
     def assertInternetConnected( isRefresh=False, errMsg=None, 
                                  isAutoQuote=True ): 
@@ -6045,29 +6057,32 @@ $isWaitForStart    = {isWaitForStart}
 $waitTimeOutSecs   = {timeOutSeconds}
 $isWaitTimeout     = $false
 
-if( $waitForPid ){ $filter = "ProcessId = " + $waitForPid }
-else {             $filter = "Name = '" + $waitForExeName + "'" } # case insensitive
+if( $waitForPid ){ $filter = "ProcessId = $waitForPid" }
+else {             $filter = "Name = '$waitForExeName'" } # case insensitive
+#Write-Host "process list filter: $filter" # debug
 
 $queryResult = Get-WmiObject win32_process -Filter $filter  
-if( ($isWaitForStart && $queryResult) || 
-    (!$isWaitForStart && !$queryResult) ){ 
+#Write-Host "queryResult: $queryResult" # debug
+
+if( ($isWaitForStart -and $queryResult) -or 
+    (!$isWaitForStart -and !$queryResult) ){ 
     {selfDestructOnNoWait}
     {exitOnNoWait}
 }
 else{    
-    if( $waitForPid ){ Write-Host "Waiting for: " + $waitForPid }
-    else {             Write-Host "Waiting for: " + $waitForExeName }
+    if( $waitForPid ){ Write-Host "Waiting for: $waitForPid" }
+    else {             Write-Host "Waiting for: $waitForExeName" }    
     $waitedForProcSecs = 0    
-    while( !$isWaitTimeout &&
-           (($isWaitForStart && $queryResult) || 
-            (!$isWaitForStart && !$queryResult)) ){
+    while( !$isWaitTimeout -and
+           (($isWaitForStart -and !$queryResult) -or 
+            (!$isWaitForStart -and $queryResult)) ){
         Write-Host "." -NoNewline
         Start-Sleep -s 1
         if( $waitTimeOutSecs ) {
             $waitedForProcSecs += 1
-            $isWaitTimeout = $waitedForProcSecs==$waitTimeOutSecs
+            if( $waitedForProcSecs -eq $waitTimeOutSecs ){ $isWaitTimeout = $true}
         }
-        if( $isWaitTimeout ) 
+        if( !$isWaitTimeout ) 
             { $queryResult = Get-WmiObject win32_process -Filter $filter }
     }
     Write-Host "Done!"
@@ -6095,7 +6110,7 @@ if( $isWaitTimeout ){ {exitOnTimeout} }
                     , "selfDestructOnNoWait" : ( selfDestruct
                         if isExitOnNoWait and isSelfDestruct else "" )
                     , "selfDestruct": selfDestruct if isSelfDestruct else ""
-                    , "{exitOnTimeout}": ( 
+                    , "exitOnTimeout": ( 
                         "[Environment]::Exit( %d )" % 
                         (QtIfwExternalOp.__TIMEOUT_EXIT_CODE,)
                         if isExitOnTimeout else "" )

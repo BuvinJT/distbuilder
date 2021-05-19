@@ -631,11 +631,14 @@ Static Functions:
     pathExists( path, isNegated=False, isAutoQuote=True )
     ifPathExists( path, isNegated=False, sAutoQuote=True, isMultiLine=False )   
     
-    makeDir( path )            <recursive, path can include native env vars> 
-    removeDir( path ) 		   <path can include native env vars>
+    makeDir( path, isAutoQuote=True )            <recursive, path can include native env vars> 
+    removeDir( path, isAutoQuote=True ) 		   <path can include native env vars>
     	
-    writeFile( path, content ) <path can include native env vars>
-    deleteFile( path ) 	       <path can include native env vars>	
+    writeFile( path, content, isAutoQuote=True ) <path can include native env vars>
+    deleteFile( path, isAutoQuote=True ) 	       <path can include native env vars>	
+
+    writeOpDataFile( fileName, content, isAutoQuote=True )                  
+    deleteOpDataFile( fileName )
 
     assertInternetConnected( isRefresh=False, errMsg=None, isAutoQuote=True )
     isInternetConnected( isRefresh=False ) 
@@ -2251,6 +2254,8 @@ If not enabled, the password input prompt will work via a terminal interface.
     IS_INTEL_CPU 
     
     THIS_DIR 
+
+	ALL <wildcard *>
 
     CURRENT_USER
     ALL_USERS
