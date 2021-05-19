@@ -986,7 +986,8 @@ object.
 Dynamically resolve paths to temp data files used by the operations,
 or to embed in custom scripts.  
 
-**rootFileName**: A simple ("data key") identifier (with no file extension).
+**rootFileName**: A simple ("data key") identifier (with no file extension).  If a parent directory is specified, be it an absolute
+or relative path, then full path resolution is left to you.
 
 **isNative**: By default, paths are returned in a native format, i.e. 
 with backslashes vs forward slashes as applicable.
@@ -1014,9 +1015,9 @@ program from the installer's 32 bit context.
                     isSuccessNoWait=True, 
                     isAutoBitContext=True )
 
-**pidFileName**: This optional "op data file" argument, takes precedences over the exeName when provided. It should contain a process id to query. 
-Such a file would normally be created via a prior `QtIfwExternalOp.WriteOpDataFile()` operation or via a
-`writeFile()` invocation from QScript (leaning on `QtIfwExternalOp.opDataPath()` to dynamically resolve the path). 
+**pidFileName**: This optional "op data file" argument, takes precedence over the exeName when provided. It should contain a process id to query. 
+Such a file would normally be created via a prior [QtIfwExternalOp.WriteOpDataFile](#qtifwexternalop-writeopdatafile)  operation or via a
+[writeFile()](LowLevel.md#python-qt-script-builders) invocation from QScript (leaning on [QtIfwExternalOp.opDataPath()](#opdatapath) to dynamically resolve the path). 
 
 On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
 program from the installer's 32 bit context.
@@ -1185,9 +1186,9 @@ rather embedded within it.
 **Windows Type**: PowerShell 
 **Mac/Linux Type**: ShellScript 
 
-**pidFileName**: This optional "op data file" argument, takes precedences over the exeName when provided. It should contain a process id to query. 
-Such a file would normally be created via a prior `QtIfwExternalOp.WriteOpDataFile()` operation or via a
-`writeFile()` invocation from QScript (leaning on `QtIfwExternalOp.opDataPath()` to dynamically resolve the path). 
+**pidFileName**: This optional "op data file" argument, takes precedence over the exeName when provided. It should contain a process id to query. 
+Such a file would normally be created via a prior [QtIfwExternalOp.WriteOpDataFile](#qtifwexternalop-writeopdatafile)  operation or via a
+[writeFile()](LowLevel.md#python-qt-script-builders) invocation from QScript (leaning on [QtIfwExternalOp.opDataPath()](#opdatapath) to dynamically resolve the path). 
     
 On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
 program from the installer's 32 bit context.

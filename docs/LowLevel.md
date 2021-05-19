@@ -638,10 +638,10 @@ Static Functions:
     writeFile( path, content, isAutoQuote=True ) <path can include native env vars>
     deleteFile( path, isAutoQuote=True ) 	       <path can include native env vars>	
 
-    writeOpDataFile( fileName, content, isAutoQuote=True )                  
+    writeOpDataFile( fileName, content="", isAutoQuote=True )                  
     deleteOpDataFile( fileName )
 
-     writeDetachedOpDataFile( fileName, content, isAutoQuote=True )
+     writeDetachedOpDataFile( fileName, content="", isAutoQuote=True )
      deleteDetachedOpDataFile( fileName )
  
     assertInternetConnected( isRefresh=False, errMsg=None, isAutoQuote=True )

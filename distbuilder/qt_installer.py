@@ -1521,7 +1521,7 @@ class _QtIfwScript:
 
 
     @staticmethod        
-    def writeOpDataFile( fileName, content, isAutoQuote=True ):                  
+    def writeOpDataFile( fileName, content="", isAutoQuote=True ):                  
         return _QtIfwScript.writeFile( 
             _QtIfwScript.quote( qtIfwOpDataPath( fileName ) ), 
             _QtIfwScript._autoQuote( content, isAutoQuote ),
@@ -1532,7 +1532,7 @@ class _QtIfwScript:
         return _QtIfwScript.deleteFile( qtIfwOpDataPath( fileName ) ) 
 
     @staticmethod        
-    def writeDetachedOpDataFile( fileName, content, isAutoQuote=True ):                  
+    def writeDetachedOpDataFile( fileName, content="", isAutoQuote=True ):                  
         return _QtIfwScript.writeFile( 
             _QtIfwScript.quote( qtIfwDetachedOpDataPath( fileName ) ), 
             _QtIfwScript._autoQuote( content, isAutoQuote ),
