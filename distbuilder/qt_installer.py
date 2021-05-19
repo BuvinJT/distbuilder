@@ -5979,7 +5979,7 @@ class QtIfwExternalOp:
                     isDeletePidFile=isDeletePidFile,                    
                     isExitOnSuccess=isExitOnSuccess, 
                     isExitOnNoWait=isExitOnNoWait,
-                    isExitOnTimeout=isExitOnTimeout, onTimeout=onTimeout,
+                    isExitOnTimeout=isExitOnTimeout, 
                     isSelfDestruct=isSelfDestruct, 
                     isAutoBitContext=isAutoBitContext ) 
                 if IS_WINDOWS else    
