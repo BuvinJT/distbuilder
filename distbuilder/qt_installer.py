@@ -5547,10 +5547,11 @@ class QtIfwExternalOp:
     __FOREIGN_PATH_SEP = __NIX_PATH_SEP if IS_WINDOWS else __WIN_PATH_SEP
     
     @staticmethod
-    def opDataPath( rootFileName, isNative=True, 
-                    quotes=None, isDoubleBackslash=False ):
+    def opDataPath( rootFileName, isDetached=False, 
+                    isNative=True, quotes=None, isDoubleBackslash=False ):
         isBaseFileName = baseFileName(rootFileName)==rootFileName
-        path =( joinPath( QT_IFW_SCRIPTS_DIR, 
+        path =( joinPath( QT_IFW_TEMP_DIR if isDetached else 
+                          QT_IFW_SCRIPTS_DIR, 
                           joinExt( rootFileName, _QT_IFW_TEMP_DATA_EXT ) ) 
                 if isBaseFileName else rootFileName )        
         if isNative:

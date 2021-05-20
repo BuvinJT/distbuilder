@@ -980,23 +980,39 @@ object.
 
 #### opDataPath
 
-	opDataPath( rootFileName, isNative=True,
-				quotes=None, isDoubleBackslash=False )
+	opDataPath( rootFileName, isDetached=False, 
+                isNative=True, quotes=None, isDoubleBackslash=False )
 
 Dynamically resolve paths to temp data files used by the operations,
 or to embed in custom scripts.  
 
-**rootFileName**: A simple ("data key") identifier (with no file extension).  If a parent directory is specified, be it an absolute
-or relative path, then full path resolution is left to you.
+**rootFileName**: Under normal circumstances, provide a simple "data key" 
+identifier (with no file extension) for this parameter. 
+If a parent directory is included (be it an absolute or relative path), however, 
+then the path will not be modified further (i.e. it will not built from a 
+root name). Such allows for other functions that internally employ this one 
+to implicitly handle files located elsewhere as well. For example, wrapping 
+`rootFileName` in `qtIfwDetachedOpDataPath()`, is another means to reference 
+the alternate "detached" path (rather than via the `isDetached` option). 
+
+**isDetached**:  Operation data files are normally created within an installer
+*sub directory*, inside of the user/system temp directory.  Everything in this 
+directory is automatically purged when the installer/uninstaller completes.
+If you use a "detached op data file path", however, the file will be written
+to the root of the temp directory, and will not be automatically purged. That
+clean up is left for you to perform.  The general use case for this feature
+is to support "detached operations" which can, and typically do, live beyond
+the installer/uninstaller's process..
 
 **isNative**: By default, paths are returned in a native format, i.e. 
 with backslashes vs forward slashes as applicable.
 
-**quotes**: Optionally, you may provide quote strings (e.g. `"` or `'`, or some 
-escaped version of them) to wrap the returned path in such.  
+**quotes**: Optionally, you may provide explicit quote strings 
+(e.g. `"` or `'`, or some escaped version of them) to wrap the 
+returned path in such.  
 
 **isDoubleBackslash**: Optionally, use this on Windows, to escape backslashes 
-doubling them up.
+by doubling them up.
 
 #### QtIfwExternalOp.RunProgram
 

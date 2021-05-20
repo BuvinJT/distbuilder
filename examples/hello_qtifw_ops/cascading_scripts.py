@@ -8,7 +8,7 @@ from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
 ON_INSTALL = QtIfwExternalOp.ON_INSTALL
 opDataPath = QtIfwExternalOp.opDataPath
 
-DEMO_ARG_TO_OPS_KEY = "user_op"
+DEMO_ARG_TO_OPS_KEY = "user_op_arg"
 DEMO_ARG_TO_OPS_FILE_NAME = DEMO_ARG_TO_OPS_KEY
 
 if IS_WINDOWS:
@@ -30,24 +30,36 @@ class BuildProcess( PyToBinInstallerProcess ):
     def onQtIfwConfig( self, cfg ):    
 
         def refineIntroductionPage( cfg ):
-            # Once all other resources have loaded:
-            # Create a "operations data file", with a value supplied
-            # at run time as a program argument.            
-            # Selectively do this on either install or maintain modes.
+            # On the first wizard page (which is still programmatically 
+            # processed by silent installers btw...), once all other resources 
+            # have loaded:
             #
-            # Optionally try this instead: 
+            # Create a "operations data file". Selectively do this in 
+            # either install mode, maintain mode, or both. 
+            #
+            # The data for such might be derived in many ways. In this demo,
+            # we use a value supplied at run time as a program argument.                        
+            #
+            # To test, execute either the installer or uninstaller from a 
+            # terminal supplying an argument `"user_op_arg=my test data"`.  
+            # Then, observe the file created with this same base name in the 
+            # temp directory (or sub temp directory) upon launching the 
+            # installer/uninstaller.  This illustrates where other custom 
+            # "operations" could fetch this information dynamically. 
+            #
+            # You wish to optionally test this: 
             #     QtIfwControlScript.writeDetachedOpDataFile
-            # With that, the temp file will persist after the 
-            # installer/uninstaller is done...
+            # With that, the temp file will persist beyond the life 
+            # of the installer or uninstaller...            
             #
-            writeArgFileSnipet = QtIfwControlScript.writeOpDataFile(
+            writeArgOpFileSnippet = QtIfwControlScript.writeOpDataFile(
                 DEMO_ARG_TO_OPS_FILE_NAME, 
                 QtIfwControlScript.lookupValue( DEMO_ARG_TO_OPS_KEY ), 
                 isAutoQuote=False )  
             cfg.controlScript.introductionPageOnInstall  = (
-                writeArgFileSnipet ) 
+                writeArgOpFileSnippet ) 
             cfg.controlScript.introductionPageOnMaintain = (
-                writeArgFileSnipet )
+                writeArgOpFileSnippet )
 
         def refineFinishedPage( cfg ):
             # Disable the run program check box by default, for this example. 
@@ -185,7 +197,7 @@ class BuildProcess( PyToBinInstallerProcess ):
         ]         
 
         if IS_WINDOWS:
-            APP_NAME     = "Hello Installer Conveniences Example"
+            APP_NAME     = "Hello Cascading Ops Example"
             COMPANY_NAME = "Some Company"
             EXE_NAME     = "RunConditionsTest.exe"            
             IS_32BIT_REG = False
