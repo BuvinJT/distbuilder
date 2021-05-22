@@ -980,22 +980,39 @@ object.
 
 #### opDataPath
 
-	opDataPath( rootFileName, isNative=True,
-				quotes=None, isDoubleBackslash=False )
+	opDataPath( rootFileName, isDetached=False, 
+                isNative=True, quotes=None, isDoubleBackslash=False )
 
 Dynamically resolve paths to temp data files used by the operations,
 or to embed in custom scripts.  
 
-**rootFileName**: A simple ("data key") identifier (with no file extension).
+**rootFileName**: Under normal circumstances, provide a simple "data key" 
+identifier (with no file extension) for this parameter. 
+If a parent directory is included (be it an absolute or relative path), however, 
+then the path will not be modified further (i.e. it will not built from a 
+root name). Such allows for other functions that internally employ this one 
+to implicitly handle files located elsewhere as well. For example, wrapping 
+`rootFileName` in `qtIfwDetachedOpDataPath()`, is another means to reference 
+the alternate "detached" path (rather than via the `isDetached` option). 
+
+**isDetached**:  Operation data files are normally created within an installer
+*sub directory*, inside of the user/system temp directory.  Everything in this 
+directory is automatically purged when the installer/uninstaller completes.
+If you use a "detached op data file path", however, the file will be written
+to the root of the temp directory, and will not be automatically purged. That
+clean up is left for you to perform.  The general use case for this feature
+is to support "detached operations" which can, and typically do, live beyond
+the installer/uninstaller's process..
 
 **isNative**: By default, paths are returned in a native format, i.e. 
 with backslashes vs forward slashes as applicable.
 
-**quotes**: Optionally, you may provide quote strings (e.g. `"` or `'`, or some 
-escaped version of them) to wrap the returned path in such.  
+**quotes**: Optionally, you may provide explicit quote strings 
+(e.g. `"` or `'`, or some escaped version of them) to wrap the 
+returned path in such.  
 
 **isDoubleBackslash**: Optionally, use this on Windows, to escape backslashes 
-doubling them up.
+by doubling them up.
 
 #### QtIfwExternalOp.RunProgram
 
@@ -1003,6 +1020,23 @@ doubling them up.
                 isHidden=False, isSynchronous=True, isElevated=True, 
                 runConditionFileName=None, isRunConditionNegated=False,
                 isAutoBitContext=True )
+
+On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
+program from the installer's 32 bit context.
+
+#### QtIfwExternalOp.WaitForProcess
+
+    WaitForProcess( event, exeName=None, pidFileName=None,
+                    timeOutSeconds=30, onTimeOut=None,   
+                    isWaitForStart=False,  
+                    isSuccessNoWait=True, 
+                    isAutoBitContext=True )
+
+**pidFileName**: This optional "op data file" argument, takes precedence over the exeName when provided. It should contain a process id to query. 
+Such a file would normally be created via a prior [QtIfwExternalOp.WriteOpDataFile](#qtifwexternalop-writeopdatafile)  operation or via a
+[writeFile()](LowLevel.md#python-qt-script-builders) invocation from QScript (leaning on [QtIfwExternalOp.opDataPath()](#opdatapath) to dynamically resolve the path). 
+
+**onTimeOut**: Additional script snippet to inject.  Will be invoked on the event.
 
 On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
 program from the installer's 32 bit context.
@@ -1153,6 +1187,28 @@ your custom scripts to serve this purpose.
 
 **Windows Type**: Batch or PowerShell (determined by options employed)
 **Mac/Linux Type**: ShellScript 
+    
+On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
+program from the installer's 32 bit context.
+
+Note: Elevation is controlled via the operation executing the script 
+rather embedded within it.
+
+#### QtIfwExternalOp.WaitForProcessScript
+
+    WaitForProcessScript( exeName=None, pidFileName=None, 
+           timeOutSeconds=30, onTimeout=None, 
+           isWaitForStart=False,  
+           isExitOnSuccess=True, isExitOnNoWait=True, isExitOnTimeout=True,
+           isSelfDestruct=False, 
+           isAutoBitContext=True )
+
+**Windows Type**: PowerShell 
+**Mac/Linux Type**: ShellScript 
+
+**pidFileName**: This optional "op data file" argument, takes precedence over the exeName when provided. It should contain a process id to query. 
+Such a file would normally be created via a prior [QtIfwExternalOp.WriteOpDataFile](#qtifwexternalop-writeopdatafile)  operation or via a
+[writeFile()](LowLevel.md#python-qt-script-builders) invocation from QScript (leaning on [QtIfwExternalOp.opDataPath()](#opdatapath) to dynamically resolve the path). 
     
 On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
 program from the installer's 32 bit context.

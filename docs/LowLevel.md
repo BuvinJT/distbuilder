@@ -48,17 +48,21 @@ program, invoke the pyScriptToExe function:
     names or paths *relative* to the build script
     directory. Else, you may provide a list of two 
     element tuples, with a specific source and 
-    destination.  The source may be a relative or 
-    absolute path from another location on your file 
-    system. The destination maybe whatever name/path 
-    you want specified relative to the package being 
-    created. Note that the default destination path is
+    destination.  The source path may be either a relative or 
+    absolute path on your file system. The (optional) destination 
+    path should be specified relative to the package being 
+    created. In addition, source paths may be specified with globing *wildcards*
+    if desired.  They may even include environmental variables or 
+    path symbols e.g. `~` (as would be written 
+    in a given platform specific shell).
+    Several convenience functions have been provided for building 
+    globing patterns. See [Globing pattern builders](#globing-pattern-builders).         
+    Regarding the destination argument, note that its default path is
     the root directory of the package, using the same 
-    file name. To package a resource within a sub directory, 
-    or with an alternate name, you must *either* explictly provide
-    a full (relative) destination path *or* **use the 
-    "shortcut value" `True` to indicate the source 
-    and destination are the same relative paths**.      
+    file name as in the source. To package a resource within a *sub directory*, 
+    or with an *alternate name*: you must either explicitly provide
+    the relative destination path *or* **use the "shortcut value" `True` to 
+    indicate the source and destination are the same relative paths**.      
     
 **distDirs**: An (optional) list of directories to 
     create within the package.  Note distResources
@@ -462,6 +466,7 @@ and attributes for many higher level functions and objects in this library.
     QT_IFW_USER_STARTMENU_DIR
     QT_IFW_ALLUSERS_STARTMENU_DIR
     
+    QT_IFW_TEMP_DIR
     QT_IFW_SCRIPTS_DIR
     QT_IFW_INSTALLER_TEMP_DIR
     QT_IFW_MAINTENANCE_TEMP_DIR
@@ -627,12 +632,18 @@ Static Functions:
     pathExists( path, isNegated=False, isAutoQuote=True )
     ifPathExists( path, isNegated=False, sAutoQuote=True, isMultiLine=False )   
     
-    makeDir( path )            <recursive, path can include native env vars> 
-    removeDir( path ) 		   <path can include native env vars>
+    makeDir( path, isAutoQuote=True )            <recursive, path can include native env vars> 
+    removeDir( path, isAutoQuote=True ) 		   <path can include native env vars>
     	
-    writeFile( path, content ) <path can include native env vars>
-    deleteFile( path ) 	       <path can include native env vars>	
+    writeFile( path, content, isAutoQuote=True ) <path can include native env vars>
+    deleteFile( path, isAutoQuote=True ) 	       <path can include native env vars>	
 
+    writeOpDataFile( fileName, content="", isAutoQuote=True )                  
+    deleteOpDataFile( fileName )
+
+     writeDetachedOpDataFile( fileName, content="", isAutoQuote=True )
+     deleteDetachedOpDataFile( fileName )
+ 
     assertInternetConnected( isRefresh=False, errMsg=None, isAutoQuote=True )
     isInternetConnected( isRefresh=False ) 
     ifInternetConnected( isRefresh=False, isNegated=False, isMultiLine=False )
@@ -1852,9 +1863,15 @@ containing *any* content, which the installer knows how to resolve.
 ### qtIfwOpDataPath
 
 	qtIfwOpDataPath( rootFileName )
+    qtIfwDetachedOpDataPath( rootFileName )
 
-Use this function, within QtScript building contexts, to produce the resolution 
-of dynamic temp paths at runtime, which are utilized by installer operations.
+Use these functions, within QtScript building contexts, to resolve 
+dynamic temp paths at runtime, which are utilized by installer operations.
+
+Only use `qtIfwDetachedOpDataPath` if you need the temp file to exist
+after the installer/uninstaller has terminated, i.e. for "detached" 
+operations.  Note that such a temp path becomes the responsibility of the 
+client operation to purge.
 	
 ### isParentDir 
 
@@ -1974,6 +1991,20 @@ in a ".dll" extension, where on macOS and Linux ".so" is employed.
 When `isPathPreserved` is `True`, the entire path is returned rather 
 than only the file name. When `False` (the default) a full path 
 is stripped down to the base name.
+
+### Globing pattern builders 
+
+The following functions provide pattern strings, containing wild cards. 
+
+	allPathPattern( basePath )
+    extPathPattern( ext, basePath=None ) 
+    startsWithPathPattern( match, basePath=None )
+    endsWithPathPattern( match, basePath=None )
+    containsPathPattern( match, basePath=None )	
+
+Note: If the primary (first) argument supplied to any of these is a list, 
+the return value is a corresponding list.  Otherwise, a single string 
+is returned.   
 
 ### getEnv, setEnv, delEnv
 
@@ -2247,6 +2278,8 @@ If not enabled, the password input prompt will work via a terminal interface.
     IS_INTEL_CPU 
     
     THIS_DIR 
+
+	ALL <wildcard *>
 
     CURRENT_USER
     ALL_USERS

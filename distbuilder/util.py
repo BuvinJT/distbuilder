@@ -19,12 +19,13 @@ from os.path import( exists, isfile, islink,
     dirname as dirPath, normpath, realpath, isabs, abspath, 
     join as joinPath, split as splitPath, 
     splitext as splitExt, splitdrive as splitDrive, 
-    expanduser, basename as baseFileName, 
+    expanduser, expandvars, basename as baseFileName, 
     relpath, pathsep  # @UnusedImport
 )    
 from shutil import( rmtree as removeDir, move, make_archive, 
     copytree as copyDir, copyfile as copyFile # @UnusedImport
 )
+from glob import glob, has_magic as isGlob   
 import platform
 from tempfile import( gettempdir, mkstemp, mkdtemp, 
     mktemp  # @UnusedImport
@@ -55,8 +56,9 @@ IS_WINDOWS = __plat == "Windows"
 IS_LINUX   = __plat == "Linux"
 IS_MACOS   = __plat == "Darwin"
 
+# over simplified - see https://stackoverflow.com/questions/45125516/possible-values-for-uname-m
 __arch = platform.machine()
-IS_ARM_CPU   = "arm" in __arch or "aarch" in __arch
+IS_ARM_CPU   = "arm" in __arch or "aarch" in __arch 
 IS_INTEL_CPU = not IS_ARM_CPU
 
 BIT_CONTEXT = calcsize('P') * 8
@@ -74,6 +76,7 @@ THIS_DIR           = dirPath( realpath( argv[0] ) )
 
 __THIS_LIB_DIR     = dirPath( realpath( __file__ ) ) 
 
+ALL="*"
 PATH_PAIR_DELIMITER=";"
 SYS_CMD_DELIM = "&" if IS_WINDOWS else ";"
 SYS_CMD_COND_DELIM = "&&"
@@ -942,8 +945,59 @@ def __getFolderPathByCSIDL( csidl ):
     return buf.value 
 
 # -----------------------------------------------------------------------------
+def allPathPattern( basePath ):
+    if basePath is None: basePath=""
+    def pat( b ): return joinPath( b.replace(ALL,""), ALL )          
+    return( [ pat(b) for b in basePath ] if isinstance( basePath, list ) else
+            pat(basePath) )
+
+def extPathPattern( ext, basePath=None ):
+    if basePath is None: basePath=""
+    def pat( m ): return joinPath( basePath, joinExt( ALL, m.replace(ALL,"") ) )          
+    return( [ pat(e) for e in ext ] if isinstance( ext, list ) else
+            pat(ext) )
+
+def startsWithPathPattern( match, basePath=None ):
+    if basePath is None: basePath=""
+    def pat( m ): return joinPath( basePath, m.replace(ALL,"") + ALL )          
+    return( [ pat(m) for m in match ] if isinstance( match, list ) else
+            pat(match) )
+
+def endsWithPathPattern( match, basePath=None ):
+    if basePath is None: basePath=""
+    def pat( m ): return joinPath( basePath, ALL + m.replace(ALL,"") )          
+    return( [ pat(m) for m in match ] if isinstance( match, list ) else
+            pat(match) )
+    
+def containsPathPattern( match, basePath=None ):
+    if basePath is None: basePath=""
+    def pat( m ): return joinPath( basePath, ALL + m.replace(ALL,"") + ALL )          
+    return( [ pat(m) for m in match ] if isinstance( match, list ) else
+            pat(match) )
+    
+# -----------------------------------------------------------------------------
+def _expandSrcDestPairs( pathPairs, destDir=None, basePath=None ):
+    expanded=[]
+    for pair in pathPairs:
+        _, inputDest, src, _ = __parseSrcDestPair( pair, destDir, basePath )
+        srcExpanded = expanduser( expandvars( src ) )        
+        if isGlob( srcExpanded ):            
+            paths = glob( srcExpanded )
+            for p in paths:
+                if inputDest: expanded.append( (p,inputDest) )
+                else: expanded.append( p )               
+        elif srcExpanded != src:
+            if inputDest: expanded.append( (srcExpanded,inputDest) )
+            else: expanded.append( srcExpanded )               
+        else: expanded.append( pair )
+    return expanded 
+
 def _toSrcDestPair( pathPair, destDir=None, basePath=None ):
-    #print( "_toSrcDestPair: pathPair=%s, destDir=%s, basePath=%s" % (pathPair, destDir, basePath) )
+    _, _, src, dest = __parseSrcDestPair( pathPair, destDir, basePath )
+    return (src, dest)
+        
+def __parseSrcDestPair( pathPair, destDir=None, basePath=None ):
+    #print( "__parseSrcDestPair: pathPair=%s, destDir=%s, basePath=%s" % (pathPair, destDir, basePath) )
     
     src = dest = None             
     if isinstance( pathPair, string_types ):  
@@ -968,13 +1022,16 @@ def _toSrcDestPair( pathPair, destDir=None, basePath=None ):
         try : dest = pathPair[1] 
         except: pass
     
+    inputSrc  = src
+    inputDest = dest
+    
     if src is None: return None
     src = normpath( src )
     if dest==True : # True=="same"
         if not isabs(src): dest = src 
         else: 
             raise DistBuilderError( "A resource destination cannot be the same "
-                             "as an ABSOLUTE source path" )
+                                    "as an ABSOLUTE source path" )
     elif dest is not None: dest = normpath( dest )
     
     relSrcDir = basePath if basePath else THIS_DIR  
@@ -998,7 +1055,27 @@ def _toSrcDestPair( pathPair, destDir=None, basePath=None ):
         dest = absPath( joinPath( destDir, dest ), relSrcDir )
 
     #print( "result: src=%s, dest=%s" % (src, dest) )
-    return (src, dest) 
+    return (inputSrc, inputDest, src, dest) 
+
+def _destTargetsInSrcDestPairs( targets, pathPairs, destDir, basePath ):
+    destTargets = []
+    if targets is None or len(targets)==0: return destTargets
+    if pathPairs is None or len(pathPairs)==0: return destTargets            
+    for pair in pathPairs:
+        src, dest = _toSrcDestPair( pair, destDir=destDir, basePath=basePath )        
+        relDest = relpath( dest, destDir )
+        if relDest in targets:
+            destTargets.append( relDest )
+        elif isDir( src ):
+            srcDirPrefix = normpath( src ) + PATH_DELIM
+            destDirPrefix = normpath( dest ) + PATH_DELIM 
+            for target in targets:
+                destTargetPath = absPath( target, basePath=destDir )
+                if destTargetPath.startswith( destDirPrefix ):
+                    srcPath = (srcDirPrefix + 
+                               destTargetPath[len(destDirPrefix):])
+                    if isFile( srcPath ): destTargets.append( target )                            
+    return destTargets    
 
 # -----------------------------------------------------------------------------    
 def versionTuple( ver, parts=4 ): return tuple( __versionList( ver, parts ) )

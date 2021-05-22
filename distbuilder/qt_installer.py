@@ -74,6 +74,7 @@ QT_IFW_INSTALLER_DIR      = "@InstallerDirPath@"
 QT_IFW_INTALLER_PATH      = "@InstallerFilePath@"   
 
 _QT_IFW_DEFAULT_TARGET_DIR   = "DefaultTargetDir"   # CUSTOM!
+_QT_IFW_TEMP_DIR             = "TempDir"            # CUSTOM!
 _QT_IFW_SCRIPTS_DIR          = "ScriptsDir"         # CUSTOM!
 _QT_IFW_INSTALLER_TEMP_DIR   = "InstallerTempDir"   # CUSTOM!
 _QT_IFW_MAINTENANCE_TEMP_DIR = "MaintenanceTempDir" # CUSTOM!
@@ -81,6 +82,7 @@ _QT_IFW_MAINTENANCE_TEMP_DIR = "MaintenanceTempDir" # CUSTOM!
 _QT_IFW_VAR_TMPLT = "@%s@"
 
 QT_IFW_DEFAULT_TARGET_DIR   = _QT_IFW_VAR_TMPLT % (_QT_IFW_DEFAULT_TARGET_DIR,)   # CUSTOM!
+QT_IFW_TEMP_DIR             = _QT_IFW_VAR_TMPLT % (_QT_IFW_TEMP_DIR,)             # CUSTOM!
 QT_IFW_SCRIPTS_DIR          = _QT_IFW_VAR_TMPLT % (_QT_IFW_SCRIPTS_DIR,)          # CUSTOM! 
 QT_IFW_INSTALLER_TEMP_DIR   = _QT_IFW_VAR_TMPLT % (_QT_IFW_INSTALLER_TEMP_DIR,)   # CUSTOM!
 QT_IFW_MAINTENANCE_TEMP_DIR = _QT_IFW_VAR_TMPLT % (_QT_IFW_MAINTENANCE_TEMP_DIR,) # CUSTOM!
@@ -158,6 +160,7 @@ QT_IFW_DYNAMIC_PATH_VARS = [
     , "AllUsersStartMenuProgramsPath" 
     , "ApplicationsDirX86" 
     , "ApplicationsDirX64" 
+    , "TempDir"
     , "InstallerTempDir"
     , "MaintenanceTempDir"
     , "ScriptsDir"
@@ -190,8 +193,12 @@ def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
 def qtIfwDynamicValue( name ): return "@%s@" % (name,)
     
 def qtIfwOpDataPath( rootFileName ): 
-    return joinExt( joinPathQtIfw( QT_IFW_SCRIPTS_DIR, rootFileName ), 
-                    _QT_IFW_TEMP_DATA_EXT )
+    return joinPathQtIfw( QT_IFW_SCRIPTS_DIR, 
+                          joinExt( rootFileName, _QT_IFW_TEMP_DATA_EXT ) ) 
+                    
+def qtIfwDetachedOpDataPath( rootFileName ): 
+    return joinPathQtIfw( QT_IFW_TEMP_DIR, 
+                          joinExt( rootFileName, _QT_IFW_TEMP_DATA_EXT ) ) 
 
 # -----------------------------------------------------------------------------
 class QtIfwConfig:   
@@ -657,7 +664,9 @@ class QtIfwConfigXml( _QtIfwXml ):
 # -----------------------------------------------------------------------------
 class QtIfwPackage:
 
-    class Type: DATA, RESOURCE, PY_INSTALLER, IEXPRESS, QT_CPP = range(5)  
+    class Type: 
+        ( RAW, DATA, RESOURCE, 
+          PY_INSTALLER, IEXPRESS, QT_CPP ) = range(6)  
     
     __PACKAGES_PATH_TMPLT       = "%s/packages"
     __DIR_PATH_TMPLT            = "%s/packages/%s"
@@ -1510,6 +1519,29 @@ class _QtIfwScript:
         return _QtIfwScript.__DELETE_FILE_TMPL % (
             _QtIfwScript._autoQuote( path, isAutoQuote ),) 
 
+
+    @staticmethod        
+    def writeOpDataFile( fileName, content="", isAutoQuote=True ):                  
+        return _QtIfwScript.writeFile( 
+            _QtIfwScript.quote( qtIfwOpDataPath( fileName ) ), 
+            _QtIfwScript._autoQuote( content, isAutoQuote ),
+            isAutoQuote=False ) 
+
+    @staticmethod        
+    def deleteOpDataFile( fileName ):                  
+        return _QtIfwScript.deleteFile( qtIfwOpDataPath( fileName ) ) 
+
+    @staticmethod        
+    def writeDetachedOpDataFile( fileName, content="", isAutoQuote=True ):                  
+        return _QtIfwScript.writeFile( 
+            _QtIfwScript.quote( qtIfwDetachedOpDataPath( fileName ) ), 
+            _QtIfwScript._autoQuote( content, isAutoQuote ),
+            isAutoQuote=False ) 
+
+    @staticmethod        
+    def deleteDetachedOpDataFile( fileName ):                  
+        return _QtIfwScript.deleteFile( qtIfwDetachedOpDataPath( fileName ) ) 
+
     @staticmethod        
     def assertInternetConnected( isRefresh=False, errMsg=None, 
                                  isAutoQuote=True ): 
@@ -2085,6 +2117,9 @@ class _QtIfwScript:
             TAB + 'return isElev' + END +
             EBLK + NEW +                            
             'function getEnv( varName ) ' + SBLK +
+            ( '' if IS_WINDOWS else
+                (TAB + 'if( varName == "temp" ) return "/tmp"' + END)               
+            ) +
             TAB + 'return installer.environmentVariable( varName )' + END +
             EBLK + NEW +
             'function parentDir( path ) ' + SBLK +
@@ -3861,6 +3896,8 @@ Controller.prototype.Dynamic%sCallback = function() {
             )
         self.controllerConstructorBody += (            
             TAB + 'installer.setValue( ' + 
+                ('"%s"' % (_QT_IFW_TEMP_DIR,)) + ', "" )' + END +                         
+            TAB + 'installer.setValue( ' + 
                 ('"%s"' % (_QT_IFW_SCRIPTS_DIR,)) + ', "" )' + END + 
             TAB + 'installer.setValue( ' + 
                 ('"%s"' % (_QT_IFW_INSTALLER_TEMP_DIR,)) + ', "" )' + END + 
@@ -3906,7 +3943,9 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + '__maintenanceTempPath()' + END +            
             TAB + 'makeDir( Dir.temp() )' + END +
             TAB + 'installer.setValue( ' + 
-                ('"%s"' % (_QT_IFW_SCRIPTS_DIR,)) + ', Dir.temp() )' + END + 
+                ('"%s"' % (_QT_IFW_SCRIPTS_DIR,)) + ', Dir.temp() )' + END +
+            TAB + 'installer.setValue( ' + 
+                ('"%s"' % (_QT_IFW_TEMP_DIR,)) + ', getEnv("temp") )' + END +             
             _QtIfwScript.ifInstalling( isMultiLine=True ) +
                 _QtIfwScript.setValue( '"%s"' % (_QT_IFW_DEFAULT_TARGET_DIR,),                     
                     _QtIfwScript.lookupValue( _QtIfwScript.TARGET_DIR_KEY ), 
@@ -5576,6 +5615,8 @@ class QtIfwExternalOp:
     __SCRIPT_ROOT_NAME_TMPLT = "%s_%d"
 
     __NOT_FOUND_EXIT_CODE = 100
+    __NO_WAIT_EXIT_CODE   = 101
+    __TIMEOUT_EXIT_CODE   = 900
 
     __WIN_PATH_SEP = "\\"
     __NIX_PATH_SEP = "/"
@@ -5583,10 +5624,13 @@ class QtIfwExternalOp:
     __FOREIGN_PATH_SEP = __NIX_PATH_SEP if IS_WINDOWS else __WIN_PATH_SEP
     
     @staticmethod
-    def opDataPath( rootFileName, isNative=True, 
-                    quotes=None, isDoubleBackslash=False ): 
-        path = joinExt( joinPath( QT_IFW_SCRIPTS_DIR, rootFileName ), 
-                        _QT_IFW_TEMP_DATA_EXT )
+    def opDataPath( rootFileName, isDetached=False, 
+                    isNative=True, quotes=None, isDoubleBackslash=False ):
+        isBaseFileName = baseFileName(rootFileName)==rootFileName
+        path =( joinPath( QT_IFW_TEMP_DIR if isDetached else 
+                          QT_IFW_SCRIPTS_DIR, 
+                          joinExt( rootFileName, _QT_IFW_TEMP_DATA_EXT ) ) 
+                if isBaseFileName else rootFileName )        
         if isNative:
             path = path.replace( QtIfwExternalOp.__FOREIGN_PATH_SEP, 
                                  QtIfwExternalOp.__NATIVE_PATH_SEP )
@@ -5622,7 +5666,7 @@ class QtIfwExternalOp:
         return QtIfwExternalOp.__genScriptOp( event, 
             script=QtIfwExternalOp.RemoveDirScript( dirPath ), 
             isElevated=isElevated )
-     
+
     # TODO: Test in NIX/MAC 
     #
     # TODO: Fix a glitch on Windows with employing isHidden.  This is a problem
@@ -5648,6 +5692,24 @@ class QtIfwExternalOp:
                 runConditionFileName, isRunConditionNegated, 
                 isAutoBitContext ), 
             isElevated=isElevated )
+    
+
+    @staticmethod
+    def WaitForProcess( event, exeName=None, pidFileName=None,
+                        timeOutSeconds=30,  
+                        isWaitForStart=False,                          
+                        isSuccessNoWait=True, 
+                        isAutoBitContext=True ): # Windows only
+        op = QtIfwExternalOp.__genScriptOp( event, 
+            script=QtIfwExternalOp.WaitForProcessScript( 
+                exeName, pidFileName, 
+                timeOutSeconds, isWaitForStart,
+                isAutoBitContext=isAutoBitContext ), 
+            isReversible=False, isElevated=True )
+        if isSuccessNoWait:
+            op.successRetCodes=[ 0, QtIfwExternalOp.__NO_WAIT_EXIT_CODE ]
+            op.uninstRetCodes =[ 0, QtIfwExternalOp.__NO_WAIT_EXIT_CODE ]
+        return op
     
     @staticmethod
     def CreateStartupEntry( pkg=None, 
@@ -5686,7 +5748,7 @@ class QtIfwExternalOp:
             util._onPlatformErr()
 
     if IS_WINDOWS:
-
+                
         @staticmethod
         def CreateWindowsAppFoundFlagFile( event, appName, fileName, 
                                            isAutoBitContext=True ):
@@ -5974,7 +6036,43 @@ class QtIfwExternalOp:
             else: script=[exitSnippet, runCmd ]
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "runProgram" ), script=script, replacements=replacements )
-                     
+
+    @staticmethod
+    def WaitForProcessScript( exeName=None, pidFileName=None,            
+           timeOutSeconds=30, onTimeout=None, 
+           isWaitForStart=False,  
+           isDeletePidFile=False,
+           isExitOnSuccess=True, isExitOnNoWait=True, isExitOnTimeout=True, 
+           isSelfDestruct=False, 
+           isAutoBitContext=True ): # Windows Only                        
+        return ExecutableScript( 
+            QtIfwExternalOp.__scriptRootName( "waitForProcess" ), 
+            extension=( ExecutableScript.POWERSHELL_EXT if IS_WINDOWS else
+                        ExecutableScript.SHELL_EXT), 
+            script=(
+                QtIfwExternalOp.__psWaitForProcessScript( 
+                    exeName, pidFileName, 
+                    timeOutSeconds, onTimeout,
+                    isWaitForStart,
+                    isDeletePidFile=isDeletePidFile,                    
+                    isExitOnSuccess=isExitOnSuccess, 
+                    isExitOnNoWait=isExitOnNoWait,
+                    isExitOnTimeout=isExitOnTimeout, 
+                    isSelfDestruct=isSelfDestruct, 
+                    isAutoBitContext=isAutoBitContext ) 
+                if IS_WINDOWS else    
+                QtIfwExternalOp.__shWaitForProcessScript( 
+                    exeName, pidFileName, 
+                    timeOutSeconds, onTimeout,
+                    isWaitForStart, 
+                    isDeletePidFile=isDeletePidFile,
+                    isExitOnSuccess=isExitOnSuccess, 
+                    isExitOnNoWait=isExitOnNoWait,
+                    isExitOnTimeout=isExitOnTimeout, 
+                    isSelfDestruct=isSelfDestruct ) 
+            )
+        )
+                                    
     if IS_WINDOWS:
 
         @staticmethod
@@ -6052,11 +6150,106 @@ if( $env:PROCESSOR_ARCHITEW6432 -eq "AMD64" ) {
         def __psSetBitContext( isAutoBitContext ): 
             return( "" if isAutoBitContext else 
                     QtIfwExternalOp.__PS_32_TO_64_BIT_CONTEXT_HEADER )
+       
+        @staticmethod
+        def __toPsBool( b ): return "$" + str(b).lower()
+       
+        @staticmethod
+        def __psWaitForProcessScript( exeName, pidFileName, 
+               timeOutSeconds=30, onTimeout=None,  
+               isWaitForStart=False,
+               isDeletePidFile=False,  
+               isExitOnSuccess=False, isExitOnNoWait=False, isExitOnTimeout=False, # Note: $isWaitTimeout can be checked           
+               isSelfDestruct=False,
+               isAutoBitContext=True ):            
+            psScriptTemplate=(
+r"""
+{setBitContext}
+
+$waitForExeName    = "{exeName}"
+$waitTimeOutSecs   = {timeOutSeconds}
+$isWaitForStart    = {isWaitForStart}
+$isDeletePidFile   = {isDeletePidFile}
+$isWaitTimeout     = $false
+
+$waitForPid=$null
+if( (Test-Path "{pidFilePath}" -PathType Leaf) ) { 
+    $waitForPid = ( Get-Content -Path "{pidFilePath}" )
+    if( $waitForPid ){ $waitForPid = $waitForPid.Trim() }    
+    if( $isDeletePidFile ){ Remove-Item -Path "{pidFilePath}" -Force } 
+}              
+
+if( $waitForPid ){ $filter = "ProcessId = $waitForPid" }
+else {             $filter = "Name = '$waitForExeName'" } # case insensitive
+#Write-Host "process list filter: $filter" # debug
+
+$queryResult = Get-WmiObject win32_process -Filter $filter  
+#Write-Host "queryResult: $queryResult" # debug
+
+if( ($isWaitForStart -and $queryResult) -or 
+    (!$isWaitForStart -and !$queryResult) ){ 
+    {selfDestructOnNoWait}
+    {exitOnNoWait}
+}
+else{    
+    if( $waitForPid ){ Write-Host "Waiting for: $waitForPid" }
+    else {             Write-Host "Waiting for: $waitForExeName" }    
+    $waitedForProcSecs = 0    
+    while( !$isWaitTimeout -and
+           (($isWaitForStart -and !$queryResult) -or 
+            (!$isWaitForStart -and $queryResult)) ){
+        Write-Host "." -NoNewline
+        Start-Sleep -s 1
+        if( $waitTimeOutSecs ) {
+            $waitedForProcSecs += 1
+            if( $waitedForProcSecs -eq $waitTimeOutSecs ){ $isWaitTimeout = $true}
+        }
+        if( !$isWaitTimeout ) 
+            { $queryResult = Get-WmiObject win32_process -Filter $filter }
+    }
+    Write-Host "Done!"
+}
+{selfDestruct}
+if( $isWaitTimeout ){
+{onTimeout} 
+{exitOnTimeout} 
+}
+{exitOnSuccess}
+""") 
+            
+            selfDestruct = QtIfwExternalOp.powerShellSelfDestructSnippet()            
+            return str( ExecutableScript( "", script=psScriptTemplate,
+                replacements={
+                      "setBitContext": QtIfwExternalOp.__psSetBitContext( 
+                        isAutoBitContext )                      
+                    , "exeName": exeName if exeName else ""
+                    , "pidFilePath": QtIfwExternalOp.opDataPath( pidFileName )                                         
+                    , "timeOutSeconds":( timeOutSeconds if timeOutSeconds 
+                        else QtIfwExternalOp.__toPsBool( False ) )
+                    , "isWaitForStart": QtIfwExternalOp.__toPsBool(
+                        isWaitForStart )
+                    , "isDeletePidFile": QtIfwExternalOp.__toPsBool(
+                        isDeletePidFile )                      
+                    , "exitOnNoWait": ( 
+                        "[Environment]::Exit( %d )" % 
+                        (QtIfwExternalOp.__NO_WAIT_EXIT_CODE,)
+                        if isExitOnNoWait else "" )     
+                    , "selfDestructOnNoWait" : ( selfDestruct
+                        if isExitOnNoWait and isSelfDestruct else "" )
+                    , "selfDestruct": selfDestruct if isSelfDestruct else ""
+                    , "exitOnTimeout": ( 
+                        "[Environment]::Exit( %d )" % 
+                        (QtIfwExternalOp.__TIMEOUT_EXIT_CODE,)
+                        if isExitOnTimeout else "" )
+                    , "onTimeout": onTimeout if onTimeout else ""
+                    , "exitOnSuccess" : ( "[Environment]::Exit( 0 )" 
+                        if isExitOnSuccess else "" )                                                                                  
+                } ) )
                     
         @staticmethod
         def __psFindWindowsAppUninstallCmd( appName, isAutoBitContext,
                                             isExitOnNotFound=False,
-                                            isSelfDestruct=False ):            
+                                            isSelfDestructOnNotFound=False ):            
             psScriptTemplate=(
 r"""
 {setBitContext}
@@ -6094,18 +6287,19 @@ else{
     Write-Host "OS registered uninstall command for {appName}: $UninstallCmd"
 }
 """) 
-            exitOnNotFound =( "[Environment]::Exit( %d )" % 
-                              (QtIfwExternalOp.__NOT_FOUND_EXIT_CODE,)
-                              if isExitOnNotFound else "" ) 
             return str( ExecutableScript( "", script=psScriptTemplate,
                 replacements={
                       "setBitContext": QtIfwExternalOp.__psSetBitContext( 
                                             isAutoBitContext )
                     , "appName" : appName
-                    , "exitOnNotFound": exitOnNotFound     
+                    , "exitOnNotFound": ( 
+                        "[Environment]::Exit( %d )" % 
+                        (QtIfwExternalOp.__NOT_FOUND_EXIT_CODE,)
+                        if isExitOnNotFound else "" )     
                     , "selfDestructOnNotFound" : (
                         QtIfwExternalOp.powerShellSelfDestructSnippet()
-                        if isSelfDestruct and exitOnNotFound else "" )                                                             
+                        if isExitOnNotFound and isSelfDestructOnNotFound 
+                        else "" )                                                             
                 } ) )
 
         @staticmethod
@@ -6138,7 +6332,7 @@ if( $UninstallCmd ){ Out-File -FilePath "{tempFilePath}" }
             psScriptTemplate=(
                 QtIfwExternalOp.__psFindWindowsAppUninstallCmd( 
                     appName, isAutoBitContext, isExitOnNotFound=True,
-                    isSelfDestruct=isSelfDestruct ) +                 
+                    isSelfDestructOnNotFound=isSelfDestruct ) +                 
 r"""
 # Tweak QtIFW / Distbuilder commands
 if( $UninstallCmd.tolower().Contains( "maintenancetool.exe" ) ){
@@ -6436,6 +6630,16 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
                 , 'errorCode': errorCode
             }) )
 
+        # TODO: FILL IN!         
+        @staticmethod
+        def __shWaitForProcessScript( exeName, pidFileName, 
+               timeOutSeconds=30, onTimeout=None, 
+               isWaitForStart=False,
+               isDeletePidFile=False, 
+               isExitOnSuccess=False, isExitOnNoWait=False, isExitOnTimeout=False, 
+               isSelfDestruct=False ):            
+            return ""
+    
     # QtIfwExternalOp
     def __init__( self,                                                       # [0]
               script=None,       exePath=None,       args=None, successRetCodes=None,  
@@ -7586,12 +7790,13 @@ def _stageInstallerPackages( qtIfwConfig, isSilent ):
     __initBuild( qtIfwConfig )    
     __addInstallerResources( qtIfwConfig )     
 
-def _buildInstaller( qtIfwConfig, isSilent ):    
+def _buildInstaller( qtIfwConfig, isSilent, codeSignConfig ):    
     for pkg in qtIfwConfig.packages:
         if pkg._isMergeProduct:
             __genQtIfwCntrlRes( qtIfwConfig )
             break          
     setupExePath = __build( qtIfwConfig )    
+    if isSilent and codeSignConfig: signExe( setupExePath, codeSignConfig )
     __postBuild( qtIfwConfig )
     if isSilent : setupExePath = __buildSilentWrapper( qtIfwConfig )
     return setupExePath
@@ -7606,7 +7811,10 @@ def __validateConfig( qtIfwConfig ):
     if qtIfwConfig.packages is None :
         raise DistBuilderError( "Package specification(s)/definition(s) required" )
     for p in qtIfwConfig.packages :
-        if p.pkgType==QtIfwPackage.Type.RESOURCE: continue
+        if p.pkgType in( QtIfwPackage.Type.RAW
+                       , QtIfwPackage.Type.DATA  
+                       , QtIfwPackage.Type.RESOURCE
+                       ): continue
         if p.srcDirPath is None:
             if p.srcExePath is None:
                 raise DistBuilderError( "Package Source directory OR exe path required" )
@@ -7673,7 +7881,9 @@ def __initBuild( qtIfwConfig ) :
                     __addArchive( res.srcPath, p, qtIfwConfig, 
                                   archiveRootName=res.name )        
         
-        if not p.pkgType==QtIfwPackage.Type.RESOURCE: stageContent( p )
+        if p.pkgType not in ( QtIfwPackage.Type.RESOURCE 
+                            , QtIfwPackage.Type.DATA ): 
+            stageContent( p )
         stageAdditionalResources( p )
                                         
     print( "Build directory created: %s" % (BUILD_SETUP_DIR_PATH,) )

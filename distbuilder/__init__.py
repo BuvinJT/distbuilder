@@ -64,6 +64,7 @@ from distbuilder.qt_installer import(
     , joinPathQtIfw 
     , qtIfwDynamicValue 
     , qtIfwOpDataPath 
+    , qtIfwDetachedOpDataPath
     , QT_IFW_VERBOSE_SWITCH 
     , QT_IFW_DYNAMIC_VARS 
     , QT_IFW_TARGET_DIR 
@@ -77,6 +78,7 @@ from distbuilder.qt_installer import(
     , QT_IFW_USER_STARTMENU_DIR 
     , QT_IFW_ALLUSERS_STARTMENU_DIR 
     , QT_IFW_ROOT_DIR 
+    , QT_IFW_TEMP_DIR
     , QT_IFW_SCRIPTS_DIR 
     , QT_IFW_INSTALLER_TEMP_DIR 
     , QT_IFW_MAINTENANCE_TEMP_DIR 
@@ -149,7 +151,8 @@ from distbuilder.util import(
     , IS_INTEL_CPU 
     , THIS_DIR 
     , CURRENT_USER, ALL_USERS 
-    , DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE 
+    , DEBUG_ENV_VAR_NAME, DEBUG_ENV_VAR_VALUE
+    , ALL 
     , absPath 
     , homePath
     , desktopPath     
@@ -176,7 +179,12 @@ from distbuilder.util import(
     , rootFileName 
     , normBinaryName 
     , normIconName 
-    , normLibName 
+    , normLibName
+    , allPathPattern
+    , extPathPattern 
+    , startsWithPathPattern
+    , endsWithPathPattern
+    , containsPathPattern
     , copyToDir 
     , moveToDir 
     , removeFromDir 

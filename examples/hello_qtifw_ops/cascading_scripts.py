@@ -1,12 +1,15 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
     QtIfwControlScript, QtIfwPackageScript, \
     QtIfwExternalOp, ExecutableScript, \
-    qtIfwOpDataPath, qtIfwDynamicValue, \
+    qtIfwOpDataPath, qtIfwDetachedOpDataPath, qtIfwDynamicValue, \
     IS_WINDOWS, QT_IFW_DESKTOP_DIR, QT_IFW_HOME_DIR, QT_IFW_APPS_X86_DIR, \
     joinPath 
     
 ON_INSTALL = QtIfwExternalOp.ON_INSTALL
 opDataPath = QtIfwExternalOp.opDataPath
+
+DEMO_ARG_TO_OPS_KEY = "user_op_arg"
+DEMO_ARG_TO_OPS_FILE_NAME = DEMO_ARG_TO_OPS_KEY
 
 if IS_WINDOWS:
     APP_FOUND_FILENAME = "AppFound"
@@ -26,7 +29,39 @@ f.setupName        = "HelloIfwCascadingScriptsSetup"
 class BuildProcess( PyToBinInstallerProcess ):
     def onQtIfwConfig( self, cfg ):    
 
-        def customizeFinishedPage( cfg ):
+        def refineIntroductionPage( cfg ):
+            # On the first wizard page (which is still programmatically 
+            # processed by silent installers btw...), once all other resources 
+            # have loaded:
+            #
+            # Create a "operations data file". Selectively do this in 
+            # either install mode, maintain mode, or both. 
+            #
+            # The data for such might be derived in many ways. In this demo,
+            # we use a value supplied at run time as a program argument.                        
+            #
+            # To test, execute either the installer or uninstaller from a 
+            # terminal supplying an argument `"user_op_arg=my test data"`.  
+            # Then, observe the file created with this same base name in the 
+            # temp directory (or sub temp directory) upon launching the 
+            # installer/uninstaller.  This illustrates where other custom 
+            # "operations" could fetch this information dynamically. 
+            #
+            # You wish to optionally test this: 
+            #     QtIfwControlScript.writeDetachedOpDataFile
+            # With that, the temp file will persist beyond the life 
+            # of the installer or uninstaller...            
+            #
+            writeArgOpFileSnippet = QtIfwControlScript.writeOpDataFile(
+                DEMO_ARG_TO_OPS_FILE_NAME, 
+                QtIfwControlScript.lookupValue( DEMO_ARG_TO_OPS_KEY ), 
+                isAutoQuote=False )  
+            cfg.controlScript.introductionPageOnInstall  = (
+                writeArgOpFileSnippet ) 
+            cfg.controlScript.introductionPageOnMaintain = (
+                writeArgOpFileSnippet )
+
+        def refineFinishedPage( cfg ):
             # Disable the run program check box by default, for this example. 
             cfg.controlScript.isRunProgChecked = False
 
@@ -66,9 +101,10 @@ class BuildProcess( PyToBinInstallerProcess ):
                 uninstScript=QtIfwExternalOp.RemoveFileScript( destFilePath ) )
 
         # An installer variable may be set somewhere in the QtScript...
-        def setInstallerVaribale( pkgScript, varName, value ):
-            # Package Script preOpSupport is a convenient place to test this
-            # Change the value assigned to test the results...
+        def setInstallerVarInPreOp( pkgScript, varName, value ):
+            # Package Script preOpSupport may be a convenient place to
+            # set values dynamically (during installation).
+            # As demo, change the value assigned to see the results...
             pkgScript.preOpSupport = QtIfwPackageScript.setValue( 
                 varName, value )  
  
@@ -131,14 +167,15 @@ class BuildProcess( PyToBinInstallerProcess ):
         TIME_FILE_NAME              = "timeData"
         TIME_FETCH_FILE_NAME        = "cascadingTime.txt"
 
-        customizeFinishedPage( cfg )                                
+        refineIntroductionPage( cfg )
+        refineFinishedPage( cfg )                                
         pkg = cfg.packages[0]
 
         # comment any / all of these out to test!
-        setInstallerVaribale( pkg.pkgScript, VAR_NAME, QT_IFW_HOME_DIR )   
-        #setInstallerVaribale( pkg.pkgScript, VAR_NAME, 
+        setInstallerVarInPreOp( pkg.pkgScript, VAR_NAME, QT_IFW_HOME_DIR )   
+        #setInstallerVarInPreOp( pkg.pkgScript, VAR_NAME, 
         #                      QtIfwControlScript.toBool( True ) )
-        #setInstallerVaribale( pkg.pkgScript, VAR_NAME, 
+        #setInstallerVarInPreOp( pkg.pkgScript, VAR_NAME, 
         #                      QtIfwControlScript.toBool( False ) )
                         
         pkg.pkgScript.externalOps += [ 
@@ -160,7 +197,7 @@ class BuildProcess( PyToBinInstallerProcess ):
         ]         
 
         if IS_WINDOWS:
-            APP_NAME     = "Hello Installer Conveniences Example"
+            APP_NAME     = "Hello Cascading Ops Example"
             COMPANY_NAME = "Some Company"
             EXE_NAME     = "RunConditionsTest.exe"            
             IS_32BIT_REG = False
