@@ -1839,7 +1839,7 @@ class _QtIfwScript:
             (2*TAB) + 'return path' + END + 
             TAB + EBLK +            
             '};' + NEW +
-            'function isMaintenanceTool() ' + SBLK +  # TODO: Test in NIX/MAC            
+            'function isMaintenanceTool() ' + SBLK +  # TODO: Test on MAC            
             TAB + 'var isMaintenance = false' + END + 
             TAB + 'var __isMaintenance = installer.value( "__isMaintenance", "" )' + END + 
             TAB + 'if( __isMaintenance === "" ) ' + SBLK +
@@ -1857,7 +1857,7 @@ class _QtIfwScript:
             EBLK + NEW +            
             # TODO: This logic could possibly fail when installers / uninstallers 
             # for *other* programs are running at the same time...          
-            'function __lockFilePath() ' + SBLK +  # TODO: Test in NIX/MAC            
+            'function __lockFilePath() ' + SBLK +  # TODO: Test on MAC            
             TAB + 'var path = installer.value( "__lockFilePath", "" )' + END +
             TAB + 'if( path === "" ) ' + SBLK +                        
             (2*TAB) + 'var lockFileName = ""' + END +
@@ -1884,7 +1884,7 @@ class _QtIfwScript:
             TAB + EBLK +                         
             TAB + 'return path' + END +
             EBLK + NEW +            
-            'function __launchWatchDog() ' + SBLK +  # TODO: Test in NIX/MAC            
+            'function __launchWatchDog() ' + SBLK +  # TODO: Test on MAC            
             TAB + 'var watchDogPath = installer.value( "__watchDogPath", "" )' + END +
             TAB + 'if( watchDogPath === "" ) ' + SBLK +            
             (2*TAB) + ('watchDogPath = __tempPath( "%s%s" )' % 
@@ -1907,10 +1907,10 @@ class _QtIfwScript:
             (2*TAB) + '"while [ -f \\"" + __lockFilePath() + "\\" ]; do\\n" + ' + NEW +            
             (2*TAB) + '"    sleep 3\\n" + ' + NEW +
             (2*TAB) + '"done\\n" + ' + NEW +
-            (2*TAB) + '"rm -R \\"" + Dir.temp() + "\\"\\n" + ' + NEW +
-            (2*TAB) + '"rm -f \\"" + watchDogPath + "\\"\\n" ' + END +                         
+            (2*TAB) + '"rm -R \\"" + Dir.temp() + "\\" 2> /dev/null\\n" + ' + NEW +
+            (2*TAB) + '"rm -f \\"" + watchDogPath + "\\" 2> /dev/null\\n"' + END +                         
             TAB + 'executeShellScriptDetached( watchDogPath, sh )' + END
-            ) + # TODO: FILLIN!!            
+            ) +   
             EBLK + NEW +
             'function __envTempPath() ' + SBLK +              
             TAB + 'return isWindows() ? getEnv("temp") : "/tmp"' + END +                  
@@ -1949,10 +1949,10 @@ class _QtIfwScript:
             TAB + EBLK + 
             TAB + 'return dirPath' + END +             
             EBLK + NEW +
-            'function __installerPrefix() ' + SBLK +  # TODO: Test in NIX/MAC            
+            'function __installerPrefix() ' + SBLK +  # TODO: Test on MAC            
             TAB + 'return rootFileName( installer.value("InstallerFilePath") )' + END +                  
             EBLK + NEW +
-            'function __maintenanceToolPrefix() ' + SBLK +  # TODO: Test in NIX/MAC            
+            'function __maintenanceToolPrefix() ' + SBLK +  # TODO: Test on MAC            
             TAB + ('return rootFileName( "%s" )' % (_QtIfwScript.MAINTENANCE_TOOL_NAME,)) + END +                  
             EBLK + NEW +       
             'function resolveQtIfwPath( path ) ' + SBLK +
@@ -2561,12 +2561,14 @@ class _QtIfwScript:
             NEW +                  
             TAB + '// Note: isElevated is already applied in the standard use case context. ' + NEW +
             TAB + '// *Dropping back to the real user* would be the thing to optionally enforce...' + NEW +
-            TAB + 'var XVFB_RUN = "xvfb-run"' +  END +            
+            TAB + 'var XVFB_RUN = "xvfb-run"' +  END +
+            TAB + 'var XVFB_AUTO_ASSIGN_SERVER_NUM_ARG = "-a"' +  END +
             TAB + 'var xvfbArgs = []' +  END +
+            TAB + 'xvfbArgs.push( XVFB_AUTO_ASSIGN_SERVER_NUM_ARG )' +  END +            
             TAB + 'xvfbArgs.push( binPath )' +  END +
             TAB + 'for( i=0; i < args.length; i++ ) xvfbArgs.push( args[i] )' + END +
-            TAB + 'var xvfbCmd = XVFB_RUN + " " + binPath' +  END +            
-            TAB + 'for( i=0; i < xvfbArgs.length; i++ ) xvfbCmd += " " + xvfbArgs[i]' + END +
+            TAB + 'var xvfbCmd = XVFB_RUN + " " + XVFB_AUTO_ASSIGN_SERVER_NUM_ARG' + END +            
+            TAB + 'for( i=1; i < xvfbArgs.length; i++ ) xvfbCmd += " \\"" + xvfbArgs[i] + "\\""' + END +
             _QtIfwScript.log( '"Invoking gui process on an offscreen frame buffer with: " '
                               '+ xvfbCmd', isAutoQuote=False ) +                                             
             TAB + 'var result = installer.execute( XVFB_RUN, xvfbArgs )' +  END +
@@ -2578,8 +2580,9 @@ class _QtIfwScript:
             (2*TAB) + 'if( isXvfbUnInstall ) ' + NEW +
                 (3*TAB) + _QtIfwScript.log( '...Uninstalled Xvfb.') +    
             (2*TAB) + ELSE + NEW +                   
-                (3*TAB) + _QtIfwScript.log( 'Could NOT uninstall Xvfb!') +
-            TAB + EBLK +                                  
+                (3*TAB) + _QtIfwScript.log( 'Could NOT uninstall Xvfb!' ) +
+            TAB + EBLK +                          
+            TAB + _QtIfwScript.log( '"stdout/err:" + result[0]', isAutoQuote=False ) +         
             TAB + 'if( result[1] != 0 ) ' + NEW  +
                 'quit( "Could not run xvfb sub process", true )' + END                                                                                                                      
             )

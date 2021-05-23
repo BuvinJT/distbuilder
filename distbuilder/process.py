@@ -888,8 +888,8 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
             self.onPyPackageProcess( key, prc )    
             pyBinPrcs.append( prc )        
 
+        iExpressBinPrcs = []
         if IS_WINDOWS:
-            iExpressBinPrcs = []
             for key, factory in iteritems( iExpressPkgConfigFactoryDict ) :        
                 if factory is None :
                     factory = ConfigFactory.copy( masterConfigFactory )
