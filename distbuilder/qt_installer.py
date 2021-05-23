@@ -5296,10 +5296,10 @@ if [ "${dirname%$tmp}" != "/" ]; then dirname="$PWD/$dirname"; fi
                       
         if IS_LINUX : 
             __GUI_SUDO = ( 'export ' + util._ASKPASS_ENV_VAR + '="' +
-                QT_IFW_ASKPASS_PLACEHOLDER + '"; sudo ' ) 
+                QT_IFW_ASKPASS_PLACEHOLDER + '"; sudo -E ' ) 
             __TMP_GUI_SUDO = ( 'export ' + util._ASKPASS_ENV_VAR + '=' +
                 '$(cat "' + QT_IFW_ASKPASS_TEMP_FILE_PATH + '"); ' +
-                'sudo ' )
+                'sudo -E ' )
                         
         elif IS_MACOS :
             __GUI_SCRIPT_HDR = (
@@ -5511,8 +5511,7 @@ osascript -e "do shell script \\\"${shscript}\\\" with administrator privileges"
                             (QtIfwExeWrapper.__SET_ENV_VAR_TMPLT % (k, v)) )
                     script += '\n'     
                 launch = QtIfwExeWrapper.__EXECUTE_PROG_TMPLT    
-                sudo =( QtIfwExeWrapper.__SUDO 
-                        if self.isElevated and not self.isGui else "") 
+                sudo = QtIfwExeWrapper.__SUDO if self.isElevated else "" 
                 cdCmd = ""
                 if self.workingDir :
                     if self.workingDir==QT_IFW_TARGET_DIR :
