@@ -687,9 +687,11 @@ class QtIfwPackage:
                   resBasePath=None, isTempSrc=False, 
                   pkgXml=None, pkgScript=None,
                   licenses=None, uiPages=None, widgets=None ) :
+        
         # internal id / type
         self.pkgId     = pkgId
         self.pkgType   = pkgType       
+        
         # QtIFW definition        
         self.name      = name
         self.pkgXml    = pkgXml
@@ -698,12 +700,14 @@ class QtIfwPackage:
         self.widgets   = widgets if widgets else []
         self.licenses  = licenses if licenses else {}
         self.isLicenseFormatPreserved = False        
+        
         # content        
         self.srcDirPath    = srcDirPath
         self.srcExePath    = srcExePath
         self.resBasePath   = resBasePath
         self.distResources = None        
         self.isTempSrc     = isTempSrc                     
+        
         # extended content detail        
         self.subDirName      = subDirName 
         self.exeName         = None           
@@ -711,7 +715,7 @@ class QtIfwPackage:
         self.exeWrapper      = None # class QtIfwExeWrapper        
         self.codeSignTargets = None # list of relative paths within package 
         self.qtCppConfig     = None
-        
+                
         self._isMergeProduct = False
         
     def dirPath( self ) :
@@ -4547,6 +4551,10 @@ Component.prototype.%s = function(){
         self.bundledScripts   = bundledScripts if bundledScripts else []
         self.installResources = installResources if installResources else []
 
+        # external dependencies (LINUX / MAC only)
+        self.externalDependencies     = []
+        self.areDependenciesPreserved = True
+
         self.uiPages          = uiPages if uiPages else []
         self.widgets          = widgets if widgets else []
                 
@@ -5885,6 +5893,24 @@ class QtIfwExternalOp:
                         QtIfwExternalResource.RESOURCE_HACKER ) ] )                            
             ]
 
+    if IS_MACOS or IS_LINUX:
+
+        @staticmethod
+        def InstallExternPackage( event, altPkgNames ):
+            return QtIfwExternalOp.__genScriptOp( event, 
+                script=QtIfwExternalOp.InstallExternPackageScript( 
+                    altPkgNames, isExitOnFailure=True ),
+                uninstScript=QtIfwExternalOp.UninstallExternPackageScript( 
+                    altPkgNames, isExitOnFailure=True ), isElevated=True )
+
+        @staticmethod
+        def UninstallExternPackage( event, altPkgNames ):
+            return QtIfwExternalOp.__genScriptOp( event, 
+                script=QtIfwExternalOp.UninstallExternPackageScript( 
+                    altPkgNames, isExitOnFailure=True ),
+                uninstScript=QtIfwExternalOp.InstallExternPackageScript( 
+                    altPkgNames, isExitOnFailure=True ), isElevated=True )
+
     # Script Builders
     # -----------------
     @staticmethod
@@ -6074,7 +6100,7 @@ class QtIfwExternalOp:
                     isSelfDestruct=isSelfDestruct ) 
             )
         )
-                                    
+
     if IS_WINDOWS:
 
         @staticmethod
@@ -6602,24 +6628,7 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
                 "removeIconDir": removeIconDir } )
  
     if IS_MACOS or IS_LINUX:
-         
-        # TODO: TEST
-        @staticmethod
-        def __shExitIfFalseVar( varName, isNegated=False, errorCode=0 ):
-            if varName is None: return ""
-            return str( ExecutableScript( "", script=([
-                  'reqFlag="{varName}"'               
-                , '[ "{reqFlag}"=="{undef}" ] && reqFlag="false"'
-                , '[ "{reqFlag}"=="" ] && reqFlag="false"'
-                , '[ "{reqFlag}"=="0" ] && reqFlag="false"'
-                , '[ {negate}"{reqFlag}"=="false" ] && exit {errorCode}'   
-            ]), replacements={
-                  'negate' : ('' if isNegated else '! ')  
-                , 'varName' : qtIfwDynamicValue( varName )
-                , 'errorCode': errorCode
-                , 'undef' : QT_IFW_UNDEF_VAR_VALUE
-            }) )
-
+    
         # TODO: TEST         
         @staticmethod
         def __shExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):
@@ -6641,7 +6650,143 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
                isExitOnSuccess=False, isExitOnNoWait=False, isExitOnTimeout=False, 
                isSelfDestruct=False ):            
             return ""
+
+        # TODO: TEST
+        @staticmethod
+        def InstallExternPackageScript( altPkgNames, isExitOnFailure=False ):
+            if not isinstance( altPkgNames, list ): altPkgNames=[altPkgNames]
+            exitOnFailure =( 
+r"""
+if [ $? != 0 ]; then
+    if [ assertPackageManagement ]; then
+        echo "Package could not be installed: {altPkgNames}" > 2
+        exit 1    
+    fi
+fi 
+""" if isExitOnFailure else  "" )
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "installPackage" ), script=[
+                      '{packageManagementSnippet}'
+                    , 'installPackage {altPkgNames}'                  
+                    , '{exitOnFailure}'  
+                    ], replacements={ 
+                      "packageManagementSnippet": (
+                        QtIfwExternalOp.__shLinuxPackageManagementSnippet() 
+                        if IS_LINUX else 
+                        QtIfwExternalOp.__shMacosPackageManagementSnippet() )
+                    , "altPkgNames": " ".join( altPkgNames )
+                    , "exitOnFailure" : exitOnFailure 
+                    })
+
+        # TODO: TEST
+        @staticmethod
+        def UninstallExternPackageScript( altPkgNames, isExitOnFailure=False ):
+            if not isinstance( altPkgNames, list ): altPkgNames=[altPkgNames]
+            exitOnFailure =( 
+r"""
+if [ $? != 0 ]; then
+    if [ assertPackageManagement ]; then
+        echo "Package could not be uninstalled: {altPkgNames}" > 2
+        exit 1    
+    fi
+fi 
+""" if isExitOnFailure else  "" )
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "uninstallPackage" ), script=[
+                      '{packageManagementSnippet}'
+                    , 'uninstallPackage {altPkgNames}'                  
+                    , '{exitOnFailure}'  
+                    ], replacements={ 
+                      "packageManagementSnippet": (
+                        QtIfwExternalOp.__shLinuxPackageManagementSnippet() 
+                        if IS_LINUX else 
+                        QtIfwExternalOp.__shMacosPackageManagementSnippet() )
+                    , "altPkgNames": " ".join( altPkgNames )
+                    , "exitOnFailure" : exitOnFailure 
+                    })
+             
+        # TODO: TEST
+        @staticmethod
+        def __shLinuxPackageManagementSnippet():
+            return (
+r"""
+isPackageManagement(){
+    [ ! _isDpkgInstalled ] && [ ! _isRpmInstalled ] && false 
+    [ ! _isAptInstalled ] && [ ! _isYumInstalled ] && false 
+}
+
+assertPackageManagement(){
+    if [ ! isPackageManagement ]; then
+        echo "Package management is not available." > 2
+        exit 1
+    fi
+}
+
+isPackageInstalled(){
+    if [ _isDpkgInstalled ]; then  dpkg -l $1 > /dev/null
+    elif [ _isRpmInstalled ]; then rpm -q $1 >  /dev/null
+    else                           false; fi
+} 
+
+# takes a space delimited list of alternate names for a given package 
+installPackage(){
+    # iterate over the list and return success if any are already installed  
+    for pkg in "$@"; do; [ isPackageInstalled $pkg ] && return; done
     
+    # iterate over the list again and return success if any can be installed 
+    for pkg in "$@"; do; [ __installPackage $pkg ] && return; done
+    
+    # indicate failure if still here
+    false
+}
+
+# takes a space delimited list of alternate names for a given package 
+uninstallPackage(){
+    # iterate over the list and return success if none are currently installed
+    __isInst=0;  
+    for pkg in "$@"; do; [ isPackageInstalled $pkg ] && __isInst=1; done
+    [ $__isInst == 0 ] && return 
+    
+    # iterate over the list again and return the result of installing the 
+    # first item which is installed
+    for pkg in "$@"; do 
+        if [ isPackageInstalled $pkg ]; then
+            __uninstallPackage $pkg
+            return
+        fi 
+    done
+}
+
+_isAptInstalled(){ __isPackageManagerInstalled "apt"; }
+
+_isDpkgInstalled(){ __isPackageManagerInstalled "dpkg"; }
+
+_isYumInstalled(){ __isPackageManagerInstalled "yum"; }
+
+_isRpmInstalled(){ __isPackageManagerInstalled "rpm"; }
+
+__isPackageManagerInstalled(){ $1 --help > /dev/null; }
+
+__installPackage(){
+    if [ _isAptInstalled ]; then   apt-get install -y $1
+    elif [ _isYumInstalled ]; then yum install -y $1
+    else                           false; fi
+} 
+
+__uninstallPackage(){
+    if [ _isAptInstalled ]; then   apt-get remove -y $1
+    elif [ _isYumInstalled ]; then yum remove -y $1
+    else                           false; fi 
+} 
+""")
+
+        # TODO: FILLIN
+        @staticmethod
+        def __shMacosPackageManagementSnippet():
+            return (
+r"""
+""")
+                            
     # QtIfwExternalOp
     def __init__( self,                                                       # [0]
               script=None,       exePath=None,       args=None, successRetCodes=None,  
@@ -7901,7 +8046,10 @@ def __addInstallerResources( qtIfwConfig ) :
                                       
     for p in qtIfwConfig.packages :
         if not isinstance( p, QtIfwPackage ) : continue
+
+        __addExternDependencyOps( p )
         __addLicenses( p )
+
         pkgXml = p.pkgXml              
         pkgScript = p.pkgScript       
         if pkgXml :            
@@ -7917,7 +8065,7 @@ def __addInstallerResources( qtIfwConfig ) :
 
         if p.uiPages: __addUiPages( qtIfwConfig, p ) 
         if p.widgets: __addWidgets( qtIfwConfig, p ) 
-
+        
         if p.pkgType == QtIfwPackage.Type.QT_CPP : 
             p.qtCppConfig.addDependencies( p )        
 
@@ -7992,7 +8140,20 @@ def __scrubLicenseText( text ):
     except UnicodeEncodeError:
         return text.encode('ascii', 'replace').decode('ascii')
     except: return ""
-    
+
+def __addExternDependencyOps( package ) :
+    if( IS_WINDOWS or
+        package.pkgScript.externalDependencies is None or 
+        len(package.pkgScript.externalDependencies)==0 ): return
+    print( "Adding external dependency operations..." )
+    if package.pkgScript.externalOps is None: package.pkgScript.externalOps=[]
+    event =( QtIfwExternalOp.ON_INSTALL 
+             if package.pkgScript.areDependenciesPreserved else
+             QtIfwExternalOp.AUTO_UNDO )
+    for altPkgNames in package.pkgScript.externalDependencies:
+        package.pkgScript.externalOps.insert( 0,
+            QtIfwExternalOp.InstallExternPackage( event, altPkgNames ) )
+            
 def __addLicenses( package ) :
     if package.licenses is None or len(package.licenses)==0: return
     print( "Adding licenses..." )

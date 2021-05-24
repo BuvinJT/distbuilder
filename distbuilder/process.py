@@ -119,12 +119,13 @@ class ConfigFactory:
         self.ifwPkgScriptPath = None        
         self.ifwPkgScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
         
-        self.pkgType            = None
-        self.pkgSubDirName      = None
-        self.pkgSrcDirPath      = None
-        self.pkgSrcExePath      = None
-        self.pkgExeWrapper      = None 
-        self.pkgCodeSignTargets = None
+        self.pkgType                 = None
+        self.pkgSubDirName           = None
+        self.pkgSrcDirPath           = None
+        self.pkgSrcExePath           = None
+        self.pkgExeWrapper           = None 
+        self.pkgCodeSignTargets      = None        
+        self.pkgExternalDependencies = None # LINUX / MAC only
 
         self.startOnBoot   = False
        
@@ -407,6 +408,9 @@ class ConfigFactory:
         
         if IS_LINUX and self.pkgExeWrapper:
             script.isAskPassProgRequired = self.pkgExeWrapper.isElevated
+
+        if IS_LINUX or IS_MACOS:
+            script.externalDependencies = self.pkgExternalDependencies
             
         return script
 
