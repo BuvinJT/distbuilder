@@ -99,8 +99,10 @@ else
 fi   
 """)
 elif IS_LINUX :
-    # Note this is not a "perfect" cross Linux distro / environment example,
-    # as this depends upon `gedit` and `screen` being present...
+    # Note this is not a "perfect" cross Linux distro example!
+    # This depends upon "gedit" (i.e. a GNOME based desktop is assumed),
+    # And this depends upon `screen` being available 
+    # (note on rhel: screen is not available without epel))...
     f.pkgExternalDependencies = [ "screen" ]
     textViewer = "gedit"
     launchScript = (

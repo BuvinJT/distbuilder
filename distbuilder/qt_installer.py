@@ -2258,7 +2258,8 @@ class _QtIfwScript:
             TAB + 'var path = Dir.toNativeSeparator( dirPath + "/" + fileName )' + END +            
             (TAB + 'b64 = "-----BEGIN CERTIFICATE-----\\n" + '
                    'b64 + "\\n-----END CERTIFICATE-----\\n"' + END 
-            if IS_WINDOWS else "" ) +
+            if IS_WINDOWS else 
+                TAB + 'var uname = __realUserName()' + END ) +
             TAB + 'writeFile( tempPath, b64 )' + END +                                 
             TAB + 'var decodeCmd = "' +
                 ('echo off\\n'                     
@@ -2266,7 +2267,9 @@ class _QtIfwScript:
                     '\\"" + path + "\\" >nul 2>nul\\n'
                     'echo " + path + "\\n' 
                  if IS_WINDOWS else
-                 'echo $(cat \\"" + tempPath + "\\" | base64) > \\"" + path + "\\";'
+                 'cat \\"" + tempPath + "\\" | base64 -d > \\"" + path + "\\"; ' +
+                 'chown " + uname + ":" + uname + " \\"" + path + "\\"; ' + 
+                 'chmod 777 \\"" + path + "\\"; ' +                   
                  'echo \\"" + path + "\\"' ) + '"' + END +      
             TAB + 'var result = installer.execute( ' +
                 ('"cmd.exe", ["/k"], decodeCmd' if IS_WINDOWS else
@@ -6654,16 +6657,7 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
         # TODO: TEST
         @staticmethod
         def InstallExternPackageScript( altPkgNames, isExitOnFailure=False ):
-            if not isinstance( altPkgNames, list ): altPkgNames=[altPkgNames]
-            exitOnFailure =( 
-r"""
-if [ $? != 0 ]; then
-    if [ assertPackageManagement ]; then
-        echo "Package could not be installed: {altPkgNames}" > 2
-        exit 1    
-    fi
-fi 
-""" if isExitOnFailure else  "" )
+            if isinstance( altPkgNames, string_types ): altPkgNames=[altPkgNames]
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "installPackage" ), script=[
                       '{packageManagementSnippet}'
@@ -6674,23 +6668,17 @@ fi
                         QtIfwExternalOp.__shLinuxPackageManagementSnippet() 
                         if IS_LINUX else 
                         QtIfwExternalOp.__shMacosPackageManagementSnippet() )
-                    , "altPkgNames": " ".join( altPkgNames )
-                    , "exitOnFailure" : exitOnFailure 
+                    , "exitOnFailure" : ( 
+                        'if [ $? != 0 ]; then '
+                        'assertPackageManagement && exit 1; fi' 
+                        if isExitOnFailure else '' )
+                    , "altPkgNames": " ".join( altPkgNames )                   
                     })
 
         # TODO: TEST
         @staticmethod
         def UninstallExternPackageScript( altPkgNames, isExitOnFailure=False ):
-            if not isinstance( altPkgNames, list ): altPkgNames=[altPkgNames]
-            exitOnFailure =( 
-r"""
-if [ $? != 0 ]; then
-    if [ assertPackageManagement ]; then
-        echo "Package could not be uninstalled: {altPkgNames}" > 2
-        exit 1    
-    fi
-fi 
-""" if isExitOnFailure else  "" )
+            if isinstance( altPkgNames, string_types ): altPkgNames=[altPkgNames]
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "uninstallPackage" ), script=[
                       '{packageManagementSnippet}'
@@ -6701,8 +6689,11 @@ fi
                         QtIfwExternalOp.__shLinuxPackageManagementSnippet() 
                         if IS_LINUX else 
                         QtIfwExternalOp.__shMacosPackageManagementSnippet() )
-                    , "altPkgNames": " ".join( altPkgNames )
-                    , "exitOnFailure" : exitOnFailure 
+                    , "exitOnFailure" : ( 
+                        'if [ $? != 0 ]; then '
+                        'assertPackageManagement && exit 1; fi' 
+                        if isExitOnFailure else '' )
+                    , "altPkgNames": " ".join( altPkgNames )                      
                     })
              
         # TODO: TEST
@@ -6711,32 +6702,38 @@ fi
             return (
 r"""
 isPackageManagement(){
-    [ ! _isDpkgInstalled ] && [ ! _isRpmInstalled ] && false 
-    [ ! _isAptInstalled ] && [ ! _isYumInstalled ] && false 
+    ! _isDpkgInstalled && ! _isRpmInstalled && false 
+    ! _isAptInstalled && ! _isYumInstalled && false 
 }
 
 assertPackageManagement(){
-    if [ ! isPackageManagement ]; then
-        echo "Package management is not available." > 2
+    if ! isPackageManagement; then
+        echo "Package management is not available." >&2
         exit 1
     fi
 }
 
 isPackageInstalled(){
-    if [ _isDpkgInstalled ]; then  dpkg -l $1 > /dev/null
-    elif [ _isRpmInstalled ]; then rpm -q $1 >  /dev/null
-    else                           false; fi
+    if _isDpkgInstalled ; then dpkg -l $1 > /dev/null
+    elif _isRpmInstalled; then rpm -q $1 >  /dev/null
+    else                       false; fi
 } 
 
 # takes a space delimited list of alternate names for a given package 
 installPackage(){
     # iterate over the list and return success if any are already installed  
-    for pkg in "$@"; do; [ isPackageInstalled $pkg ] && return; done
+    for pkg in "$@"; do 
+        isPackageInstalled $pkg && echo "This package is already installed: $pkg" && return 
+    done
     
     # iterate over the list again and return success if any can be installed 
-    for pkg in "$@"; do; [ __installPackage $pkg ] && return; done
+    # if a given alt name cannot be installed, just try the next
+    for pkg in "$@"; do 
+        __installPackage $pkg && echo "Installed package: $pkg" && return
+    done
     
     # indicate failure if still here
+    echo "Could not install package: $@" >&2
     false
 }
 
@@ -6744,14 +6741,18 @@ installPackage(){
 uninstallPackage(){
     # iterate over the list and return success if none are currently installed
     __isInst=0;  
-    for pkg in "$@"; do; [ isPackageInstalled $pkg ] && __isInst=1; done
-    [ $__isInst == 0 ] && return 
+    for pkg in "$@"; do isPackageInstalled $pkg && __isInst=1; done
+    [ $__isInst == 0 ] && echo "These packages are not installed: $@" && return 
     
     # iterate over the list again and return the result of installing the 
     # first item which is installed
     for pkg in "$@"; do 
-        if [ isPackageInstalled $pkg ]; then
-            __uninstallPackage $pkg
+        if isPackageInstalled $pkg; then             
+            if __uninstallPackage $pkg; then 
+                echo "Uninstalled package: $pkg" 
+            else     
+                echo "Could not uninstalled package: $pkg" >&2
+            fi    
             return
         fi 
     done
@@ -6768,15 +6769,25 @@ _isRpmInstalled(){ __isPackageManagerInstalled "rpm"; }
 __isPackageManagerInstalled(){ $1 --help > /dev/null; }
 
 __installPackage(){
-    if [ _isAptInstalled ]; then   apt-get install -y $1
-    elif [ _isYumInstalled ]; then yum install -y $1
-    else                           false; fi
+    if _isAptInstalled; then   
+        apt-get install -y $1
+    elif _isYumInstalled; then 
+        yum install -y $1
+    else false; fi
 } 
 
 __uninstallPackage(){
-    if [ _isAptInstalled ]; then   apt-get remove -y $1
-    elif [ _isYumInstalled ]; then yum remove -y $1
-    else                           false; fi 
+    if _isAptInstalled; then   
+        apt-get purge -y $1
+    elif _isYumInstalled; then
+        if _isRpmInstalled; then
+            for filePath in $(rpm -q --configfiles $1); do
+                echo "Removing ${filePath}"
+                rm -f "${filePath}"
+            done
+        fi
+        yum remove -y $1
+    else false; fi 
 } 
 """)
 
@@ -8150,7 +8161,9 @@ def __addExternDependencyOps( package ) :
     event =( QtIfwExternalOp.ON_INSTALL 
              if package.pkgScript.areDependenciesPreserved else
              QtIfwExternalOp.AUTO_UNDO )
-    for altPkgNames in package.pkgScript.externalDependencies:
+    # insert them into the beginning of the list, in the reverse order
+    # so that the original order is, in fact, preserved 
+    for altPkgNames in reversed( package.pkgScript.externalDependencies ):
         package.pkgScript.externalOps.insert( 0,
             QtIfwExternalOp.InstallExternPackage( event, altPkgNames ) )
             
