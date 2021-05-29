@@ -449,6 +449,7 @@ class QtIfwConfigXml( _QtIfwXml ):
                    , "Version"
                    , "Publisher"
                    , "InstallerApplicationIcon"
+                   , "InstallerWindowIcon"
                    , "Title"
                    , "TitleColor"
                    , "TargetDir"
@@ -490,17 +491,10 @@ class QtIfwConfigXml( _QtIfwXml ):
 
         self.companyTradeName = ( companyTradeName if companyTradeName 
                                   else publisher.replace(".","") )        
-        if IS_LINUX :
-            # qt installer does not support icon embedding in Linux
-            # TODO: use InstallerWindowIcon 
-            iconRootName = self.iconFilePath = None
-        else :    
-            self.iconFilePath = ( None if iconFilePath is None else 
-                                  normIconName( iconFilePath, 
-                                                isPathPreserved=True ) )        
-            try:    iconRootName = rootFileName( iconFilePath )
-            except: iconRootName = None
-       
+        self.iconFilePath = ( None if iconFilePath is None else 
+                              normIconName( iconFilePath, 
+                                            isPathPreserved=True ) )        
+      
         wizardStyleValue = QtIfwConfigXml._WizardStyles.get( 
                                 wizardStyle, None )
 
@@ -523,8 +517,12 @@ class QtIfwConfigXml( _QtIfwXml ):
         self.Name                     = name
         self.Version                  = version
         self.Publisher                = publisher
-        self.InstallerApplicationIcon = iconRootName
-                 
+                
+        if IS_LINUX:
+            self.InstallerWindowIcon      = baseFileName( self.iconFilePath )
+        else:
+            self.InstallerApplicationIcon = rootFileName( self.iconFilePath )
+                        
         self.Title                    = None # defaults to name (+ "Setup")       
         self.TitleColor               = None # HTML color code, such as "#88FF33"
                         
@@ -608,10 +606,8 @@ class QtIfwConfigXml( _QtIfwXml ):
     def _titleDisplayed( self ): return "%s Setup" % (self.Title,)
     
     def setDefaultPaths( self ) :
-        # NOTE: DON'T USE PATH FUNCTIONS HERE!
-        # USE RAW STRINGS with FORWARD SLASHES (/) 
-        # (QtIFW configs & scripts are happy with / cross platform)
-                
+        # NOTE: QtIFW configs & scripts want forward slashes / 
+        #       used cross platform                
         if self.companyTradeName and self.Name:
             # On macOS, self-contained "app bundles" are typically dropped 
             # into "Applications", but "traditional" directories e.g.
