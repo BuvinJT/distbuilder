@@ -1,6 +1,6 @@
-from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
-    QtIfwExternalOp, ExecutableScript, joinPath, \
-    QT_IFW_HOME_DIR, IS_WINDOWS, IS_MACOS
+from distbuilder import( PyToBinInstallerProcess, ConfigFactory, 
+    QtIfwExternalOp, ExecutableScript, joinPath, 
+    QT_IFW_HOME_DIR, IS_WINDOWS, IS_MACOS )
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Installer Embedded Scripts Example"

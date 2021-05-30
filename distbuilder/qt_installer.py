@@ -73,6 +73,7 @@ QT_IFW_APPS_DIR      = "@ApplicationsDir@"
 QT_IFW_INSTALLER_DIR      = "@InstallerDirPath@"
 QT_IFW_INTALLER_PATH      = "@InstallerFilePath@"   
 
+_QT_IFW_HOME_DIR             = "HomeDir" 
 _QT_IFW_DEFAULT_TARGET_DIR   = "DefaultTargetDir"   # CUSTOM!
 _QT_IFW_TEMP_DIR             = "TempDir"            # CUSTOM!
 _QT_IFW_SCRIPTS_DIR          = "ScriptsDir"         # CUSTOM!
@@ -891,6 +892,7 @@ class _QtIfwScript:
     AUTO_PILOT_CMD_ARG        = "auto"
     DRYRUN_CMD_ARG            = "dryrun"
     _KEEP_ALIVE_PATH_CMD_ARG  = "__keepalive"
+    _EMULATE_USER_CMD_ARG     = "__emulateuser"
     TARGET_EXISTS_OPT_CMD_ARG = "onexist"
     TARGET_EXISTS_OPT_FAIL    = "fail"
     TARGET_EXISTS_OPT_REMOVE  = "remove"
@@ -1812,6 +1814,15 @@ class _QtIfwScript:
             'var dynamicVars = [ ' + varsList + ' ]' + END +
             'var dynamicPathVars = [ ' + pathVarsList + ' ]' + END +
             NEW +                              
+            'function __applyUserEmulations()' + SBLK + 
+            TAB + 'if( isWindows() ) return; // not currently using this in Windows' + END +
+            TAB + 'var emulatedUserName = installer.value( "__emulateuser", "" )' + END +
+            TAB + 'if( emulatedUserName != "" && emulatedUserName != __realUserName() )' + SBLK +
+            (2*TAB) + _QtIfwScript.log( "Using emulated user account context..." ) +
+            # TODO: Expand upon this...      
+            (2*TAB) + 'installer.setValue( "HomeDir", "/home/" + emulatedUserName )' + END +
+            TAB+ EBLK + 
+            EBLK + NEW +      
             'function __realUserName()' + SBLK +
             TAB + 'if( isWindows() ) return ""; // not currently using this in Windows' + END +
             TAB + 'var realUserName = installer.value( "__realUserName", "" )' + END +
@@ -1820,9 +1831,9 @@ class _QtIfwScript:
             (2*TAB) + 'installer.setValue( "__realUserName", realUserName )' + END +
             (2*TAB) + _QtIfwScript.log( '"__realUserName: " + realUserName', 
                                         isAutoQuote=False ) +                             
-            EBLK + NEW +                                          
+            EBLK + NEW +                                                                                            
             TAB + 'return realUserName' + END +
-            EBLK + NEW +                                                   
+            EBLK + NEW +                                                          
             'var Dir = new function () ' + SBLK +
             TAB + 'this.temp = function () ' + SBLK +
             (2*TAB) + 'return isMaintenanceTool() ? __maintenanceTempPath() : ' + 
@@ -2020,9 +2031,11 @@ class _QtIfwScript:
             TAB + 'var isElevated=true' + END +  
             TAB + 'var args=[ "-v", ' +                     
                 '"' + _QtIfwScript.AUTO_PILOT_CMD_ARG + '=' +
-                _QtIfwScript.TRUE + '" ' + 
+                            _QtIfwScript.TRUE + '" ' + 
                 ', "' + _QtIfwScript.MAINTAIN_MODE_CMD_ARG + '=' + 
-                _QtIfwScript.MAINTAIN_MODE_OPT_REMOVE_ALL + '" ' 
+                            _QtIfwScript.MAINTAIN_MODE_OPT_REMOVE_ALL + '" ' +
+                (', "' + _QtIfwScript._EMULATE_USER_CMD_ARG + '=" + __realUserName()' 
+                 if IS_LINUX else '') +                                        
                 "]" + END +                
             TAB + _QtIfwScript.ifCmdLineSwitch( _QtIfwScript.DRYRUN_CMD_ARG ) +
                 'args.push( "' + _QtIfwScript.DRYRUN_CMD_ARG + '=true" )' + END +                     
@@ -2043,14 +2056,16 @@ class _QtIfwScript:
                 (3*TAB) + 'args.push( passthru[i] )' + END +            
             TAB + '}' + NEW +
             TAB + 'var exeResult' + END +
-            (TAB + 'var regPaths = maintenanceToolPaths()' + END + 
+            (
+             TAB + 'var regPaths = maintenanceToolPaths()' + END + 
              TAB + 'if( regPaths != null )' + SBLK +
             (2*TAB) + 'for( i=0; i < regPaths.length; i++ )' + SBLK +
                 (3*TAB) + 'executeHidden( regPaths[i], args, isElevated )' + END +
             (2*TAB) + EBLK +                        
             TAB + EBLK +
             TAB + 'else '
-            if IS_WINDOWS else TAB) +
+            if IS_WINDOWS else TAB
+            ) +
             _QtIfwScript.ifCmdLineArg( 
                 _QtIfwScript.TARGET_DIR_CMD_ARG ) +
                 'executeHidden( toMaintenanceToolPath( ' +
@@ -2581,18 +2596,39 @@ class _QtIfwScript:
             EBLK +
             NEW +                  
             TAB + '// Note: isElevated is already applied in the standard use case context. ' + NEW +
-            TAB + '// *Dropping back to the real user* would be the thing to optionally enforce...' + NEW +
+            TAB + '// *Downgrading back to the real user* is actually the thing to optionally enforce...' + NEW +
             TAB + 'var XVFB_RUN = "xvfb-run"' +  END +
-            TAB + 'var XVFB_AUTO_ASSIGN_SERVER_NUM_ARG = "-a"' +  END +
+            TAB + 'var XVFB_AUTO_ASSIGN_SERVER_NUM_SWITCH = "-a"' +  END +
             TAB + 'var xvfbArgs = []' +  END +
-            TAB + 'xvfbArgs.push( XVFB_AUTO_ASSIGN_SERVER_NUM_ARG )' +  END +            
+            TAB + 'xvfbArgs.push( XVFB_AUTO_ASSIGN_SERVER_NUM_SWITCH )' +  END +            
             TAB + 'xvfbArgs.push( binPath )' +  END +
             TAB + 'for( i=0; i < args.length; i++ ) xvfbArgs.push( args[i] )' + END +
-            TAB + 'var xvfbCmd = XVFB_RUN + " " + XVFB_AUTO_ASSIGN_SERVER_NUM_ARG' + END +            
-            TAB + 'for( i=1; i < xvfbArgs.length; i++ ) xvfbCmd += " \\"" + xvfbArgs[i] + "\\""' + END +
-            _QtIfwScript.log( '"Invoking gui process on an offscreen frame buffer with: " '
-                              '+ xvfbCmd', isAutoQuote=False ) +                                             
-            TAB + 'var result = installer.execute( XVFB_RUN, xvfbArgs )' +  END +
+            TAB + 'var xvfbCmd = XVFB_RUN' + END +            
+            TAB + 'for( i=0; i < xvfbArgs.length; i++ ) ' + SBLK +
+            (2*TAB) + 'var arg = xvfbArgs[i].indexOf(" ") < 0 ? xvfbArgs[i] : "\\"" + xvfbArgs[i] + "\\""' + END +
+            (2*TAB) + 'xvfbCmd += " " + arg' + END +
+            TAB + EBLK + 
+            TAB + 'if( isElevated ) ' + SBLK +
+            (2*TAB) + _QtIfwScript.log( '"Invoking gui process on an offscreen frame buffer with: " '
+                              '+ xvfbCmd', isAutoQuote=False ) +                                                    
+            (2*TAB) + 'var result = installer.execute( XVFB_RUN, xvfbArgs )' +  END +
+            TAB + EBLK +
+            TAB + ELSE + SBLK +                        
+            (2*TAB) + 'var SWITCH_USER = "su"' +  END +
+            (2*TAB) + 'var suArgs = []' +  END +
+            (2*TAB) + 'suArgs.push( __realUserName() )' +  END +
+            (2*TAB) + 'suArgs.push( "-c" )' +  END +
+            (2*TAB) + 'xvfbCmd = xvfbCmd.replace(/"/g, \'\\\\"\')' + END +
+            (2*TAB) + 'suArgs.push( xvfbCmd )' +  END +            
+            (2*TAB) + 'var suCmd = SWITCH_USER' + END +            
+            (2*TAB) + 'for( i=0; i < suArgs.length; i++ ) ' + SBLK +
+                (3*TAB) + 'var arg = suArgs[i].indexOf(" ") < 0 ? suArgs[i] : "\\"" + suArgs[i] + "\\""' + END +
+                (3*TAB) + 'suCmd += " " + arg' + END +            
+            (2*TAB) + EBLK +
+            _QtIfwScript.log( '"Invoking (downgraded) gui process on an offscreen frame buffer with: " '
+                              '+ suCmd', isAutoQuote=False ) +                                        
+            (2*TAB) + 'var result = installer.execute( SWITCH_USER, suArgs )' +  END +            
+            TAB + EBLK +
             NEW +
             TAB + 'if( !wasXvfbInstalled )' + SBLK +
             (2*TAB) + _QtIfwScript.log( '(Politely) Uninstalling Xvfb...') +            
@@ -3954,7 +3990,10 @@ Controller.prototype.Dynamic%sCallback = function() {
             (2*TAB) + _QtIfwScript.setBoolValue( _KEEP_TEMP_SWITCH, True ) +
             TAB + _QtIfwScript.setValue( _QtIfwScript._WIZARD_STYLE_KEY, 
                 self._wizardStyle if self._wizardStyle else 
-                QtIfwConfigXml._WizardStyles[QtIfwConfigXml.DEFAULT_WIZARD_STYLE] ) +   
+                QtIfwConfigXml._WizardStyles[QtIfwConfigXml.DEFAULT_WIZARD_STYLE] ) +
+            TAB + '__realUserName()' + END +
+            TAB + _QtIfwScript.logValue( _QtIfwScript._EMULATE_USER_CMD_ARG ) +
+            TAB + '__applyUserEmulations()' + END +               
             TAB + 'clearOutLog()' + END +
             TAB + 'clearErrorLog()' + END +
             TAB + _QtIfwScript.ifDryRun() + _QtIfwScript.setBoolValue( 
@@ -3977,7 +4016,6 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + _QtIfwScript.logValue( _QtIfwScript.OUT_LOG_PATH_CMD_ARG ) +            
             TAB + _QtIfwScript.logValue( _KEEP_TEMP_SWITCH ) + 
             TAB + _QtIfwScript.logValue( _QtIfwScript._KEEP_ALIVE_PATH_CMD_ARG ) +            
-            TAB + '__realUserName()' + END +
             TAB + '__installerTempPath()' + END +
             TAB + '__maintenanceTempPath()' + END +            
             TAB + 'makeDir( Dir.temp() )' + END +
