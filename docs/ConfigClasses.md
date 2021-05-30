@@ -1721,9 +1721,8 @@ page will automatically advance after a delay of that duration.  Alternatively, 
 value of 0 (or less than 0), will indicate a manual advancement will take place.  The
 "Next" button will become enabled, and the user may click such when they choose. 
 
-**onCompleted( name )**:  Returns a string to do be injected into whatever QtScript you are 
-dynamically generating.  (This not somehow literally "invoke" the function when called from 
-the Python library! )
+**onCompleted( name )**:  Returns a string to do be injected into QtScript being
+dynamically generating.
 
 #### QtIfwDynamicOperationsPage.AsyncFunc
 

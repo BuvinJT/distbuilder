@@ -2265,7 +2265,7 @@ class _QtIfwScript:
                  if IS_WINDOWS else
                  'cat \\"" + tempPath + "\\" | base64 -d > \\"" + path + "\\"; ' +
                  'chown " + uname + ":" + uname + " \\"" + path + "\\"; ' + 
-                 'chmod 777 \\"" + path + "\\"; ' +                   
+                 'chmod 755 \\"" + path + "\\"; ' +                   
                  'echo \\"" + path + "\\"' ) + '"' + END +      
             TAB + 'var result = installer.execute( ' +
                 ('"cmd.exe", ["/k"], decodeCmd' if IS_WINDOWS else
@@ -2309,15 +2309,30 @@ class _QtIfwScript:
             (2*TAB) + '"oFile.Write sText\\n" + ' + NEW + #vbs WriteLine adds extra CR/LF
             (2*TAB) + '"oFile.Close\\n"' + END +
             TAB + 'return vbs' + END 
-            if IS_WINDOWS else 
-            TAB + '' + END) + # TODO: FILLIN in NIX/MAC
+            if IS_WINDOWS else
+            # TODO: TEST on MAC 
+            TAB + 'var path = Dir.toNativeSeparator( path )' + END +           
+            TAB + 'var script = ""' + END +
+            TAB + 'for( var i=0; i != varNames.length; ++i ) ' + SBLK +                                    
+            (2*TAB) + 'var varName = varNames[i]' + END +
+            (2*TAB) + 'var varVal = Dir.toNativeSeparator( installer.value( varName, "' + 
+                                        QT_IFW_UNDEF_VAR_VALUE + '" ) )' + END +
+            (2*TAB) + 'varVal = varVal.replace(/\\//g, \'\\\\/\')' + END +
+            (2*TAB) + 'script += "sed -i -e \'s/@" + varName + "@/" + varVal + "/g\' \\"" + ' 
+                                    'path + "\\" \\n"' + END +              
+            TAB + EBLK + 
+            TAB + 'var uname = __realUserName()' + END +
+            TAB + 'script += "chown " + uname + ":" + uname + " \\"" + path + "\\"\\n"' + END + 
+            TAB + 'script += "chmod 755 \\"" + path + "\\"\\n"' + END +                                         
+            TAB + 'return script' + END     
+            ) + 
             EBLK + NEW +                                                                         
             'function replaceDynamicVarsInFile( path, varNames, isDoubleBackslash ) ' + SBLK + # TODO: Test in NIX/MAC
             TAB + 'var script = __replaceDynamicVarsInFileScript( path, varNames, isDoubleBackslash )' + END +
             (
             TAB + 'executeVbScript( script )' + END 
             if IS_WINDOWS else 
-            TAB + '' + END) + # TODO: FILLIN in NIX/MAC
+            TAB + 'executeShellScript( script )' + END) + 
             EBLK + NEW +                                                             
             'function killAll( progName ) ' + SBLK + # TODO: Test in NIX/MAC
             TAB + 'var killCmd = "' + _QtIfwScript._KILLALL_CMD_PREFIX + 
@@ -2338,7 +2353,7 @@ class _QtIfwScript:
             EBLK + NEW +      
             'function __escapeEchoText( echo ) ' + SBLK +
             TAB + 'if( echo.trim()=="" ) return ' + ('"."' if IS_WINDOWS else '"\\"\\""' ) + END  + 
-            TAB + 'var escaped = ' + ('echo' if IS_WINDOWS else '"\\"" + echo + "\\""' ) + END  +                      
+            TAB + 'var escaped = ' + ('echo' if IS_WINDOWS else '"\'" + echo + "\'"' ) + END  +                      
             TAB + 'return " " + escaped' + END +                                                                                          
             EBLK + NEW +      
             'function writeFile( path, content ) ' + SBLK +    
@@ -2360,10 +2375,11 @@ class _QtIfwScript:
             TAB + EBLK + 
             ( TAB + 'var uname = __realUserName()' + END +
               TAB + 'writeCmd += "chown " + uname + ":" + uname + " \\"" + path + "\\";"' + END +
-              TAB + 'writeCmd += "chmod 777 \\"" + path + "\\";"' + END 
+              TAB + 'writeCmd += "chmod 755 \\"" + path + "\\";"' + END 
               if not IS_WINDOWS else '' ) + 
             TAB + 'writeCmd += "echo " + path' + 
-                    ( '+ "\\n"' if IS_WINDOWS else '' ) + END +                                  
+                    ( '+ "\\n"' if IS_WINDOWS else '' ) + END +                         
+            TAB + _QtIfwScript.log( '"writeCmd: " + writeCmd', isAutoQuote=False ) +             
             TAB + 'var result = installer.execute( ' +
                 ('"cmd.exe", ["/k"], writeCmd' if IS_WINDOWS else
                  '"sh", ["-c", writeCmd]' ) + ' )' + END +                
@@ -2900,8 +2916,23 @@ class _QtIfwScript:
             )
         elif IS_LINUX:
             self.qtScriptLib += (
+            'function executeShellScript( script ) ' + SBLK +
+            TAB + _QtIfwScript.log( "Executing Shell Script:" ) +
+            TAB + _QtIfwScript.log( "script", isAutoQuote=False ) +          
+            TAB + 'var path = writeFile( __tempRootFilePath( "sh" ), script )' + END +            
+            TAB + 'var result = installer.execute( "sh", [path] )' + END +
+            TAB + _QtIfwScript.log( 
+                '"> Script return code: " + (result.length==2 ? result[1] : "?" )', 
+                isAutoQuote=False ) + 
+            TAB + 'if( result[1] != 0 ) ' + NEW +
+            (2*TAB) + 'throw new Error("Shell Script operation failed.")' + END +
+            TAB + 'for( i=0; i < 3; i++ )' + SBLK +
+            (2*TAB) + 'try{ deleteFile( path ); break; }' + NEW +                          
+            (2*TAB) + 'catch(e){ sleep(1); }' + NEW +
+            TAB + EBLK +             
+            EBLK + NEW +                                                            
             'function executeShellScriptDetached( scriptPath, script, args ) ' + SBLK +
-            TAB + _QtIfwScript.log( "Executing Detached ShellScript:" ) +
+            TAB + _QtIfwScript.log( "Executing Detached Shell Script:" ) +
             TAB + _QtIfwScript.log( "scriptPath", isAutoQuote=False ) +                
             TAB + _QtIfwScript.log( "script", isAutoQuote=False ) +          
             TAB + 'var path = script ? writeFile( scriptPath, script ) : '

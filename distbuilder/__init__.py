@@ -49,8 +49,9 @@ from distbuilder.qt_installer import(
     , QtIfwExeWrapper 
     , QtIfwExternalResource 
     , QtIfwUiPage 
-    , QtIfwTargetDirPage 
+    , QtIfwDynamicOperationsPage
     , QtIfwSimpleTextPage 
+    , QtIfwTargetDirPage     
     , QtIfwWidget 
     , QtIfwOnFinishedDetachedExec 
     , QtIfwOnFinishedCheckbox 
