@@ -2318,7 +2318,8 @@ class _QtIfwScript:
             (2*TAB) + 'var varVal = Dir.toNativeSeparator( installer.value( varName, "' + 
                                         QT_IFW_UNDEF_VAR_VALUE + '" ) )' + END +
             (2*TAB) + 'varVal = varVal.replace(/\\//g, \'\\\\/\')' + END +
-            (2*TAB) + 'script += "sed -i -e \'s/@" + varName + "@/" + varVal + "/g\' \\"" + ' 
+            (2*TAB) + 'script += "AMP=\'@\'\\n"' + END +
+            (2*TAB) + 'script += "sed -i ' + ('".bak" ' if IS_MACOS else '') + '-e \\"s/${AMP}" + varName + "${AMP}/" + varVal + "/g\\" \\"" + ' 
                                     'path + "\\" \\n"' + END +              
             TAB + EBLK + 
             TAB + 'var uname = __realUserName()' + END +
@@ -2353,7 +2354,8 @@ class _QtIfwScript:
             EBLK + NEW +      
             'function __escapeEchoText( echo ) ' + SBLK +
             TAB + 'if( echo.trim()=="" ) return ' + ('"."' if IS_WINDOWS else '"\\"\\""' ) + END  + 
-            TAB + 'var escaped = ' + ('echo' if IS_WINDOWS else '"\'" + echo + "\'"' ) + END  +                      
+            TAB + 'var escaped = ' + ('echo' if IS_WINDOWS else 
+                    '"\'" + echo.replace(/\'/g, \'\\\'\\"\\\'\\"\\\'\') + "\'"' ) + END  +                      
             TAB + 'return " " + escaped' + END +                                                                                          
             EBLK + NEW +      
             'function writeFile( path, content ) ' + SBLK +    
