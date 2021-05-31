@@ -1814,7 +1814,7 @@ class _QtIfwScript:
             'var dynamicVars = [ ' + varsList + ' ]' + END +
             'var dynamicPathVars = [ ' + pathVarsList + ' ]' + END +
             NEW +                              
-            'function __applyUserEmulations()' + SBLK + 
+            'function __applyUserEmulations()' + SBLK + # TODO: Test on MAC 
             TAB + 'if( isWindows() ) return; // not currently using this in Windows' + END +
             TAB + 'var emulatedUserName = installer.value( "__emulateuser", "" )' + END +
             TAB + 'if( emulatedUserName != "" && emulatedUserName != __realUserName() )' + SBLK +
@@ -3991,13 +3991,16 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + _QtIfwScript.setValue( _QtIfwScript._WIZARD_STYLE_KEY, 
                 self._wizardStyle if self._wizardStyle else 
                 QtIfwConfigXml._WizardStyles[QtIfwConfigXml.DEFAULT_WIZARD_STYLE] ) +
+            TAB + _QtIfwScript.log( '"isWindows: " + isWindows()', isAutoQuote=False ) +
+            TAB + _QtIfwScript.log( '"isMacOs: " + isMacOs()',     isAutoQuote=False ) +
+            TAB + _QtIfwScript.log( '"isLinux " + isLinux()',      isAutoQuote=False ) +                        
             TAB + '__realUserName()' + END +
             TAB + _QtIfwScript.logValue( _QtIfwScript._EMULATE_USER_CMD_ARG ) +
             TAB + '__applyUserEmulations()' + END +               
             TAB + 'clearOutLog()' + END +
             TAB + 'clearErrorLog()' + END +
             TAB + _QtIfwScript.ifDryRun() + _QtIfwScript.setBoolValue( 
-                _QtIfwScript.AUTO_PILOT_CMD_ARG, True ) +            
+                _QtIfwScript.AUTO_PILOT_CMD_ARG, True ) +                        
             TAB + _QtIfwScript.logValue( _QtIfwScript.AUTO_PILOT_CMD_ARG ) +                                                 
             TAB + _QtIfwScript.logValue( _QtIfwScript.DRYRUN_CMD_ARG ) +  
             TAB + _QtIfwScript.logValue( _QtIfwScript.MAINTAIN_MODE_CMD_ARG ) +                    
@@ -4034,8 +4037,9 @@ Controller.prototype.Dynamic%sCallback = function() {
                         _QtIfwScript.cmdLineArg( _QtIfwScript.TARGET_DIR_CMD_ARG ), 
                         isAutoQuote=False ) +
             EBLK +                        
-            # currently the entire point of the watchdog is purge temp files,
-            # so when _keeptemp is enabled, just drop that entire mechanism!
+            # Currently, the entire purpose for the "watchdog" mechanism is to purge 
+            # temp files. So, when _keeptemp is enabled, the can be accomplished by 
+            # simply dropping the watch dog!
             TAB + _QtIfwScript.ifCmdLineSwitch( _KEEP_TEMP_SWITCH, 
                                                 isNegated=True ) +
             TAB + '__launchWatchDog()' + END )        
@@ -5071,8 +5075,10 @@ Component.prototype.%s = function(){
         if not self.killOps: return
         killPath = _QtIfwScript._KILLALL_PATH
         killArgs = _QtIfwScript._KILLALL_ARGS 
-        # success=0, process not running=128 in WINDOWS
-        retCodes = [0,128] if IS_WINDOWS else [0] # TODO: not running code in mac/linux 127 perhaps?       
+        # WINDOWS: success=0, process not running=128
+        # LINUX:   success=0, process not running=1
+        # MAC OS:  TODO ?  
+        retCodes = [0,128] if IS_WINDOWS else [0,1]        
         def toExOp( installExe, uninstallExe, isElevated ):
             return QtIfwExternalOp( isElevated=isElevated, 
                 exePath=killPath                   if installExe else None,       
@@ -5215,7 +5221,10 @@ Component.prototype.%s = function(){
                         args+=['"\\\"" + execPath + "\\\""']
                     
             if uninstExePath :
-                if not exePath : args+=["shellPath", "shellSwitch"] # dummy install action
+                if not exePath : 
+                    # dummy install action
+                    args+=["shellPath", "shellSwitch"]
+                    if not IS_WINDOWS: args+=["''"]                     
                 args+=['"UNDOEXECUTE"']                
                 if task.uninstRetCodes: args+=["undoRetCodes"]
                 if uninstScriptType=="vbs": 
@@ -5981,6 +5990,14 @@ class QtIfwExternalOp:
                 uninstScript=QtIfwExternalOp.InstallExternPackageScript( 
                     altPkgNames, isExitOnFailure=True ), isElevated=True )
 
+
+        @staticmethod
+        def CreateExternPackageFoundFlagFile( event, altPkgNames, fileName ):
+            return QtIfwExternalOp.__genScriptOp( event, 
+                script=QtIfwExternalOp.CreateExternPackageFoundFlagFileScript( 
+                    altPkgNames, fileName, isSelfDestruct=True ),
+                isReversible=False, isElevated=True )
+
     # Script Builders
     # -----------------
     @staticmethod
@@ -6088,7 +6105,23 @@ class QtIfwExternalOp:
                           runConditionFileName=None, isRunConditionNegated=False,
                           isAutoBitContext=True,
                           replacements=None  ):
-        if arguments is None: arguments =[] 
+        if arguments is None: arguments =[]        
+        tokens = [path] + arguments            
+        if isAutoQuote:
+            tokens = [('"%s"' % (t,) if (" " in t or "@" in t) else t) 
+                      for t in tokens]            
+        runCmd = " ".join( tokens )
+        exitSnippet =(
+            QtIfwExternalOp.__batExitIfFileMissing(
+                runConditionFileName, isRunConditionNegated )
+            if IS_WINDOWS else
+            QtIfwExternalOp.__shExitIfFileMissing(
+                runConditionFileName, isRunConditionNegated )                
+        )                                     
+        if not isSynchronous: 
+            if IS_WINDOWS: runCmd = 'start "" ' + runCmd 
+            else: runCmd += " &"                    
+        
         if isHidden: 
             if IS_WINDOWS :
                 waitSwitch = " -Wait" if isSynchronous else ""
@@ -6106,32 +6139,38 @@ class QtIfwExternalOp:
                     'Start-Process -FilePath "%s" %s%s%s'
                          % (path, waitSwitch, hiddenStyle, argList), 
                     'exit $LastExitCode']), replacements=replacements )
-            else: 
-                # TODO: Fill-in on NIX/MAC
-                util._onPlatformErr()
+            elif IS_LINUX:
+                xvfbPkgNames = ["Xvfb","xvfb"]                                      
+                if replacements is None: replacements={}
+                replacements.update({ "xvfbPkgNames": " ".join(xvfbPkgNames) })
+                return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                    "runProgram" ), replacements=replacements, script=([
+                          exitSnippet 
+                        , QtIfwExternalOp.__shLinuxPackageManagementSnippet()
+                        , 'wasXvfbInstalled=false;'
+                        , 'isPackageInstalled {xvfbPkgNames} && '
+                            'wasXvfbInstalled=true;'
+                        , 'if ! ${wasXvfbInstalled}; then  '                            
+                            'installPackage {xvfbPkgNames}; fi'
+                        , ( "$(xvfb-run -a %s) &" % (runCmd[:-2],) 
+                            if runCmd.endswith("&") else 
+                            "xvfb-run -a %s" % (runCmd,) )
+                        # Note: removing xvfb after an async launch works  
+                        # without error, despite the fact it's in use...                          
+                        , 'if ! ${wasXvfbInstalled}; then '
+                            'uninstallPackage {xvfbPkgNames}; fi'
+                    ]))  
+            else:
+                # TODO: FILL-IN ON MAC 
+                util._onPlatformErr()    
         else :
-            tokens = [path] + arguments            
-            if isAutoQuote:
-                tokens = [('"%s"' % (t,) if (" " in t or "@" in t) else t) 
-                          for t in tokens]            
-            runCmd = " ".join( tokens )
-            exitSnippet =(
-                QtIfwExternalOp.__batExitIfFileMissing(
-                    runConditionFileName, isRunConditionNegated )
-                if IS_WINDOWS else
-                QtIfwExternalOp.__shExitIfFileMissing(
-                    runConditionFileName, isRunConditionNegated )                
-            )                                     
-            if not isSynchronous: 
-                if IS_WINDOWS: runCmd = 'start "" ' + runCmd 
-                else: runCmd += " &"                    
             if IS_WINDOWS and not isAutoBitContext:
                 script=([
                     exitSnippet,
                     'set "RUN_CMD=%s"' % (runCmd,),
                     'if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%RUN_CMD%" ) else ( %RUN_CMD% )',
                     runCmd])  
-            else: script=[exitSnippet, runCmd ]
+            else: script=[ exitSnippet, runCmd ]             
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "runProgram" ), script=script, replacements=replacements )
 
@@ -6723,6 +6762,28 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
 
         # TODO: TEST
         @staticmethod
+        def CreateExternPackageFoundFlagFileScript( altPkgNames, fileName, 
+                                                    isSelfDestruct=False ):            
+            if isinstance( altPkgNames, string_types ): altPkgNames=[altPkgNames]
+            return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "createPackageFlag" ), script=[
+                      '{packageManagementSnippet}'
+                    , 'isPackageInstalled {altPkgNames}; && touch "{tempFilePath}"'
+                    , '{selfDestruct}'
+                    ], replacements={ 
+                      "packageManagementSnippet": (
+                        QtIfwExternalOp.__shLinuxPackageManagementSnippet() 
+                        if IS_LINUX else 
+                        QtIfwExternalOp.__shMacosPackageManagementSnippet() )
+                    , "altPkgNames": " ".join( altPkgNames )                   
+                    , "tempFilePath": QtIfwExternalOp.opDataPath( fileName )                      
+                    , "selfDestruct": (
+                        QtIfwExternalOp.shellScriptSelfDestructSnippet()
+                        if isSelfDestruct else '' )                       
+                    })
+
+        # TODO: TEST
+        @staticmethod
         def InstallExternPackageScript( altPkgNames, isExitOnFailure=False ):
             if isinstance( altPkgNames, string_types ): altPkgNames=[altPkgNames]
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
@@ -6781,8 +6842,8 @@ assertPackageManagement(){
 }
 
 isPackageInstalled(){
-    if _isDpkgInstalled ; then dpkg -l $1 > /dev/null
-    elif _isRpmInstalled; then rpm -q $1 >  /dev/null
+    if _isDpkgInstalled ; then dpkg -l $1 > /dev/null 2>&1
+    elif _isRpmInstalled; then rpm -q $1 > /dev/null 2>&1
     else                       false; fi
 } 
 
@@ -6807,9 +6868,12 @@ installPackage(){
 # takes a space delimited list of alternate names for a given package 
 uninstallPackage(){
     # iterate over the list and return success if none are currently installed
-    __isInst=0;  
-    for pkg in "$@"; do isPackageInstalled $pkg && __isInst=1; done
-    [ $__isInst == 0 ] && echo "These packages are not installed: $@" && return 
+    __isInst=false;  
+    for pkg in "$@"; do isPackageInstalled $pkg && __isInst=true; done
+    if ! $__isInst; then 
+        echo "These packages are not installed: $@" 
+        return 
+    fi
     
     # iterate over the list again and return the result of installing the 
     # first item which is installed

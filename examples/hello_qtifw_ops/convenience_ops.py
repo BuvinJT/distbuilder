@@ -1,6 +1,8 @@
-from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
-        QtIfwExternalOp, QtIfwKillOp, ExecutableScript, \
-        IS_WINDOWS, IS_MACOS, QT_IFW_DESKTOP_DIR
+from distbuilder import( PyToBinInstallerProcess, ConfigFactory, 
+        QtIfwExternalOp, QtIfwKillOp, ExecutableScript, startLogging, 
+        toNativePath, IS_WINDOWS, IS_MACOS, QT_IFW_DESKTOP_DIR )
+
+startLogging()
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Installer Conveniences Example"
@@ -80,7 +82,7 @@ class BuildProcess( PyToBinInstallerProcess ):
             if IS_WINDOWS: progPath = "notepad"                
             elif IS_MACOS: progPath = "TextEdit"                  
             else         : progPath = "gedit"                                                
-            args = [ "@TargetDir@\LICENSE.TXT" ]
+            args = [ toNativePath("@TargetDir@/LICENSE.TXT") ]
             pkg.pkgScript.externalOps += [
                 QtIfwExternalOp.RunProgram(
                     QtIfwExternalOp.ON_INSTALL,
@@ -93,6 +95,8 @@ class BuildProcess( PyToBinInstallerProcess ):
                     # mid install operations in this demo until you close the 
                     # text viewer... 
                     isSynchronous=False, 
+                    # TODO: provide forced "privileges down grade", as this 
+                    # currently always runs the sub process elevated...
                     isElevated=False )
                 ]    
                 
@@ -109,5 +113,5 @@ class BuildProcess( PyToBinInstallerProcess ):
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True
 # uncomment to leave scripts in temp directory, post any dynamic modifications 
-# p.isScriptDebugInstallTest = True   
+p.isScriptDebugInstallTest = True   
 p.run()       

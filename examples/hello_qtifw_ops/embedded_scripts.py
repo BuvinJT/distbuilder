@@ -1,6 +1,8 @@
 from distbuilder import( PyToBinInstallerProcess, ConfigFactory, 
-    QtIfwExternalOp, ExecutableScript, joinPath, 
+    QtIfwExternalOp, ExecutableScript, startLogging, joinPath,  
     QT_IFW_HOME_DIR, IS_WINDOWS, IS_MACOS )
+
+startLogging()
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Installer Embedded Scripts Example"
@@ -16,6 +18,7 @@ f.setupName        = "HelloIfwEmbeddedScriptsSetup"
 
 # SET A DEMO OPTION TO TEST A GIVEN SCRIPT TYPE
 # Note: SHELL==BATCH on Windows
+# TODO: ADD JSCRIPT... 
 (SHELL, POWERSHELL, VBSCRIPT, APPLESCRIPT) = range(4)
 DEMO_OPTION = SHELL
 
@@ -109,14 +112,15 @@ end tell
                     return QtIfwExternalOp( script=createFileScript, 
                                       uninstScript=removeFileScript )                
 
-            filePath = joinPath( QT_IFW_HOME_DIR, "distbuilder-example.dat" )
-            genOps = { SHELL: shellCreateFileOp }            
+            demoOps = { SHELL: shellCreateFileOp }            
             if IS_WINDOWS:
-                genOps.update( { POWERSHELL: powerShellCreateFileOp,
-                                 VBSCRIPT:   vbScriptCreateFileOp } )
+                demoOps.update( { POWERSHELL: powerShellCreateFileOp,
+                                  VBSCRIPT:   vbScriptCreateFileOp } )
             if IS_MACOS:
-                genOps.update( { APPLESCRIPT: appleScriptCreateFileOp } )
-            pkg.pkgScript.externalOps += [ genOps[ DEMO_OPTION ]( filePath ) ]        
+                demoOps.update( { APPLESCRIPT: appleScriptCreateFileOp } )
+
+            filePath = joinPath( QT_IFW_HOME_DIR, "distbuilder-example.dat" )
+            pkg.pkgScript.externalOps += [ demoOps[ DEMO_OPTION ]( filePath ) ]        
                 
         pkg = cfg.packages[0]            
         addEmbeddedScripts( pkg )

@@ -1356,10 +1356,14 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         return ext if ext in ExecutableScript.SUPPORTED_EXTS else None
         
     @staticmethod
-    def strToLines( s ): return s.split( _NEWLINE  ) if s else []
+    def strToLines( s ): 
+        return( s.split( _NEWLINE  ) if isinstance( s, string_types ) else
+                s if isinstance( s, list ) else [] )    
     
     @staticmethod
-    def linesToStr( lines ): return _NEWLINE.join( lines )    
+    def linesToStr( lines ): 
+        return( _NEWLINE.join( lines ) if isinstance( lines, list ) else
+                 lines if isinstance( lines, string_types ) else '' )    
 
     # ExecutableScript
     def __init__( self, rootName, 

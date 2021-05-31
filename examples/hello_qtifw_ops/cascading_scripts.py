@@ -1,9 +1,11 @@
-from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
-    QtIfwControlScript, QtIfwPackageScript, \
-    QtIfwExternalOp, ExecutableScript, \
-    qtIfwOpDataPath, qtIfwDetachedOpDataPath, qtIfwDynamicValue, \
-    IS_WINDOWS, QT_IFW_DESKTOP_DIR, QT_IFW_HOME_DIR, QT_IFW_APPS_X86_DIR, \
-    joinPath 
+from distbuilder import( PyToBinInstallerProcess, ConfigFactory, 
+    QtIfwControlScript, QtIfwPackageScript, 
+    QtIfwExternalOp, ExecutableScript, startLogging,
+    qtIfwOpDataPath, qtIfwDetachedOpDataPath, qtIfwDynamicValue, 
+    IS_WINDOWS, QT_IFW_DESKTOP_DIR, QT_IFW_HOME_DIR, QT_IFW_APPS_X86_DIR, 
+    joinPath )
+    
+startLogging()
     
 ON_INSTALL = QtIfwExternalOp.ON_INSTALL
 opDataPath = QtIfwExternalOp.opDataPath
