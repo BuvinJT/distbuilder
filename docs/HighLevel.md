@@ -31,7 +31,7 @@ Constructor:
     
 Attributes & default values:  
 
-	cfgId = None                                             
+    cfgId = None                                             
 
     productName = None
     description = None
@@ -48,78 +48,79 @@ Attributes & default values:
     
     <PyInstaller>
     
-	    entryPointPy  = None               
-	    specFilePath  = None
-	    isOneFile     = True (note this differs from PyInstaller default)
+        entryPointPy  = None               
+        specFilePath  = None
+        isOneFile     = True (note this differs from PyInstaller default)
 
      <Other Script to Binary sources>
       
         entryPointScript = None
 
-	<External resource bundling>
-	        
-    	distResources = []
+    <External resource bundling>
+            
+        distResources = []
                  
     <Python Obfuscation>
     
-		isObfuscating = False             
-	    opyBundleLibs = None
-	    opyPatches    = None
+        isObfuscating = False             
+        opyBundleLibs = None
+        opyPatches    = None
 
     <For Installers (applied via "master" factories)>
     
-	    isSilentSetup    = False    		
-	    setupName        = "setup"
-	    ifwDefDirPath    = None
-	    ifwPackages      = None
-	
-		isLimitedMaintenance = True
-	    replaceTarget = False
-	
-	    licensePath = None    
-	    ifwUiPages  = None
-		ifwWidgets  = None                    
-	       
+        isSilentSetup    = False            
+        setupName        = "setup"
+        ifwDefDirPath    = None
+        ifwPackages      = None
+    
+        isLimitedMaintenance = True
+        replaceTarget = False
+    
+        licensePath = None    
+        ifwUiPages  = None
+        ifwWidgets  = None                    
+           
         ifwWizardStyle    = None
         ifwLogoFilePath   = None
         ifwBannerFilePath = None
-        	       
-	    ifwCntrlScript     = None # None=Default False=Exclude                
-	    ifwCntrlScriptText = None
-	    ifwCntrlScriptPath = None
-	    ifwCntrlScriptName = "installscript.qs"
+                   
+        ifwCntrlScript     = None # None=Default False=Exclude                
+        ifwCntrlScriptText = None
+        ifwCntrlScriptPath = None
+        ifwCntrlScriptName = "installscript.qs"
 
-	<For Installer Packages>
-	
-	    ifwPkgId         = None
-	    ifwPkgName       = None
-	    ifwPkgNamePrefix = "com"        
-	
-	    ifwPkgIsDefault  = True
-	    ifwPkgIsRequired = False 
-	    ifwPkgIsHidden   = False
-		       
-	    ifwPkgScript     = None           
-	    ifwPkgScriptText = None
-	    ifwPkgScriptPath = None        
-	    ifwPkgScriptName = "installscript.qs"
-	
-	    pkgType            = None    
-	    pkgSubDirName      = None
-	    pkgSrcDirPath      = None
-	    pkgSrcExePath      = None
-	    pkgExeWrapper      = None
-		pkgCodeSignTargets = None
-	
-		startOnBoot   = False <CURRENT_USER, ALL_USERS>    
+    <For Installer Packages>
+    
+        ifwPkgId         = None
+        ifwPkgName       = None
+        ifwPkgNamePrefix = "com"        
+    
+        ifwPkgIsDefault  = True
+        ifwPkgIsRequired = False 
+        ifwPkgIsHidden   = False
+               
+        ifwPkgScript     = None           
+        ifwPkgScriptText = None
+        ifwPkgScriptPath = None        
+        ifwPkgScriptName = "installscript.qs"
+    
+        pkgType            = None    
+        pkgSubDirName      = None
+        pkgSrcDirPath      = None
+        pkgSrcExePath      = None
+        pkgExeWrapper      = None
+        pkgCodeSignTargets = None
+        pkgExternalDependencies = None  <LINUX / MAC only>
+    
+        startOnBoot   = False <CURRENT_USER, ALL_USERS>    
 
-	<Code Signing>
-	
-		codeSignConfig 
+    <Code Signing>
+    
+        codeSignConfig 
 
-	<"Special" Contexts>
-		        
-	    qtCppConfig = None
+    <"Special" Contexts>
+                
+        qtCppConfig = None
  
 Object creation functions:
      
@@ -136,10 +137,10 @@ Object creation functions:
                      envVars=None, args=None,
                      isExe=False ) <Windows Only>
                      
-	<Windows Only>
-	 	iExpressConfig()      
-		exeVersionInfo( iwfConfig=None )
-		                     
+    <Windows Only>
+         iExpressConfig()      
+        exeVersionInfo( iwfConfig=None )
+                             
 Cloning:
 
     newFactory = ConfigFactory.copy( instance )
@@ -197,7 +198,7 @@ See [versionTuple, versionStr](LowLevel.md#versiontuple,-versionstr).
 
 Note that each part maybe any number of digits long.  i.e. this is a perfectly 
 valid version stamp: `2.11.6.139`.  That example would be denoted in tuple form 
-as: `(2,11,6,139)` 	
+as: `(2,11,6,139)`     
 
 #### binaryName, isGui           
 
@@ -414,12 +415,12 @@ end user will be required to agree to.
 
 QtIFW installer predefined visual style.  
 
-	QtIfwConfigXml.DEFAULT_WIZARD_STYLE <per platform>
+    QtIfwConfigXml.DEFAULT_WIZARD_STYLE <per platform>
     
-    QtIfwConfigXml.WizardStyle.AERO     <Windows Default>	
+    QtIfwConfigXml.WizardStyle.AERO     <Windows Default>    
     QtIfwConfigXml.WizardStyle.MAC      <MacOS Default>
     QtIfwConfigXml.WizardStyle.MODERN   <Linux Default>
-	QtIfwConfigXml.WizardStyle.CLASSIC  <Simliar to MODERN>  
+    QtIfwConfigXml.WizardStyle.CLASSIC  <Simliar to MODERN>  
     
 #### ifwLogoFilePath, ifwBannerFilePath
 
@@ -506,17 +507,17 @@ default. `ifwPkgIsRequired` dictates if the user can opt out of the component.
 `ifwPkgIsHidden` is similar to the prior switches, but insulates the user from 
 even seeing the component as separate entity when enabled.  
 
-#### pkgType    
+### pkgType    
 
 This specifies the type (`QtIfwPackage.Type`) of package being built.  
 The options for this include:  
 
-	QtIfwPackage.Type.RAW
-	QtIfwPackage.Type.DATA
-	QtIfwPackage.Type.RESOURCE
-	QtIfwPackage.Type.PY_INSTALLER
-	QtIfwPackage.Type.IEXPRESS
-	QtIfwPackage.Type.QT_CPP         
+    QtIfwPackage.Type.RAW
+    QtIfwPackage.Type.DATA
+    QtIfwPackage.Type.RESOURCE
+    QtIfwPackage.Type.PY_INSTALLER
+    QtIfwPackage.Type.IEXPRESS
+    QtIfwPackage.Type.QT_CPP         
           
 If this is omitted, and a `binaryName` attribute is specified, type `PY_INSTALLER` is assumed.  If this is omitted, but no `binaryName` is specified, the `DATA` type is assumed.  
 
@@ -530,7 +531,7 @@ See:
 [QtIfwExternalResource](ConfigClasses.md#qtifwexternalresource)
 [QtIfwExternalOp](ConfigClasses.md#qtifwexternalop)   
 
-#### pkgSubDirName
+### pkgSubDirName
 
 If a `pkgSubDirName` is specified, this places the package inside of sub directory, 
 rather than having the contents there of installed directly to the top level directory
@@ -542,7 +543,7 @@ one directory during installation (if the end user selects more than one package
 In the event "collisions" could occur (at installation or run time) due to this, 
 the suggested resolution is to employ this option, thereby encapsulating the package(s). 
 
-#### pkgSrcDirPath, pkgSrcExePath
+### pkgSrcDirPath, pkgSrcExePath
 
 When building installers that have external resources which are not part of
 automatically generated products/packages, these attributes may be used to define the paths
@@ -561,7 +562,7 @@ the package.
 
 See: [RobustInstallerProcess](#robustinstallerprocess). 
 
-#### pkgExeWrapper 
+### pkgExeWrapper 
 
 A [QtIfwExeWrapper](ConfigClasses.md#qtifwexewrapper) object used to "wrap"
 the primary executable in a [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
@@ -572,7 +573,21 @@ within which the binary is run.  Notably, this may include an
 [ExecutableScript](LowLevel.md#executablescript) for maximum flexibility.
 Follow the links to learn to more.
 
-#### startOnBoot
+### pkgExternalDependencies
+
+** MAC / LINUX Only **
+
+External packages to be installed.  This takes place prior to any 
+other installer operations, in case those operations (rather the 
+program being installed) are dependent upon such.
+
+Provide a list of either simple strings and/or nested lists of strings.
+When nesting lists, such represents alternate names to try based upon
+what is available within a given package manager on the target.  
+For example, the package "xvfb" maybe specified as `["xvfb","Xvfb"]`.  That handles the fact the "X" is capitalized 
+within some contexts (e.g. within YUM on RHEL...) but is lower case in others.
+
+### startOnBoot
 
 Enable `startOnBoot` to have the installer register the "primary" exe 
 within a package as a program to launch upon booting the system. By default,
@@ -583,7 +598,7 @@ In Windows, this will lead to an auto implementation of a [QtIfwExeWrapper](Conf
 producing a "wrapper/proxy/launcher" exe adjacent to the actual one.  That 
 launcher is what will actually be registered in the OS.  
 
-#### qtCppConfig
+### qtCppConfig
 
 A [QtCppConfig](ConfigClasses.md#qtcppconfig) object.  Used to define how to
 package programs developed within the Qt C++ libraries / framework. 
@@ -623,26 +638,26 @@ and overriding certain functions as needed for this purpose.
 Constructor:
 
     PyToBinPackageProcess( configFactory,                  
-	   name="Python to Binary Package Process",
-	   isZipped=False, isDesktopTarget=False, isHomeDirTarget=False )
+       name="Python to Binary Package Process",
+       isZipped=False, isDesktopTarget=False, isHomeDirTarget=False )
                                  
 Attributes & default values:
 
     configFactory          = <required>                              
     name                   = "Python to Binary Package Process"
 
-	isZipped               = False
-	isDesktopTarget        = False
-	isHomeDirTarget        = False
-	
-	isWarningSuppression   = True	      
-	isUnBufferedStdIo      = False          
-	isPyInstDupDataPatched = None <auto>
-	
-	isObfuscationTest      = False
-	isExeTest              = False
-	isElevatedTest         = False      
-	exeTestArgs            = []        
+    isZipped               = False
+    isDesktopTarget        = False
+    isHomeDirTarget        = False
+    
+    isWarningSuppression   = True          
+    isUnBufferedStdIo      = False          
+    isPyInstDupDataPatched = None <auto>
+    
+    isObfuscationTest      = False
+    isExeTest              = False
+    isElevatedTest         = False      
+    exeTestArgs            = []        
         
     # Results 
     binDir  = None
@@ -652,7 +667,7 @@ Attributes & default values:
 (Note the order shown is that in which these functions are invoked)
 
     onInitialize()    
-	onOpyConfig( cfg )                    
+    onOpyConfig( cfg )                    
     onPyInstConfig( cfg )
     onMakeSpec( spec )
     onFinalize()
@@ -662,7 +677,7 @@ Use:
 Simply invoke the `run()` function to execute the process. 
 
 Examples:
-	
+    
 [Hello World Example](Examples.md#hello-world-example)        
 
 #### configFactory                                        
@@ -675,7 +690,7 @@ many of the details used to drive this process.
 Used simply for logging or custom implementations where it
 may be useful to distinguish between multiple processes. 
 
-#### isZipped               	                
+#### isZipped                                   
 
 Setting this to `True` bundles the results into a zip file.
 
@@ -735,14 +750,14 @@ the build process is also exited.
 
 This option LEAVES the obfuscated code in place for further testing and 
 inspection.  This is in opposition to the normal
-deletion of such after having embedded the code in the binary.   	
+deletion of such after having embedded the code in the binary.       
 
 #### isExeTest, exeTestArgs, isElevatedTest               
 
 The `isExeTest` attribute is similar in nature to is `isObfuscationTest`.  
 This launches the resulting binary after building it.  
 Unlike `isObfuscationTest`, this does NOT exit the build process.  Upon exiting 
-the program you are testing, any remaining steps in the build process are continued.   	  
+the program you are testing, any remaining steps in the build process are continued.         
 The `exeTestArgs` and `isElevatedTest` attributes are additionally provided
 to vet the result in an automated fashion in the event such options are useful.
 
@@ -759,7 +774,7 @@ documentation on these useful utility functions for this purpose:
    
 - [installLibrary](LowLevel.md#installlibrary)
 - [installLibraries](LowLevel.md#installlibraries)
-	
+    
 #### onOpyConfig( cfg )                  
 
 When code obfuscation is enabled, an [OpyConfig](ConfigClasses.md#opyconfig) object
@@ -805,21 +820,21 @@ and overriding certain functions as needed for this purpose.
 Constructor:
 
     IExpressPackageProcess( configFactory,                  
-	   name="Windows Script to Binary Package Process",
-	   isZipped=False, isDesktopTarget=False, isHomeDirTarget=False )
+       name="Windows Script to Binary Package Process",
+       isZipped=False, isDesktopTarget=False, isHomeDirTarget=False )
                                  
 Attributes & default values:
 
     configFactory          = <required>                              
     name                   = "Windows Script to Binary Package Process"
 
-	isZipped               = False
-	isDesktopTarget        = False
-	isHomeDirTarget        = False
-	
-	isExeTest              = False
-	isElevatedTest         = False      
-	exeTestArgs            = []        
+    isZipped               = False
+    isDesktopTarget        = False
+    isHomeDirTarget        = False
+    
+    isExeTest              = False
+    isElevatedTest         = False      
+    exeTestArgs            = []        
         
     # Results 
     binDir  = None
@@ -859,8 +874,8 @@ binaries or installable "packages" bundled together.
 Constructor:
 
     PyToBinInstallerProcess( configFactory, 
-	     name="Python To Binary Installer Process",
-	     isDesktopTarget=False, isHomeDirTarget=False )
+         name="Python To Binary Installer Process",
+         isDesktopTarget=False, isHomeDirTarget=False )
                                  
 Attributes & default values:
                                                
@@ -879,20 +894,20 @@ Attributes & default values:
 "Virtual" configuration functions to override:  
 (Note the order shown is that in which these functions are invoked)
 
-	onInitialize()   
-	onPyPackageProcess( prc )
+    onInitialize()   
+    onPyPackageProcess( prc )
     onOpyConfig( cfg )                    
     onPyInstConfig( cfg )
     onMakeSpec( spec )
     onQtIfwConfig( cfg )              
-	onFinalize()
+    onFinalize()
     
 Use:
 
 Simply invoke the `run()` function to execute the process. 
 
 Examples:
-	
+    
 [Hello World Tk Example](Examples.md#hello-world-tk-example)        
 [Hello Silent Example](Examples.md#hello-silent-example)
                                                
@@ -984,8 +999,8 @@ binaries or installable "packages" bundled together.
 Constructor:
 
     IExpressInstallerProcess( configFactory, 
-	     name="Windows Script to Binary Installer Process",
-	     isDesktopTarget=False, isHomeDirTarget=False )
+         name="Windows Script to Binary Installer Process",
+         isDesktopTarget=False, isHomeDirTarget=False )
                                  
 Attributes & default values:
                                                
@@ -1004,16 +1019,16 @@ Attributes & default values:
 "Virtual" configuration functions to override:  
 (Note the order shown is that in which these functions are invoked)
 
-	onInitialize()   
-	onIExpressPackageProcess( prc )
+    onInitialize()   
+    onIExpressPackageProcess( prc )
     onIExpressConfig( cfg )
     onQtIfwConfig( cfg )              
-	onFinalize()
+    onFinalize()
     
 Use:
 
 Simply invoke the `run()` function to execute the process. 
-  	
+      
 ## RobustInstallerProcess
 
 A RobustInstallerProcess is the most advanced and intricate of these processes.  
@@ -1080,7 +1095,7 @@ Attributes & default values:
 "Virtual" configuration functions to override:  
 (Note the order shown is that in which these functions are invoked)
 
-	onInitialize()   
+    onInitialize()   
     onConfigFactory( key, factory )
     
     onPyPackageProcess( key, prc )
@@ -1106,7 +1121,7 @@ Use:
 Simply invoke the `run()` function to execute the process. 
 
 Examples:
-	
+    
 [Hello Packages Example](Examples.md#hello-packages-example)        
 [Hello Merge Example](Examples.md#hello-merge-example)
 

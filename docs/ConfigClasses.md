@@ -441,7 +441,12 @@ Attributes:
     Name                     
     Version                  
     Publisher                
-    InstallerApplicationIcon  (icon base name, i.e. omit extension)
+
+    <Windows / Mac>        
+	    InstallerApplicationIcon  (icon root name, i.e. omit extension)
+    <Linux>
+        InstallerWindowIcon       (.png name, with extension)
+    
     Title                
     TitleColor                (HTML color code, such as "#88FF33")    
     
@@ -817,6 +822,10 @@ Attributes & default values:
     preOpSupport     = None
     customOperations = None
     
+    <LINUX / MAC only>
+        externalDependencies     = []
+        areDependenciesPreserved = True
+            
     uiPages = []
     widgets = []
            
@@ -1072,6 +1081,36 @@ controls.
 
 	TODO: Add Linux & macOS implementations
 
+#### QtIfwExternalOp.CreateExternPackageFoundFlagFile
+
+** MAC / LINUX **
+    
+    CreateExternPackageFoundFlagFile( event, altPkgNames, fileName )
+
+#### QtIfwExternalOp.InstallExternPackage
+
+** MAC / LINUX **
+    
+    InstallExternPackage( event, altPkgNames )
+
+**altPkgNames**: May be a single string, or a list of them.  If 
+providing a list, alternate names will be used based on what is 
+available within a given package manager on the target.  
+For example, the package "xvfb" maybe specified as `["xvfb","Xvfb"]`.  That handles the fact the "X" is capitalized 
+within some contexts (e.g. within YUM on RHEL...) but is lower case in others.
+
+#### QtIfwExternalOp.UninstallExternPackage
+
+** MAC / LINUX **
+    
+    UninstallExternPackage( event, altPkgNames )
+    
+**altPkgNames**: May be a single string, or a list of them.  If 
+providing a list, alternate names will be used based on what is 
+available within a given package manager on the target.  
+For example, the package "xvfb" maybe specified as `["xvfb","Xvfb"]`.  That handles the fact the "X" is capitalized 
+within some contexts (e.g. within YUM on RHEL...) but is lower case in others.
+
 #### QtIfwExternalOp.CreateWindowsAppFoundFlagFile
 
 **WINDOWS ONLY**
@@ -1251,6 +1290,45 @@ not remove** a file that already exists.
 
 **Windows Type**: Batch 
 **Mac/Linux Type**: ShellScript 
+
+
+#### QtIfwExternalOp.CreateExternPackageFoundFlagFileScript
+
+** MAC / LINUX **
+
+**Mac/Linux Type**: ShellScript 
+    
+    CreateExternPackageFoundFlagFile( altPkgNames, fileName, 
+                                      isSelfDestruct=False  )
+
+#### QtIfwExternalOp.InstallExternPackageScript
+
+** MAC / LINUX **
+
+**Mac/Linux Type**: ShellScript 
+    
+    InstallExternPackage( altPkgNames, isExitOnFailure=False )
+
+**altPkgNames**: May be a single string, or a list of them.  If 
+providing a list, alternate names will be used based on what is 
+available within a given package manager on the target.  
+For example, the package "xvfb" maybe specified as `["xvfb","Xvfb"]`.  That handles the fact the "X" is capitalized 
+within some contexts (e.g. within YUM on RHEL...) but is lower case in others.
+
+#### QtIfwExternalOp.UninstallExternPackageScript
+
+** MAC / LINUX **
+
+**Mac/Linux Type**: ShellScript 
+    
+    UninstallExternPackage( altPkgNames, isExitOnFailure=False )
+    
+**altPkgNames**: May be a single string, or a list of them.  If 
+providing a list, alternate names will be used based on what is 
+available within a given package manager on the target.  
+For example, the package "xvfb" maybe specified as `["xvfb","Xvfb"]`.  That handles the fact the "X" is capitalized 
+within some contexts (e.g. within YUM on RHEL...) but is lower case in others.
+
                 
 #### QtIfwExternalOp.CreateRegistryKeyScript
 
