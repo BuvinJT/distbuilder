@@ -1821,7 +1821,12 @@ class _QtIfwScript:
             (2*TAB) + _QtIfwScript.log( "Using emulated user account context..." ) +
             # TODO: Expand upon this...      
             (2*TAB) + 'installer.setValue( "HomeDir", "/home/" + emulatedUserName )' + END +
-            TAB+ EBLK + 
+            TAB + EBLK + 
+            EBLK + NEW +      
+            'function __userName()' + SBLK +
+            TAB + 'var userName = installer.value( "__emulateuser", "" )' + END +
+            TAB + 'if( userName == "" ) userName = __realUserName()' + END +
+            TAB + 'return userName' + END +
             EBLK + NEW +      
             'function __realUserName()' + SBLK +
             TAB + 'if( isWindows() ) return ""; // not currently using this in Windows' + END +
@@ -1931,8 +1936,9 @@ class _QtIfwScript:
                     '__maintenanceTempPath() : __installerTempPath()) + ' +
                                                 '(suffix ? suffix : "")' + END +                  
             EBLK + NEW +
-            'function __tempRootFilePath( extension ) ' + SBLK +  # TODO: Test in NIX/MAC
-            TAB + 'return __tempPath( "." + (extension ? extension : "tmp") ) ' + END +                                                                              
+            'function __tempRootFilePath( extension, suffix ) ' + SBLK +  # TODO: Test in NIX/MAC
+            TAB + 'return __tempPath( (suffix ? suffix : "") + '
+                            '"." + (extension ? extension : "tmp") ) ' + END +                                                                              
             EBLK + NEW +                        
             'function __installerTempPath( suffix ) ' + SBLK +  # TODO: Test in NIX/MAC            
             TAB + 'var dirPath = installer.value( ' + 
@@ -2270,7 +2276,7 @@ class _QtIfwScript:
             (TAB + 'b64 = "-----BEGIN CERTIFICATE-----\\n" + '
                    'b64 + "\\n-----END CERTIFICATE-----\\n"' + END 
             if IS_WINDOWS else 
-                TAB + 'var uname = __realUserName()' + END ) +
+                TAB + 'var uname = __userName()' + END ) +
             TAB + 'writeFile( tempPath, b64 )' + END +                                 
             TAB + 'var decodeCmd = "' +
                 ('echo off\\n'                     
@@ -2304,7 +2310,7 @@ class _QtIfwScript:
             TAB + 'var vbs = ' + NEW +
             (2*TAB) + '"Const ForReading = 1\\n" + ' + NEW +
             (2*TAB) + '"Const ForWriting = 2\\n" + ' + NEW +
-            (2*TAB) + '"Const Amp = \\"@\\" \\n" + ' + NEW +
+            (2*TAB) + '"Const AtSign = \\"@\\" \\n" + ' + NEW +
             (2*TAB) + '"Dim sFileName, sText\\n" + ' + NEW +
             (2*TAB) + '"\\n" + ' + NEW +
             (2*TAB) + '"sFileName = \\"" + path + "\\"\\n" + ' + NEW +
@@ -2317,7 +2323,7 @@ class _QtIfwScript:
             (2*TAB) + 'var varVal = Dir.toNativeSeparator( installer.value( varName, "' + 
                                         QT_IFW_UNDEF_VAR_VALUE + '" ) )' + END +
             (2*TAB) + 'if( isDoubleBackslash ) varVal = varVal.replace(/\\\\/g, \'\\\\\\\\\')' + END +
-            (2*TAB) + 'vbs += "sText = Replace(sText, Amp + \\"" + varName + "\\" + Amp, \\"" + varVal + "\\")\\n"' + NEW +
+            (2*TAB) + 'vbs += "sText = Replace(sText, AtSign + \\"" + varName + "\\" + AtSign, \\"" + varVal + "\\")\\n"' + NEW +
             TAB + EBLK +
             TAB + 'vbs += ' + NEW +                
             (2*TAB) + '"Set oFile = oFSO.OpenTextFile(sFileName, ForWriting)\\n" + ' + NEW +
@@ -2325,21 +2331,25 @@ class _QtIfwScript:
             (2*TAB) + '"oFile.Close\\n"' + END +
             TAB + 'return vbs' + END 
             if IS_WINDOWS else
-            # TODO: TEST on MAC 
-            TAB + 'var path = Dir.toNativeSeparator( path )' + END +           
-            TAB + 'var script = ""' + END +
+            # TODO: TEST on MAC            
+            # \o100 == octal code for @ in sed sting, but not sh (which likes simply \100)
+            # Don't mess with the endless nasty escapes for all layers this has to pass through!
+            TAB + 'var script = "AtSign=\'\\\\\\\\o100\'\\n"' + END +
+            TAB + 'var path = Dir.toNativeSeparator( path )' + END +            
             TAB + 'for( var i=0; i != varNames.length; ++i ) ' + SBLK +                                    
             (2*TAB) + 'var varName = varNames[i]' + END +
             (2*TAB) + 'var varVal = Dir.toNativeSeparator( installer.value( varName, "' + 
                                         QT_IFW_UNDEF_VAR_VALUE + '" ) )' + END +
             (2*TAB) + 'varVal = varVal.replace(/\\//g, \'\\\\/\')' + END +
-            (2*TAB) + 'script += "AMP=\'@\'\\n"' + END +
-            (2*TAB) + 'script += "sed -i ' + ('".bak" ' if IS_MACOS else '') + '-e \\"s/${AMP}" + varName + "${AMP}/" + varVal + "/g\\" \\"" + ' 
-                                    'path + "\\" \\n"' + END +              
+            (2*TAB) + 'script += "sed -i ' + 
+                    ('".bak" ' if IS_MACOS else '') + '-e ' + 
+                    '\\"s/${AtSign}" + varName + "${AtSign}/" + varVal + "/g\\" ' +
+                    '\\"" + path + "\\" \\n"' + END +              
             TAB + EBLK + 
-            TAB + 'var uname = __realUserName()' + END +
+            TAB + 'var uname = __userName()' + END +
             TAB + 'script += "chown " + uname + ":" + uname + " \\"" + path + "\\"\\n"' + END + 
-            TAB + 'script += "chmod 755 \\"" + path + "\\"\\n"' + END +                                         
+            TAB + 'script += "chmod 755 \\"" + path + "\\"\\n"' + END +
+            TAB + 'script += "cat \\"" + path + "\\"\\n"' + END +                                                     
             TAB + 'return script' + END     
             ) + 
             EBLK + NEW +                                                                         
@@ -2390,7 +2400,7 @@ class _QtIfwScript:
                 ('\\n"' if IS_WINDOWS else ';"' ) + END +
             (2*TAB) + 'redirect = " >>"' + END +                                               
             TAB + EBLK + 
-            ( TAB + 'var uname = __realUserName()' + END +
+            ( TAB + 'var uname = __userName()' + END +
               TAB + 'writeCmd += "chown " + uname + ":" + uname + " \\"" + path + "\\";"' + END +
               TAB + 'writeCmd += "chmod 755 \\"" + path + "\\";"' + END 
               if not IS_WINDOWS else '' ) + 
@@ -2954,20 +2964,29 @@ class _QtIfwScript:
             )
         elif IS_LINUX:
             self.qtScriptLib += (
+            'var shellScriptCount=0' + END +
             'function executeShellScript( script ) ' + SBLK +
             TAB + _QtIfwScript.log( "Executing Shell Script:" ) +
-            TAB + _QtIfwScript.log( "script", isAutoQuote=False ) +          
-            TAB + 'var path = writeFile( __tempRootFilePath( "sh" ), script )' + END +            
+            TAB + _QtIfwScript.log( "script", isAutoQuote=False ) +
+            TAB + 'var path = writeFile( '
+                    '__tempRootFilePath( "sh", "_" + (++shellScriptCount) ), '
+                    'script )' + END +            
             TAB + 'var result = installer.execute( "sh", [path] )' + END +
             TAB + _QtIfwScript.log( 
                 '"> Script return code: " + (result.length==2 ? result[1] : "?" )', 
                 isAutoQuote=False ) + 
+            TAB + _QtIfwScript.log( 
+                '"> Script output:\\n" + (result.length==2 ? result[0] : "?" )', 
+                isAutoQuote=False ) + 
             TAB + 'if( result[1] != 0 ) ' + NEW +
-            (2*TAB) + 'throw new Error("Shell Script operation failed.")' + END +
+            (2*TAB) + 'throw new Error("Shell Script operation failed.")' + END +            
+            #_QtIfwScript.ifCmdLineSwitch( _KEEP_TEMP_SWITCH ) + 'return' + END +
+            #-------------
             TAB + 'for( i=0; i < 3; i++ )' + SBLK +
             (2*TAB) + 'try{ deleteFile( path ); break; }' + NEW +                          
             (2*TAB) + 'catch(e){ sleep(1); }' + NEW +
             TAB + EBLK +             
+            #-------------
             EBLK + NEW +                                                            
             'function executeShellScriptDetached( scriptPath, script, args ) ' + SBLK +
             TAB + _QtIfwScript.log( "Executing Detached Shell Script:" ) +
@@ -3997,6 +4016,7 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + '__realUserName()' + END +
             TAB + _QtIfwScript.logValue( _QtIfwScript._EMULATE_USER_CMD_ARG ) +
             TAB + '__applyUserEmulations()' + END +               
+            TAB + _QtIfwScript.log( '"__userName(): " + __userName()', isAutoQuote=False ) +
             TAB + 'clearOutLog()' + END +
             TAB + 'clearErrorLog()' + END +
             TAB + _QtIfwScript.ifDryRun() + _QtIfwScript.setBoolValue( 
@@ -6737,6 +6757,22 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
                 "removeIconDir": removeIconDir } )
  
     if IS_MACOS or IS_LINUX:
+    
+        @staticmethod
+        def __shExitIfFalseVar( varName, isNegated=False, errorCode=0 ):
+            if varName is None: return ""
+            return str( ExecutableScript( "", script=([               
+                  'reqFlag="{varName}";'               
+                , 'if [ "${reqFlag}" == "{undef}" ]; then reqFlag=false; fi'
+                , 'if [ "${reqFlag}" == "" ]; then reqFlag=false; fi'
+                , 'if [ "${reqFlag}" == "0" ]; then reqFlag=false; fi'
+                , 'if {negate}${reqFlag}; then exit {errorCode}; fi'                
+            ]), replacements={
+                  'negate' : ('' if isNegated else '! ')  
+                , 'varName' : qtIfwDynamicValue( varName )
+                , 'errorCode': errorCode
+                , 'undef' : QT_IFW_UNDEF_VAR_VALUE
+            }) )
     
         # TODO: TEST         
         @staticmethod
