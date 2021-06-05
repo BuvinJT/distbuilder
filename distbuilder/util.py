@@ -1391,33 +1391,27 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         self.isIfwVarEscapeBackslash = False
         self.isDebug = isDebug
                                                     
-    def __str__( self ) :
-        if self.script is None : return ""
-        if self.shebang is not None:
-            return( ExecutableScript.__SHEBANG_TEMPLATE % 
-                    (self.shebang, self.__formated()) )
-        else: return self.__formated() 
-        
-    def __formated( self ):
-        script = self.script     
-        for k,v in iteritems( self.replacements ):
-            script = script.replace( self.__PLACEHOLDER_TMPLT % (k,), str(v) )
-        return script    
-                
     def debug( self ): 
         if self.script: print( str(self) )
+                                                    
+    def fileName( self ):
+        return joinExt( self.rootName, self.extension )
 
     def filePath( self ):
         return( joinPath( self.scriptDirPath, self.fileName() ) 
                 if self.scriptDirPath else absPath( self.fileName() ) )
         
-    def fileName( self ):
-        return joinExt( self.rootName, self.extension )
-
     def exists( self, scriptDirPath=None ): 
         if scriptDirPath is None: scriptDirPath=self.scriptDirPath
         self.scriptDirPath = scriptDirPath if scriptDirPath else THIS_DIR  
         return isFile( self.filePath() )
+
+    def read( self, scriptDirPath=None ):
+        self.script = None
+        if scriptDirPath is None: scriptDirPath=self.scriptDirPath
+        self.scriptDirPath = scriptDirPath if scriptDirPath else THIS_DIR  
+        filePath = self.filePath()
+        with open( filePath, 'r' ) as f : self.script = f.read() 
                         
     def write( self, scriptDirPath=None ):
         if self.script is None : return
@@ -1430,13 +1424,6 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         with open( filePath, 'w' ) as f: f.write( str(self) ) 
         if not IS_WINDOWS : chmod( filePath, 0o755 )
         
-    def read( self, scriptDirPath=None ):
-        self.script = None
-        if scriptDirPath is None: scriptDirPath=self.scriptDirPath
-        self.scriptDirPath = scriptDirPath if scriptDirPath else THIS_DIR  
-        filePath = self.filePath()
-        with open( filePath, 'r' ) as f : self.script = f.read() 
-
     def remove( self, scriptDirPath=None ):
         self.script = None
         if scriptDirPath is None: scriptDirPath=self.scriptDirPath
@@ -1446,7 +1433,25 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
             removeFile( filePath )
             if self.isDebug:
                 print( "Removed script: %s" % (filePath,) )
-                
+
+    """ str() """
+    def __str__( self ) : return self.__asFormatedStr( isStandalone=True ) 
+        
+    def asSnippet( self ): 
+        script = self.__asFormatedStr( isStandalone=False )
+        if not script.startswith( _NEWLINE ): script = _NEWLINE + script   
+        return script 
+
+    def __asFormatedStr( self, isStandalone=True ):
+        if self.script is None : return ""
+        script = self.script     
+        for k,v in iteritems( self.replacements ):
+            script = script.replace( self.__PLACEHOLDER_TMPLT % (k,), str(v) )
+        if isStandalone and self.shebang is not None:
+            script = ExecutableScript.__SHEBANG_TEMPLATE % (
+                        self.shebang, script )         
+        return script    
+                            
     def toLines( self ): return ExecutableScript.strToLines( self.script )
     
     def fromLines( self, lines ): 

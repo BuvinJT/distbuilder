@@ -6118,8 +6118,8 @@ class QtIfwExternalOp:
                  QtIfwExternalOp.__batExitIfFalseVar( dynamicVar )
                  if IS_WINDOWS else
                  QtIfwExternalOp.__shExitIfFalseVar( dynamicVar ) ) + 
-                str( QtIfwExternalOp.WriteOpDataFileScript( 
-                     fileName, data=None ) )         
+                QtIfwExternalOp.WriteOpDataFileScript( 
+                     fileName, data=None ).asSnippet()         
         ))
         
     @staticmethod
@@ -6150,7 +6150,7 @@ class QtIfwExternalOp:
                 "touchFile" ), script=[
                   ifNotExists
                 , ('{tab}echo. > "{filePath}"' if IS_WINDOWS else 
-                   '{tab}touch "filePath"')
+                   '{tab}touch "{filePath}"')
                 , setOwner, setGroup, setAccess
                 , ifNotExistsEnd ], replacements={ 
                   "filePath": filePath
@@ -6160,11 +6160,11 @@ class QtIfwExternalOp:
                 , "tab"     : ifNotExistsTab
             })
         else:
-            #TAB + 'if( echo.trim()=="" ) return ' + ('"."' if IS_WINDOWS else '"\\"\\""' ) + END  + 
-            #TAB + 'var escaped = ' + ('echo' if IS_WINDOWS else 
-            #        '"\'" + echo.replace(/\'/g, \'\\\'\\"\\\'\\"\\\'\') + "\'"' ) + END  +                                  
             if not IS_WINDOWS: 
-                data = "'%s'" % (data.replace("'","'\"'\"'"),)               
+                # in this format, double quotes do not need escaping. Single quote are escaped
+                # via a nasty looking "gluing" technique. This method actual seems to work more
+                # reliably across contexts than a backslash style escape.  
+                data = "'%s'" % (data.replace("'","'\"'\"'"),)
             # TODO: Auto handle escape sequences see: QtScript __escapeEchoText            
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "writeFile" ), script=[
@@ -6332,7 +6332,7 @@ class QtIfwExternalOp:
         @staticmethod
         def __batExitIfFalseVar( varName, isNegated=False, errorCode=0 ):
             if varName is None: return ""
-            return str( ExecutableScript( "", script=([               
+            return ExecutableScript( "", script=([               
                   'set "reqFlag={varName}"'               
                 , 'if "%reqFlag%"=="{undef}" set "reqFlag=false"'
                 , 'if "%reqFlag%"=="" set "reqFlag=false"'
@@ -6343,24 +6343,24 @@ class QtIfwExternalOp:
                 , 'varName' : qtIfwDynamicValue( varName )
                 , 'errorCode': errorCode
                 , 'undef' : QT_IFW_UNDEF_VAR_VALUE
-            }) )
+            }).asSnippet()
 
         @staticmethod
         def __batExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):
             if fileName is None: return ""            
-            return str( ExecutableScript( "", script=([                               
+            return ExecutableScript( "", script=([                               
                 'if {negate}exist "{filePath}" exit /b {errorCode}'   
             ]), replacements={
                   'negate' : ('' if isNegated else 'not ')  
                 , 'filePath' : QtIfwExternalOp.opDataPath( fileName )
                 , 'errorCode': errorCode
-            }) )
+            }).asSnippet()
 
         # TODO: TEST
         @staticmethod
         def __psExitIfFalseVar( varName, isNegated=False, errorCode=0 ):
             if varName is None: return ""
-            return str( ExecutableScript( "", script=([    
+            return ExecutableScript( "", script=([    
                   '$reqFlag="{varName}"'
                 , 'if( $reqFlag -eq "{undef}" ) { $reqFlag="false" }'
                 , 'if( $reqFlag -eq "" ) { $reqFlag="false" }'
@@ -6373,12 +6373,12 @@ class QtIfwExternalOp:
                 , 'varName' : qtIfwDynamicValue( varName )
                 , 'errorCode': errorCode
                 , 'undef' : QT_IFW_UNDEF_VAR_VALUE
-            }) )
+            }).asSnippet()
 
         @staticmethod
         def __psExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):
             if fileName is None: return ""            
-            return str( ExecutableScript( "", script=([               
+            return ExecutableScript( "", script=([               
                   'if( {negate}(Test-Path "{filePath}" -PathType Leaf) ) {'
                 , '    [Environment]::Exit( {errorCode} )'
                 , '}'   
@@ -6386,7 +6386,7 @@ class QtIfwExternalOp:
                   'negate' : ('' if isNegated else '! ')  
                 , 'filePath' : QtIfwExternalOp.opDataPath( fileName )
                 , 'errorCode': errorCode
-            }) )
+            }).asSnippet()
         
         __PS_32_TO_64_BIT_CONTEXT_HEADER=(
 """                
@@ -6472,7 +6472,7 @@ if( $isWaitTimeout ){
 """) 
             
             selfDestruct = QtIfwExternalOp.powerShellSelfDestructSnippet()            
-            return str( ExecutableScript( "", script=psScriptTemplate,
+            return ExecutableScript( "", script=psScriptTemplate,
                 replacements={
                       "setBitContext": QtIfwExternalOp.__psSetBitContext( 
                         isAutoBitContext )                      
@@ -6498,7 +6498,7 @@ if( $isWaitTimeout ){
                     , "onTimeout": onTimeout if onTimeout else ""
                     , "exitOnSuccess" : ( "[Environment]::Exit( 0 )" 
                         if isExitOnSuccess else "" )                                                                                  
-                } ) )
+                } ).asSnippet()
                     
         @staticmethod
         def __psFindWindowsAppUninstallCmd( appName, isAutoBitContext,
@@ -6541,7 +6541,7 @@ else{
     Write-Host "OS registered uninstall command for {appName}: $UninstallCmd"
 }
 """) 
-            return str( ExecutableScript( "", script=psScriptTemplate,
+            return ExecutableScript( "", script=psScriptTemplate,
                 replacements={
                       "setBitContext": QtIfwExternalOp.__psSetBitContext( 
                                             isAutoBitContext )
@@ -6554,7 +6554,7 @@ else{
                         QtIfwExternalOp.powerShellSelfDestructSnippet()
                         if isExitOnNotFound and isSelfDestructOnNotFound 
                         else "" )                                                             
-                } ) )
+                } ).asSnippet()
 
         @staticmethod
         def CreateWindowsAppFoundFlagFileScript( appName, fileName, 
@@ -6858,7 +6858,7 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
         @staticmethod
         def __shExitIfFalseVar( varName, isNegated=False, errorCode=0 ):
             if varName is None: return ""
-            return str( ExecutableScript( "", script=([               
+            return ExecutableScript( "", script=([               
                   'reqFlag="{varName}";'               
                 , 'if [ "${reqFlag}" == "{undef}" ]; then reqFlag=false; fi'
                 , 'if [ "${reqFlag}" == "" ]; then reqFlag=false; fi'
@@ -6869,19 +6869,19 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
                 , 'varName' : qtIfwDynamicValue( varName )
                 , 'errorCode': errorCode
                 , 'undef' : QT_IFW_UNDEF_VAR_VALUE
-            }) )
+            }).asSnippet()
     
         # TODO: TEST         
         @staticmethod
         def __shExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):
             if not fileName: return ""            
-            return str( ExecutableScript( "", script=([               
+            return ExecutableScript( "", script=([               
                 '[ {negate}-f "{filePath}" ] && exit {errorCode}'   
             ]), replacements={
                   'negate' : ('' if isNegated else '! ')  
                 , 'filePath' : QtIfwExternalOp.opDataPath( fileName )
                 , 'errorCode': errorCode
-            }) )
+            }).asSnippet()
 
         # TODO: FILL IN!         
         @staticmethod
@@ -7124,7 +7124,7 @@ class QtIfwExternalResource:
                 " (Auto correcting this may produce hard to find bugs)" )
         self.name = name
         self.srcPath = absPath( srcPath, srcBasePath )        
-        print("self.srcPath", self.srcPath)
+        #print("self.srcPath", self.srcPath)
         self.isMaintenanceNeed = isMaintenanceNeed        
         self.contentKeys = contentKeys if contentKeys else {}
         if( (contentKeys is None or len(contentKeys)==0) and 

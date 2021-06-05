@@ -222,5 +222,5 @@ class BuildProcess( PyToBinInstallerProcess ):
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True
 # uncomment to leave scripts in temp directory, post any dynamic modifications 
-# p.isScriptDebugInstallTest = True   
+p.isScriptDebugInstallTest = True   
 p.run()       

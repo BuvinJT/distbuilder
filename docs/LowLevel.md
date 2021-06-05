@@ -1524,14 +1524,17 @@ Attributes & default values:
     
 Functions:   
     
-    filePath()
     fileName()
+    filePath()
 
     exists( scriptDirPath=None )        
     read( scriptDirPath=None )
     write( scriptDirPath=None )
     remove( scriptDirPath=None )
     
+    __str__  		<i.e. built-in to string supported>
+    asSnippet()
+        
     toLines()        
     fromLines( lines )
     injectLine( injection, lineNo )               
@@ -1590,6 +1593,9 @@ the script.  Place holders must defined in the script with the surrounding brack
 i.e in the form "{placeholder}". The keys in replacements dictionary should not, however,
 include the brackets.  This is similar to the built-in string format function, of course,
 but works better in scripts which use brackets for other purposes. 
+
+**asSnippet()**: Use this function when "pasting" scripts 
+together.
 
 **isIfwVarEscapeBackslash**: If employing this class within a 
 [QtIfwExternalOp](ConfigClasses.md#qtifwexternalop), enabling this
