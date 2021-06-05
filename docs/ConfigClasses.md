@@ -1023,6 +1023,44 @@ returned path in such.
 **isDoubleBackslash**: Optionally, use this on Windows, to escape backslashes 
 by doubling them up.
 
+#### QtIfwExternalOp.MakeDir
+    
+    MakeDir( event, dirPath,
+             owner=QT_IFW_USER, group=QT_IFW_USER, <LINUX/MAC ONLY>
+             access="755",                         <LINUX/MAC ONLY>
+             isElevated=True )
+
+#### QtIfwExternalOp.RemoveDir
+    
+    RemoveDir( event, dirPath, isElevated=True )
+
+#### QtIfwExternalOp.WriteFile
+
+    WriteFile( event, filePath, data,
+               owner=QT_IFW_USER, group=QT_IFW_USER, <LINUX/MAC ONLY>
+               access="644",                         <LINUX/MAC ONLY>
+               isElevated=True )
+
+#### QtIfwExternalOp.RemoveFile
+
+    RemoveFile( event, filePath, isElevated=True )
+
+#### QtIfwExternalOp.CreateOpFlagFile
+
+    CreateOpFlagFile( event, fileName, dynamicVar=None, isElevated=True )
+    
+**dynamicVar**: Control the creation of this file via a dynamic installer 
+variable. Note that a "false" condition will be met when a boolean variable is
+explicitly set to `false`, or if the variable is undefined, or it contains no 
+content, or if it is set to `0`. The opposing `true` condition, required to 
+create the flag file, is simply the inverse of that. By default, this argument 
+is set to `None`, and therefore the file will be created without any logical 
+controls.       
+
+#### QtIfwExternalOp.WriteOpDataFile
+
+    WriteOpDataFile( event, fileName, data, isElevated=True )
+
 #### QtIfwExternalOp.RunProgram
 
     RunProgram( event, path, arguments=None, isAutoQuote=True,  
@@ -1049,30 +1087,6 @@ Such a file would normally be created via a prior [QtIfwExternalOp.WriteOpDataFi
 
 On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
 program from the installer's 32 bit context.
-
-#### QtIfwExternalOp.CreateOpFlagFile
-
-    CreateOpFlagFile( event, fileName, dynamicVar=None, isElevated=True )
-    
-**dynamicVar**: Control the creation of this file via a dynamic installer 
-variable. Note that a "false" condition will be met when a boolean variable is
-explicitly set to `false`, or if the variable is undefined, or it contains no 
-content, or if it is set to `0`. The opposing `true` condition, required to 
-create the flag file, is simply the inverse of that. By default, this argument 
-is set to `None`, and therefore the file will be created without any logical 
-controls.       
-
-#### QtIfwExternalOp.WriteOpDataFile
-
-    WriteOpDataFile( event, fileName, data, isElevated=True )
-
-#### QtIfwExternalOp.RemoveFile
-
-    RemoveFile( event, filePath, isElevated=True )
-
-#### QtIfwExternalOp.RemoveDir
-    
-    RemoveDir( event, dirPath, isElevated=True )
 
 #### QtIfwExternalOp.CreateStartupEntry
 
@@ -1215,6 +1229,59 @@ your custom scripts to serve this purpose.
 ##### QtIfwExternalOp.shellScriptSelfDestructSnippet 
 
 ##### QtIfwExternalOp.appleScriptSelfDestructSnippet 
+
+#### QtIfwExternalOp.CreateOpFlagFileScript
+
+    CreateOpFlagFile( fileName, dynamicVar=None )
+    
+**dynamicVar**: Control the creation of the flag file via a dynamic installer 
+variable. Note that a "false" condition will be met when a boolean variable is
+explicitly set to `false`, or if the variable is **undefined**, or it contains **no content**, or if it is set to `0`. The opposing `true` condition, required 
+to create the flag file, is simply the inverse of that.  So notably, the flag 
+can be raised by having a value in the dynamic variable, to then just simply 
+"true". By default, this argument is set to `None`, and therefore the file will be created without any logical 
+controls.  
+
+Note that the flag is either raised by this function or not. This function **does 
+not remove** a file that already exists.        
+
+#### QtIfwExternalOp.MakeDirScript
+
+    MakeDirScript( dirPath,
+                   owner=QT_IFW_USER, group=QT_IFW_USER, <LINUX/MAC ONLY>
+                   access="755" )                        <LINUX/MAC ONLY>
+
+**Windows Type**: Batch 
+**Mac/Linux Type**: ShellScript 
+
+#### QtIfwExternalOp.RemoveDirScript
+
+	RemoveDirScript( dirPath )
+
+**Windows Type**: Batch 
+**Mac/Linux Type**: ShellScript 
+
+#### QtIfwExternalOp.WriteFileScript
+
+    WriteFileScript( filePath, data=None,
+                     owner=QT_IFW_USER, group=QT_IFW_USER,  <LINUX/MAC ONLY>
+                     access="644" )                         <LINUX/MAC ONLY>
+**Windows Type**: Batch 
+**Mac/Linux Type**: ShellScript 
+
+#### QtIfwExternalOp.RemoveFileScript
+
+	RemoveFileScript( filePath )
+
+**Windows Type**: Batch 
+**Mac/Linux Type**: ShellScript 
+ 
+#### QtIfwExternalOp.WriteOpDataFileScript
+
+    WriteOpDataFileScript( fileName, data=None )
+
+**Windows Type**: Batch 
+**Mac/Linux Type**: ShellScript 
         
 #### QtIfwExternalOp.RunProgramScript
 
@@ -1254,43 +1321,6 @@ program from the installer's 32 bit context.
 
 Note: Elevation is controlled via the operation executing the script 
 rather embedded within it.
-
-#### QtIfwExternalOp.CreateOpFlagFileScript
-
-    CreateOpFlagFile( fileName, dynamicVar=None )
-    
-**dynamicVar**: Control the creation of the flag file via a dynamic installer 
-variable. Note that a "false" condition will be met when a boolean variable is
-explicitly set to `false`, or if the variable is **undefined**, or it contains **no content**, or if it is set to `0`. The opposing `true` condition, required 
-to create the flag file, is simply the inverse of that.  So notably, the flag 
-can be raised by having a value in the dynamic variable, to then just simply 
-"true". By default, this argument is set to `None`, and therefore the file will be created without any logical 
-controls.  
-
-Note that the flag is either raised by this function or not. This function **does 
-not remove** a file that already exists.        
-
-#### QtIfwExternalOp.WriteOpDataFileScript
-
-    WriteOpDataFileScript( fileName, data=None )
-
-**Windows Type**: Batch 
-**Mac/Linux Type**: ShellScript 
-
-#### QtIfwExternalOp.RemoveFileScript
-
-	RemoveFileScript( filePath )
-
-**Windows Type**: Batch 
-**Mac/Linux Type**: ShellScript 
- 
-#### QtIfwExternalOp.RemoveDirScript
-
-	RemoveDirScript( dirPath )
-
-**Windows Type**: Batch 
-**Mac/Linux Type**: ShellScript 
-
 
 #### QtIfwExternalOp.CreateExternPackageFoundFlagFileScript
 

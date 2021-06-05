@@ -1,6 +1,7 @@
 from distbuilder import( PyToBinInstallerProcess, ConfigFactory, 
         QtIfwExternalOp, QtIfwKillOp, ExecutableScript, startLogging, 
-        toNativePath, IS_WINDOWS, IS_MACOS, QT_IFW_DESKTOP_DIR )
+        joinPathQtIfw, toNativePath, IS_WINDOWS, IS_MACOS, 
+        QT_IFW_DESKTOP_DIR, QT_IFW_HOME_DIR )
 
 startLogging()
 
@@ -60,6 +61,8 @@ class BuildProcess( PyToBinInstallerProcess ):
                     'Set oShell = Nothing'
                 ])  
 
+            # TODO: ADD JSCRIPT EXAMPLE    
+
             # In order to actually test the uninstall operation, the
             # "Hello World Tk Example" app must be installed first!
             # (By default, however, it should NOT cause an error if it is not).
@@ -77,7 +80,20 @@ class BuildProcess( PyToBinInstallerProcess ):
                         isSynchronous=False,
                         isAutoBitContext=False,
                         isSuccessOnNotFound=True ) ]
-
+ 
+        def addMakeDataDirOp( pkg ):
+            dirPath  = joinPathQtIfw( QT_IFW_HOME_DIR, "distbuilder-example" )
+            filePath = joinPathQtIfw( dirPath, "distbuilder-example.txt" )
+            pkg.pkgScript.externalOps += [
+                QtIfwExternalOp.MakeDir(
+                    QtIfwExternalOp.AUTO_UNDO, 
+                    dirPath )
+              , QtIfwExternalOp.WriteFile(
+                    QtIfwExternalOp.AUTO_UNDO,
+                    filePath,
+                    "Here is some sample data for yall." )                  
+            ]
+                    
         def addRunProgramOp( pkg ):
             if IS_WINDOWS: progPath = "notepad"                
             elif IS_MACOS: progPath = "TextEdit"                  
@@ -107,7 +123,8 @@ class BuildProcess( PyToBinInstallerProcess ):
             addCreateExeFromBatch( pkg )
             addCreateExeFromPowerShell( pkg )
             addCreateExeFromVbs( pkg )       
-            addUninstallWindowsApp( pkg )        
+            addUninstallWindowsApp( pkg )
+        addMakeDataDirOp( pkg )
         addRunProgramOp( pkg )
             
 p = BuildProcess( configFactory, isDesktopTarget=True )

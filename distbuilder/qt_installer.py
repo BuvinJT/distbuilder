@@ -73,7 +73,8 @@ QT_IFW_APPS_DIR      = "@ApplicationsDir@"
 QT_IFW_INSTALLER_DIR      = "@InstallerDirPath@"
 QT_IFW_INTALLER_PATH      = "@InstallerFilePath@"   
 
-_QT_IFW_HOME_DIR             = "HomeDir" 
+_QT_IFW_USER                 = "User"               # CUSTOM!
+_QT_IFW_HOME_DIR             = "HomeDir"            
 _QT_IFW_DEFAULT_TARGET_DIR   = "DefaultTargetDir"   # CUSTOM!
 _QT_IFW_TEMP_DIR             = "TempDir"            # CUSTOM!
 _QT_IFW_SCRIPTS_DIR          = "ScriptsDir"         # CUSTOM!
@@ -82,6 +83,7 @@ _QT_IFW_MAINTENANCE_TEMP_DIR = "MaintenanceTempDir" # CUSTOM!
 
 _QT_IFW_VAR_TMPLT = "@%s@"
 
+QT_IFW_USER                 = _QT_IFW_VAR_TMPLT % (_QT_IFW_USER,)                 # CUSTOM!
 QT_IFW_DEFAULT_TARGET_DIR   = _QT_IFW_VAR_TMPLT % (_QT_IFW_DEFAULT_TARGET_DIR,)   # CUSTOM!
 QT_IFW_TEMP_DIR             = _QT_IFW_VAR_TMPLT % (_QT_IFW_TEMP_DIR,)             # CUSTOM!
 QT_IFW_SCRIPTS_DIR          = _QT_IFW_VAR_TMPLT % (_QT_IFW_SCRIPTS_DIR,)          # CUSTOM! 
@@ -170,13 +172,17 @@ QT_IFW_DYNAMIC_PATH_VARS = [
 ]
 
 QT_IFW_DYNAMIC_VARS = QT_IFW_DYNAMIC_PATH_VARS + [
-      "ProductName"
+      "User"
+    , "ProductName"
     , "ProductVersion"
     , "Title"
     , "Publisher"
     , "Url"
     , "os"
 ]
+
+DEFAULT_DIR_ACCESS  = "755"
+DEFAULT_FILE_ACCESS = "644"
 
 _RETAINED_RESOURCE_SUBDIR = 'maintenanceResources'
 _RETAINED_RESOURCE_DIR = '"%s/%s"' % (QT_IFW_TARGET_DIR,_RETAINED_RESOURCE_SUBDIR)
@@ -904,6 +910,7 @@ class _QtIfwScript:
     MAINTAIN_MODE_OPT_REMOVE_ALL = "removeall"
     MAINTAIN_PASSTHRU_CMD_ARG    = "maintpassthru"
 
+    USER_KEY                     = "User"
     IS_NET_CONNECTED_KEY         = "isNetConnected"
 
     _WIZARD_STYLE_KEY     = "__wizardStyle"
@@ -927,6 +934,7 @@ class _QtIfwScript:
         , MAINTAIN_PASSTHRU_CMD_ARG : ""
         , _KEEP_ALIVE_PATH_CMD_ARG  : ""
         , _KEEP_TEMP_SWITCH         : ""           
+        , _EMULATE_USER_CMD_ARG     : ""
     }
 
     _GUI_OBJ       = "gui"
@@ -4015,8 +4023,9 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + _QtIfwScript.log( '"isLinux " + isLinux()',      isAutoQuote=False ) +                        
             TAB + '__realUserName()' + END +
             TAB + _QtIfwScript.logValue( _QtIfwScript._EMULATE_USER_CMD_ARG ) +
+            TAB + 'installer.setValue( "User", __userName() )' + END +            
+            TAB + _QtIfwScript.logValue( _QtIfwScript.USER_KEY ) +
             TAB + '__applyUserEmulations()' + END +               
-            TAB + _QtIfwScript.log( '"__userName(): " + __userName()', isAutoQuote=False ) +
             TAB + 'clearOutLog()' + END +
             TAB + 'clearErrorLog()' + END +
             TAB + _QtIfwScript.ifDryRun() + _QtIfwScript.setBoolValue( 
@@ -5763,17 +5772,41 @@ class QtIfwExternalOp:
         return QtIfwExternalOp.__genScriptOp( event, 
             script=QtIfwExternalOp.WriteOpDataFileScript( fileName, data ), 
             isElevated=isElevated )
+                
+    @staticmethod
+    def WriteFile( event, filePath, data,
+                   owner=QT_IFW_USER, group=QT_IFW_USER, # LINUX/MAC ONLY
+                   access=DEFAULT_FILE_ACCESS,           # LINUX/MAC ONLY                                      
+                   isElevated=True ):    
+        return QtIfwExternalOp.__genScriptOp( event, 
+            script=QtIfwExternalOp.WriteFileScript( 
+                filePath, data, owner, group, access ), 
+            uninstScript=QtIfwExternalOp.RemoveFileScript( filePath ),
+            isElevated=isElevated )
         
+    @staticmethod
+    def MakeDir( event, dirPath,
+                 owner=QT_IFW_USER, group=QT_IFW_USER,  # LINUX/MAC ONLY
+                 access=DEFAULT_DIR_ACCESS,             # LINUX/MAC ONLY   
+                 isElevated=True ):            
+        return QtIfwExternalOp.__genScriptOp( event, 
+            script=QtIfwExternalOp.MakeDirScript( 
+                dirPath, owner, group, access ), 
+            uninstScript=QtIfwExternalOp.RemoveDirScript( dirPath ),
+            isElevated=isElevated )
+                
     @staticmethod
     def RemoveFile( event, filePath, isElevated=True ): # TODO: Test in NIX/MAC            
         return QtIfwExternalOp.__genScriptOp( event, 
-            script=QtIfwExternalOp.RemoveFileScript( filePath ), 
+            script=QtIfwExternalOp.RemoveFileScript( filePath ),
+            isReversible=False, 
             isElevated=isElevated )
     
     @staticmethod
     def RemoveDir( event, dirPath, isElevated=True ): # TODO: Test in NIX/MAC           
         return QtIfwExternalOp.__genScriptOp( event, 
-            script=QtIfwExternalOp.RemoveDirScript( dirPath ), 
+            script=QtIfwExternalOp.RemoveDirScript( dirPath ),
+            isReversible=False, 
             isElevated=isElevated )
 
     # TODO: Test in NIX/MAC 
@@ -6089,21 +6122,64 @@ class QtIfwExternalOp:
                      fileName, data=None ) )         
         ))
         
-    # TODO: Auto handle escape sequences?
     @staticmethod
     def WriteOpDataFileScript( fileName, data=None ): # TODO: Test in NIX/MAC            
-        filePath = QtIfwExternalOp.opDataPath( fileName )
+        return QtIfwExternalOp.WriteFileScript( 
+            QtIfwExternalOp.opDataPath( fileName ), data )
+    
+    @staticmethod
+    def WriteFileScript( filePath, data=None,
+                         owner=QT_IFW_USER, group=QT_IFW_USER,  # LINUX/MAC ONLY
+                         access=DEFAULT_FILE_ACCESS ):          # LINUX/MAC ONLY            
+        if IS_WINDOWS: setOwner=setGroup=setAccess="" 
+        else:
+            setOwner  = 'chown {owner} "{filePath}"'  if owner  else ''
+            setGroup  = 'chgrp {group} "{filePath}"'  if group  else ''
+            setAccess = 'chmod {access} "{filePath}"' if access else ''            
         if data is None:                    
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "touchOpDataFile" ), script=(
-                'echo. > "%s"' % (filePath,) if IS_WINDOWS else
-                'touch "%s"'  % (filePath,) ) )
+                "touchFile" ), script=[
+                 ('echo. > "{filePath}"' if IS_WINDOWS else 
+                  'touch "filePath"')
+                 , setOwner, setGroup, setAccess ], replacements={ 
+                  "filePath": filePath
+                , "owner"   : owner  
+                , "group"   : group
+                , "access"  : access
+            })
         else:
+            # TODO: Auto handle escape sequences see: QtScript __escapeEchoText            
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "writeOpDataFile" ), script=(
-                'echo %s > "%s"' % (data, filePath,) if IS_WINDOWS else
-                'echo "%s" > "%s"' % (data, filePath,) ) )
-                    
+                "writeFile" ), script=[
+                 ('echo {data} > "{filePath}"' if IS_WINDOWS else 
+                  'echo "{data}" > "{filePath}"')
+                , setOwner, setGroup, setAccess ], replacements={  
+                  "filePath": filePath
+                , "owner"   : owner  
+                , "group"   : group
+                , "access"  : access                                                          
+            })
+    
+    @staticmethod
+    def MakeDirScript( dirPath,
+                       owner=QT_IFW_USER, group=QT_IFW_USER, # LINUX/MAC ONLY
+                       access=DEFAULT_DIR_ACCESS ):          # LINUX/MAC ONLY           
+        if IS_WINDOWS: setOwner=setGroup=setAccess="" 
+        else: 
+            setOwner  = 'chown {owner} "{dirPath}"'  if owner  else ''
+            setGroup  = 'chgrp {group} "{dirPath}"'  if group  else ''
+            setAccess = 'chmod {access} "{dirPath}"' if access else ''            
+        return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
+                "makeDir" ), script=[
+                ('if not exist "{dirPath}" md "{dirPath}"' if IS_WINDOWS else
+                 '[ ! -d "{dirPath}" ] && mkdir "{dirPath}"') 
+                , setOwner, setGroup, setAccess ], replacements={  
+                  "dirPath": dirPath
+                , "owner"  : owner  
+                , "group"  : group
+                , "access" : access                                                          
+            })
+                                    
     @staticmethod
     def RemoveFileScript( filePath ): # TODO: Test in NIX/MAC            
         return ExecutableScript( QtIfwExternalOp.__scriptRootName( 

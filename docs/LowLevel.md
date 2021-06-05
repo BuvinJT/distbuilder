@@ -480,6 +480,7 @@ and attributes for many higher level functions and objects in this library.
     QT_IFW_PUBLISHER 
     QT_IFW_URL
 
+    QT_IFW_USER 
     QT_IFW_OS 
 
 Note: use [joinPathQtIfw](#joinpathqtifw) to build paths with such constants. 
@@ -549,6 +550,7 @@ Static Constants :
     TARGET_DIR_KEY
     DEFAULT_TARGET_DIR_KEY         
     PRODUCT_NAME_KEY       
+    USER_KEY       
     
     ERR_LOG_PATH_CMD_ARG   
     ERR_LOG_DEFAULT_PATH   

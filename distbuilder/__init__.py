@@ -84,7 +84,8 @@ from distbuilder.qt_installer import(
     , QT_IFW_INSTALLER_TEMP_DIR 
     , QT_IFW_MAINTENANCE_TEMP_DIR 
     , QT_IFW_INSTALLER_DIR 
-    , QT_IFW_INTALLER_PATH 
+    , QT_IFW_INTALLER_PATH
+    , QT_IFW_USER 
     , QT_IFW_PRODUCT_NAME 
     , QT_IFW_PRODUCT_VERSION 
     , QT_IFW_TITLE 
