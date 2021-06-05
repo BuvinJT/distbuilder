@@ -5774,13 +5774,13 @@ class QtIfwExternalOp:
             isElevated=isElevated )
                 
     @staticmethod
-    def WriteFile( event, filePath, data,
+    def WriteFile( event, filePath, data, isOverwrite=True,
                    owner=QT_IFW_USER, group=QT_IFW_USER, # LINUX/MAC ONLY
                    access=DEFAULT_FILE_ACCESS,           # LINUX/MAC ONLY                                      
                    isElevated=True ):    
         return QtIfwExternalOp.__genScriptOp( event, 
             script=QtIfwExternalOp.WriteFileScript( 
-                filePath, data, owner, group, access ), 
+                filePath, data, isOverwrite, owner, group, access ), 
             uninstScript=QtIfwExternalOp.RemoveFileScript( filePath ),
             isElevated=isElevated )
         
@@ -6128,36 +6128,57 @@ class QtIfwExternalOp:
             QtIfwExternalOp.opDataPath( fileName ), data )
     
     @staticmethod
-    def WriteFileScript( filePath, data=None,
+    def WriteFileScript( filePath, data=None, isOverwrite=True,
                          owner=QT_IFW_USER, group=QT_IFW_USER,  # LINUX/MAC ONLY
-                         access=DEFAULT_FILE_ACCESS ):          # LINUX/MAC ONLY            
-        if IS_WINDOWS: setOwner=setGroup=setAccess="" 
+                         access=DEFAULT_FILE_ACCESS ):          # LINUX/MAC ONLY                       
+        if IS_WINDOWS: 
+            ifNotExists =( '' if isOverwrite else 
+                           'if not exist "{filePath}" (' )
+            ifNotExistsTab = '' if isOverwrite else '    '
+            ifNotExistsEnd = '' if isOverwrite else ')'      
+            setOwner=setGroup=setAccess=""
         else:
-            setOwner  = 'chown {owner} "{filePath}"'  if owner  else ''
-            setGroup  = 'chgrp {group} "{filePath}"'  if group  else ''
-            setAccess = 'chmod {access} "{filePath}"' if access else ''            
+            ifNotExists =( '' if isOverwrite else 
+                           'if [ ! -f "{filePath}" ]; then ' )
+            ifNotExistsTab = '' if isOverwrite else '    '
+            ifNotExistsEnd = '' if isOverwrite else 'fi'                                    
+            setOwner  = '{tab}chown {owner} "{filePath}"'  if owner  else ''
+            setGroup  = '{tab}chgrp {group} "{filePath}"'  if group  else ''
+            setAccess = '{tab}chmod {access} "{filePath}"' if access else ''                        
         if data is None:                    
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "touchFile" ), script=[
-                 ('echo. > "{filePath}"' if IS_WINDOWS else 
-                  'touch "filePath"')
-                 , setOwner, setGroup, setAccess ], replacements={ 
+                  ifNotExists
+                , ('{tab}echo. > "{filePath}"' if IS_WINDOWS else 
+                   '{tab}touch "filePath"')
+                , setOwner, setGroup, setAccess
+                , ifNotExistsEnd ], replacements={ 
                   "filePath": filePath
                 , "owner"   : owner  
                 , "group"   : group
                 , "access"  : access
+                , "tab"     : ifNotExistsTab
             })
         else:
+            #TAB + 'if( echo.trim()=="" ) return ' + ('"."' if IS_WINDOWS else '"\\"\\""' ) + END  + 
+            #TAB + 'var escaped = ' + ('echo' if IS_WINDOWS else 
+            #        '"\'" + echo.replace(/\'/g, \'\\\'\\"\\\'\\"\\\'\') + "\'"' ) + END  +                                  
+            if not IS_WINDOWS: 
+                data = "'%s'" % (data.replace("'","'\"'\"'"),)               
             # TODO: Auto handle escape sequences see: QtScript __escapeEchoText            
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "writeFile" ), script=[
-                 ('echo {data} > "{filePath}"' if IS_WINDOWS else 
-                  'echo "{data}" > "{filePath}"')
-                , setOwner, setGroup, setAccess ], replacements={  
+                  ifNotExists   
+                , ('{tab}echo {data} > "{filePath}"' if IS_WINDOWS else 
+                   '{tab}echo {data} > "{filePath}"')
+                , setOwner, setGroup, setAccess
+                , ifNotExistsEnd ], replacements={  
                   "filePath": filePath
+                , "data"    : data  
                 , "owner"   : owner  
                 , "group"   : group
-                , "access"  : access                                                          
+                , "access"  : access      
+                , "tab"     : ifNotExistsTab                                                    
             })
     
     @staticmethod

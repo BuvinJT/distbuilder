@@ -90,8 +90,8 @@ class BuildProcess( PyToBinInstallerProcess ):
                     dirPath )
               , QtIfwExternalOp.WriteFile(
                     QtIfwExternalOp.AUTO_UNDO,
-                    filePath,
-                    "Here is some sample data for yall." )                  
+                    filePath, "Here is some sample data for y'all!",
+                    isOverwrite=False )                  
             ]
                     
         def addRunProgramOp( pkg ):
@@ -130,5 +130,5 @@ class BuildProcess( PyToBinInstallerProcess ):
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True
 # uncomment to leave scripts in temp directory, post any dynamic modifications 
-p.isScriptDebugInstallTest = True   
+#p.isScriptDebugInstallTest = True   
 p.run()       

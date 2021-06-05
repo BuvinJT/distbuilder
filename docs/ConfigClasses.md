@@ -1036,7 +1036,7 @@ by doubling them up.
 
 #### QtIfwExternalOp.WriteFile
 
-    WriteFile( event, filePath, data,
+    WriteFile( event, filePath, data, isOverwrite=True,
                owner=QT_IFW_USER, group=QT_IFW_USER, <LINUX/MAC ONLY>
                access="644",                         <LINUX/MAC ONLY>
                isElevated=True )
@@ -1263,7 +1263,7 @@ not remove** a file that already exists.
 
 #### QtIfwExternalOp.WriteFileScript
 
-    WriteFileScript( filePath, data=None,
+    WriteFileScript( filePath, data=None, isOverwrite=True,
                      owner=QT_IFW_USER, group=QT_IFW_USER,  <LINUX/MAC ONLY>
                      access="644" )                         <LINUX/MAC ONLY>
 **Windows Type**: Batch 
