@@ -2687,31 +2687,38 @@ class _QtIfwScript:
             TAB + EBLK +                
             TAB + 'return isNet==="true";' + END +
             EBLK + NEW +           
-            # TODO: Test in NIX/MAC                                                                   
+            # TODO: RETEST ON WINDOWS                                                                   
             'function isPingable( uri, pings, totalMaxSecs ) ' + SBLK +
             TAB + 'if( uri==null ) return false' + END +
             TAB + 'if( pings==null ) pings=3' + END +
             TAB + 'if( totalMaxSecs==null ) totalMaxSecs=12' + END +
             TAB + _QtIfwScript.log( '"Pinging: " + uri + " ..."', isAutoQuote=False ) +
             TAB + 'var successOutput = "success"' + END +
+                # Note: see https://ss64.com/nt/ping.html
+                # regarding test for success on Windows
             TAB + 'var pingCmd = "' +                    
                 ('echo off && ping -n " + pings + " ' +
-                 '-w " + ((1000 * totalMaxSecs)/pings) + " " +'
-                 'uri + " | findstr /r /c:\\"[0-9] *ms\\" > nul && ' +  # see https://ss64.com/nt/ping.html 
-                 'echo " + successOutput +"\\n"'         # regarding test for success
-                 if IS_WINDOWS else 
-                 'ping -n " + pings + " ' +              # TODO: check syntax in NIX/MAC
-                 '-w " + totalMaxSecs + " " +'  +        # see https://linux.die.net/man/8/ping
-                 'uri + " | grep \\"TTL\\" > nul && ' +  # align this grep with the Windows regex findstr above!
-                 'echo " + successOutput'  ) + END +                                                                                                
+                 '-w " + ((1000 * totalMaxSecs)/pings) + " " + '
+                 'uri + " | findstr /r /c:\\"[0-9] *ms\\" > nul && ' +   
+                 'echo " + successOutput +"\\n"'         
+                 if IS_WINDOWS else # TODO: Test on MAC
+                # TODO: Confirm validity of this simple approach for
+                # determining success on this platform, vs the more
+                # comprehensive method used above on Windows  
+                 'ping -c " + pings + " '
+                 '-w " + totalMaxSecs + " " + '  +  
+                 'uri + " > /dev/null 2>&1 && ' + 
+                 'echo " + successOutput'  ) + END +
+            TAB + _QtIfwScript.log( '"pingCmd: " + pingCmd', isAutoQuote=False ) +                                                                                                                
             TAB + 'var result = installer.execute( ' +
                 ('"cmd.exe", ["/k"], pingCmd' if IS_WINDOWS else
                  '"sh", ["-c", pingCmd]' ) + ' )' + END +             
             TAB + 'var output' + END +
-            TAB + TRY +
+            TAB + TRY + 
             (2*TAB) + 'var cmdOutLns = result[0].split(\"\\n\")' + END +
-            (2*TAB) + 'output = cmdOutLns[1].trim()' + END + EBLK + 
+            (2*TAB) + 'output = cmdOutLns[cmdOutLns.length-2].trim()' + END + EBLK + 
             TAB + CATCH + 'output = null;' + EBLK +
+            #TAB + _QtIfwScript.log( '"result: " + output', isAutoQuote=False ) +
             TAB + 'var isSuccess = output==successOutput' + END +                            
             TAB + _QtIfwScript.log( 'isSuccess ? "...response received" : ' +
                                     '"... NO response received"', 
@@ -7787,15 +7794,20 @@ class QtIfwOnFinishedDetachedExec:
         'executeDetached( resolveQtIfwPath( "%s" ), %s );\n' )
     __EXEC_CMD_DETACHED_TMPLT=(
         'executeShellCmdDetached( resolveDynamicVars( "%s" ) );\n' ) 
+    __EXEC_SH_DETACHED_TMPLT=(
+        'executeShellScriptDetached( resolveNativePath( "%s" ), null, %s );\n' )
     __EXEC_BAT_DETACHED_TMPLT=(
         'executeBatchDetached( resolveNativePath( "%s" ), null, %s );\n' )
     __EXEC_VBS_DETACHED_TMPLT=(
         'executeVbScriptDetached( resolveNativePath( "%s" ), null, %s );\n' )
     __EXEC_PS_DETACHED_TMPLT=(
         'executePowerShellDetached( resolveNativePath( "%s" ), null, %s );\n' )
+    #TODO: Add JSCRIPT
+    #TODO: Add APPLESCRIPT
     
-    __SCRIPT_TMPLTS = { 
-          "bat" : __EXEC_BAT_DETACHED_TMPLT 
+    __SCRIPT_TMPLTS = {
+          "sh"  : __EXEC_SH_DETACHED_TMPLT
+        , "bat" : __EXEC_BAT_DETACHED_TMPLT 
         , "vbs" : __EXEC_VBS_DETACHED_TMPLT
         , "ps1" : __EXEC_PS_DETACHED_TMPLT
     }
