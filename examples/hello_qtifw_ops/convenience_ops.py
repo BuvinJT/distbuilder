@@ -31,9 +31,44 @@ class BuildProcess( PyToBinInstallerProcess ):
         def addKillOps( pkg ):
             pkg.pkgScript.killOps += [ QtIfwKillOp( pkg ) ]
 
+        def addMakeDataDirOp( pkg ):
+            dirPath  = joinPathQtIfw( QT_IFW_HOME_DIR, "distbuilder-example" )
+            filePath = joinPathQtIfw( dirPath, "distbuilder-example.txt" )
+            pkg.pkgScript.externalOps += [
+                QtIfwExternalOp.MakeDir(
+                    QtIfwExternalOp.AUTO_UNDO, 
+                    dirPath )
+              , QtIfwExternalOp.WriteFile(
+                    QtIfwExternalOp.AUTO_UNDO,
+                    filePath, "Here is some sample data for y'all!",
+                    isOverwrite=False )                  
+            ]
+                    
+        def addRunProgramOp( pkg ):
+            if IS_WINDOWS: progPath = "notepad"                
+            elif IS_MACOS: progPath = "TextEdit"                  
+            else         : progPath = "gedit"                                                
+            args = [ toNativePath("@TargetDir@/LICENSE.TXT") ]
+            pkg.pkgScript.externalOps += [
+                QtIfwExternalOp.RunProgram(
+                    QtIfwExternalOp.ON_INSTALL,
+                    progPath, args,
+                    # note: if you hide this, you'll need to kill the process
+                    # manually in this demo context via kill commands, or the
+                    # Windows task manger etc.!                      
+                    isHidden=False,
+                    # note: if isSynchronous is True, the installer will block 
+                    # mid install operations in this demo until you close the 
+                    # text viewer... 
+                    isSynchronous=False, 
+                    # TODO: provide forced "privileges down grade", as this 
+                    # currently always runs the sub process elevated...
+                    isElevated=False )
+                ]    
+                
         if IS_WINDOWS:
             # The following creates EXEs *on the fly*, through the installer,
-            # from either either Batch, PowerShell, or VBScript sources! 
+            # from either either Batch, PowerShell, VBScript, or JScript! 
             # (This feature is currently only supported on the Windows 
             # implementation of the library.)
             
@@ -80,52 +115,19 @@ class BuildProcess( PyToBinInstallerProcess ):
                         isSynchronous=False,
                         isAutoBitContext=False,
                         isSuccessOnNotFound=True ) ]
- 
-        def addMakeDataDirOp( pkg ):
-            dirPath  = joinPathQtIfw( QT_IFW_HOME_DIR, "distbuilder-example" )
-            filePath = joinPathQtIfw( dirPath, "distbuilder-example.txt" )
-            pkg.pkgScript.externalOps += [
-                QtIfwExternalOp.MakeDir(
-                    QtIfwExternalOp.AUTO_UNDO, 
-                    dirPath )
-              , QtIfwExternalOp.WriteFile(
-                    QtIfwExternalOp.AUTO_UNDO,
-                    filePath, "Here is some sample data for y'all!",
-                    isOverwrite=False )                  
-            ]
-                    
-        def addRunProgramOp( pkg ):
-            if IS_WINDOWS: progPath = "notepad"                
-            elif IS_MACOS: progPath = "TextEdit"                  
-            else         : progPath = "gedit"                                                
-            args = [ toNativePath("@TargetDir@/LICENSE.TXT") ]
-            pkg.pkgScript.externalOps += [
-                QtIfwExternalOp.RunProgram(
-                    QtIfwExternalOp.ON_INSTALL,
-                    progPath, args,
-                    # note: if you hide this, you'll need to kill the process
-                    # manually in this demo context via kill commands, or the
-                    # Windows task manger etc.!                      
-                    isHidden=False,
-                    # note: if isSynchronous is True, the installer will block 
-                    # mid install operations in this demo until you close the 
-                    # text viewer... 
-                    isSynchronous=False, 
-                    # TODO: provide forced "privileges down grade", as this 
-                    # currently always runs the sub process elevated...
-                    isElevated=False )
-                ]    
-                
+                 
         pkg = cfg.packages[0]
         customizeFinishedPage( cfg )
         addKillOps( pkg ) 
+        addMakeDataDirOp( pkg )
+        addRunProgramOp( pkg )
+
         if IS_WINDOWS:            
             addCreateExeFromBatch( pkg )
             addCreateExeFromPowerShell( pkg )
             addCreateExeFromVbs( pkg )       
+            #addCreateExeFromJScript( pkg )
             addUninstallWindowsApp( pkg )
-        addMakeDataDirOp( pkg )
-        addRunProgramOp( pkg )
             
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True

@@ -293,6 +293,10 @@ If desired, you may also wish to test running these demo programs post installat
 
 TODO: FILL IN!
 
+### Built-in Simple Operations Example
+
+TODO: FILL IN!
+
 ### Low Level Embedded Script Operations Example
 
 TODO: FILL IN!
