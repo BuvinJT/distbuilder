@@ -195,7 +195,8 @@ _REBOOT_MSG = "Please reboot now to complete the installation."
 _SCRIPT_LINE1_COMMENT = "// ------------ LINE 1 ------------ \n\n"
 
 # don't use back slash on Windows!
-def joinPathQtIfw( head, tail ): return "%s/%s" % ( head, tail )
+def joinPathQtIfw( head, *tail ):
+    return "%s/%s" % ( head, "/".join( tail ) )  
 
 def qtIfwDynamicValue( name ): return "@%s@" % (name,)
     
@@ -6027,6 +6028,10 @@ class QtIfwExternalOp:
 
     if IS_MACOS or IS_LINUX:
 
+        # TODO: Add more dynamic options / logic controls  
+        #       e.g. pivot on installer variables and/or op files 
+        # TODO: Add a means to define *conditional* dependencies to be 
+        #       installed first....
         @staticmethod
         def InstallExternPackage( event, altPkgNames ):
             return QtIfwExternalOp.__genScriptOp( event, 
@@ -6035,6 +6040,8 @@ class QtIfwExternalOp:
                 uninstScript=QtIfwExternalOp.UninstallExternPackageScript( 
                     altPkgNames, isExitOnFailure=True ), isElevated=True )
 
+        # TODO: Add more dynamic options / logic controls  
+        # e.g. pivot on installer variables and/or op files 
         @staticmethod
         def UninstallExternPackage( event, altPkgNames ):
             return QtIfwExternalOp.__genScriptOp( event, 
@@ -6070,8 +6077,7 @@ class QtIfwExternalOp:
         ])
 
     @staticmethod
-    def shellScriptSelfDestructSnippet(): 
-        return "" #TODO: Fill in NIX/MAC
+    def shellScriptSelfDestructSnippet(): return 'rm -f "${0}"' 
 
     @staticmethod
     def appleScriptSelfDestructSnippet(): 
@@ -6901,7 +6907,7 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "createPackageFlag" ), script=[
                       '{packageManagementSnippet}'
-                    , 'isPackageInstalled {altPkgNames}; && touch "{tempFilePath}"'
+                    , 'isPackageInstalled {altPkgNames} && touch "{tempFilePath}"'
                     , '{selfDestruct}'
                     ], replacements={ 
                       "packageManagementSnippet": (
