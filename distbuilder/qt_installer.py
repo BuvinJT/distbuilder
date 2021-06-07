@@ -1940,16 +1940,16 @@ class _QtIfwScript:
             'function __envTempPath() ' + SBLK +              
             TAB + 'return isWindows() ? getEnv("temp") : "/tmp"' + END +                  
             EBLK + NEW +                                                                                                                  
-            'function __tempPath( suffix ) ' + SBLK +  # TODO: Test on LINUX/MAC            
+            'function __tempPath( suffix ) ' + SBLK +  # TODO: Test on MAC            
             TAB + 'return (isMaintenanceTool() ? ' +
                     '__maintenanceTempPath() : __installerTempPath()) + ' +
                                                 '(suffix ? suffix : "")' + END +                  
             EBLK + NEW +
-            'function __tempRootFilePath( extension, suffix ) ' + SBLK +  # TODO: Test on LINUX/MAC
+            'function __tempRootFilePath( extension, suffix ) ' + SBLK +  # TODO: Test on MAC
             TAB + 'return __tempPath( (suffix ? suffix : "") + '
                             '"." + (extension ? extension : "tmp") ) ' + END +                                                                              
             EBLK + NEW +                        
-            'function __installerTempPath( suffix ) ' + SBLK +  # TODO: Test on LINUX/MAC            
+            'function __installerTempPath( suffix ) ' + SBLK +  # TODO: Test on MAC            
             TAB + 'var dirPath = installer.value( ' + 
                 ('"%s"' % (_QT_IFW_INSTALLER_TEMP_DIR,)) + ', "" )' + END +
             TAB + 'if( dirPath === "" ) ' + SBLK +            
@@ -1962,7 +1962,7 @@ class _QtIfwScript:
             TAB + EBLK + 
             TAB + 'return dirPath' + END + 
             EBLK + NEW +
-            'function __maintenanceTempPath( suffix ) ' + SBLK +  # TODO: Test on LINUX/MAC            
+            'function __maintenanceTempPath( suffix ) ' + SBLK +  # TODO: Test on MAC            
             TAB + 'var dirPath = installer.value( ' + 
                 ('"%s"' % (_QT_IFW_MAINTENANCE_TEMP_DIR,)) + ', "" )' + END +
             TAB + 'if( dirPath === "" ) ' + SBLK +            
@@ -2165,7 +2165,7 @@ class _QtIfwScript:
             'function rootFileName( filePath ) ' + SBLK +
             TAB + 'return fileName( filePath ).split(".")[0]' + END +
             EBLK + NEW +                                                            
-            'function resolveNativePath( path, isSpaceEscaped ) ' + SBLK +    # TODO: Test on LINUX/MAC  
+            'function resolveNativePath( path, isSpaceEscaped ) ' + SBLK +    # TODO: Test on MAC  
             TAB + 'path = Dir.toNativeSeparator( path )' + END +            
             TAB + 'var echoCmd = "' +
                 ('echo off\\n'                     
@@ -2188,7 +2188,7 @@ class _QtIfwScript:
             (2*TAB) + 'path = path.replace(/ /g, \'\\\\ \')' + END +            
             TAB + 'return path' + END +                                                                                                                          
             EBLK + NEW +                        
-            'function dirList( path, isSortByModTimeAsc ) ' + SBLK +    # TODO: Test on LINUX/MAC
+            'function dirList( path, isSortByModTimeAsc ) ' + SBLK +    # TODO: Test on MAC
             TAB + 'var retList=[]' + END +
             TAB + 'var sortByTime = isSortByModTimeAsc ? ' + 
                 ( '" /O:D"' if IS_WINDOWS else '"tr"' ) + 
@@ -2220,7 +2220,7 @@ class _QtIfwScript:
             (2*TAB) + _QtIfwScript.log( 'retList[i]', isAutoQuote=False ) +
             TAB + 'return retList' + END +                                                                                                               
             EBLK + NEW +                        
-            'function makeDir( path ) ' + SBLK +      # TODO: Test on LINUX/MAC
+            'function makeDir( path ) ' + SBLK +      # TODO: Test on MAC
             TAB + 'if( path==null ) return' + END +
             TAB + 'path = resolveNativePath( path )' + END +
             TAB + _QtIfwScript.ifPathExists( 'path', isAutoQuote=False ) + 
@@ -2247,7 +2247,7 @@ class _QtIfwScript:
             TAB + _QtIfwScript.log( '"made dir: " + path', isAutoQuote=False ) + 
             TAB + 'return path' + END +                                                                                                               
             EBLK + NEW +                
-            'function removeDir( path ) ' + SBLK +        # TODO: Test on LINUX/MAC
+            'function removeDir( path ) ' + SBLK +        # TODO: Test on MAC
             TAB + 'if( path==null ) return' + END +                  
             TAB + 'path = resolveNativePath( path )' + END +
             TAB + _QtIfwScript.ifPathExists( 'path', isNegated=True, isAutoQuote=False ) + 
@@ -2273,12 +2273,12 @@ class _QtIfwScript:
             (2*TAB) + 'throw new Error("removeDir failed. path: " + path )' + END +
             TAB + _QtIfwScript.log( '"removed dir: " + path', isAutoQuote=False ) + 
             TAB + 'return path' + END +                                                                                                               
-            EBLK + NEW +                            
-            'function __writeScriptFromBase64( fileName, b64, varNames, isDoubleBackslash, isTempRootTarget, isB64Removed ) ' + SBLK +  # TODO: Test on LINUX/MAC                
+            EBLK + NEW +   # TODO: Test on MAC                            
+            'function __writeScriptFromBase64( fileName, b64, varNames, isDoubleBackslash, isTempRootTarget, isB64Removed ) ' + SBLK +                  
             TAB + 'var path = __writeFileFromBase64( fileName, b64, isTempRootTarget, isB64Removed )' + END +
             TAB + 'replaceDynamicVarsInFile( path, varNames, isDoubleBackslash )' +  END +            
-            EBLK + NEW +                                                                         
-            'function __writeFileFromBase64( fileName, b64, isTempRootTarget, isB64Removed ) ' + SBLK +      # TODO: Test on LINUX/MAC
+            EBLK + NEW +   # TODO: Test on MAC                                                                         
+            'function __writeFileFromBase64( fileName, b64, isTempRootTarget, isB64Removed ) ' + SBLK +      
             TAB + 'var dirPath = isTempRootTarget ? __envTempPath() : Dir.temp()' + END +            
             TAB + 'var tempPath = Dir.toNativeSeparator( dirPath + "/" + fileName + ".b64" )' + END +
             TAB + 'var path = Dir.toNativeSeparator( dirPath + "/" + fileName )' + END +            
@@ -2312,7 +2312,7 @@ class _QtIfwScript:
             TAB + _QtIfwScript.log( '"Wrote file from base64: " + path', isAutoQuote=False ) + 
             TAB + 'if( isB64Removed ) deleteFile( tempPath )' + END +
             TAB + 'return path' + END +                                                                                                               
-            EBLK + NEW + # TODO: Test on LINUX/MAC                
+            EBLK + NEW + # TODO: Test on MAC                
             'function __replaceDynamicVarsInFileScript( path, varNames, isDoubleBackslash ) ' + SBLK + 
             (
             TAB + 'var path = Dir.toNativeSeparator( path )' + END +                
@@ -2361,22 +2361,22 @@ class _QtIfwScript:
             TAB + 'script += "cat \\"" + path + "\\"\\n"' + END +                                                     
             TAB + 'return script' + END     
             ) + 
-            EBLK + NEW +                                                                         
-            'function replaceDynamicVarsInFile( path, varNames, isDoubleBackslash ) ' + SBLK + # TODO: Test on LINUX/MAC
+            EBLK + NEW + # TODO: Test on MAC                                                                         
+            'function replaceDynamicVarsInFile( path, varNames, isDoubleBackslash ) ' + SBLK + 
             TAB + 'var script = __replaceDynamicVarsInFileScript( path, varNames, isDoubleBackslash )' + END +
             (
             TAB + 'executeVbScript( script )' + END 
             if IS_WINDOWS else 
             TAB + 'executeShellScript( script )' + END) + 
             EBLK + NEW +                                                             
-            'function killAll( progName ) ' + SBLK + # TODO: Test on LINUX/MAC
+            'function killAll( progName ) ' + SBLK + # TODO: Test on MAC
             TAB + 'var killCmd = "' + _QtIfwScript._KILLALL_CMD_PREFIX + 
                 '\\"" + progName + "\\""' + END + 
             TAB + 'installer.execute( ' +
                 ('"cmd.exe", ["/k"], killCmd' if IS_WINDOWS else
                  '"sh", ["-c", killCmd]' ) + ' )' + END +             
             EBLK + NEW +                  
-            'function sleep( seconds ) ' + SBLK +
+            'function sleep( seconds ) ' + SBLK + # TODO: Test on MAC
             TAB + 'var sleepCmd = "' +  # note Batch timeout doesn't work in a "non-interactive" shell, but this ping kludge does!                 
                 ('ping 192.0.2.1 -n 1 -w " + seconds + "000\\n"' if IS_WINDOWS else
                  'sleep " + seconds' ) + END +                                                                                                
@@ -5780,7 +5780,8 @@ class QtIfwExternalOp:
         return QtIfwExternalOp.__genScriptOp( event, 
             script=QtIfwExternalOp.WriteOpDataFileScript( fileName, data ), 
             isElevated=isElevated )
-                
+
+    # TODO: Test on WINDOWS & MAC                
     @staticmethod
     def WriteFile( event, filePath, data, isOverwrite=True,
                    owner=QT_IFW_USER, group=QT_IFW_USER, # LINUX/MAC ONLY
@@ -5791,7 +5792,8 @@ class QtIfwExternalOp:
                 filePath, data, isOverwrite, owner, group, access ), 
             uninstScript=QtIfwExternalOp.RemoveFileScript( filePath ),
             isElevated=isElevated )
-        
+
+    # TODO: Test on WINDOWS & MAC        
     @staticmethod
     def MakeDir( event, dirPath,
                  owner=QT_IFW_USER, group=QT_IFW_USER,  # LINUX/MAC ONLY
@@ -5802,16 +5804,18 @@ class QtIfwExternalOp:
                 dirPath, owner, group, access ), 
             uninstScript=QtIfwExternalOp.RemoveDirScript( dirPath ),
             isElevated=isElevated )
-                
+    
+    # TODO: Test on LINUX/MAC            
     @staticmethod
-    def RemoveFile( event, filePath, isElevated=True ): # TODO: Test on LINUX/MAC            
+    def RemoveFile( event, filePath, isElevated=True ):             
         return QtIfwExternalOp.__genScriptOp( event, 
             script=QtIfwExternalOp.RemoveFileScript( filePath ),
             isReversible=False, 
             isElevated=isElevated )
     
+    # TODO: Test on LINUX/MAC
     @staticmethod
-    def RemoveDir( event, dirPath, isElevated=True ): # TODO: Test on LINUX/MAC           
+    def RemoveDir( event, dirPath, isElevated=True ):            
         return QtIfwExternalOp.__genScriptOp( event, 
             script=QtIfwExternalOp.RemoveDirScript( dirPath ),
             isReversible=False, 
@@ -6125,7 +6129,7 @@ class QtIfwExternalOp:
 
 
     @staticmethod
-    def CreateOpFlagFileScript( fileName, dynamicVar=None ): # TODO: Test on LINUX/MAC            
+    def CreateOpFlagFileScript( fileName, dynamicVar=None ): # TODO: Test on MAC            
         return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "createOpFlagFile" ), script=(
                 ("" if dynamicVar is None else
@@ -6137,10 +6141,10 @@ class QtIfwExternalOp:
         ))
         
     @staticmethod
-    def WriteOpDataFileScript( fileName, data=None ): # TODO: Test on LINUX/MAC            
-        return QtIfwExternalOp.WriteFileScript( 
+    def WriteOpDataFileScript( fileName, data=None ): # TODO: Test on MAC            
             QtIfwExternalOp.opDataPath( fileName ), data )
     
+    # TODO: Test on WINDOWS & MAC
     @staticmethod
     def WriteFileScript( filePath, data=None, isOverwrite=True,
                          owner=QT_IFW_USER, group=QT_IFW_USER,  # LINUX/MAC ONLY
@@ -6195,6 +6199,7 @@ class QtIfwExternalOp:
                 , "tab"     : ifNotExistsTab                                                    
             })
     
+    # TODO: Test on WINDOWS & MAC
     @staticmethod
     def MakeDirScript( dirPath,
                        owner=QT_IFW_USER, group=QT_IFW_USER, # LINUX/MAC ONLY
@@ -6215,21 +6220,23 @@ class QtIfwExternalOp:
                 , "access" : access                                                          
             })
                                     
+    # TODO: Test on LINUX/MAC                                    
     @staticmethod
-    def RemoveFileScript( filePath ): # TODO: Test on LINUX/MAC            
+    def RemoveFileScript( filePath ):             
         return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
             "removeFile" ), script=(
             'del /q /f "{filePath}"' if IS_WINDOWS else 'rm "{filePath}"' ), 
             replacements={ "filePath": filePath } )
     
+    # TODO: Test on LINUX/MAC
     @staticmethod
-    def RemoveDirScript( dirPath ): # TODO: Test on LINUX/MAC           
+    def RemoveDirScript( dirPath ):            
         return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
             "removeDir" ), script=(
             'rd /q /s "{dirPath}"' if IS_WINDOWS else 'rm -r "{dirPath}"'  ), 
             replacements={ "dirPath": dirPath } )
 
-    # TODO: Test on LINUX/MAC       
+    # TODO: Test on MAC       
     @staticmethod
     def RunProgramScript( path, arguments=None, isAutoQuote=True, 
                           isHidden=False, isSynchronous=True,
@@ -7813,7 +7820,7 @@ class QtIfwOnFinishedDetachedExec:
         , "ps1" : __EXEC_PS_DETACHED_TMPLT
     }
         
-    # TODO: Test on LINUX/MAC - handle elevation ?
+    # TODO: Test on MAC 
     __REBOOT_CMD =( "shutdown /r -t %d" if IS_WINDOWS else 
                     "sleep %d; reboot" )
     
