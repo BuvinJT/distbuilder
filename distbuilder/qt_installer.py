@@ -4498,6 +4498,8 @@ Component.prototype.%s = function(){
         );    
 """ )
 
+    __ADD_SH_OPERATION_TMPLT  = "   addShOperation( component, %s, %s );\n"
+    
     __ADD_VBS_OPERATION_TMPLT = "   addVbsOperation( component, %s, %s );\n"
     
     __WIN_SET_SHORTCUT_STYLE_TMPLT = ( 
@@ -4557,6 +4559,11 @@ Component.prototype.%s = function(){
             _QtIfwScript.toBool( isElevated ), vbs )
 
     @staticmethod
+    def _addShOperation( sh, isElevated ): 
+        return QtIfwPackageScript.__ADD_SH_OPERATION_TMPLT % (
+            _QtIfwScript.toBool( isElevated ), sh )
+
+    @staticmethod
     def _addReplaceVarsInFileOperation( path, varNames, isDoubleBackslash, 
                                         isElevated ):
         if IS_WINDOWS:
@@ -4564,7 +4571,9 @@ Component.prototype.%s = function(){
                 path, varNames, _QtIfwScript.toBool( isDoubleBackslash ) )
             return QtIfwPackageScript._addVbsOperation( vbs, isElevated )                   
         else:
-            return "" # TODO: FILLIN FOR NIX/MAc    
+            sh = '__replaceDynamicVarsInFileScript( %s, %s )' % (
+                path, varNames )
+            return QtIfwPackageScript._addShOperation( sh, isElevated )                   
         
     @staticmethod                                         #args=[]
     def __winAddShortcut( location, exeName, command=None, args=None, 
@@ -4816,6 +4825,20 @@ Component.prototype.%s = function(){
                 )
         else :    
             self.packageGlobals += (               
+                'var __shOpCounter=0' + END +
+                'function addShOperation( component, isElevated, sh ) ' + SBLK +
+                    TAB + '__shOpCounter++' + END +
+                    TAB + 'var shPath = __installerTempPath()' + 
+                            '+ "/__temp_" + __shOpCounter + ".sh"' + END +
+                    TAB + 'var cmd = ["sh", "-c", shPath]' + END +
+                    TAB + 'component.addOperation( "Delete", shPath )' + END +
+                    TAB + 'component.addOperation( "AppendFile", shPath , sh )' + END +
+                    TAB + 'if( isElevated )' + NEW +
+                    (2*TAB) + 'component.addElevatedOperation( "Execute", cmd )' + END +    
+                    TAB + 'else' + NEW +
+                    (2*TAB) + 'component.addOperation( "Execute", cmd )' + END +                
+                    TAB + 'component.addOperation( "Delete", shPath )' + END +            
+                EBLK + NEW +                
                 'function getAskPassProg() ' + SBLK +
                     TAB + 'var pkg' + END +
                     TAB + 'var progPath' + END +
@@ -5805,7 +5828,7 @@ class QtIfwExternalOp:
             uninstScript=QtIfwExternalOp.RemoveDirScript( dirPath ),
             isElevated=isElevated )
     
-    # TODO: Test on LINUX/MAC            
+    # TODO: Test on MAC            
     @staticmethod
     def RemoveFile( event, filePath, isElevated=True ):             
         return QtIfwExternalOp.__genScriptOp( event, 
@@ -5813,7 +5836,7 @@ class QtIfwExternalOp:
             isReversible=False, 
             isElevated=isElevated )
     
-    # TODO: Test on LINUX/MAC
+    # TODO: Test on MAC
     @staticmethod
     def RemoveDir( event, dirPath, isElevated=True ):            
         return QtIfwExternalOp.__genScriptOp( event, 
@@ -6141,7 +6164,8 @@ class QtIfwExternalOp:
         ))
         
     @staticmethod
-    def WriteOpDataFileScript( fileName, data=None ): # TODO: Test on MAC            
+    def WriteOpDataFileScript( fileName, data=None ): # TODO: Test on MAC
+        return QtIfwExternalOp.WriteFileScript(            
             QtIfwExternalOp.opDataPath( fileName ), data )
     
     # TODO: Test on WINDOWS & MAC
@@ -6220,7 +6244,7 @@ class QtIfwExternalOp:
                 , "access" : access                                                          
             })
                                     
-    # TODO: Test on LINUX/MAC                                    
+    # TODO: Test on MAC                                    
     @staticmethod
     def RemoveFileScript( filePath ):             
         return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
@@ -6228,7 +6252,7 @@ class QtIfwExternalOp:
             'del /q /f "{filePath}"' if IS_WINDOWS else 'rm "{filePath}"' ), 
             replacements={ "filePath": filePath } )
     
-    # TODO: Test on LINUX/MAC
+    # TODO: Test on MAC
     @staticmethod
     def RemoveDirScript( dirPath ):            
         return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
