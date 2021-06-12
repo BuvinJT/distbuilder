@@ -3,7 +3,7 @@ from datetime import( date,
                       datetime ) # @UnusedImport
 from time import time as curTime  # @UnusedImport
 from six import( PY2, PY3, string_types, 
-    iteritems, itervalues, add_metaclass ) # @UnusedImport
+    iteritems, iterkeys, itervalues, add_metaclass ) # @UnusedImport
 from six.moves import urllib
 from sys import( argv, stdout, stderr, exit, 
     executable as PYTHON_PATH, path as sysPath,

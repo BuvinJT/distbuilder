@@ -41,7 +41,7 @@ from distbuilder.qt_installer import(
     , _SILENT_FORCED_ARGS 
     , _LOUD_FORCED_ARGS 
 )
-   
+
 # -----------------------------------------------------------------------------       
 class ConfigFactory:
     
@@ -123,10 +123,12 @@ class ConfigFactory:
         self.pkgSubDirName           = None
         self.pkgSrcDirPath           = None
         self.pkgSrcExePath           = None
-        self.pkgExeWrapper           = None 
         self.pkgCodeSignTargets      = None        
+        
+        self.pkgExeWrapper           = None 
         self.pkgExternalDependencies = None # LINUX / MAC only
-
+        self.pkgIniFilePaths         = None
+    
         self.startOnBoot   = False
        
         # code signing
@@ -330,6 +332,15 @@ class ConfigFactory:
                           (exeName,), 
                           isFatal=False)
             pkg.codeSignTargets = self.pkgCodeSignTargets
+
+        if pkg.pkgScript.bundledScripts and len(pkg.pkgScript.bundledScripts) > 0: 
+            if pkg.distResources is None: pkg.distResources=[]
+            for script in pkg.pkgScript.bundledScripts:  
+                pkg.distResources.append( script.filePath() )
+        if pkg.pkgScript.dynamicTexts and len(pkg.pkgScript.dynamicTexts) > 0: 
+            if pkg.distResources is None: pkg.distResources=[] 
+            for name in iterkeys( pkg.pkgScript.dynamicTexts ):  
+                pkg.distResources.append( absPath( name ) )
                                                        
         pkg.qtCppConfig = self.qtCppConfig        
         return pkg
@@ -396,12 +407,19 @@ class ConfigFactory:
         bundledScripts=[]
         if self.pkgExeWrapper and self.pkgExeWrapper.wrapperScript:
             bundledScripts.append( self.pkgExeWrapper.wrapperScript )
-                    
+
+        dynamicTexts={}
+        if self.pkgIniFilePaths:
+            for iniPath in self.pkgIniFilePaths:
+                pFile = PlasticFile( filePath=iniPath )
+                dynamicTexts[ baseFileName(iniPath) ] = pFile.read()
+                   
         script = QtIfwPackageScript( 
                     self.__ifwPkgName(), self.__versionStr(),
                     pkgSubDirName=self.pkgSubDirName,
                     shortcuts=[ defShortcut ],
                     bundledScripts=bundledScripts,
+                    dynamicTexts=dynamicTexts,
                     fileName=self.ifwPkgScriptName,
                     script=self.ifwPkgScriptText, 
                     scriptPath=self.ifwPkgScriptPath )

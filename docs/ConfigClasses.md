@@ -799,7 +799,7 @@ and [QtIfwKillOp](#qtifwexternalop) objects are used for `killOps`.
 Constructor:       
 
     QtIfwPackageScript( pkgName, pkgVersion, pkgSubDirName=None,
-                        shortcuts=[], bundledScripts=[], 
+                        shortcuts=[], bundledScripts=[], dynamicTexts={},
                         externalOps=[], installResources=[],
                         uiPages=[], widgets=[],
                         fileName="installscript.qs", 
@@ -816,6 +816,7 @@ Attributes & default values:
     
     shortcuts        = []    
     bundledScripts   = []    
+    dynamicTexts     = {} fileName:content
     externalOps      = []
     installResources = []
     killOps          = []

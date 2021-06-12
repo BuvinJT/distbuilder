@@ -108,8 +108,9 @@ Attributes & default values:
         pkgSubDirName      = None
         pkgSrcDirPath      = None
         pkgSrcExePath      = None
-        pkgExeWrapper      = None
         pkgCodeSignTargets = None
+
+        pkgExeWrapper      = None
         pkgExternalDependencies = None  <LINUX / MAC only>
     
         startOnBoot   = False <CURRENT_USER, ALL_USERS>    

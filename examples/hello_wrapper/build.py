@@ -135,7 +135,7 @@ f.pkgExeWrapper = f.qtIfwExeWrapper( wrapperScript=launchScript )
 #)
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True
-#p.run()       
+p.run()       
 
 #------------------------------------------------------------------------------
 if IS_WINDOWS :    

@@ -1142,7 +1142,7 @@ class _QtIfwScript:
             return True
         
         def dynamicParms( script, subDir=None ):
-            if isinstance( script, ExecutableScript ):
+            if isinstance( script, ExecutableScript ):                
                 scriptName = script.fileName()
                 scriptPath = ( _QtIfwScript.targetDir() + ' + "/' +  
                     ( joinPathQtIfw( subDir, scriptName ) 
@@ -1156,6 +1156,7 @@ class _QtIfwScript:
                                     if isValidVarName( v ) ]
                 dynamicVarNames = "[ %s ]" % (
                     ",".join( ['"%s"' % (v,) for v in dynamicVarNames] ), )
+                print("dynamicVarNames",dynamicVarNames)
                 return ( scriptPath, scriptName, resourceVarName,
                          dynamicVarNames, isDoubleBackslash )
             return None
@@ -2313,7 +2314,7 @@ class _QtIfwScript:
             TAB + 'if( isB64Removed ) deleteFile( tempPath )' + END +
             TAB + 'return path' + END +                                                                                                               
             EBLK + NEW + # TODO: Test on MAC                
-            'function __replaceDynamicVarsInFileScript( path, varNames, isDoubleBackslash ) ' + SBLK + 
+            'function __replaceDynamicVarsInFileScript( path, varNames, isDoubleBackslash, isOp ) ' + SBLK + 
             (
             TAB + 'var path = Dir.toNativeSeparator( path )' + END +                
             TAB + 'var vbs = ' + NEW +
@@ -2343,8 +2344,11 @@ class _QtIfwScript:
             # TODO: TEST on MAC            
             # \o100 == octal code for @ in sed sting, but not sh (which likes simply \100)
             # Don't mess with the endless nasty escapes for all layers this has to pass through!
-            TAB + 'var script = "AtSign=\'\\\\\\\\o100\'\\n"' + END +
+            TAB + 'var script = isOp ? "AtSign=\'\\\\\\o100\'\\n" : ' +
+                                      '"AtSign=\'\\\\\\\\o100\'\\n"' + END +                        
             TAB + 'var path = Dir.toNativeSeparator( path )' + END +            
+            TAB + 'script += "chown " + uname + ":" + uname + " \\"" + path + "\\"\\n"' + END + 
+            TAB + 'script += "chmod 777 \\"" + path + "\\"\\n"' + END +
             TAB + 'for( var i=0; i != varNames.length; ++i ) ' + SBLK +                                    
             (2*TAB) + 'var varName = varNames[i]' + END +
             (2*TAB) + 'var varVal = Dir.toNativeSeparator( installer.value( varName, "' + 
@@ -2356,8 +2360,7 @@ class _QtIfwScript:
                     '\\"" + path + "\\" \\n"' + END +              
             TAB + EBLK + 
             TAB + 'var uname = __userName()' + END +
-            TAB + 'script += "chown " + uname + ":" + uname + " \\"" + path + "\\"\\n"' + END + 
-            TAB + 'script += "chmod 755 \\"" + path + "\\"\\n"' + END +
+            TAB + 'script += "chmod 755 \\"" + path + "\\"\\n"' + END +            
             TAB + 'script += "cat \\"" + path + "\\"\\n"' + END +                                                     
             TAB + 'return script' + END     
             ) + 
@@ -4567,11 +4570,11 @@ Component.prototype.%s = function(){
     def _addReplaceVarsInFileOperation( path, varNames, isDoubleBackslash, 
                                         isElevated ):
         if IS_WINDOWS:
-            vbs = '__replaceDynamicVarsInFileScript( %s, %s, %s )' % (
+            vbs = '__replaceDynamicVarsInFileScript( %s, %s, %s, true )' % (
                 path, varNames, _QtIfwScript.toBool( isDoubleBackslash ) )
             return QtIfwPackageScript._addVbsOperation( vbs, isElevated )                   
         else:
-            sh = '__replaceDynamicVarsInFileScript( %s, %s )' % (
+            sh = '__replaceDynamicVarsInFileScript( %s, %s, false, true )' % (
                 path, varNames )
             return QtIfwPackageScript._addShOperation( sh, isElevated )                   
         
@@ -4652,7 +4655,7 @@ Component.prototype.%s = function(){
                 
     # QtIfwPackageScript                              
     def __init__( self, pkgName, pkgVersion, pkgSubDirName=None,
-                  shortcuts=None, bundledScripts=None,
+                  shortcuts=None, bundledScripts=None, dynamicTexts=None,
                   externalOps=None, installResources=None,
                   uiPages=None, widgets=None,                    
                   fileName=DEFAULT_QT_IFW_SCRIPT_NAME,                  
@@ -4669,6 +4672,7 @@ Component.prototype.%s = function(){
         self.preOpSupport     = None
         self.customOperations = None        
         self.bundledScripts   = bundledScripts if bundledScripts else []
+        self.dynamicTexts     = dynamicTexts if dynamicTexts else {}
         self.installResources = installResources if installResources else []
 
         # external dependencies (LINUX / MAC only)
@@ -4797,6 +4801,7 @@ Component.prototype.%s = function(){
         TAB = _QtIfwScript.TAB
         SBLK =_QtIfwScript.START_BLOCK
         EBLK =_QtIfwScript.END_BLOCK
+        ELSE =_QtIfwScript.ELSE
         self.packageGlobals=""                    
         if IS_WINDOWS :
             self.packageGlobals += (
@@ -4830,13 +4835,17 @@ Component.prototype.%s = function(){
                     TAB + '__shOpCounter++' + END +
                     TAB + 'var shPath = __installerTempPath()' + 
                             '+ "/__temp_" + __shOpCounter + ".sh"' + END +
-                    TAB + 'var cmd = ["sh", "-c", shPath]' + END +
                     TAB + 'component.addOperation( "Delete", shPath )' + END +
-                    TAB + 'component.addOperation( "AppendFile", shPath , sh )' + END +
-                    TAB + 'if( isElevated )' + NEW +
-                    (2*TAB) + 'component.addElevatedOperation( "Execute", cmd )' + END +    
-                    TAB + 'else' + NEW +
-                    (2*TAB) + 'component.addOperation( "Execute", cmd )' + END +                
+                    TAB + 'component.addOperation( "AppendFile", shPath , sh )' + END +                  
+                    TAB + 'var mkExeCmd = ["sh", "-c", "chmod 755 \\"" + shPath + "\\""]' + END +
+                    TAB + 'var exeCmd = ["sh", "-c", shPath]' + END +
+                    TAB + 'if( isElevated )' + SBLK +
+                    (2*TAB) + 'component.addElevatedOperation( "Execute", mkExeCmd )' + END +
+                    (2*TAB) + 'component.addElevatedOperation( "Execute", exeCmd )' + END +
+                    TAB + EBLK + ELSE + SBLK +
+                    (2*TAB) + 'component.addOperation( "Execute", mkExeCmd )' + END +
+                    (2*TAB) + 'component.addOperation( "Execute", exeCmd )' + END +                    
+                    TAB + EBLK +                                    
                     TAB + 'component.addOperation( "Delete", shPath )' + END +            
                 EBLK + NEW +                
                 'function getAskPassProg() ' + SBLK +
@@ -4959,6 +4968,7 @@ Component.prototype.%s = function(){
         
         # post payload extractions
         self.__addScriptUpdates()
+        self.__addDynamicTextsUpdates()
         self.__addShortcuts()
         self.__addKillOperations()
         self.__addExternalOperations()
@@ -5003,6 +5013,19 @@ Component.prototype.%s = function(){
             self.componentCreateOperationsBody +=(
                 _QtIfwScript.resolveScriptVarsOperations( 
                     self.bundledScripts, self.pkgSubDirName ) 
+            )
+
+    def __addDynamicTextsUpdates( self ):
+        if self.dynamicTexts and len(self.dynamicTexts) > 0:
+            dynamicScripts = [ ExecutableScript( 
+                rootFileName(fileName), extension=fileExt(fileName),
+                scriptPath=abspath(fileName), # looks redundant, but triggers read on construction                   
+                shebang=False, script=content )
+                for fileName, content in iteritems( self.dynamicTexts ) 
+            ]
+            self.componentCreateOperationsBody +=(
+                _QtIfwScript.resolveScriptVarsOperations( 
+                    dynamicScripts, self.pkgSubDirName ) 
             )
         
     # TODO: Clean up this ever growing, hideous mess!    
@@ -6228,22 +6251,32 @@ class QtIfwExternalOp:
     def MakeDirScript( dirPath,
                        owner=QT_IFW_USER, group=QT_IFW_USER, # LINUX/MAC ONLY
                        access=DEFAULT_DIR_ACCESS ):          # LINUX/MAC ONLY           
-        if IS_WINDOWS: setOwner=setGroup=setAccess="" 
-        else: 
+        if IS_WINDOWS: 
+            ifNotExists = 'if not exist "{dirPath}" (' 
+            ifNotExistsTab = '    '
+            ifNotExistsEnd = ')'      
+            setOwner=setGroup=setAccess=""
+        else:
+            ifNotExists    = 'if [ ! -d "{dirPath}" ]; then ' 
+            ifNotExistsTab = '    '
+            ifNotExistsEnd = 'fi'                                    
             setOwner  = 'chown {owner} "{dirPath}"'  if owner  else ''
             setGroup  = 'chgrp {group} "{dirPath}"'  if group  else ''
-            setAccess = 'chmod {access} "{dirPath}"' if access else ''            
+            setAccess = 'chmod {access} "{dirPath}"' if access else ''                        
         return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-                "makeDir" ), script=[
-                ('if not exist "{dirPath}" md "{dirPath}"' if IS_WINDOWS else
-                 '[ ! -d "{dirPath}" ] && mkdir "{dirPath}"') 
-                , setOwner, setGroup, setAccess ], replacements={  
+                "makeDir" ), script=[                    
+                ifNotExists   
+                , ('{tab}md "{dirPath}"' if IS_WINDOWS else 
+                   '{tab}mkdir "{dirPath}"')
+                , setOwner, setGroup, setAccess
+                , ifNotExistsEnd ], replacements={  
                   "dirPath": dirPath
-                , "owner"  : owner  
-                , "group"  : group
-                , "access" : access                                                          
-            })
-                                    
+                , "owner"   : owner  
+                , "group"   : group
+                , "access"  : access      
+                , "tab"     : ifNotExistsTab                                                    
+            })                    
+                    
     # TODO: Test on MAC                                    
     @staticmethod
     def RemoveFileScript( filePath ):             
@@ -8236,6 +8269,9 @@ def __mergePackageObjects( srcPkg, destPkg, subDirName=None ):
         if srcPkg.pkgScript.bundledScripts:
             try: destPkg.pkgScript.bundledScripts.extend( srcPkg.pkgScript.bundledScripts )
             except: destPkg.pkgScript.bundledScripts = srcPkg.pkgScript.bundledScripts
+        if srcPkg.pkgScript.dynamicTexts:
+            try: destPkg.pkgScript.dynamicTexts.extend( srcPkg.pkgScript.dynamicTexts )
+            except: destPkg.pkgScript.dynamicTexts = srcPkg.pkgScript.dynamicTexts
         if srcPkg.pkgScript.installResources:
             try: destPkg.pkgScript.installResources.extend( srcPkg.pkgScript.installResources )
             except: destPkg.pkgScript.installResources = srcPkg.pkgScript.installResources
