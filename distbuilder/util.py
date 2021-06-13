@@ -47,6 +47,9 @@ from copy import copy, deepcopy # @UnusedImport
 from distutils.sysconfig import get_python_lib
 import xml.etree.ElementTree as ET # @UnusedImport
 from xml.dom import minidom # @UnusedImport
+try:    from configparser import RawConfigParser,ConfigParser,SafeConfigParser  # @UnusedImport
+except: from ConfigParser import RawConfigParser,ConfigParser,SafeConfigParser  # @UnusedImport @UnresolvedImport @Reimport 
+from io import StringIO # @UnusedImport
 
 from distbuilder.log import Logger, isLogging
 
@@ -111,6 +114,11 @@ _LAUNCH_MACOS_APP_ARGS_SWITCH      = "--args"
 __LAUNCH_MACOS_APP_NEW_SWITCH      = "-n"
 __LAUNCH_MACOS_APP_BLOCK_SWITCH    = "-W"
 __INTERNAL_MACOS_APP_BINARY_TMPLT  = "%s/Contents/MacOS/%s"
+
+# config file types across the platforms
+_WINDOWS_CONFIG_EXT  = ".ini"
+_MACOS_CONFIG_EXT    = ".cfg"
+_LINUX_CONFIG_EXT    = ".cfg"
 
 # icons types across the platforms
 _WINDOWS_ICON_EXT = ".ico"
@@ -797,6 +805,16 @@ def normBinaryName( path, isPathPreserved=False, isGui=False ):
         return "%s%s" % (base, _MACOS_APP_EXT)      
     if IS_WINDOWS: return base + (".exe" if ext=="" else ext)
     return base 
+
+def normConfigName( path, isPathPreserved=False ):
+    if path is None : return None    
+    if not isPathPreserved : path = baseFileName( path )
+    base, _ = splitExt( path )
+    if IS_WINDOWS: return "%s%s" % (base, _WINDOWS_CONFIG_EXT) 
+    elif IS_MACOS: return "%s%s" % (base, _MACOS_CONFIG_EXT) 
+    elif IS_LINUX: return "%s%s" % (base, _LINUX_CONFIG_EXT) 
+    raise DistBuilderError( __NOT_SUPPORTED_MSG )
+    return base 
                             
 def normIconName( path, isPathPreserved=False ):
     if path is None : return None    
@@ -1200,7 +1218,7 @@ def getPassword( isGuiPrompt=False ):
 class PlasticFile:
 
     def __init__( self, filePath=None, content=None ) :
-        self.filePath = filePath
+        self.filePath = absPath(filePath)
         if content: self.content = content
         elif filePath and isFile(filePath): self.read()
         self.isInjected = False

@@ -138,8 +138,9 @@ from distbuilder.code_sign import(
     , signExe 
 )
             
-from distbuilder.util import( 
-      ExecutableScript
+from distbuilder.util import(
+      RawConfigParser, ConfigParser, SafeConfigParser
+    , ExecutableScript    
     , WindowsExeVersionInfo        
     , IS_WINDOWS 
     , IS_LINUX 
@@ -182,6 +183,7 @@ from distbuilder.util import(
     , normBinaryName 
     , normIconName 
     , normLibName
+    , normConfigName
     , allPathPattern
     , extPathPattern 
     , startsWithPathPattern

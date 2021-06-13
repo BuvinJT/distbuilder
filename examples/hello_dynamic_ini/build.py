@@ -1,4 +1,6 @@
-from distbuilder import PyToBinInstallerProcess, ConfigFactory, startLogging
+from distbuilder import( PyToBinInstallerProcess, ConfigFactory, 
+                         ConfigParser, normConfigName, startLogging, 
+                         QT_IFW_TARGET_DIR ) 
 
 startLogging()
 
@@ -14,7 +16,16 @@ f.distResources    = ["../hello_world/LICENSE.TXT"]
 f.iconFilePath     = "../hello_world_tk/demo.ico" 
 f.version          = (1,0,0,0)
 f.setupName        = "HelloIfwDynamicIniSetup"
-f.pkgIniFilePaths  = ["test.ini"]  
+
+dynamic_config = ConfigParser() 
+sec='default'
+dynamic_config.add_section( sec )
+dynamic_config.set( sec, 'program_dir', QT_IFW_TARGET_DIR )
+dynamic_config.set( sec, 'is_debug',    str(False) )
+
+f.pkgConfigs = { "test.ini": None                                  # from file   
+               ,  normConfigName("dynamic_config"): dynamic_config # from object
+               }
             
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True

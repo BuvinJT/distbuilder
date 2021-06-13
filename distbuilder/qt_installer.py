@@ -2347,6 +2347,7 @@ class _QtIfwScript:
             TAB + 'var script = isOp ? "AtSign=\'\\\\\\o100\'\\n" : ' +
                                       '"AtSign=\'\\\\\\\\o100\'\\n"' + END +                        
             TAB + 'var path = Dir.toNativeSeparator( path )' + END +            
+            TAB + 'var uname = __userName()' + END +
             TAB + 'script += "chown " + uname + ":" + uname + " \\"" + path + "\\"\\n"' + END + 
             TAB + 'script += "chmod 777 \\"" + path + "\\"\\n"' + END +
             TAB + 'for( var i=0; i != varNames.length; ++i ) ' + SBLK +                                    
@@ -2359,7 +2360,6 @@ class _QtIfwScript:
                     '\\"s/${AtSign}" + varName + "${AtSign}/" + varVal + "/g\\" ' +
                     '\\"" + path + "\\" \\n"' + END +              
             TAB + EBLK + 
-            TAB + 'var uname = __userName()' + END +
             TAB + 'script += "chmod 755 \\"" + path + "\\"\\n"' + END +            
             TAB + 'script += "cat \\"" + path + "\\"\\n"' + END +                                                     
             TAB + 'return script' + END     
@@ -5019,7 +5019,6 @@ Component.prototype.%s = function(){
         if self.dynamicTexts and len(self.dynamicTexts) > 0:
             dynamicScripts = [ ExecutableScript( 
                 rootFileName(fileName), extension=fileExt(fileName),
-                scriptPath=abspath(fileName), # looks redundant, but triggers read on construction                   
                 shebang=False, script=content )
                 for fileName, content in iteritems( self.dynamicTexts ) 
             ]
@@ -8270,7 +8269,7 @@ def __mergePackageObjects( srcPkg, destPkg, subDirName=None ):
             try: destPkg.pkgScript.bundledScripts.extend( srcPkg.pkgScript.bundledScripts )
             except: destPkg.pkgScript.bundledScripts = srcPkg.pkgScript.bundledScripts
         if srcPkg.pkgScript.dynamicTexts:
-            try: destPkg.pkgScript.dynamicTexts.extend( srcPkg.pkgScript.dynamicTexts )
+            try: destPkg.pkgScript.dynamicTexts.update( srcPkg.pkgScript.dynamicTexts )
             except: destPkg.pkgScript.dynamicTexts = srcPkg.pkgScript.dynamicTexts
         if srcPkg.pkgScript.installResources:
             try: destPkg.pkgScript.installResources.extend( srcPkg.pkgScript.installResources )
@@ -8408,6 +8407,7 @@ def __addInstallerResources( qtIfwConfig ) :
     for p in qtIfwConfig.packages :
         if not isinstance( p, QtIfwPackage ) : continue
 
+        __addDynamicDistRes( p )
         __addExternDependencyOps( p )
         __addLicenses( p )
 
@@ -8548,6 +8548,27 @@ def __addLicenses( package ) :
             destPath = joinPath( destDir, fileName )    
             with open( destPath, 'w' ) as f: f.writelines( revLines )                    
         else: copyToDir( srcPath, destDir )        
+
+
+def __addDynamicDistRes( package ) :
+    pkgScript = package.pkgScript
+    
+    if pkgScript.bundledScripts and len(pkgScript.bundledScripts) > 0:
+        print( "Adding bundled scripts..." )     
+        if package.distResources is None: package.distResources=[]
+        for script in pkgScript.bundledScripts:  
+            package.distResources.append( script.filePath() )
+            
+    if pkgScript.dynamicTexts and len(pkgScript.dynamicTexts) > 0:
+        print( "Adding dynamic text files..." ) 
+        if package.distResources is None: package.distResources=[]
+        for name, content in iteritems( pkgScript.dynamicTexts ):
+            filePath = absPath( name )  
+            if not isFile(filePath): 
+                filePath = joinPath( package.contentDirPath(), 
+                                     baseFileName( name ) ) 
+                PlasticFile( filePath=filePath, content=content ).write()
+            package.distResources.append( filePath )           
                             
 def __addUiPages( qtIfwConfig, package ) :
     if package.uiPages is None or len(package.uiPages)==0: return
