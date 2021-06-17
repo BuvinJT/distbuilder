@@ -401,7 +401,8 @@ class ConfigFactory:
 
         dynamicTexts={}
         if self.pkgConfigs:
-            for filePath, content in iteritems( self.pkgConfigs ):
+            for pathPair, content in iteritems( self.pkgConfigs ):
+                filePath, _ = util._toSrcDestPair( pathPair )                 
                 baseName = baseFileName( filePath )
                 if isinstance( content, RawConfigParser ):                     
                     with StringIO() as buffer:
@@ -411,7 +412,7 @@ class ConfigFactory:
                 else: 
                     f = PlasticFile( filePath=filePath, content=content )
                     if content is None: f.read()
-                    dynamicTexts[ baseName ] = f.content
+                    dynamicTexts[ pathPair ] = f.content
                        
         script = QtIfwPackageScript( 
                     self.__ifwPkgName(), self.__versionStr(),

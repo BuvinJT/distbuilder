@@ -1129,8 +1129,14 @@ class _QtIfwScript:
         return _QtIfwScript.__writeScripts( scripts, True, True, subDir )
 
     @staticmethod
+    def resolveDynamTxtVarsOperations( plasticFile, destPath ):
+        # cheated and piggy backed the prior written code for a list of scripts 
+        return _QtIfwScript.__writeScripts( 
+            [plasticFile], True, True, destPath=destPath )
+
+    @staticmethod
     def __writeScripts( scripts, isUpdate=False, isOp=False, 
-                        subDir=None, isTempRootTarget=False ):
+                        subDir=None, isTempRootTarget=False, destPath=None ):
         
         MAX_VAR_LENGTH = 64 # Not a true limit to the language, just a sanity check for this context
         VAR_NAME_CHARS = string.digits + string.ascii_letters + "_"
@@ -1141,25 +1147,29 @@ class _QtIfwScript:
                 if c not in VAR_NAME_CHARS: return False
             return True
         
-        def dynamicParms( script, subDir=None ):
+        def dynamicParms( script, subDir=None, destPath=None ):
             if isinstance( script, ExecutableScript ):                
                 scriptName = script.fileName()
-                scriptPath = ( _QtIfwScript.targetDir() + ' + "/' +  
-                    ( joinPathQtIfw( subDir, scriptName ) 
-                      if subDir else scriptName ) + '"' )
                 scriptContent = str(script)
-                isDoubleBackslash = script.isIfwVarEscapeBackslash
-                resourceVarName = scriptName.replace(
-                    ".", _QtIfwScript.__EXT_DELIM_PLACEHOLDER ) 
-                dynamicVarNames = set( scriptContent.split( QT_IFW_DYNAMIC_SYMBOL ) )
-                dynamicVarNames = [ v for v in dynamicVarNames 
-                                    if isValidVarName( v ) ]
-                dynamicVarNames = "[ %s ]" % (
-                    ",".join( ['"%s"' % (v,) for v in dynamicVarNames] ), )
-                print("dynamicVarNames",dynamicVarNames)
-                return ( scriptPath, scriptName, resourceVarName,
-                         dynamicVarNames, isDoubleBackslash )
-            return None
+                isDoubleBackslash = script.isIfwVarEscapeBackslash                
+            elif isinstance( script, PlasticFile ):      
+                scriptName = baseFileName( script.filePath )
+                scriptContent = script.content
+                isDoubleBackslash = False                
+            else: return None
+            if destPath: scriptPath = destPath
+            else: scriptPath = ( _QtIfwScript.targetDir() + ' + "/' +  
+                                 ( joinPathQtIfw( subDir, scriptName ) 
+                                   if subDir else scriptName ) + '"' )            
+            resourceVarName = scriptName.replace(
+                ".", _QtIfwScript.__EXT_DELIM_PLACEHOLDER ) 
+            dynamicVarNames = set( scriptContent.split( QT_IFW_DYNAMIC_SYMBOL ) )
+            dynamicVarNames = [ v for v in dynamicVarNames 
+                                if isValidVarName( v ) ]
+            dynamicVarNames = "[ %s ]" % (
+                ",".join( ['"%s"' % (v,) for v in dynamicVarNames] ), )                
+            return ( scriptPath, scriptName, resourceVarName,
+                     dynamicVarNames, isDoubleBackslash )
         
         def gen( script, isTempRootTarget ):
             parms = dynamicParms( script )  
@@ -1177,8 +1187,8 @@ class _QtIfwScript:
                      _QtIfwScript.toBool(isB64Removed) ) )                
             return ""        
         
-        def update( script, isOp, subDir ):
-            parms = dynamicParms( script, subDir )  
+        def update( script, isOp, subDir, destPath ):
+            parms = dynamicParms( script, subDir, destPath )  
             if parms:
                 scriptPath, _, _, dynamicVarNames, isDoubleBackslash = parms
                 if isOp:
@@ -1192,7 +1202,7 @@ class _QtIfwScript:
                         _QtIfwScript.toBool(isDoubleBackslash) ) 
             return ""
         
-        return "".join( [ update( s, isOp, subDir ) if isUpdate else 
+        return "".join( [ update( s, isOp, subDir, destPath ) if isUpdate else 
                           gen( s, isTempRootTarget )
                           for s in scripts ] )
         
@@ -4570,11 +4580,11 @@ Component.prototype.%s = function(){
     def _addReplaceVarsInFileOperation( path, varNames, isDoubleBackslash, 
                                         isElevated ):
         if IS_WINDOWS:
-            vbs = '__replaceDynamicVarsInFileScript( %s, %s, %s, true )' % (
+            vbs = '__replaceDynamicVarsInFileScript( "%s", %s, %s, true )' % (
                 path, varNames, _QtIfwScript.toBool( isDoubleBackslash ) )
             return QtIfwPackageScript._addVbsOperation( vbs, isElevated )                   
         else:
-            sh = '__replaceDynamicVarsInFileScript( %s, %s, false, true )' % (
+            sh = '__replaceDynamicVarsInFileScript( "%s", %s, false, true )' % (
                 path, varNames )
             return QtIfwPackageScript._addShOperation( sh, isElevated )                   
         
@@ -5016,16 +5026,15 @@ Component.prototype.%s = function(){
             )
 
     def __addDynamicTextsUpdates( self ):
-        if self.dynamicTexts and len(self.dynamicTexts) > 0:
-            dynamicScripts = [ ExecutableScript( 
-                rootFileName(fileName), extension=fileExt(fileName),
-                shebang=False, script=content )
-                for fileName, content in iteritems( self.dynamicTexts ) 
-            ]
-            self.componentCreateOperationsBody +=(
-                _QtIfwScript.resolveScriptVarsOperations( 
-                    dynamicScripts, self.pkgSubDirName ) 
-            )
+        if self.dynamicTexts and len(self.dynamicTexts) > 0:            
+            destDir = QT_IFW_TARGET_DIR
+            for pathPair, content in iteritems( self.dynamicTexts ):
+                _, destPath = util._toSrcDestPair( pathPair, destDir=destDir )
+                self.componentCreateOperationsBody +=(
+                    _QtIfwScript.resolveDynamTxtVarsOperations( 
+                        PlasticFile( filePath=destPath, content=content ), 
+                        destPath ) 
+                )
         
     # TODO: Clean up this ever growing, hideous mess!    
     def __addShortcuts( self ):
@@ -8562,13 +8571,16 @@ def __addDynamicDistRes( package ) :
     if pkgScript.dynamicTexts and len(pkgScript.dynamicTexts) > 0:
         print( "Adding dynamic text files..." ) 
         if package.distResources is None: package.distResources=[]
-        for name, content in iteritems( pkgScript.dynamicTexts ):
-            filePath = absPath( name )  
-            if not isFile(filePath): 
-                filePath = joinPath( package.contentDirPath(), 
-                                     baseFileName( name ) ) 
-                PlasticFile( filePath=filePath, content=content ).write()
-            package.distResources.append( filePath )           
+        destDir = package.contentDirPath()
+        basePath = package.resBasePath
+        for pathPair, content in iteritems( pkgScript.dynamicTexts ):
+            scrPath, destPath = util._toSrcDestPair( 
+                pathPair, destDir=destDir, basePath=basePath )
+            # if completely dynamic, generate the file now in the build package
+            # otherwise, pass the buck to the normal resource collector                
+            if not isFile(scrPath): 
+                PlasticFile( filePath=destPath, content=content ).write()
+            else: package.distResources.append( pathPair )           
                             
 def __addUiPages( qtIfwConfig, package ) :
     if package.uiPages is None or len(package.uiPages)==0: return

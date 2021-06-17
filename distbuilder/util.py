@@ -76,8 +76,9 @@ SITE_PACKAGES_PATH = get_python_lib()
 
 # (client script's dir)
 THIS_DIR           = dirPath( realpath( argv[0] ) ) 
-
 __THIS_LIB_DIR     = dirPath( realpath( __file__ ) ) 
+
+__QT_IFW_DYNAMIC_SYMBOL = "@"
 
 ALL="*"
 PATH_PAIR_DELIMITER=";"
@@ -1069,8 +1070,9 @@ def __parseSrcDestPair( pathPair, destDir=None, basePath=None ):
             # must remove a leading slash from dest for joinPath to 
             # make the dest a child of destDir
             try: dest=dest[1:]
-            except: pass
-        dest = absPath( joinPath( destDir, dest ), relSrcDir )
+            except: pass        
+        dest = joinPath( destDir, dest )
+        if __QT_IFW_DYNAMIC_SYMBOL not in dest: dest=absPath( dest, relSrcDir )
 
     #print( "result: src=%s, dest=%s" % (src, dest) )
     return (inputSrc, inputDest, src, dest) 
