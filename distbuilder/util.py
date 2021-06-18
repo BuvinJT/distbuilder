@@ -1236,7 +1236,10 @@ class PlasticFile:
         with open( self.path(), 'r' ) as f : self.content = f.read() 
             
     def write( self ):
-        with open( self.path(), 'w' ) as f : f.write( str(self) )
+        fPath = self.path()
+        dPath = dirPath( self.path() )
+        if not isDir( dPath ): makeDir( dPath )
+        with open( fPath, 'w' ) as f : f.write( str(self) )
     
     def remove( self ):  
         if isFile( self.filePath ): removeFile( self.filePath )
