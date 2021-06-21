@@ -402,17 +402,15 @@ class ConfigFactory:
         dynamicTexts={}
         if self.pkgConfigs:
             for pathPair, content in iteritems( self.pkgConfigs ):
-                filePath, _ = util._toSrcDestPair( pathPair )                 
-                baseName = baseFileName( filePath )
                 if isinstance( content, RawConfigParser ):                     
                     with StringIO() as buffer:
                         content.write( buffer )
                         buffer.seek( 0 ) 
-                        dynamicTexts[ baseName ] = buffer.read()
-                else: 
-                    f = PlasticFile( filePath=filePath, content=content )
-                    if content is None: f.read()
-                    dynamicTexts[ pathPair ] = f.content
+                        dynamicTexts[ pathPair ] = buffer.read()
+                else:
+                    srcPath, _ = util._toSrcDestPair( pathPair )                                                                              
+                    dynamicTexts[ pathPair ] =( content if content else                                                 
+                        PlasticFile( filePath=srcPath ).read() )
                        
         script = QtIfwPackageScript( 
                     self.__ifwPkgName(), self.__versionStr(),

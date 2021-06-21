@@ -1065,14 +1065,25 @@ def __parseSrcDestPair( pathPair, destDir=None, basePath=None ):
     if destDir is None: # (i.e. PyInstaller Argument)
         if dest is None: dest = relpath( srcHead, THIS_DIR )                    
     else :
-        if dest is None: dest = srcTail         
-        if dest.startswith( PATH_DELIM ) : 
-            # must remove a leading slash from dest for joinPath to 
-            # make the dest a child of destDir
-            try: dest=dest[1:]
-            except: pass        
-        dest = joinPath( destDir, dest )
-        if __QT_IFW_DYNAMIC_SYMBOL not in dest: dest=absPath( dest, relSrcDir )
+        # Ugly, but functional, kludge!
+        def _isDynamicPath( path ):
+            from distbuilder.qt_installer import _isQtIFWDynamicPath             
+            return _isQtIFWDynamicPath( path )
+        def _isDynamicExternPath( path ):
+            from distbuilder.qt_installer import (
+                _isQtIFWDynamicExternPath )             
+            return _isQtIFWDynamicExternPath( path )
+        
+        if _isDynamicExternPath( inputDest ): dest=inputDest
+        else:
+            if dest is None: dest = srcTail         
+            if dest.startswith( PATH_DELIM ) : 
+                # must remove a leading slash from dest for joinPath to 
+                # make the dest a child of destDir
+                try: dest=dest[1:]
+                except: pass        
+            dest = joinPath( destDir, dest )                
+            if not _isDynamicPath( dest ): dest=absPath( dest, relSrcDir )
 
     #print( "result: src=%s, dest=%s" % (src, dest) )
     return (inputSrc, inputDest, src, dest) 
@@ -1234,6 +1245,7 @@ class PlasticFile:
     def read( self ):
         self.content = None        
         with open( self.path(), 'r' ) as f : self.content = f.read() 
+        return self.content
             
     def write( self ):
         fPath = self.path()
@@ -1462,7 +1474,8 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         
     def asSnippet( self ): 
         script = self.__asFormatedStr( isStandalone=False )
-        if not script.startswith( _NEWLINE ): script = _NEWLINE + script   
+        if not script.startswith( _NEWLINE ): script = _NEWLINE + script    
+        if not script.endswith( _NEWLINE ): script += _NEWLINE
         return script 
 
     def __asFormatedStr( self, isStandalone=True ):
