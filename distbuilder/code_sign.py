@@ -50,6 +50,9 @@ class CodeSignConfig:
 
     def __init__( self, keyFilePath=None, keyPassword=None ):
   
+        # NOT YET SUPPORTED OUTSIDE OF _WINDOWS!
+        if not IS_WINDOWS: util._onPlatformErr()
+  
         self.keyFilePath = absPath( keyFilePath )
         self.keyPassword = keyPassword
  
@@ -157,6 +160,9 @@ class SelfSignedCertConfig:
         return path 
 
     def __init__( self, companyTradeName, destDirPath=None ):
+  
+        # NOT YET SUPPORTED OUTSIDE OF _WINDOWS!
+        if not IS_WINDOWS: util._onPlatformErr()
     
         self.commonName  = companyTradeName
         self.endDate     = SelfSignedCertConfig.DEFAULT_END_DATE
@@ -309,6 +315,9 @@ class Pvk2PfxConfig:
 
     def __init__( self, caCertPath, privateKeyPath, 
                   keyPassword=None, pfxFilePath=None ):
+  
+        # NOT APPLICABLE OUTSIDE OF _WINDOWS!
+        if not IS_WINDOWS: util._onPlatformErr()
 
         self.caCertPath     = absPath( caCertPath )        
         self.privateKeyPath = absPath( privateKeyPath )

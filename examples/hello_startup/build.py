@@ -1,5 +1,7 @@
 from distbuilder import PyToBinInstallerProcess, ConfigFactory
 
+# TODO: ADD SUPPORT FOR THIS FEATURE OUTSIDE OF WINDOWS
+
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Startup Example"
 f.description      = "A Distribution Builder Example"

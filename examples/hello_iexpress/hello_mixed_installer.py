@@ -1,5 +1,6 @@
 from distbuilder import( RobustInstallerProcess, ConfigFactory,
-                         ExecutableScript, findQtIfwPackage )
+                         ExecutableScript, findQtIfwPackage, startLogging )
+startLogging()
   
 f = masterConfigFactory = ConfigFactory()
 f.productName      = "Hello Mixed Source Types Example"
@@ -41,7 +42,7 @@ class BuildProcess( RobustInstallerProcess ):
             # Listed / installed in descending order 
             # (i.e. highest *priority* first)
             pyPkg.pkgXml.SortingPriority  = 10
-            batchPkg.pkgXml.SortingPriority = 1
+            if batchPkg: batchPkg.pkgXml.SortingPriority = 1
             
         def customizeFinishedPage( cfg, pyPkg ):
             # Explicitly enforce which package exe is "primary" 
@@ -49,7 +50,10 @@ class BuildProcess( RobustInstallerProcess ):
             cfg.configXml.setPrimaryContentExe( pyPkg )           
             
         pkgs     = cfg.packages
-        pyPkg    = findQtIfwPackage( pkgs, PY_CONFIG_KEY )            
+        pyPkg    = findQtIfwPackage( pkgs, PY_CONFIG_KEY )
+        # Note the batchPkg will drop out of the build **silently** 
+        # outside of Windows (other than a warning), in which case
+        # batchPkg will be None here                     
         batchPkg = findQtIfwPackage( pkgs, BATCH_CONFIG_KEY )        
         defineComponentsOrder( pyPkg, batchPkg )       
         customizeFinishedPage( cfg, pyPkg )

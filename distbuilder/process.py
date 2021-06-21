@@ -257,12 +257,15 @@ class ConfigFactory:
         self.__pkgIExpressConfig = iExpressConfig
         pkgType=self.__ifwPkgType()
 
-        if IS_WINDOWS and self.startOnBoot in [True, CURRENT_USER, ALL_USERS]:
-            if self.pkgExeWrapper and not self.pkgExeWrapper.isExe:
-                self.pkgExeWrapper.isExe = True
-                self.pkgExeWrapper.refresh()
-            else: self.pkgExeWrapper = self.qtIfwExeWrapper( isExe=True )        
-                
+        if self.startOnBoot in [True, CURRENT_USER, ALL_USERS]:
+            if IS_WINDOWS: 
+                if self.pkgExeWrapper and not self.pkgExeWrapper.isExe:
+                    self.pkgExeWrapper.isExe = True
+                    self.pkgExeWrapper.refresh()
+                else: self.pkgExeWrapper = self.qtIfwExeWrapper( isExe=True )        
+            else: # TODO: ADD SUPPORT FOR OTHER PLATFORMS!
+                util._onPlatformErr()
+                    
         pkg = QtIfwPackage(
                 pkgId=self.__ifwPkgId(),
                 pkgType=pkgType, 
@@ -668,7 +671,10 @@ class IExpressPackageProcess( _BuildPackageProcess ):
     def __init__( self, configFactory,                  
                   name="Windows Script to Binary Package Process",
                   isZipped=False, isDesktopTarget=False, isHomeDirTarget=False ) :
+        
+        # NOT APPLICABLE OUTSIDE OF _WINDOWS!   
         if not IS_WINDOWS: util._onPlatformErr()
+        
         _BuildPackageProcess.__init__( self, configFactory, name,
             isZipped, isDesktopTarget, isHomeDirTarget )        
 
@@ -918,7 +924,11 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
                 prc = CallbackIExpressToBinPackageProcess( self, key, factory )
                 self.onIExpressPackageProcess( key, prc )    
                 iExpressBinPrcs.append( prc )        
-        
+        elif( iExpressPkgConfigFactoryDict and 
+             len(iExpressPkgConfigFactoryDict) > 0 ) :
+            printErr( "WARNING: IEXPRESS PACKAGES CANNOT BE BUILT OUTSIDE OF "
+                      "WINDOWS! DROPPING ALL SUCH PACKAGE CONFIGURATIONS..." )
+            
         _BuildInstallerProcess.__init__( self, 
             masterConfigFactory, name,
             ifwPackages=ifwPackages,

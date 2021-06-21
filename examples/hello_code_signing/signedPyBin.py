@@ -1,6 +1,8 @@
 from distbuilder import( PyToBinPackageProcess, ConfigFactory, 
                          CodeSignConfig, getPassword )
 
+# TODO: ADD SUPPORT FOR THIS FEATURE OUTSIDE OF WINDOWS
+
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello World Example"
 f.description      = "A Distribution Builder Example"
