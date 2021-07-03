@@ -1,0 +1,1696 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+    
+    
+      
+        <title>Examples - Distribution Builder</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#examples" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Distribution Builder" class="md-header__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Distribution Builder
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Examples
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Distribution Builder" class="md-nav__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Distribution Builder
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QuickStart.html" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Examples
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="Examples.html" class="md-nav__link md-nav__link--active">
+        Examples
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#source-code-resources" class="md-nav__link">
+    Source Code / Resources
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-world-example" class="md-nav__link">
+    Hello World Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-world-tk-example" class="md-nav__link">
+    Hello World Tk Example
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello World Tk Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feature-spotlight-file-name-normalization" class="md-nav__link">
+    Feature spotlight: "file name normalization"
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extended-feature-demo-debug-mode" class="md-nav__link">
+    Extended feature demo: "debug mode"
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-dynamic-ini-example" class="md-nav__link">
+    Hello Dynamic Ini Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-silent-example" class="md-nav__link">
+    Hello Silent Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-multi-package-examples" class="md-nav__link">
+    Hello Multi-Package Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello Multi-Package Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hello-packages-example" class="md-nav__link">
+    Hello Packages Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-merge-example" class="md-nav__link">
+    Hello Merge Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-code-signing-examples" class="md-nav__link">
+    Hello Code Signing Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello Code Signing Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generate-trust-certs-w-installer" class="md-nav__link">
+    Generate Trust Certs w/ Installer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signed-python-executable-example" class="md-nav__link">
+    Signed Python Executable Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signed-installer-example" class="md-nav__link">
+    Signed Installer Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-wrapper-example" class="md-nav__link">
+    Hello Wrapper Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-operations-examples" class="md-nav__link">
+    Hello Operations Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello Operations Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#built-in-simple-operations-example" class="md-nav__link">
+    Built-in Simple Operations Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#low-level-embedded-script-operations-example" class="md-nav__link">
+    Low Level Embedded Script Operations Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#high-level-convenience-operations-example" class="md-nav__link">
+    High Level Convenience Operations Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cascading-scripts-example" class="md-nav__link">
+    Cascading Scripts Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windows-registry-interactions-example" class="md-nav__link">
+    Windows Registry Interactions Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-installer-ui-examples" class="md-nav__link">
+    Hello Installer UI Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello Installer UI Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-graphics-examples" class="md-nav__link">
+    Custom Graphics Examples
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-interactions-examples" class="md-nav__link">
+    Custom Interactions Examples
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-pages-examples" class="md-nav__link">
+    Custom Pages Examples
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#widget-injections-example" class="md-nav__link">
+    Widget Injections Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-dynamic-finish-example" class="md-nav__link">
+    Hello Dynamic Finish Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-startup-example" class="md-nav__link">
+    Hello Startup Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-opy-examples" class="md-nav__link">
+    Hello Opy Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello Opy Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hello-opy-example" class="md-nav__link">
+    Hello Opy Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-opy-bundle-example" class="md-nav__link">
+    Hello Opy Bundle Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-iexpress-examples" class="md-nav__link">
+    Hello IExpress Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello IExpress Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hello-batch" class="md-nav__link">
+    Hello Batch
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-powershell" class="md-nav__link">
+    Hello PowerShell
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-vbscript" class="md-nav__link">
+    Hello VBScript
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-jscript" class="md-nav__link">
+    Hello JScript
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-dynamic-scripts" class="md-nav__link">
+    Hello Dynamic Scripts
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-resources" class="md-nav__link">
+    Hello Resources
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-imports" class="md-nav__link">
+    Hello Imports
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-installer" class="md-nav__link">
+    Hello Installer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-mixed-source-installer" class="md-nav__link">
+    Hello Mixed Source Installer
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-qt-c-examples" class="md-nav__link">
+    Hello Qt C++ Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello Qt C++ Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hello-world-qt-example" class="md-nav__link">
+    Hello World Qt Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-world-qml-example" class="md-nav__link">
+    Hello World QML Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-world-qml-new-example" class="md-nav__link">
+    Hello World QML New Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
+        Old Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Old Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Old Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="HighLevel.html" class="md-nav__link">
+        High Level Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ConfigClasses.html" class="md-nav__link">
+        Configuration Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="LowLevel.html" class="md-nav__link">
+        Low Level Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QtCpp.html" class="md-nav__link">
+        Qt C++ Integration
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      <label class="md-nav__link" for="__nav_5">
+        Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Config%20Factory.html" class="md-nav__link">
+        Config Factory
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20Installer%20Framework.html" class="md-nav__link">
+        Qt Installer Framework
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="PyInstaller.html" class="md-nav__link">
+        PyInstaller
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="IExpress.html" class="md-nav__link">
+        IExpress
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Code%20Signing.html" class="md-nav__link">
+        Code Signing
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20Obfuscation.html" class="md-nav__link">
+        Python Obfuscation
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20pip.html" class="md-nav__link">
+        Python pip
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20CPP.html" class="md-nav__link">
+        Qt CPP
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Logging.html" class="md-nav__link">
+        Logging
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Classes.html" class="md-nav__link">
+        Utility Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Functions.html" class="md-nav__link">
+        Utility Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Constants.html" class="md-nav__link">
+        Utility Constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Issues.html" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ToDo.html" class="md-nav__link">
+        To-Do List
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Contribute.html" class="md-nav__link">
+        Contact / Contribute
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#source-code-resources" class="md-nav__link">
+    Source Code / Resources
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-world-example" class="md-nav__link">
+    Hello World Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-world-tk-example" class="md-nav__link">
+    Hello World Tk Example
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello World Tk Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feature-spotlight-file-name-normalization" class="md-nav__link">
+    Feature spotlight: "file name normalization"
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extended-feature-demo-debug-mode" class="md-nav__link">
+    Extended feature demo: "debug mode"
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-dynamic-ini-example" class="md-nav__link">
+    Hello Dynamic Ini Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-silent-example" class="md-nav__link">
+    Hello Silent Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-multi-package-examples" class="md-nav__link">
+    Hello Multi-Package Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello Multi-Package Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hello-packages-example" class="md-nav__link">
+    Hello Packages Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-merge-example" class="md-nav__link">
+    Hello Merge Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-code-signing-examples" class="md-nav__link">
+    Hello Code Signing Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello Code Signing Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generate-trust-certs-w-installer" class="md-nav__link">
+    Generate Trust Certs w/ Installer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signed-python-executable-example" class="md-nav__link">
+    Signed Python Executable Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signed-installer-example" class="md-nav__link">
+    Signed Installer Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-wrapper-example" class="md-nav__link">
+    Hello Wrapper Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-operations-examples" class="md-nav__link">
+    Hello Operations Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello Operations Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#built-in-simple-operations-example" class="md-nav__link">
+    Built-in Simple Operations Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#low-level-embedded-script-operations-example" class="md-nav__link">
+    Low Level Embedded Script Operations Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#high-level-convenience-operations-example" class="md-nav__link">
+    High Level Convenience Operations Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cascading-scripts-example" class="md-nav__link">
+    Cascading Scripts Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windows-registry-interactions-example" class="md-nav__link">
+    Windows Registry Interactions Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-installer-ui-examples" class="md-nav__link">
+    Hello Installer UI Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello Installer UI Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-graphics-examples" class="md-nav__link">
+    Custom Graphics Examples
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-interactions-examples" class="md-nav__link">
+    Custom Interactions Examples
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-pages-examples" class="md-nav__link">
+    Custom Pages Examples
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#widget-injections-example" class="md-nav__link">
+    Widget Injections Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-dynamic-finish-example" class="md-nav__link">
+    Hello Dynamic Finish Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-startup-example" class="md-nav__link">
+    Hello Startup Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-opy-examples" class="md-nav__link">
+    Hello Opy Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello Opy Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hello-opy-example" class="md-nav__link">
+    Hello Opy Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-opy-bundle-example" class="md-nav__link">
+    Hello Opy Bundle Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-iexpress-examples" class="md-nav__link">
+    Hello IExpress Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello IExpress Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hello-batch" class="md-nav__link">
+    Hello Batch
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-powershell" class="md-nav__link">
+    Hello PowerShell
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-vbscript" class="md-nav__link">
+    Hello VBScript
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-jscript" class="md-nav__link">
+    Hello JScript
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-dynamic-scripts" class="md-nav__link">
+    Hello Dynamic Scripts
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-resources" class="md-nav__link">
+    Hello Resources
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-imports" class="md-nav__link">
+    Hello Imports
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-installer" class="md-nav__link">
+    Hello Installer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-mixed-source-installer" class="md-nav__link">
+    Hello Mixed Source Installer
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-qt-c-examples" class="md-nav__link">
+    Hello Qt C++ Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Hello Qt C++ Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hello-world-qt-example" class="md-nav__link">
+    Hello World Qt Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-world-qml-example" class="md-nav__link">
+    Hello World QML Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hello-world-qml-new-example" class="md-nav__link">
+    Hello World QML New Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h1>
+<p><img alt="distbuilder logo" src="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png" /></p>
+<h2 id="source-code-resources">Source Code / Resources<a class="headerlink" href="#source-code-resources" title="Permanent link">&para;</a></h2>
+<p>All of the examples discussed here are included in the &ldquo;source distribution&rdquo; 
+of the library. The <a href="https://pypi.org/project/distbuilder/#files">PyPi downloads</a> 
+page for this project is arguably the fastest route to acquire that.
+See <a href="QuickStart.html#from-source-installation">From source installation</a> to learn 
+about other ways of downloading these files.</p>
+<h2 id="hello-world-example">Hello World Example<a class="headerlink" href="#hello-world-example" title="Permanent link">&para;</a></h2>
+<p>The Hello World Example is a simple demonstration of using the 
+<a href="HighLevel.html#pytobinpackageprocess">PyToBinPackageProcess</a> class. 
+This is one of the most straightforward, simple use cases for the library.  </p>
+<p>If you did not download the full source for the library (inclusive of the examples) 
+you may download/copy the following individual files directly from GitHub into a local directory. 
+It is recommended that you place them in a directory named <code>hello_world</code>.   </p>
+<ul>
+<li>Example program: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/hello.py">hello.py</a></li>
+<li>Build script: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/build.py">build.py</a></li>
+<li>Example resource: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/LICENSE">LICENSE</a></li>
+</ul>
+<p>Start by confirming you can run the program script in the &ldquo;natural&rdquo; manner:</p>
+<div class="codehilite"><pre><span></span><code>python hello.py
+</code></pre></div>
+
+<p>Don&rsquo;t expect it to do much&hellip;  It simply writes &ldquo;Hello World!&rdquo; to the console.</p>
+<p>Now, run the build script:</p>
+<div class="codehilite"><pre><span></span><code>python build.py
+</code></pre></div>
+
+<p>The build script should achieve the following:</p>
+<ul>
+<li>converts the Python script to a stand-alone executable binary</li>
+<li>bundles the example resource (license file) into a directory with the binary</li>
+<li>compresses the distribution into a simple zip file (left in the same directory as the source)</li>
+</ul>
+<p>Having witnessed that function, review the <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/build.py">build.py</a>
+ script for yourself.  It should be self-explanatory for a moderately 
+ seasoned Python developer.  </p>
+<h2 id="hello-world-tk-example">Hello World Tk Example<a class="headerlink" href="#hello-world-tk-example" title="Permanent link">&para;</a></h2>
+<p>This next example is a more comprehensive version of the first Hello World.
+It is a demonstration of using the 
+<a href="HighLevel.html#pytobininstallerprocess">PyToBinInstallerProcess</a> class.</p>
+<p><em>Note: This example requires the standard Python <a href="https://tkdocs.com/tutorial/install.html">TKinter</a> 
+library be installed.</em></p>
+<p>You may download/copy the following individual files directly from GitHub into a local directory.<br />
+It is recommended that you place them in a directory named <code>hello_world_tk</code>.   </p>
+<ul>
+<li>Example app: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/hello.py">hello.py</a></li>
+<li>Build script: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/build.py">build.py</a></li>
+<li>Windows resource: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.ico">demo.ico</a></li>
+<li>Mac resource: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.icns">demo.icns</a></li>
+<li>Linux resource: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.png">demo.png</a></li>
+</ul>
+<p>Start by confirming you can run the program script in the &ldquo;natural&rdquo; manner:</p>
+<div class="codehilite"><pre><span></span><code>python hello.py
+</code></pre></div>
+
+<p>The program is a single button GUI. Clicking the button writes &ldquo;Hello World!&rdquo; 
+to the console. </p>
+<p>Now, run the build script:</p>
+<div class="codehilite"><pre><span></span><code>python build.py
+</code></pre></div>
+
+<p>The build script should achieve the following:</p>
+<ul>
+<li>obfuscates the code (to mitigate the risk of reverse engineering) </li>
+<li>converts the obfuscated version of the source to a stand-alone executable</li>
+<li>builds a full installer with the executable bundled into it</li>
+<li>moves the installer to your desktop (for convenience)</li>
+<li>launches the installer (for testing)</li>
+</ul>
+<p>Proceed through the installer, and then run the program 
+to confirm it works.  </p>
+<p>Having witnessed everything function, review the 
+<a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/build.py">build.py</a> 
+script. The script is a simple example, but covers a good portion of the 
+&ldquo;core&rdquo; distbuilder features.</p>
+<h3 id="feature-spotlight-file-name-normalization">Feature spotlight: &ldquo;file name normalization&rdquo;<a class="headerlink" href="#feature-spotlight-file-name-normalization" title="Permanent link">&para;</a></h3>
+<p>You might notice that binary names/paths (in any of the examples) may or may not
+include extensions such as <code>.exe</code>.  Likewise, icons may or may not have extensions
+such as <code>.ico</code> specified.  Yet, these scripts work cross platform, where the extensions
+differ!  That is due to the use of <a href="LowLevel.html#normbinaryname">normBinaryName</a> and
+<a href="LowLevel.html#normiconname">normIconName</a> functions under the hood of distbuilder&rsquo;s processes.
+The library corrects those names for you automatically based upon the environmental context.</p>
+<p>Currently, alternate icon resources must be provided which align with the platform context.
+There are plans, however, for future releases of the library to generate missing icon formats
+for you as needed.    </p>
+<h3 id="extended-feature-demo-debug-mode">Extended feature demo: &ldquo;debug mode&rdquo;<a class="headerlink" href="#extended-feature-demo-debug-mode" title="Permanent link">&para;</a></h3>
+<p>Here is a good place to illustrate one very useful extended feature of this library,
+which may prove immeaditely valuable to you.  This is will also help you to understand
+a common pattern for using some of the primary distbuilder classes. </p>
+<p>Locate the following commented out line in the Hello World Tk build script:</p>
+<div class="codehilite"><pre><span></span><code>#def onPyPackageProcess( self, prc ): prc.isExeTest = True
+</code></pre></div>
+
+<p>Uncomment that, and run the build process again.  In the 
+middle of the process, the standalone binary will be run 
+for you in &ldquo;debug&rdquo; mode.  Upon closing the program, the 
+rest of the build process will continue.  </p>
+<p>This code demonstrates a design pattern employed by the &ldquo;high level&rdquo; 
+process classes in distbuilder.  That pattern is for a high level 
+class to generate a &ldquo;configuration object&rdquo;, or a lower level &ldquo;process 
+object&rdquo;, automatically set it up for the client implementation,
+and then &ldquo;pass it through&rdquo; an overridable function where you may
+access such and revise it for your own needs prior to its use.  </p>
+<p>So, what&rsquo;s the point of setting <code>prc.isExeTest = True</code> ?
+If you have run this example program, the most astute observer may notice 
+(on Windows or Mac, but not Linux&hellip;) 
+that the stdout/err messages (seen by clicking the &ldquo;Hello Tkinter&rdquo; 
+button when running the raw .py script) are not produced on the terminal
+by the <em>standalone version</em> of the program when it is launched in the 
+normal manner.  That is due to a feature of PyInstaller (and/or by additional platform
+details regarding standard output streams) to &ldquo;swallow&rdquo; console 
+messages produced by gui applications. That may be desired behavior for a 
+public release, but it may be also be highly counterproductive for debugging, 
+since there are times when the standalone version may require specialized
+coding to make it work correctly in that context compared to how it did as a 
+basic .py script. As such, distbuilder has included a solution for this, as 
+demonstrated here. Refer to <a href="LowLevel.html#testing">Testing</a> for more details.    </p>
+<h2 id="hello-dynamic-ini-example">Hello Dynamic Ini Example<a class="headerlink" href="#hello-dynamic-ini-example" title="Permanent link">&para;</a></h2>
+<p>TODO: FILL IN!</p>
+<h2 id="hello-silent-example">Hello Silent Example<a class="headerlink" href="#hello-silent-example" title="Permanent link">&para;</a></h2>
+<p>It is another demonstration of using the 
+<a href="HighLevel.html#pytobininstallerprocess">PyToBinInstallerProcess</a> class.</p>
+<p>Hello Silent demonstrates how one can use distbuilder to build &ldquo;silent&rdquo; installers. 
+These do not require user interactions for them to complete their tasks.  Instead, 
+they run automatically, while having the same flexible options present in the gui 
+installers made available via command line arguments.</p>
+<p>&ldquo;Silent&rdquo; installers built by distbuilder provide a very important additional feature.<br />
+They are able to be run in <strong>non-gui contexts</strong>, such as on &ldquo;headless servers&rdquo;.
+Silent installers are, of course, also desirable (on any platform) for mass 
+installation purposes such as when a network administrator needs to install the 
+same program on countless workstations. </p>
+<p>Building a silent installer requires nothing more than setting the 
+<code>isSilentSetup</code> configuration option to <code>True</code>.  As such, you can easily define a 
+full blown packaging and installation process that could be run in Windows (for example) 
+using an interactive graphical interface, AND could also be used on a CentOS server 
+(for example), with nothing but a terminal interface available. 
+You would only have to toggle the <code>isSilentSetup</code> option before running the build script!</p>
+<p>This example expects that you already downloaded the first example 
+(Hello World). That must be present in the testing environment within a directory 
+adjacent to where you place the next file.  That first directory must be 
+named <code>hello_world</code> for this &ldquo;master&rdquo; script (which draws upon that) to function.</p>
+<p>You may download/copy the example file directly from GitHub 
+(into a <code>hello_silent</code> directory):   </p>
+<p>Build script: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_silent/build.py">build.py</a></p>
+<p>Upon building the silent installer, the demo is set to test &ldquo;Auto Installation&rdquo; of it. 
+With that enabled, it will run the installer with the command line argument to 
+&ldquo;force installation&rdquo;. If run more than once, that option will cause it to uninstall 
+any prior existing installation rather than exiting with an error, as it would do
+by default when a conflict was detected.</p>
+<p>For more information, refer to <a href="LowLevel.html#silent-installers">Silent Installers</a>.</p>
+<h2 id="hello-multi-package-examples">Hello Multi-Package Examples<a class="headerlink" href="#hello-multi-package-examples" title="Permanent link">&para;</a></h2>
+<h3 id="hello-packages-example">Hello Packages Example<a class="headerlink" href="#hello-packages-example" title="Permanent link">&para;</a></h3>
+<p>The Hello Packages Example is a demonstration of using the 
+<a href="HighLevel.html#robustinstallerprocess">RobustInstallerProcess</a> class.
+It demonstrates a way that you can generate and then &ldquo;combine&rdquo; multiple 
+&ldquo;packages&rdquo; into a single installer with a single build process.
+In this case, those become separate components which may be 
+installed <em>selectively</em> by the end user. </p>
+<p>This example requires that both of the first examples 
+(Hello World &amp; Hello World Tk) be present in the testing environment 
+within directories adjacent to a third directory where you place the next file.
+Those first two must be named <code>hello_world</code> and <code>hello_world_tk</code> for this
+&ldquo;master&rdquo; script to function.</p>
+<p>You may download/copy the example file directly from GitHub 
+(into a <code>hello_packages</code> directory):   </p>
+<p>Build script: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_packages/build.py">build.py</a></p>
+<h3 id="hello-merge-example">Hello Merge Example<a class="headerlink" href="#hello-merge-example" title="Permanent link">&para;</a></h3>
+<p>This is another demonstration of using the 
+<a href="HighLevel.html#robust-installer-process">RobustInstallerProcess</a> class.</p>
+<p>Similar to the Hello Packages Example, Hello Merge demonstrates 
+how you can &ldquo;merge&rdquo; multiple &ldquo;packages&rdquo; into a <em>single package</em> within
+an installer.  The content of the two programs, which worked independently,
+will become one component which may <em>NOT</em> be installed selectively by the user. </p>
+<p>This example requires that both of the first examples 
+(Hello World &amp; Hello World Tk) be present in the testing environment 
+within directories adjacent to a third directory where you place the next file.
+Those first two must be named <code>hello_world</code> and <code>hello_world_tk</code> for this
+&ldquo;master&rdquo; script to function.</p>
+<p>You may download/copy the example file directly from GitHub 
+(into a <code>hello_merge</code> directory):   </p>
+<p>Build script: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_merge/build.py">build.py</a></p>
+<p>The key points to this example are to demo the implementation of the<br />
+<a href="HighLevel.html#onPackagesStaged">onPackagesStaged</a> virtual function of
+<a href="HighLevel.html#robust-installer-process">RobustInstallerProcess</a>.
+Within that, <a href="LowLevel.html#qtifwpackage-list-manipulation">QtIfwPackage list manipulation</a> 
+is shown (by default) via <a href="LowLevel.html#mergeQtIfwPackages">mergeQtIfwPackages</a>.
+If you comment that line out, and uncomment the call to 
+<a href="LowLevel.html#nestQtIfwPackage">nestQtIfwPackage</a> below it,
+you may test the results of these alternate ways to combine packages.</p>
+<p>The demo goes on to show low-level manipulations, and regenerations of the files
+produced by, <a href="ConfigClasses.html#qtifwpackage">QtIfwConfigXml</a> and 
+<a href="ConfigClasses.html#qtifwpackage">QtIfwPackageXml</a> objects to give you further
+insight into the design patterns and functionality of the library. </p>
+<h2 id="hello-code-signing-examples">Hello Code Signing Examples<a class="headerlink" href="#hello-code-signing-examples" title="Permanent link">&para;</a></h2>
+<h3 id="generate-trust-certs-w-installer">Generate Trust Certs w/ Installer<a class="headerlink" href="#generate-trust-certs-w-installer" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="signed-python-executable-example">Signed Python Executable Example<a class="headerlink" href="#signed-python-executable-example" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="signed-installer-example">Signed Installer Example<a class="headerlink" href="#signed-installer-example" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h2 id="hello-wrapper-example">Hello Wrapper Example<a class="headerlink" href="#hello-wrapper-example" title="Permanent link">&para;</a></h2>
+<p>This example provides a <strong>collection</strong> of demonstrations using the
+<a href="ConfigClasses.html#qtifwexewrapper">QtIfwExeWrapper</a> class. A &ldquo;wrapper&rdquo; 
+can super impose environmental conditions on the context
+within which the binary is run.  Notably, this may include an 
+<a href="LowLevel.html#executablescript">ExecutableScript</a> for maximum flexibility.
+Follow the links to learn to more.</p>
+<p>This example requires that both of the first examples 
+(Hello World &amp; Hello World Tk) be present in the testing environment 
+within directories adjacent to a third directory where you place the next set of files.
+Those first two must be named <code>hello_world</code> and <code>hello_world_tk</code> for this
+&ldquo;master&rdquo; script to fully function.</p>
+<p>You may download/copy the example files directly from GitHub 
+(into a <code>hello_wrapper</code> directory):   </p>
+<p>Build script: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_wrapper/build.py">build.py</a></p>
+<p>GUI app: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_wrapper/hello_gui.py">hello_gui.py</a></p>
+<p>Terminal app: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_wrapper/hello_terminal.py">hello_terminal.py</a></p>
+<p>Within the build script, select a particular example to test and uncomment its <code>p.run()</code> line.  Then, run the script to see the results.  </p>
+<p>In conjunction with choosing a wrapper feature to test, you may switch between
+a gui and non-gui context. To do so, swap the commented out lines in the ConfigFactory
+attributes. That is, near the top of the script change:</p>
+<div class="codehilite"><pre><span></span><code>f.isGui            = True        
+f.entryPointPy     = &quot;hello_gui.py&quot;
+</code></pre></div>
+
+<p>To: </p>
+<div class="codehilite"><pre><span></span><code>f.isGui            = False 
+f.entryPointPy     = &quot;hello_terminal.py&quot;
+</code></pre></div>
+
+<p>When the resulting app is run, it will show the effect of implementing the 
+various wrapper features e.g. the arguments the program received, or if you 
+are running in an &ldquo;elevated&rdquo; context, etc.  </p>
+<p>If desired, you may also wish to test running these demo programs post installation in 
+&ldquo;debug mode&rdquo;. See the documentation on the <a href="LowLevel.html#run">run</a> function.</p>
+<h2 id="hello-operations-examples">Hello Operations Examples<a class="headerlink" href="#hello-operations-examples" title="Permanent link">&para;</a></h2>
+<p>TODO: FILL IN!</p>
+<h3 id="built-in-simple-operations-example">Built-in Simple Operations Example<a class="headerlink" href="#built-in-simple-operations-example" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="low-level-embedded-script-operations-example">Low Level Embedded Script Operations Example<a class="headerlink" href="#low-level-embedded-script-operations-example" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="high-level-convenience-operations-example">High Level Convenience Operations Example<a class="headerlink" href="#high-level-convenience-operations-example" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="cascading-scripts-example">Cascading Scripts Example<a class="headerlink" href="#cascading-scripts-example" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="windows-registry-interactions-example">Windows Registry Interactions Example<a class="headerlink" href="#windows-registry-interactions-example" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h2 id="hello-installer-ui-examples">Hello Installer UI Examples<a class="headerlink" href="#hello-installer-ui-examples" title="Permanent link">&para;</a></h2>
+<h3 id="custom-graphics-examples">Custom Graphics Examples<a class="headerlink" href="#custom-graphics-examples" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="custom-interactions-examples">Custom Interactions Examples<a class="headerlink" href="#custom-interactions-examples" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="custom-pages-examples">Custom Pages Examples<a class="headerlink" href="#custom-pages-examples" title="Permanent link">&para;</a></h3>
+<p>A QtIwf installer is extremely customizable.  In addition to simply copying
+files to another machine, it can perform extended operations on that target 
+to further refine the environment where the program will run.  Not only that,
+but the installer&rsquo;s interface, and logic flow, can be manipulated to precisely 
+fit your use case.  This example demonstrates a proof of concept modification
+to that UI.     </p>
+<p>This example requires the Hello World Tk files be present in the testing environment 
+within a directory adjacent to where you will place the build script for this one.
+That required folder must be named <code>hello_world_tk</code> for this &ldquo;master&rdquo; script to 
+function.</p>
+<p>You may download/copy the example file directly from GitHub 
+(into a <code>hello_qtifw_ui</code> directory):   </p>
+<p>Build script: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qtifw_ui/build.py">build.py</a></p>
+<p>The demo shows how one may assign the <a href="HighLevel.html#ifwuipages">ifwUiPages</a> attribute of a ConfigFactory to to easily add or replace default installer &ldquo;pages&rdquo; / &ldquo;screens&rdquo;
+with custom definitions.  Those pages are represented using <a href="ConfigClasses.html#qtifwuipage">QtIfwUiPage</a> objects.  </p>
+<p>The QtIfwUiPage class is designed with the expectation that you may wish to create custom pages using the <a href="https://doc.qt.io/qt-5/designer-quick-start.html">Qt Designer WYSIWYG</a> tool. Alternatively, your needs maybe met by employing a derived class
+e.g. <a href="ConfigClasses.html#qtifwsimpletextpage">QtIfwSimpleTextPage</a>, which draws upon
+a built-in library resource file for the page layout.   </p>
+<p>In concert with altering these visual dimensions of the user experience, you may
+revise the logic via <a href="LowLevel.html#installer-scripting">Installer Scripting</a>, or call upon the higher level script abstraction classes <a href="ConfigClasses.html#qtifwcontrolscript">QtIfwControlScript</a> or
+<a href="ConfigClasses.html#qtifwpackagescript">QtIfwPackageScript</a>. </p>
+<h3 id="widget-injections-example">Widget Injections Example<a class="headerlink" href="#widget-injections-example" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h2 id="hello-dynamic-finish-example">Hello Dynamic Finish Example<a class="headerlink" href="#hello-dynamic-finish-example" title="Permanent link">&para;</a></h2>
+<p>TODO: FILL IN!</p>
+<h2 id="hello-startup-example">Hello Startup Example<a class="headerlink" href="#hello-startup-example" title="Permanent link">&para;</a></h2>
+<p>TODO: FILL IN!</p>
+<h2 id="hello-opy-examples">Hello Opy Examples<a class="headerlink" href="#hello-opy-examples" title="Permanent link">&para;</a></h2>
+<h3 id="hello-opy-example">Hello Opy Example<a class="headerlink" href="#hello-opy-example" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="hello-opy-bundle-example">Hello Opy Bundle Example<a class="headerlink" href="#hello-opy-bundle-example" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h2 id="hello-iexpress-examples">Hello IExpress Examples<a class="headerlink" href="#hello-iexpress-examples" title="Permanent link">&para;</a></h2>
+<h3 id="hello-batch">Hello Batch<a class="headerlink" href="#hello-batch" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="hello-powershell">Hello PowerShell<a class="headerlink" href="#hello-powershell" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="hello-vbscript">Hello VBScript<a class="headerlink" href="#hello-vbscript" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="hello-jscript">Hello JScript<a class="headerlink" href="#hello-jscript" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="hello-dynamic-scripts">Hello Dynamic Scripts<a class="headerlink" href="#hello-dynamic-scripts" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="hello-resources">Hello Resources<a class="headerlink" href="#hello-resources" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="hello-imports">Hello Imports<a class="headerlink" href="#hello-imports" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="hello-installer">Hello Installer<a class="headerlink" href="#hello-installer" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h3 id="hello-mixed-source-installer">Hello Mixed Source Installer<a class="headerlink" href="#hello-mixed-source-installer" title="Permanent link">&para;</a></h3>
+<p>TODO: FILL IN!</p>
+<h2 id="hello-qt-c-examples">Hello Qt C++ Examples<a class="headerlink" href="#hello-qt-c-examples" title="Permanent link">&para;</a></h2>
+<h3 id="hello-world-qt-example">Hello World Qt Example<a class="headerlink" href="#hello-world-qt-example" title="Permanent link">&para;</a></h3>
+<p>The <a href="QtCpp.html#hello-world-qt-example">Hello World Qt Example</a> demos the 
+<a href="QtCpp.html">Qt C++ Integration</a> feature. If you wish to review / test the code, it is strongly recommended you read that section of the documentation in its entirety.  </p>
+<h3 id="hello-world-qml-example">Hello World QML Example<a class="headerlink" href="#hello-world-qml-example" title="Permanent link">&para;</a></h3>
+<p>See <a href="QtCpp.html#hello-world-qml-example">Hello World QML Example</a> </p>
+<h3 id="hello-world-qml-new-example">Hello World QML New Example<a class="headerlink" href="#hello-world-qml-new-example" title="Permanent link">&para;</a></h3>
+<p>See <a href="QtCpp.html#hello-world-qml-new-example">Hello World QML New Example</a> </p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="QuickStart.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Quick Start" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Quick Start
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="HighLevel.html" class="md-footer__link md-footer__link--next" aria-label="Next: High Level Classes" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              High Level Classes
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
+      
+    
+  </body>
+</html>

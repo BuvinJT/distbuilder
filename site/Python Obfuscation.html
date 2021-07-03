@@ -1,0 +1,1294 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+    
+    
+      
+        <title>Python Obfuscation - Distribution Builder</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#LibToBundle" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Distribution Builder" class="md-header__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Distribution Builder
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Python Obfuscation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Distribution Builder" class="md-nav__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Distribution Builder
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QuickStart.html" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Examples.html" class="md-nav__link">
+        Examples
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
+        Old Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Old Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Old Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="HighLevel.html" class="md-nav__link">
+        High Level Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ConfigClasses.html" class="md-nav__link">
+        Configuration Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="LowLevel.html" class="md-nav__link">
+        Low Level Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QtCpp.html" class="md-nav__link">
+        Qt C++ Integration
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+      
+      <label class="md-nav__link" for="__nav_5">
+        Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Config%20Factory.html" class="md-nav__link">
+        Config Factory
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20Installer%20Framework.html" class="md-nav__link">
+        Qt Installer Framework
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="PyInstaller.html" class="md-nav__link">
+        PyInstaller
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="IExpress.html" class="md-nav__link">
+        IExpress
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Code%20Signing.html" class="md-nav__link">
+        Code Signing
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Python Obfuscation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="Python%20Obfuscation.html" class="md-nav__link md-nav__link--active">
+        Python Obfuscation
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#LibToBundle" class="md-nav__link">
+    LibToBundle
+  </a>
+  
+    <nav class="md-nav" aria-label="LibToBundle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#name" class="md-nav__link">
+    name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#localDirPath" class="md-nav__link">
+    localDirPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipConfig" class="md-nav__link">
+    pipConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isObfuscated" class="md-nav__link">
+    isObfuscated
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#OpyConfig" class="md-nav__link">
+    OpyConfig
+  </a>
+  
+    <nav class="md-nav" aria-label="OpyConfig">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#toVirtualFile" class="md-nav__link">
+    toVirtualFile
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#obfuscate_strings" class="md-nav__link">
+    obfuscate_strings
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#obfuscated_name_tail" class="md-nav__link">
+    obfuscated_name_tail
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plain_marker" class="md-nav__link">
+    plain_marker
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pep8_comments" class="md-nav__link">
+    pep8_comments
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#source_extensions" class="md-nav__link">
+    source_extensions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skip_extensions" class="md-nav__link">
+    skip_extensions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skip_path_fragments" class="md-nav__link">
+    skip_path_fragments
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#apply_standard_exclusions" class="md-nav__link">
+    apply_standard_exclusions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preserve_unresolved_imports" class="md-nav__link">
+    preserve_unresolved_imports
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error_on_unresolved_imports" class="md-nav__link">
+    error_on_unresolved_imports
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external_modules" class="md-nav__link">
+    external_modules
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replacement_modules" class="md-nav__link">
+    replacement_modules
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plain_files" class="md-nav__link">
+    plain_files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plain_names" class="md-nav__link">
+    plain_names
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mask_external_modules" class="md-nav__link">
+    mask_external_modules
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skip_public" class="md-nav__link">
+    skip_public
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#subset_files" class="md-nav__link">
+    subset_files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dry_run" class="md-nav__link">
+    dry_run
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prepped_only" class="md-nav__link">
+    prepped_only
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#OpyPatch" class="md-nav__link">
+    OpyPatch
+  </a>
+  
+    <nav class="md-nav" aria-label="OpyPatch">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#apply" class="md-nav__link">
+    apply
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#obfuscatePath" class="md-nav__link">
+    obfuscatePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relPath" class="md-nav__link">
+    relPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path" class="md-nav__link">
+    path
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#patches" class="md-nav__link">
+    patches
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#Functions" class="md-nav__link">
+    Functions
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#createStageDir" class="md-nav__link">
+    createStageDir
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#obfuscatePy" class="md-nav__link">
+    obfuscatePy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opyAnalyze" class="md-nav__link">
+    opyAnalyze
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20pip.html" class="md-nav__link">
+        Python pip
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20CPP.html" class="md-nav__link">
+        Qt CPP
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Logging.html" class="md-nav__link">
+        Logging
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Classes.html" class="md-nav__link">
+        Utility Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Functions.html" class="md-nav__link">
+        Utility Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Constants.html" class="md-nav__link">
+        Utility Constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Issues.html" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ToDo.html" class="md-nav__link">
+        To-Do List
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Contribute.html" class="md-nav__link">
+        Contact / Contribute
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#LibToBundle" class="md-nav__link">
+    LibToBundle
+  </a>
+  
+    <nav class="md-nav" aria-label="LibToBundle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#name" class="md-nav__link">
+    name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#localDirPath" class="md-nav__link">
+    localDirPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipConfig" class="md-nav__link">
+    pipConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isObfuscated" class="md-nav__link">
+    isObfuscated
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#OpyConfig" class="md-nav__link">
+    OpyConfig
+  </a>
+  
+    <nav class="md-nav" aria-label="OpyConfig">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#toVirtualFile" class="md-nav__link">
+    toVirtualFile
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#obfuscate_strings" class="md-nav__link">
+    obfuscate_strings
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#obfuscated_name_tail" class="md-nav__link">
+    obfuscated_name_tail
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plain_marker" class="md-nav__link">
+    plain_marker
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pep8_comments" class="md-nav__link">
+    pep8_comments
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#source_extensions" class="md-nav__link">
+    source_extensions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skip_extensions" class="md-nav__link">
+    skip_extensions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skip_path_fragments" class="md-nav__link">
+    skip_path_fragments
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#apply_standard_exclusions" class="md-nav__link">
+    apply_standard_exclusions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preserve_unresolved_imports" class="md-nav__link">
+    preserve_unresolved_imports
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error_on_unresolved_imports" class="md-nav__link">
+    error_on_unresolved_imports
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external_modules" class="md-nav__link">
+    external_modules
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replacement_modules" class="md-nav__link">
+    replacement_modules
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plain_files" class="md-nav__link">
+    plain_files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plain_names" class="md-nav__link">
+    plain_names
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mask_external_modules" class="md-nav__link">
+    mask_external_modules
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skip_public" class="md-nav__link">
+    skip_public
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#subset_files" class="md-nav__link">
+    subset_files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dry_run" class="md-nav__link">
+    dry_run
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prepped_only" class="md-nav__link">
+    prepped_only
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#OpyPatch" class="md-nav__link">
+    OpyPatch
+  </a>
+  
+    <nav class="md-nav" aria-label="OpyPatch">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#apply" class="md-nav__link">
+    apply
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#obfuscatePath" class="md-nav__link">
+    obfuscatePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relPath" class="md-nav__link">
+    relPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path" class="md-nav__link">
+    path
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#patches" class="md-nav__link">
+    patches
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#Functions" class="md-nav__link">
+    Functions
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#createStageDir" class="md-nav__link">
+    createStageDir
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#obfuscatePy" class="md-nav__link">
+    obfuscatePy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opyAnalyze" class="md-nav__link">
+    opyAnalyze
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                  <h1>Python Obfuscation</h1>
+                
+                <h2 id="LibToBundle"><strong>LibToBundle</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#LibToBundle" title="Permanent link">&para;</a></h2>
+<p><strong>Instance Attributes:</strong> </p>
+<ul>
+<li><a href="#name"><code>name</code></a></li>
+<li><a href="#localDirPath"><code>localDirPath</code></a></li>
+<li><a href="#pipConfig"><code>pipConfig</code></a></li>
+<li><a href="#isObfuscated"><code>isObfuscated</code></a></li>
+</ul>
+<h3 id="name"><em>obj</em>.<strong>name</strong> <em>undefined</em><a class="headerlink" href="#name" title="Permanent link">&para;</a></h3>
+<h3 id="localDirPath"><em>obj</em>.<strong>localDirPath</strong> <em>undefined</em><a class="headerlink" href="#localDirPath" title="Permanent link">&para;</a></h3>
+<h3 id="pipConfig"><em>obj</em>.<strong>pipConfig</strong> <em>undefined</em><a class="headerlink" href="#pipConfig" title="Permanent link">&para;</a></h3>
+<h3 id="isObfuscated"><em>obj</em>.<strong>isObfuscated</strong> <em>undefined</em><a class="headerlink" href="#isObfuscated" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="OpyConfig"><strong>OpyConfig</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#OpyConfig" title="Permanent link">&para;</a></h2>
+<p>See opy_config.txt for details on these settings.</p>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#toVirtualFile"><code>toVirtualFile</code></a></li>
+</ul>
+<p><strong>Instance Attributes:</strong> </p>
+<ul>
+<li><a href="#obfuscate_strings"><code>obfuscate_strings</code></a></li>
+<li><a href="#obfuscated_name_tail"><code>obfuscated_name_tail</code></a></li>
+<li><a href="#plain_marker"><code>plain_marker</code></a></li>
+<li><a href="#pep8_comments"><code>pep8_comments</code></a></li>
+<li><a href="#source_extensions"><code>source_extensions</code></a></li>
+<li><a href="#skip_extensions"><code>skip_extensions</code></a></li>
+<li><a href="#skip_path_fragments"><code>skip_path_fragments</code></a></li>
+<li><a href="#apply_standard_exclusions"><code>apply_standard_exclusions</code></a></li>
+<li><a href="#preserve_unresolved_imports"><code>preserve_unresolved_imports</code></a></li>
+<li><a href="#error_on_unresolved_imports"><code>error_on_unresolved_imports</code></a></li>
+<li><a href="#external_modules"><code>external_modules</code></a></li>
+<li><a href="#replacement_modules"><code>replacement_modules</code></a></li>
+<li><a href="#plain_files"><code>plain_files</code></a></li>
+<li><a href="#plain_names"><code>plain_names</code></a></li>
+<li><a href="#mask_external_modules"><code>mask_external_modules</code></a></li>
+<li><a href="#skip_public"><code>skip_public</code></a></li>
+<li><a href="#subset_files"><code>subset_files</code></a></li>
+<li><a href="#dry_run"><code>dry_run</code></a></li>
+<li><a href="#prepped_only"><code>prepped_only</code></a></li>
+</ul>
+<h3 id="toVirtualFile"><em>obj</em>.<strong>toVirtualFile</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#toVirtualFile" title="Permanent link">&para;</a></h3>
+<h3 id="obfuscate_strings"><em>obj</em>.<strong>obfuscate_strings</strong> <em>undefined</em><a class="headerlink" href="#obfuscate_strings" title="Permanent link">&para;</a></h3>
+<h3 id="obfuscated_name_tail"><em>obj</em>.<strong>obfuscated_name_tail</strong> <em>undefined</em><a class="headerlink" href="#obfuscated_name_tail" title="Permanent link">&para;</a></h3>
+<h3 id="plain_marker"><em>obj</em>.<strong>plain_marker</strong> <em>undefined</em><a class="headerlink" href="#plain_marker" title="Permanent link">&para;</a></h3>
+<h3 id="pep8_comments"><em>obj</em>.<strong>pep8_comments</strong> <em>undefined</em><a class="headerlink" href="#pep8_comments" title="Permanent link">&para;</a></h3>
+<h3 id="source_extensions"><em>obj</em>.<strong>source_extensions</strong> <em>undefined</em><a class="headerlink" href="#source_extensions" title="Permanent link">&para;</a></h3>
+<h3 id="skip_extensions"><em>obj</em>.<strong>skip_extensions</strong> <em>undefined</em><a class="headerlink" href="#skip_extensions" title="Permanent link">&para;</a></h3>
+<h3 id="skip_path_fragments"><em>obj</em>.<strong>skip_path_fragments</strong> <em>undefined</em><a class="headerlink" href="#skip_path_fragments" title="Permanent link">&para;</a></h3>
+<h3 id="apply_standard_exclusions"><em>obj</em>.<strong>apply_standard_exclusions</strong> <em>undefined</em><a class="headerlink" href="#apply_standard_exclusions" title="Permanent link">&para;</a></h3>
+<h3 id="preserve_unresolved_imports"><em>obj</em>.<strong>preserve_unresolved_imports</strong> <em>undefined</em><a class="headerlink" href="#preserve_unresolved_imports" title="Permanent link">&para;</a></h3>
+<h3 id="error_on_unresolved_imports"><em>obj</em>.<strong>error_on_unresolved_imports</strong> <em>undefined</em><a class="headerlink" href="#error_on_unresolved_imports" title="Permanent link">&para;</a></h3>
+<h3 id="external_modules"><em>obj</em>.<strong>external_modules</strong> <em>undefined</em><a class="headerlink" href="#external_modules" title="Permanent link">&para;</a></h3>
+<h3 id="replacement_modules"><em>obj</em>.<strong>replacement_modules</strong> <em>undefined</em><a class="headerlink" href="#replacement_modules" title="Permanent link">&para;</a></h3>
+<h3 id="plain_files"><em>obj</em>.<strong>plain_files</strong> <em>undefined</em><a class="headerlink" href="#plain_files" title="Permanent link">&para;</a></h3>
+<h3 id="plain_names"><em>obj</em>.<strong>plain_names</strong> <em>undefined</em><a class="headerlink" href="#plain_names" title="Permanent link">&para;</a></h3>
+<h3 id="mask_external_modules"><em>obj</em>.<strong>mask_external_modules</strong> <em>undefined</em><a class="headerlink" href="#mask_external_modules" title="Permanent link">&para;</a></h3>
+<h3 id="skip_public"><em>obj</em>.<strong>skip_public</strong> <em>undefined</em><a class="headerlink" href="#skip_public" title="Permanent link">&para;</a></h3>
+<h3 id="subset_files"><em>obj</em>.<strong>subset_files</strong> <em>undefined</em><a class="headerlink" href="#subset_files" title="Permanent link">&para;</a></h3>
+<h3 id="dry_run"><em>obj</em>.<strong>dry_run</strong> <em>undefined</em><a class="headerlink" href="#dry_run" title="Permanent link">&para;</a></h3>
+<h3 id="prepped_only"><em>obj</em>.<strong>prepped_only</strong> <em>undefined</em><a class="headerlink" href="#prepped_only" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="OpyPatch"><strong>OpyPatch</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#OpyPatch" title="Permanent link">&para;</a></h2>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#apply"><code>apply</code></a></li>
+<li><a href="#obfuscatePath"><code>obfuscatePath</code></a></li>
+</ul>
+<p><strong>Instance Attributes:</strong> </p>
+<ul>
+<li><a href="#relPath"><code>relPath</code></a></li>
+<li><a href="#path"><code>path</code></a></li>
+<li><a href="#patches"><code>patches</code></a></li>
+</ul>
+<h3 id="apply"><em>obj</em>.<strong>apply</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opyResults</span><span class="p">)</span></code><a class="headerlink" href="#apply" title="Permanent link">&para;</a></h3>
+<h3 id="obfuscatePath"><em>obj</em>.<strong>obfuscatePath</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opyResults</span><span class="p">)</span></code><a class="headerlink" href="#obfuscatePath" title="Permanent link">&para;</a></h3>
+<h3 id="relPath"><em>obj</em>.<strong>relPath</strong> <em>undefined</em><a class="headerlink" href="#relPath" title="Permanent link">&para;</a></h3>
+<h3 id="path"><em>obj</em>.<strong>path</strong> <em>undefined</em><a class="headerlink" href="#path" title="Permanent link">&para;</a></h3>
+<h3 id="patches"><em>obj</em>.<strong>patches</strong> <em>undefined</em><a class="headerlink" href="#patches" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="Functions"><strong>Functions</strong><a class="headerlink" href="#Functions" title="Permanent link">&para;</a></h2>
+<h3 id="createStageDir"><strong>createStageDir</strong><code class="highlight"><span class="p">(</span><span class="n">bundleLibs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sourceDir</span><span class="o">=</span><span class="s1">&#39;C:</span><span class="se">\\</span><span class="s1">Python37</span><span class="se">\\</span><span class="s1">Scripts&#39;</span><span class="p">)</span></code><a class="headerlink" href="#createStageDir" title="Permanent link">&para;</a></h3>
+<p>returns: stageDir </p>
+<hr />
+<h3 id="obfuscatePy"><strong>obfuscatePy</strong><code class="highlight"><span class="p">(</span><span class="n">opyConfig</span><span class="p">)</span></code><a class="headerlink" href="#obfuscatePy" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="opyAnalyze"><strong>opyAnalyze</strong><code class="highlight"><span class="p">(</span><span class="n">opyConfig</span><span class="p">,</span> <span class="n">filesSubset</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#opyAnalyze" title="Permanent link">&para;</a></h3>
+<hr />
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="Code%20Signing.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Code Signing" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Code Signing
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="Python%20pip.html" class="md-footer__link md-footer__link--next" aria-label="Next: Python pip" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Python pip
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
+      
+    
+  </body>
+</html>

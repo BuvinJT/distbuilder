@@ -1,13 +1,41 @@
 site_name: Distribution Builder
-pages:
+theme:
+  name: 'material'
+nav:
     - Home: index.md
-    - Quick Start Guide: QuickStart.md
+    - Quick Start: QuickStart.md
     - Examples: Examples.md
-    - High Level Classes: HighLevel.md
-    - Configuration Classes: ConfigClasses.md
-    - Low Level Functions: LowLevel.md
-    - Qt C++ Integration: QtCpp.md
+    - Old Reference:
+        - High Level Classes: HighLevel.md
+        - Configuration Classes: ConfigClasses.md
+        - Low Level Functions: LowLevel.md
+        - Qt C++ Integration: QtCpp.md
+    - Reference:
+        - Config Factory.md
+        - Qt Installer Framework.md
+        - PyInstaller.md
+        - IExpress.md
+        - Code Signing.md
+        - Python Obfuscation.md
+        - Python pip.md
+        - Qt CPP.md
+        - Logging.md
+        - Utility Classes.md
+        - Utility Functions.md
+        - Utility Constants.md
     - Troubleshooting: Issues.md
     - To-Do List: ToDo.md
-    - Contact / Contribute: Contribute.md
-theme: readthedocs
+    - Contact / Contribute: Contribute.md    
+markdown_extensions:
+    - toc:
+        toc_depth: 3
+        permalink: True
+    - extra
+    - smarty
+    - codehilite
+    - admonition
+    - pymdownx.details
+    - pymdownx.superfences
+    - pymdownx.emoji
+    - pymdownx.inlinehilite
+    - pymdownx.magiclink

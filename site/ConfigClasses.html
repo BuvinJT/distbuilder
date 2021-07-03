@@ -1,0 +1,3084 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+    
+    
+      
+        <title>Configuration Classes - Distribution Builder</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#configuration-classes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Distribution Builder" class="md-header__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Distribution Builder
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Configuration Classes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Distribution Builder" class="md-nav__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Distribution Builder
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QuickStart.html" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Examples.html" class="md-nav__link">
+        Examples
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      <label class="md-nav__link" for="__nav_4">
+        Old Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Old Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Old Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="HighLevel.html" class="md-nav__link">
+        High Level Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Configuration Classes
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="ConfigClasses.html" class="md-nav__link md-nav__link--active">
+        Configuration Classes
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pyinstallerconfig" class="md-nav__link">
+    PyInstallerConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyinsthook" class="md-nav__link">
+    PyInstHook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyinstspec" class="md-nav__link">
+    PyInstSpec
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iexpressconfig" class="md-nav__link">
+    IExpressConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#codesignconfig" class="md-nav__link">
+    CodeSignConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#selfsignedcertconfig" class="md-nav__link">
+    SelfSignedCertConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pvk2pfxconfig" class="md-nav__link">
+    Pvk2PfxConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#windowsexeversioninfo" class="md-nav__link">
+    WindowsExeVersionInfo
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwconfig" class="md-nav__link">
+    QtIfwConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwconfigxml" class="md-nav__link">
+    QtIfwConfigXml
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwcontrolscript" class="md-nav__link">
+    QtIfwControlScript
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwpackage" class="md-nav__link">
+    QtIfwPackage
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwpackagexml" class="md-nav__link">
+    QtIfwPackageXml
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwpackagescript" class="md-nav__link">
+    QtIfwPackageScript
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwshortcut" class="md-nav__link">
+    QtIfwShortcut
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwexternalop" class="md-nav__link">
+    QtIfwExternalOp
+  </a>
+  
+    <nav class="md-nav" aria-label="QtIfwExternalOp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qtifwexternalop-builders" class="md-nav__link">
+    QtIfwExternalOp Builders
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtifwexternalop-convenience-scripts" class="md-nav__link">
+    QtIfwExternalOp Convenience Scripts
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwkillop" class="md-nav__link">
+    QtIfwKillOp
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwexternalresource" class="md-nav__link">
+    QtIfwExternalResource
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwexewrapper" class="md-nav__link">
+    QtIfwExeWrapper
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwonfinisheddetachedexec" class="md-nav__link">
+    QtIfwOnFinishedDetachedExec
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwuipage" class="md-nav__link">
+    QtIfwUiPage
+  </a>
+  
+    <nav class="md-nav" aria-label="QtIfwUiPage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qtifwdynamicoperationspage" class="md-nav__link">
+    QtIfwDynamicOperationsPage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtifwonpriorinstallationpage" class="md-nav__link">
+    QtIfwOnPriorInstallationPage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtifwremovepriorinstallationpage" class="md-nav__link">
+    QtIfwRemovePriorInstallationPage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtifwtargetdirpage" class="md-nav__link">
+    QtIfwTargetDirPage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtifwsimpletextpage" class="md-nav__link">
+    QtIfwSimpleTextPage
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwwidget" class="md-nav__link">
+    QtIfwWidget
+  </a>
+  
+    <nav class="md-nav" aria-label="QtIfwWidget">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qtifwonfinishedcheckbox" class="md-nav__link">
+    QtIfwOnFinishedCheckbox
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pipconfig" class="md-nav__link">
+    PipConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opyconfig" class="md-nav__link">
+    OpyConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opypatch" class="md-nav__link">
+    OpyPatch
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#libtobundle" class="md-nav__link">
+    LibToBundle
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="LowLevel.html" class="md-nav__link">
+        Low Level Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QtCpp.html" class="md-nav__link">
+        Qt C++ Integration
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      <label class="md-nav__link" for="__nav_5">
+        Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Config%20Factory.html" class="md-nav__link">
+        Config Factory
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20Installer%20Framework.html" class="md-nav__link">
+        Qt Installer Framework
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="PyInstaller.html" class="md-nav__link">
+        PyInstaller
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="IExpress.html" class="md-nav__link">
+        IExpress
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Code%20Signing.html" class="md-nav__link">
+        Code Signing
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20Obfuscation.html" class="md-nav__link">
+        Python Obfuscation
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20pip.html" class="md-nav__link">
+        Python pip
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20CPP.html" class="md-nav__link">
+        Qt CPP
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Logging.html" class="md-nav__link">
+        Logging
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Classes.html" class="md-nav__link">
+        Utility Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Functions.html" class="md-nav__link">
+        Utility Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Constants.html" class="md-nav__link">
+        Utility Constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Issues.html" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ToDo.html" class="md-nav__link">
+        To-Do List
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Contribute.html" class="md-nav__link">
+        Contact / Contribute
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pyinstallerconfig" class="md-nav__link">
+    PyInstallerConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyinsthook" class="md-nav__link">
+    PyInstHook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyinstspec" class="md-nav__link">
+    PyInstSpec
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iexpressconfig" class="md-nav__link">
+    IExpressConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#codesignconfig" class="md-nav__link">
+    CodeSignConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#selfsignedcertconfig" class="md-nav__link">
+    SelfSignedCertConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pvk2pfxconfig" class="md-nav__link">
+    Pvk2PfxConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#windowsexeversioninfo" class="md-nav__link">
+    WindowsExeVersionInfo
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwconfig" class="md-nav__link">
+    QtIfwConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwconfigxml" class="md-nav__link">
+    QtIfwConfigXml
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwcontrolscript" class="md-nav__link">
+    QtIfwControlScript
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwpackage" class="md-nav__link">
+    QtIfwPackage
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwpackagexml" class="md-nav__link">
+    QtIfwPackageXml
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwpackagescript" class="md-nav__link">
+    QtIfwPackageScript
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwshortcut" class="md-nav__link">
+    QtIfwShortcut
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwexternalop" class="md-nav__link">
+    QtIfwExternalOp
+  </a>
+  
+    <nav class="md-nav" aria-label="QtIfwExternalOp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qtifwexternalop-builders" class="md-nav__link">
+    QtIfwExternalOp Builders
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtifwexternalop-convenience-scripts" class="md-nav__link">
+    QtIfwExternalOp Convenience Scripts
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwkillop" class="md-nav__link">
+    QtIfwKillOp
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwexternalresource" class="md-nav__link">
+    QtIfwExternalResource
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwexewrapper" class="md-nav__link">
+    QtIfwExeWrapper
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwonfinisheddetachedexec" class="md-nav__link">
+    QtIfwOnFinishedDetachedExec
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwuipage" class="md-nav__link">
+    QtIfwUiPage
+  </a>
+  
+    <nav class="md-nav" aria-label="QtIfwUiPage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qtifwdynamicoperationspage" class="md-nav__link">
+    QtIfwDynamicOperationsPage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtifwonpriorinstallationpage" class="md-nav__link">
+    QtIfwOnPriorInstallationPage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtifwremovepriorinstallationpage" class="md-nav__link">
+    QtIfwRemovePriorInstallationPage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtifwtargetdirpage" class="md-nav__link">
+    QtIfwTargetDirPage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtifwsimpletextpage" class="md-nav__link">
+    QtIfwSimpleTextPage
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtifwwidget" class="md-nav__link">
+    QtIfwWidget
+  </a>
+  
+    <nav class="md-nav" aria-label="QtIfwWidget">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qtifwonfinishedcheckbox" class="md-nav__link">
+    QtIfwOnFinishedCheckbox
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pipconfig" class="md-nav__link">
+    PipConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opyconfig" class="md-nav__link">
+    OpyConfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opypatch" class="md-nav__link">
+    OpyPatch
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#libtobundle" class="md-nav__link">
+    LibToBundle
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="configuration-classes">Configuration Classes<a class="headerlink" href="#configuration-classes" title="Permanent link">&para;</a></h1>
+<p><img alt="distbuilder logo" src="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png" /></p>
+<p>The following classes are used to create objects which
+are employed as arguments to various functions within the library.
+Many of these can be generated for you using the 
+<a href="HighLevel.html#configfactory">Configuration Factory</a>.</p>
+<h2 id="pyinstallerconfig">PyInstallerConfig<a class="headerlink" href="#pyinstallerconfig" title="Permanent link">&para;</a></h2>
+<p>Objects of this type define <em>optional</em> details for building 
+binaries from .py scripts using the PyInstaller utility 
+invoked via the <a href="LowLevel.html#pyscripttoexe">pyScriptToExe</a> function 
+(which maybe employed by higher level<br />
+<a href="HighLevel.html#process-classes">Process Classes</a> under the hood).</p>
+<p>Note that if a <a href="#pyinstspec">PyInstSpec</a> attribute is provided for one of 
+these objects, the  build settings contained within that will <strong>override</strong> 
+any which conflict with those specified via the attributes set directly 
+on the PyInstallerConfig object.  PyInstSpec objects may be created by supplying 
+a traditional (perhaps legacy) spec file definition, or you may wish to 
+generate one with distbuilder via the makePyInstSpec() function.<br />
+In either case, you may also opt to dynamically manipulate the spec via 
+the implementation of that class. </p>
+<p>Constructor: </p>
+<div class="codehilite"><pre><span></span><code>PyInstallerConfig()
+</code></pre></div>
+
+<p>Attributes &amp; default values:        </p>
+<div class="codehilite"><pre><span></span><code>pyInstallerPath = &lt;python scripts directory&gt;/pyinstaller
+
+name            = None   
+entryPointPy    = None
+
+pyInstSpec      = None
+
+isGui           = False
+iconFilePath    = None
+
+versionInfo     = None
+versionFilePath = None
+
+isAutoElevated  = False
+
+isOneFile       = True     (note this differs from PyInstaller default)
+
+importPaths     = []
+hiddenImports   = []
+
+dataFilePaths   = []
+binaryFilePaths = []
+
+distResources   = []
+distDirs        = []
+
+codeSignConfig  = []
+codeSignTargets = []
+
+otherPyInstArgs = &quot;&quot;  (open ended argument string)
+
+distDirPath     = None
+
+_pngIconResPath = None
+isSpecFileRemoved = False
+</code></pre></div>
+
+<h2 id="pyinsthook">PyInstHook<a class="headerlink" href="#pyinsthook" title="Permanent link">&para;</a></h2>
+<p>Objects of this type are used for PyInstaller &ldquo;hook&rdquo; script
+creation, and programmatic manipulation. 
+Such hooks are executed during a PyInstaller analyis process 
+when an import is encountered with a matching hook name. The purpose
+of a hook is to help PyInstaller find and collect resources
+it would otherwise not know to include in the bundle.  </p>
+<p>Hooks are commonly installed by third party libraries for use across your 
+Python environment whenever you employ PyInstaller.  It is 
+also possible to use custom hooks during a given a build process via 
+the PyInstaller option <code>--additional-hooks-dir</code> (though that parameter does <strong>not</strong> 
+<em>override</em> a hook which is registered for the system on the whole&hellip;)   </p>
+<p>If you are working in a context in which you can manipulate the build environment
+freely, the use of hooks is arguably a better means by which to gather resources 
+for a distribition rather than by adding them through<br />
+<a href="#pyinstallerconfig">PyInstallerConfig</a> attributes
+<code>hiddenImports</code>, <code>dataFilePaths</code>, <code>binaryFilePaths</code>, etc.    </p>
+<p>Use cases for this class include: <strong>adding hooks</strong> to patch a build process,
+replacing <strong>bad hooks</strong> installed on your system, or to simply revisw them 
+for some additional custom need.  </p>
+<p>For more on hooks, see:
+<a href="https://pyinstaller.readthedocs.io/en/stable/hooks.html">Understanding PyInstaller Hooks</a> </p>
+<p>Constructor: </p>
+<div class="codehilite"><pre><span></span><code>PyInstHook( name, script=None,
+            isContribHook=True, isRunTimeHook=False )
+</code></pre></div>
+
+<p>Attributes &amp; default values:</p>
+<div class="codehilite"><pre><span></span><code>name          = *required     
+script        = None
+
+isContribHook = True
+isRunTimeHook = False
+
+hooksDirPath  = None
+</code></pre></div>
+
+<p>Object Methods:</p>
+<div class="codehilite"><pre><span></span><code>fileName()
+
+read()
+write()
+remove()
+
+debug()
+
+toLines()
+fromLines( lines )
+injectLine( injection, lineNo )
+</code></pre></div>
+
+<p>Details:</p>
+<p>The <code>name</code> attribute should simply specify the name of import which invokes the <code>script</code>. 
+The <code>name</code> should <strong>not</strong> contain the <em>literal</em> &ldquo;hook-&rdquo; <em>file name</em> prefix, or a 
+.py <em>file extension</em>.     </p>
+<p><strong>isContribHook</strong>: Only respected for PyInstaller v4 or later, when it became available,
+and the new standard practice for hook distribution.</p>
+<p><strong>hooksDirPath</strong> may be override, as needed.  If left as the default <code>None</code>, 
+the path will be automatically resolved. </p>
+<h2 id="pyinstspec">PyInstSpec<a class="headerlink" href="#pyinstspec" title="Permanent link">&para;</a></h2>
+<p>Objects of this type are used for PyInstaller spec file
+parsing, and programmatic manipulation.  This class provides
+an easy mechanism for applying known PyInstaller patches, 
+as well as convenient mechanisms for applying custom 
+revisions for similar purposes.  </p>
+<p>Constructor: </p>
+<div class="codehilite"><pre><span></span><code>PyInstSpec( filePath=None, pyInstConfig=None, content=None )
+</code></pre></div>
+
+<p>Attributes &amp; default values:</p>
+<div class="codehilite"><pre><span></span><code>filePath     = None
+pyInstConfig = None 
+content      = None
+
+warningBehavior   = None 
+    &lt;options: PyInstSpec.WARN_IGNORE, PyInstSpec.WARN_ONCE, PyInstSpec.WARN_ERROR&gt;    
+isUnBufferedStdIo = False
+isModInitDebug    = False
+
+isInjected   = False
+</code></pre></div>
+
+<p>Static Method:</p>
+<div class="codehilite"><pre><span></span><code>cfgToPath( pyInstConfig )
+</code></pre></div>
+
+<p>Object Methods:</p>
+<div class="codehilite"><pre><span></span><code>path()
+
+read()
+write()
+
+debug()
+
+toLines()
+fromLines( lines )
+injectLine( injection, lineNo )
+
+injectDuplicateDataPatch()
+
+_parseAssigments()
+</code></pre></div>
+
+<h2 id="iexpressconfig">IExpressConfig<a class="headerlink" href="#iexpressconfig" title="Permanent link">&para;</a></h2>
+<p><strong>WINDOWS ONLY</strong></p>
+<p>Objects of this type define <em>optional</em> details for building 
+binaries from native Windows scripts
+(currently supporting Batch, PowerShell, VBScript, and JScript), using the 
+IExpress utility built into the OS, as invoked via the <a href="LowLevel.html#batchscripttoexe">batchScriptToExe</a>, 
+<a href="LowLevel.html#powershellscripttoexe">powerShellScriptToExe</a>, 
+<a href="LowLevel.html#vbscripttoexe">vbScriptToExe</a>,
+or <a href="LowLevel.html#jscripttoexe">jScriptToExe</a> functions 
+(which maybe employed by higher level<br />
+<a href="HighLevel.html#process-classes">Process Classes</a> under the hood).</p>
+<p>Constructor: </p>
+<div class="codehilite"><pre><span></span><code>IExpressConfig()
+</code></pre></div>
+
+<p>Attributes &amp; default values:        </p>
+<div class="codehilite"><pre><span></span><code>name             = None
+sourceDir        = None
+
+entryPointScript = None
+scriptHeader     = None
+isScriptDebug    = False
+
+versionInfo      = None
+iconFilePath     = None
+isAutoElevated   = False
+
+scriptImports     = [] #Embedded
+embeddedResources = [] #Embedded
+
+distResources     = []  #External
+distDirs          = []  #External (mkDir)
+
+codeSignConfig    = []
+codeSignTargets   = []
+
+# result 
+destDirPath      = None
+</code></pre></div>
+
+<p><strong>isScriptDebug</strong> : TODO: Fill-in - Note the extended VbScript functionality</p>
+<h2 id="codesignconfig">CodeSignConfig<a class="headerlink" href="#codesignconfig" title="Permanent link">&para;</a></h2>
+<p>This class defines the details used for code signing executables.</p>
+<p>TODO: Make Cross Platform </p>
+<p>Constructor: </p>
+<div class="codehilite"><pre><span></span><code>CodeSignConfig( keyFilePath=None, keyPassword=None )
+</code></pre></div>
+
+<p>Attributes &amp; default values: </p>
+<div class="codehilite"><pre><span></span><code>keyFilePath = None
+keyPassword = None
+
+signToolPath = None &lt;None==auto resolved&gt;
+
+fileDigest         = CodeSignConfig.DEFAULT_DIGEST       
+timeStampDigest    = CodeSignConfig.DEFAULT_DIGEST 
+timeStampServerUrl = CodeSignConfig.DEFAULT_TIMESTAMP_SERVER
+otherSignToolArgs  = &quot;&quot;
+
+isDebugMode = True
+</code></pre></div>
+
+<p>Class Constants: </p>
+<div class="codehilite"><pre><span></span><code>DEFAULT_DIGEST           = &quot;sha256&quot;
+DEFAULT_TIMESTAMP_SERVER = &quot;http://timestamp.digicert.com&quot;
+</code></pre></div>
+
+<p><strong>signToolPath</strong>: Only applicable on WINDOWS.  If <code>None</code>, this defaults to the 
+path the this library will auto install the tool as needed.  This attribute may 
+also be set indirectly by running the script where an environmental variable 
+call <code>SIGNTOOL_PATH</code> (defined the in constant <code>SIGNTOOL_PATH_ENV_VAR</code>) has been 
+defined.  </p>
+<h2 id="selfsignedcertconfig">SelfSignedCertConfig<a class="headerlink" href="#selfsignedcertconfig" title="Permanent link">&para;</a></h2>
+<p>This class defines the details used for generating self-signed code signing 
+certificates and keys.</p>
+<p>TODO: Make Cross Platform </p>
+<p>Constructor: </p>
+<div class="codehilite"><pre><span></span><code>CodeSignConfig( companyTradeName, destDirPath=None )
+</code></pre></div>
+
+<p>Attributes &amp; default values: </p>
+<div class="codehilite"><pre><span></span><code><span class="n">commonName</span>  <span class="o">=</span> <span class="n">companyTradeName</span>
+<span class="n">endDate</span>     <span class="o">=</span> <span class="n">SelfSignedCertConfig</span><span class="p">.</span><span class="n">DEFAULT_END_DATE</span>
+
+<span class="n">destDirPath</span> <span class="o">=</span> <span class="n">destDirPath</span> <span class="n">or</span> <span class="n">THIS_DIR</span>
+
+<span class="n">caCertPath</span>     <span class="o">=</span> <span class="o">&lt;</span><span class="n">auto</span><span class="p">,</span> <span class="n">based</span> <span class="n">on</span> <span class="n">destDirPath</span><span class="o">&gt;</span> 
+<span class="n">privateKeyPath</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">auto</span><span class="p">,</span> <span class="n">based</span> <span class="n">on</span> <span class="n">destDirPath</span><span class="o">&gt;</span>
+
+<span class="n">makeCertPath</span> <span class="o">=</span> <span class="n">None</span> <span class="o">&lt;</span><span class="n">None</span><span class="p">,</span> <span class="n">auto</span> <span class="n">resolved</span> <span class="o">&gt;</span>
+
+<span class="n">_maxCertChildren</span>  <span class="o">=</span> <span class="n">SelfSignedCertConfig</span><span class="p">.</span><span class="n">NO_MAX_CHILDREN</span>       
+<span class="n">_enhancedKeyUsage</span> <span class="o">=</span> <span class="n">SelfSignedCertConfig</span><span class="p">.</span><span class="n">LIFETIME_SIGNING_EKU</span>
+
+<span class="n">otherArgs</span>         <span class="o">=</span> <span class="s">&quot;&quot;</span>
+<span class="n">isDebugMode</span> <span class="o">=</span> <span class="n">True</span>
+</code></pre></div>
+
+<p>Object Methods:</p>
+<div class="codehilite"><pre><span></span><code>_forceMakeCertMethod()
+</code></pre></div>
+
+<p>Class Constants: </p>
+<div class="codehilite"><pre><span></span><code><span class="n">DEFAULT_END_DATE</span>     <span class="o">=</span> <span class="s">&#39;12/31/2050&#39;</span>
+<span class="n">NO_MAX_CHILDREN</span>      <span class="o">=</span> <span class="mi">0</span>
+<span class="n">LIFETIME_SIGNING_EKU</span> <span class="o">=</span> <span class="s">&#39;1.3.6.1.5.5.7.3.3,1.3.6.1.4.1.311.10.3.13&#39;</span>
+</code></pre></div>
+
+<p><strong>makeCertPath</strong>: Only applicable on WINDOWS.  Normally used on legacy versions 
+of Windows (v8.0 an earlier), where new standard means for creating such files - i.e. the PowerShell function <code>New-SelfSignedCertificate</code> is not available.  If 
+<code>None</code>, this defaults to the path where this library will auto 
+install the tool as needed.  This attribute may also be set indirectly by running 
+the script where an environmental variable call <code>MAKECERT_PATH</code> (defined the in 
+constant <code>MAKECERT_PATH_ENV_VAR</code>) has been defined.  </p>
+<h2 id="pvk2pfxconfig">Pvk2PfxConfig<a class="headerlink" href="#pvk2pfxconfig" title="Permanent link">&para;</a></h2>
+<p>Used in legacy Windows mechanisms for creating code signing certificates.
+Specified defines the details for converting <code>.pvk</code> files (old style private keys) generated by the now defunct <code>makecert</code> utility, into <code>.pfx</code> files.</p>
+<p>Constructor: </p>
+<div class="codehilite"><pre><span></span><code>Pvk2PfxConfig( caCertPath, privateKeyPath, 
+               keyPassword=None, pfxFilePath=None )
+</code></pre></div>
+
+<p>Attributes &amp; default values: </p>
+<div class="codehilite"><pre><span></span><code>caCertPath     = &lt;required&gt;        
+privateKeyPath = &lt;required&gt;
+keyPassword    = None  
+keyFilePath    = &lt;result - pfxFilePath or auto based on privateKeyPath&gt;
+
+pvk2PfxPath = None &lt;None, auto resolved&gt;
+
+otherArgs  = &quot;&quot;
+isDebugMode = True
+</code></pre></div>
+
+<p><strong>pvk2PfxPath</strong>:  If <code>None</code>, this defaults to the 
+path the this library will auto install the tool as needed.  This attribute may 
+also be set indirectly by running the script where an environmental variable 
+call <code>PVK2PFX_PATH</code> (defined the in constant <code>PVK2PFX_PATH_ENV_VAR</code>) has been 
+defined.  </p>
+<h2 id="windowsexeversioninfo">WindowsExeVersionInfo<a class="headerlink" href="#windowsexeversioninfo" title="Permanent link">&para;</a></h2>
+<p>Objects of this type define meta data branded into Windows 
+executables. This is the object type intended for 
+PyInstallerConfig.versionInfo attributes. </p>
+<p>Constructor: </p>
+<div class="codehilite"><pre><span></span><code>WindowsExeVersionInfo()
+</code></pre></div>
+
+<p>Attributes &amp; default values:        </p>
+<div class="codehilite"><pre><span></span><code>major = 0
+minor = 0
+micro = 0
+build = 0
+companyName = &quot;&quot;
+productName = &quot;&quot;
+description = &quot;&quot;
+exeName     = &quot;&quot;
+</code></pre></div>
+
+<p>Static Methods:</p>
+<div class="codehilite"><pre><span></span><code>defaultPath()
+</code></pre></div>
+
+<p>Object Methods:</p>
+<div class="codehilite"><pre><span></span><code>version( isCommaDelim=False )    
+copyright() 
+internalName()
+
+fileName()
+write()
+debug()
+</code></pre></div>
+
+<h2 id="qtifwconfig">QtIfwConfig<a class="headerlink" href="#qtifwconfig" title="Permanent link">&para;</a></h2>
+<p>Objects of this type provide the highest level definition of 
+a QtIFW installer configuration to use for building 
+an installer via the 
+<a href="LowLevel.html#buildinstaller">buildInstaller</a> function
+(which maybe employed by higher level<br />
+<a href="HighLevel.html#process-classes">Process Classes</a> under the hood).</p>
+<p>Constructor: </p>
+<div class="codehilite"><pre><span></span><code>QtIfwConfig( installerDefDirPath=None,
+             packages=None,
+             configXml=None,
+             controlScript=None, 
+             setupExeName=&quot;setup&quot; )
+</code></pre></div>
+
+<p>Attributes &amp; default values:                                               </p>
+<div class="codehilite"><pre><span></span><code>installerDefDirPath = None
+
+packages            = None &lt;list of QtIfwPackages OR directory paths&gt;
+configXml           = None    
+controlScript       = None
+
+setupExeName        = &quot;setup&quot;
+
+&lt;other IFW command line options&gt;
+isDebugMode    = True
+otherQtIfwArgs = &quot;&quot;
+</code></pre></div>
+
+<p>Functions:</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">addUiElements</span><span class="ss">(</span> <span class="nv">uiElements</span>, <span class="nv">isOverWrite</span><span class="o">=</span><span class="nv">True</span> <span class="ss">)</span> 
+<span class="nv">addLicense</span><span class="ss">(</span> <span class="nv">licensePath</span>, <span class="nv">name</span><span class="o">=</span><span class="s2">&quot;</span><span class="s">End User License Agreement</span><span class="s2">&quot;</span> <span class="ss">)</span>
+</code></pre></div>
+
+<h2 id="qtifwconfigxml">QtIfwConfigXml<a class="headerlink" href="#qtifwconfigxml" title="Permanent link">&para;</a></h2>
+<p>Objects of this type define the contents of a QtIFW 
+<code>config.xml</code> which will be dynamically generated 
+when invoking the <a href="LowLevel.html#buildinstaller">buildInstaller</a> function. </p>
+<p>The <code>config.xml</code> file represents the highest level definition 
+of a QtIFW installer, containing information such as the product 
+name and version. Most of the attributes in this 
+class correspond directly to the name of the tags added to the xml file.<br />
+Attributes set to <code>None</code> values will not be written, otherwise they will be.</p>
+<p>Constructor:                </p>
+<div class="codehilite"><pre><span></span><code>QtIfwConfigXml( name, version, publisher,
+                iconFilePath=None, 
+                controlScriptName=None,
+                primaryContentExe=None, isPrimaryExeGui=True,
+                primaryExeWrapper=None,
+                companyTradeName=None,
+                wizardStyle=None, 
+                logoFilePath=None, bannerFilePath=None )
+</code></pre></div>
+
+<p>Attributes:    </p>
+<div class="codehilite"><pre><span></span><code>primaryContentExe (used indirectly w/ isGui)    
+companyTradeName  (used indirectly)
+iconFilePath      (used indirectly)    
+logoFilePath      (used indirectly)
+bannerFilePath    (used indirectly)
+
+primaryExeWrapper
+
+Name                     
+Version                  
+Publisher
+
+&lt;Windows / Mac&gt;        
+    InstallerApplicationIcon  (icon root name, i.e. omit extension)
+&lt;Linux&gt;
+    InstallerWindowIcon       (.png name, with extension)
+
+Title                
+TitleColor                (HTML color code, such as &quot;#88FF33&quot;)
+
+ControlScript
+
+TargetDir                
+StartMenuDir
+
+RunProgram               
+RunProgramDescription
+
+WizardStyle              
+WizardDefaultWidth           
+WizardDefaultHeight      
+Logo                     
+Banner
+
+ProductUrl
+
+runProgramArgList  (used indirectly)
+
+otherElements (open ended dictionary of key/value pairs to inject)
+</code></pre></div>
+
+<p>Functions:</p>
+<div class="codehilite"><pre><span></span><code>setPrimaryContentExe( ifwPackage )
+setDefaultVersion()
+setDefaultTitle()    
+setDefaultPaths()
+
+addCustomTags( root )
+
+write()
+
+debug()
+toPrettyXml()
+
+exists()            
+path()   
+dirPath()
+</code></pre></div>
+
+<p>Static Constants:</p>
+<div class="codehilite"><pre><span></span><code>DEFAULT_WIZARD_STYLE
+WizardStyle.AERO     &lt;Windows Default&gt;  
+WizardStyle.MAC      &lt;MacOS Default&gt;
+WizardStyle.MODERN   &lt;Linux Default&gt;
+WizardStyle.CLASSIC  &lt;Simliar to MODERN&gt;
+</code></pre></div>
+
+<h2 id="qtifwcontrolscript">QtIfwControlScript<a class="headerlink" href="#qtifwcontrolscript" title="Permanent link">&para;</a></h2>
+<p>QtIfw installers may have a &ldquo;Control Script&rdquo; and/or a collection of &ldquo;Package Scripts&rdquo;.
+The &ldquo;Control Script&rdquo; is intended to dictate how the installer <em>interface</em>  behaves, and
+other high level logic pertaining to the installer itself. In contrast, &ldquo;Package Scripts&rdquo;
+are intended for applying custom logic to manipulate a target environment when installing 
+a given package.  See <a href="#qtifwpackagescript">QtIfwPackageScript</a> for more info. </p>
+<p>The QtIfwControlScript class provides an abstraction layer for QtIfw script
+generation.  QtIfw scripts are written in <a href="https://doc.qt.io/qt-5/qtscript-index.html">Qt Script</a> 
+(which is conceptually a spin off from JavaScript), with additional custom objects and 
+methods for this context. Using this abstraction, you can achieve a great many custom 
+behaviors without having to learn much about the language yourself. Refer to the details on 
+<a href="LowLevel.html#installer-scripting">Installer Scripting</a> to learn more about 
+the low level helpers provided by the library for this purpose. </p>
+<p>For maximum flexibility, rather than using the dynamic methods, you may directly define 
+the entire script via a raw string, by setting the <code>script</code> attribute.  Or, you may 
+specify an external file as the source instead via <code>script_path</code>. In addition, you may 
+always delegate scripts to a traditional QtIfw  definition by using a higher level 
+configuration <a href="#qtifwconfig">QtIfwConfig</a> to specify such.</p>
+<p>The way this class works, in summary, is that you may provide an optional script 
+as a raw string, or a path to script you wish to load directly.  If specified, 
+those resources act as a <em>base</em>, from which you may continue to add on to.</p>
+<p>A QtIfw control script is &ldquo;driven&rdquo; by the builtin framework. When a given &ldquo;event&rdquo;
+occurs a &ldquo;handler&rdquo; function is invoked (if it has been defined).
+QtIfwControlScript object has a set of attributes related to each page and such 
+event/handler pair in the framework. One is a boolean, controlling the &ldquo;visibility&rdquo;
+of the page.  Setting that to <code>False</code> skips over that wizard page entirely. 
+Another boolean is provided, dictating whether to auto generate the 
+event handler using a set of fixed, built-in logic provided by distbuilder to add a 
+notable amount of additional features to your installers &ldquo;for free&rdquo;.  The final attribute 
+in this pattern is the body of the event handler (normally auto generated), which allows
+for an atomic replacement of that code.   </p>
+<p>When the <code>write()</code> function is invoked, the actual script file to be embedded 
+in the installer is generated from the attributes.  Prior to calling that, you
+may switch off the various auto generate options, and supply your own function
+definition from scratch.</p>
+<p>If you wish to use the bulk of the &ldquo;free&rdquo; / standard add on logic, but then customize 
+that the program flow should be to call <code>_generate()</code> first, which will define the 
+function bodies using the auto generate options. Once that is done, you may disable 
+select auto generates, and then directly add on to, or manipulate the event handling 
+function bodies.  </p>
+<p>A large number of abstract, static &ldquo;helper&rdquo; functions have been provided which you may
+use to build your logic.  Otherwise, you may certainly just add Qt Script snippets
+directly in the raw.  See <a href="LowLeveel.md#installer-scripting">Installer Scripting</a>.       </p>
+<p>The <code>virtualArgs</code> attribute is a dictionary, containing key/values which
+allows for hard coding <a href="LowLeveel.md#standard-installer-arguments">Standard Installer Arguments</a>
+into the installer, which are typically passed at runtime via the command line.</p>
+<p>Constructor:                </p>
+<div class="codehilite"><pre><span></span><code>QtIfwControlScript( fileName=&quot;installscript.qs&quot;,                  
+                    script=None, scriptPath=None,
+                    virtualArgs={} ) :
+</code></pre></div>
+
+<p>Attributes &amp; default values:                                               </p>
+<div class="codehilite"><pre><span></span><code>isLimitedMaintenance = True
+virtualArgs = virtualArgs
+
+uiPages = []
+widgets = []
+
+controllerGlobals = None
+isAutoGlobals = True
+
+controllerConstructorBody = None
+controllerConstructorInjection = None
+isAutoControllerConstructor = True
+
+onPageChangeCallbackBody      = None
+onPageChangeCallbackInjection = None
+isAutoPageChangeCallBack      = True
+
+onFinishedClickedCallbackBody      = None
+onFinishedClickedCallbackInjection = None
+isAutoFinishedClickedCallbackBody  = True
+
+onPageInsertRequestCallbackBody = None
+isAutoPageInsertRequestCallBack = True
+
+onPageRemoveRequestCallbackBody = None
+isAutoPageRemoveRequestCallBack = True
+
+onPageVisibilityRequestCallbackBody = None
+isAutoPageVisibilityRequestCallBack = True
+
+onValueChangeCallbackBody      = None
+onValueChangeCallbackInjection = None
+isAutoValueChangeCallBack      = True
+
+isIntroductionPageVisible = True                                                                                                                                
+introductionPageCallbackBody = None
+introductionPageOnInstall = None
+introductionPageOnMaintain = None    
+isAutoIntroductionPageCallback = True
+
+isTargetDirectoryPageVisible = True
+targetDirectoryPageCallbackBody = None
+isAutoTargetDirectoryPageCallback = True
+
+isComponentSelectionPageVisible = True
+componentSelectionPageCallbackBody = None
+componentSelectionPageInjection = None
+isAutoComponentSelectionPageCallback = True
+
+isLicenseAgreementPageVisible = True
+licenseAgreementPageCallbackBody = None
+isAutoLicenseAgreementPageCallback = True
+
+isStartMenuDirectoryPageVisible = True
+startMenuDirectoryPageCallbackBody = None
+isAutoStartMenuDirectoryPageCallback = True
+
+isReadyForInstallationPageVisible = True
+readyForInstallationPageCallbackBody = None
+readyForInstallationPageOnInstall = None
+readyForInstallationPageOnMaintain = None            
+isAutoReadyForInstallationPageCallback = True
+
+isPerformInstallationPageVisible = True
+performInstallationPageCallbackBody = None
+isAutoPerformInstallationPageCallback = True
+
+isFinishedPageVisible = True        
+finishedPageCallbackBody = None
+finishedPageOnInstall = None
+finishedPageOnMaintain = None
+isAutoFinishedPageCallback = True
+
+isRunProgVisible = True
+isRunProgEnabled = True
+isRunProgChecked = True
+</code></pre></div>
+
+<p>Object Methods:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">registerAsyncFunc</span><span class="p">(</span> <span class="k">func</span> <span class="p">)</span> <span class="o">&lt;</span><span class="n">takes</span> <span class="n">QtIfwAsyncFunc</span><span class="o">&gt;</span>          
+<span class="n">registerStandardEventHandler</span><span class="p">(</span> <span class="n">signalName</span><span class="p">,</span> <span class="n">slotName</span><span class="p">,</span> <span class="n">slotBody</span> <span class="p">)</span>
+<span class="n">registerAutoPilotEventHandler</span><span class="p">(</span> <span class="n">signalName</span><span class="p">,</span> <span class="n">slotName</span><span class="p">,</span> <span class="n">slotBody</span> <span class="p">)</span>    
+<span class="n">registerGuiEventHandler</span><span class="p">(</span> <span class="n">signalName</span><span class="p">,</span> <span class="n">slotName</span><span class="p">,</span> <span class="n">slotBody</span> <span class="p">)</span>
+<span class="n">registerWidgetEventHandler</span><span class="p">(</span> <span class="n">pageId</span><span class="p">,</span> <span class="n">controlName</span><span class="p">,</span> 
+                            <span class="n">signalName</span><span class="p">,</span> <span class="n">slotName</span><span class="p">,</span> <span class="n">slotBody</span> <span class="p">)</span>
+
+<span class="n">_generate</span><span class="p">()</span>
+
+<span class="n">write</span><span class="p">()</span>
+<span class="n">debug</span><span class="p">()</span>
+
+<span class="n">exists</span><span class="p">()</span>            
+<span class="n">path</span><span class="p">()</span>
+<span class="n">dirPath</span><span class="p">()</span>
+</code></pre></div>
+
+<h2 id="qtifwpackage">QtIfwPackage<a class="headerlink" href="#qtifwpackage" title="Permanent link">&para;</a></h2>
+<p>Objects of this type define the packages with an installer.
+A <a href="#qtifwconfig">QtIfwConfig</a> contains a list of these.
+Notably, these package objects define the source content to be 
+included in the installer via <code>srcDirPath</code> or
+simply <code>srcExePath</code> attributes. They also contain
+<a href="#qtifwpackagexml">QtIfwPackageXml</a> and 
+<a href="#qtifwpackagescript">QtIfwPackageScript</a> objects,
+for extended configuration details.</p>
+<p>Constructor:  </p>
+<div class="codehilite"><pre><span></span><code>QtIfwPackage( pkgId=None, pkgType=None, name=None, 
+              subDirName=None,
+              srcDirPath=None, srcExePath=None,    
+              resBasePath=None, isTempSrc=False,
+              pkgXml=None, pkgScript=None,
+              licenses={}, uiPages=[], widgets=[] )
+</code></pre></div>
+
+<p>Attributes:    </p>
+<div class="codehilite"><pre><span></span><code>&lt;internal id / type&gt;
+pkgId           = None       
+pkgType         = None
+
+&lt;QtIFW definition&gt;
+name            = None
+pkgXml          = None
+pkgScript       = None
+uiPages         = []
+widgets         = []
+licenses        = {} &lt;in the form name:filePath&gt;
+isLicenseFormatPreserved = False
+
+&lt;source content&gt;            
+srcDirPath    = None &lt;package ENTIRE source directory&gt;
+srcExePath    = None
+resBasePath   = None
+distResources = None    
+isTempSrc     = False
+
+&lt;destination content&gt;
+subDirName   = None
+exeName      = None   
+exeWrapper   = None
+
+&lt;other configuration details&gt;
+isGui           = False
+codeSignTargets = None &lt;list of relative paths within package&gt; 
+qtCppConfig     = None
+</code></pre></div>
+
+<p>Functions:      </p>
+<div class="codehilite"><pre><span></span><code>dirPath()
+metaDirPath() 
+contentTopDirPath()
+contentDirPath()
+</code></pre></div>
+
+<p>Static Functions:   </p>
+<div class="codehilite"><pre><span></span><code>topDirPath()
+</code></pre></div>
+
+<h2 id="qtifwpackagexml">QtIfwPackageXml<a class="headerlink" href="#qtifwpackagexml" title="Permanent link">&para;</a></h2>
+<p>Objects of this type define the a QtIFW <code>package.xml</code> 
+file which will be dynamically generated 
+when invoking the <a href="LowLevel.html#buildinstaller">buildInstaller</a> function. This file
+defines a component within the installer which maybe
+selected by the user to install. Most of the attributes 
+in these objects correspond directly to the name of tags 
+added to the xml. Attributes set to <code>None</code> values
+will not be written, otherwise they will be.</p>
+<p>Constructor:       </p>
+<div class="codehilite"><pre><span></span><code>QtIfwPackageXml( pkgName, displayName, description, version, 
+                 scriptName=None, 
+                 isDefault=True, isRequired=False, 
+                 isHidden=False, isCheckable=True )
+</code></pre></div>
+
+<p>Attributes &amp; default values:      </p>
+<div class="codehilite"><pre><span></span><code>pkgName = &lt;required&gt;
+
+SortingPriority    = None               
+DisplayName        = &lt;required&gt;
+Description        = &lt;required&gt;
+Version            = &lt;required&gt;            
+Script             = None     
+ReleaseDate        = date.today()
+Default            = True    
+ForcedInstallation = False &lt;isRequired&gt;
+Virtual            = False &lt;isHidden&gt;
+Checkable          = True
+Dependencies       = None
+AutoDependOn       = None
+
+UserInterfaces = []
+Licenses       = []
+</code></pre></div>
+
+<p>Functions:      </p>
+<div class="codehilite"><pre><span></span><code>addCustomTags( root )
+
+write()
+
+debug()
+toPrettyXml()
+
+exists()            
+path()   
+dirPath()
+</code></pre></div>
+
+<h2 id="qtifwpackagescript">QtIfwPackageScript<a class="headerlink" href="#qtifwpackagescript" title="Permanent link">&para;</a></h2>
+<p>QtIFW installers may have a &ldquo;Control Script&rdquo; and/or a collection of &ldquo;Package Scripts&rdquo;.
+The &ldquo;Control Script&rdquo; is intended to dictate how the installer <em>interface</em>  behaves, and
+other high level logic pertaining to the installer itself. In contrast, &ldquo;Package Scripts&rdquo;
+are intended for applying custom logic to manipulate a target environment when installing 
+a given package. See <a href="#qtifwcontrolscript">QtIfwControlScript</a> for more info. </p>
+<p>Objects of the type <code>QtIfwPackageScript</code> are used to dynamically generate
+a script used by a QtIFW package.  Refer to the details on 
+<a href="LowLevel.html#installer-scripting">Installer Scripting</a> to learn more about 
+the low level helpers provided by the library for this purpose. </p>
+<p>For maximum flexibility, rather than using the dynamic methods, you may directly define 
+the entire script via a raw string, by setting the <code>script</code> attribute.  Or, you may 
+specify an external file as the source instead via <code>script_path</code>. In addition, you may 
+always delegate scripts to a traditional QtIFW definition by using a higher level 
+configuration <a href="#qtifwconfig">QtIfwConfig</a> to specify such.</p>
+<p>This class works in an analogous manner to <a href="#qtifwcontrolscript">QtIfwControlScript</a>.
+Please refer to the that documentation for an explanation of how use these script
+objects in general. </p>
+<p>Note that for this class <a href="#qtifwshortcut">QtIfwShortcut</a> objects are used for the <code>shortcuts</code> 
+attribute, <a href="#qtifwexternalop">QtIfwExternalOp</a> objects are used for <code>externalOps</code>,
+and <a href="#qtifwexternalop">QtIfwKillOp</a> objects are used for <code>killOps</code>.</p>
+<p>Constructor:       </p>
+<div class="codehilite"><pre><span></span><code>QtIfwPackageScript( pkgName, pkgVersion, pkgSubDirName=None,
+                    shortcuts=[], bundledScripts=[], dynamicTexts={},
+                    externalOps=[], installResources=[],
+                    uiPages=[], widgets=[],
+                    fileName=&quot;installscript.qs&quot;, 
+                    script=None, scriptPath=None )
+</code></pre></div>
+
+<p>Attributes &amp; default values:      </p>
+<div class="codehilite"><pre><span></span><code><span class="n">pkgName</span>       <span class="o">=</span> <span class="o">&lt;</span><span class="n">required</span><span class="o">&gt;</span>
+<span class="n">pkgVersion</span>    <span class="o">=</span> <span class="o">&lt;</span><span class="n">required</span><span class="o">&gt;</span>
+<span class="n">pkgSubDirName</span> <span class="o">=</span> <span class="n">None</span>
+
+<span class="n">fileName</span> <span class="o">=</span> <span class="s2">&quot;installscript.qs&quot;</span>    
+<span class="n">script</span>   <span class="o">=</span> <span class="n">None</span> <span class="o">&lt;</span><span class="ow">or</span> <span class="n">loaded</span> <span class="n">via</span> <span class="n">scriptPath</span><span class="o">&gt;</span>
+
+<span class="n">shortcuts</span>        <span class="o">=</span> <span class="p">[]</span>    
+<span class="n">bundledScripts</span>   <span class="o">=</span> <span class="p">[]</span>    
+<span class="n">dynamicTexts</span>     <span class="o">=</span> <span class="p">{}</span> <span class="n">fileName</span><span class="p">:</span><span class="n">content</span>
+<span class="n">externalOps</span>      <span class="o">=</span> <span class="p">[]</span>
+<span class="n">installResources</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">killOps</span>          <span class="o">=</span> <span class="p">[]</span>
+<span class="n">preOpSupport</span>     <span class="o">=</span> <span class="n">None</span>
+<span class="n">customOperations</span> <span class="o">=</span> <span class="n">None</span>
+
+<span class="o">&lt;</span><span class="n">LINUX</span> <span class="o">/</span> <span class="n">MAC</span> <span class="n">only</span><span class="o">&gt;</span>
+    <span class="n">externalDependencies</span>     <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">areDependenciesPreserved</span> <span class="o">=</span> <span class="n">True</span>
+
+<span class="n">uiPages</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">widgets</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="n">packageGlobals</span> <span class="o">=</span> <span class="n">None</span>
+<span class="n">isAutoGlobals</span> <span class="o">=</span> <span class="n">True</span>
+
+<span class="n">componentConstructorBody</span> <span class="o">=</span> <span class="n">None</span>
+<span class="n">isAutoComponentConstructor</span> <span class="o">=</span> <span class="n">True</span>
+
+<span class="n">componentLoadedCallbackBody</span> <span class="o">=</span> <span class="n">None</span>
+<span class="n">isAutoComponentLoadedCallback</span> <span class="o">=</span> <span class="n">True</span>
+
+<span class="n">componentCreateOperationsBody</span> <span class="o">=</span> <span class="n">None</span>
+<span class="n">isAutoComponentCreateOperations</span> <span class="o">=</span> <span class="n">True</span>
+
+<span class="n">componentCreateOperationsForArchiveBody</span> <span class="o">=</span> <span class="n">None</span>
+<span class="n">isAutoComponentCreateOperationsForArchive</span> <span class="o">=</span> <span class="n">True</span>
+
+<span class="o">&lt;</span><span class="n">Linux</span> <span class="n">Only</span><span class="o">&gt;</span>
+    <span class="n">isAskPassProgRequired</span> <span class="o">=</span> <span class="n">False</span>
+</code></pre></div>
+
+<p>Methods</p>
+<div class="codehilite"><pre><span></span><code>addSimpleOperation( name, parms=[], isElevated=False, isAutoQuote=True )
+</code></pre></div>
+
+<p><strong>addSimpleOperation</strong>:  Appends a QScript snippet to be appended to the <code>customOperations</code>
+attribute.  The available operations are documented on <a href="https://doc.qt.io/qtinstallerframework/operations.html">https://doc.qt.io/qtinstallerframework/operations.html</a>.  Note that these operations 
+implicitly occur during installation, have implicit &ldquo;undo&rdquo; operations (where possible), 
+and <strong>cannot</strong> be made to occur specifically during an install vs update vs uninstall.<br />
+They are, however, <em>cross platform</em> and relatively painless to implement. For more 
+flexibility, use <a href="#qtifwexternalop">QtIfwExternalOp</a> objects. (The draw back to such is you 
+will need to call upon / include utilities or add 
+<a href="LowLevel.html#executablescript">ExecutableScripts</a> containing platform specific code. </p>
+<h2 id="qtifwshortcut">QtIfwShortcut<a class="headerlink" href="#qtifwshortcut" title="Permanent link">&para;</a></h2>
+<p>These shortcut objects are use by <a href="#qtifwpackagescript">QtIfwPackageScript</a> objects,
+to create shortcuts on the installation target environments.</p>
+<p>Constructor:       </p>
+<div class="codehilite"><pre><span></span><code>QtIfwShortcut( productName=QT_IFW_PRODUCT_NAME, 
+               command=None, args=[], 
+               exeDir=QT_IFW_TARGET_DIR, exeName=None, 
+               exeVersion=&quot;0.0.0.0&quot;,
+               isGui=True, pngIconResPath=None )
+</code></pre></div>
+
+<p>Attributes &amp; default values:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">productName</span>       <span class="o">=</span> <span class="s">&quot;@ProductName@&quot;</span> <span class="o">&lt;</span><span class="n">QtIfw</span> <span class="n">Built</span><span class="o">-</span><span class="k">in</span> <span class="n">Variable</span><span class="o">&gt;</span>
+<span class="n">command</span>           <span class="o">=</span> <span class="n">None</span>    
+<span class="n">exeDir</span>            <span class="o">=</span> <span class="s">&quot;@TargetDir@&quot;</span> <span class="o">&lt;</span><span class="n">QtIfw</span> <span class="n">Built</span><span class="o">-</span><span class="k">in</span> <span class="n">Variable</span><span class="o">&gt;</span>
+<span class="n">exeName</span>           <span class="o">=</span> <span class="n">None</span>
+<span class="n">args</span>              <span class="o">=</span> <span class="n">None</span>
+
+<span class="n">isGui</span>             <span class="o">=</span> <span class="n">True</span> <span class="o">&lt;</span><span class="n">used</span> <span class="k">in</span> <span class="n">Mac</span> <span class="o">/</span> <span class="n">Linux</span><span class="o">&gt;</span>
+
+<span class="n">windowStyle</span>       <span class="o">=</span> <span class="n">None</span> <span class="o">&lt;</span><span class="n">used</span> <span class="k">in</span> <span class="n">Windows</span><span class="o">&gt;</span>
+
+<span class="n">exeVersion</span>        <span class="o">=</span> <span class="s">&quot;0.0.0.0&quot;</span> <span class="o">&lt;</span><span class="n">used</span> <span class="k">in</span> <span class="n">Linux</span><span class="o">&gt;</span>        
+<span class="n">pngIconResPath</span>    <span class="o">=</span> <span class="n">None</span> <span class="o">&lt;</span><span class="n">used</span> <span class="k">in</span> <span class="n">Linux</span><span class="o">&gt;</span>
+
+<span class="n">isAppShortcut</span>       <span class="o">=</span> <span class="n">True</span>
+<span class="n">isDesktopShortcut</span>   <span class="o">=</span> <span class="n">False</span>
+<span class="n">isAdjancentShortcut</span> <span class="o">=</span> <span class="n">False</span>
+</code></pre></div>
+
+<h2 id="qtifwexternalop">QtIfwExternalOp<a class="headerlink" href="#qtifwexternalop" title="Permanent link">&para;</a></h2>
+<p>This class is used to represent and control the invocation of shell commands, 
+external utilities, and embedded <a href="LowLevel.html#executablescript">ExecutableScripts</a>.  <br />
+It is employed by <a href="#qtifwpackagescript">QtIfwPackageScript</a> to 
+add operations to the installation, and/or uninstallation,
+process of the <em>package</em> to which those operations are associated.     </p>
+<p>This simple example (for *nix based systems), may serve well to clarify how 
+this class is intended to be used:  </p>
+<div class="codehilite"><pre><span></span><code><span class="n">filePath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">joinPathQtIfw</span><span class="p">(</span><span class="w"> </span><span class="n">QT_IFW_HOME_DIR</span><span class="p">,</span><span class="w"> </span><span class="ss">&quot;test.txt&quot;</span><span class="w"> </span><span class="p">)</span><span class="w">     </span>
+<span class="n">createFileOp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">QtIfwExternalOp</span><span class="p">(</span><span class="w"> </span><span class="n">exePath</span><span class="o">=</span><span class="ss">&quot;touch&quot;</span><span class="p">,</span><span class="w">          </span><span class="n">args</span><span class="o">=[</span><span class="n">filePath</span><span class="o">]</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                </span><span class="n">uninstExePath</span><span class="o">=</span><span class="ss">&quot;rm&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">uninstArgs</span><span class="o">=[</span><span class="n">filePath</span><span class="o">]</span><span class="w"> </span><span class="p">)</span><span class="w">         </span>
+<span class="n">pkg</span><span class="p">.</span><span class="n">pkgScript</span><span class="p">.</span><span class="n">externalOps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span><span class="n"> createFileOp </span><span class="o">]</span><span class="w"></span>
+</code></pre></div>
+
+<p>This purpose of this class should not be confused with the 
+<a href="LowLevel.html#installer-scripting">Installer Scripting</a> function <code>execute( binPath, args )</code>.<br />
+While that is also a means to invoke sub processes and shell commands from QtIWF, that
+is more generally used in a &ldquo;Controller scripting&rdquo; context for on demand, 
+often conditional and/or dynamic needs.  More to the point, <code>QtIfwExternalOp</code>
+objects are bound directly to packages and to install/uninstall events, where the
+QtScript <code>execute</code> function can be dropped into installation scripts anywhere, 
+in an unrestricted manner.   </p>
+<p>Note the intended design by Qt for creating sophisticated, cross platform, custom 
+operations is to modify to the <strong>installer engine</strong> itself, writing in Qt C++, and 
+recompile it yourself for a specific platform. See: <a href="https://doc.qt.io/qtinstallerframework/scripting.html#registering-custom-operations">https://doc.qt.io/qtinstallerframework/scripting.html#registering-custom-operations</a>
+If you <em>really</em> want to do that, here&rsquo;s the source you&rsquo;ll require:
+<a href="https://github.com/qtproject/installer-framework">https://github.com/qtproject/installer-framework</a>
+It is the opinion of the distbuilder developers that this typically going to be an 
+absurdly complicated and time consuming endeavor for most use cases.  This &ldquo;external
+operation&rdquo; mechanism, while having draw backs is likely a good deal more practical!</p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>QtIfwExternalOp( 
+          script=None,       exePath=None,       args=[], successRetCodes=[0],  
+    uninstScript=None, uninstExePath=None, uninstArgs=[],  uninstRetCodes=[0],
+    isElevated=False, workingDir=QT_IFW_TARGET_DIR, onErrorMessage=None,
+    resourceScripts=[], uninstResourceScripts=[], externalRes=[] )
+</code></pre></div>
+
+<p>Attributes &amp; default values:</p>
+<div class="codehilite"><pre><span></span><code>script          = None
+exePath         = None
+args            = []
+successRetCodes = [0]
+
+uninstScript    = None
+uninstExePath   = None
+uninstArgs      = []
+uninstRetCodes  = [0]
+
+isElevated      = False 
+workingDir      = QT_IFW_TARGET_DIR
+
+onErrorMessage  = None
+
+resourceScripts       = []
+uninstResourceScripts = []
+externalRes      = []
+</code></pre></div>
+
+<p>Notes:</p>
+<p>QtIfw will execute these operations synchronously.<br />
+By default, if the return code from the sub process is not 0, this is treated
+as an installation error.  To expand the options for what is viewed as a &ldquo;success&rdquo;,
+or can at least be ignored, the attributes <code>successRetCodes</code>, and <code>uninstRetCodes</code>,
+allow specifying lists of codes for either the installation or uninstallation processes,
+respectively.</p>
+<p>The <a href="#qtifwpackagescript">QtIfwPackageScript</a> attribute <code>externalOps</code> is a list
+to be executed in order.  Note that during uninstallation, that list is processed
+in <strong>reverse order</strong>.  It is possible (and common), to define operations as only 
+for installation or only for uninstallation.  Having direct counterparts is not 
+required.  When defining an <code>externalOps</code> list with &ldquo;pure uninstallation&rdquo; actions, 
+you should especially keep the reverse order of such operations in mind.    </p>
+<p><strong>resourceScripts, uninstResourceScripts</strong>: Lists of additional <a href="LowLevel.html#executablescript">ExecutableScripts</a>
+to make available on the target, for this operation to draw upon.  To reference the 
+script, build a path using the python constant <code>QT_IFW_SCRIPTS_DIR</code> or from directly
+within another script use <code>@ScriptsDir@</code>.   </p>
+<p><strong>externalRes</strong>: A list of <a href="#qtifwexternalresource">QtIfwExternalResource</a> objects.
+Tools defined this list will be rolled into the installer without explicitly
+updating the <a href="#qtifwpackagescript">QtIfwPackageScript</a> owner of this operation
+object. </p>
+<h3 id="qtifwexternalop-builders">QtIfwExternalOp Builders<a class="headerlink" href="#qtifwexternalop-builders" title="Permanent link">&para;</a></h3>
+<h4 id="on_install-on_uninstall-on_both-auto_undo">ON_INSTALL, ON_UNINSTALL, ON_BOTH, AUTO_UNDO<a class="headerlink" href="#on_install-on_uninstall-on_both-auto_undo" title="Permanent link">&para;</a></h4>
+<p><strong>Event</strong> constants for convenience methods.</p>
+<h4 id="opdatapath">opDataPath<a class="headerlink" href="#opdatapath" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>opDataPath( rootFileName, isDetached=False, 
+            isNative=True, quotes=None, isDoubleBackslash=False )
+</code></pre></div>
+
+<p>Dynamically resolve paths to temp data files used by the operations,
+or to embed in custom scripts.  </p>
+<p><strong>rootFileName</strong>: Under normal circumstances, provide a simple &ldquo;data key&rdquo; 
+identifier (with no file extension) for this parameter. 
+If a parent directory is included (be it an absolute or relative path), however, 
+then the path will not be modified further (i.e. it will not built from a 
+root name). Such allows for other functions that internally employ this one 
+to implicitly handle files located elsewhere as well. For example, wrapping 
+<code>rootFileName</code> in <code>qtIfwDetachedOpDataPath()</code>, is another means to reference 
+the alternate &ldquo;detached&rdquo; path (rather than via the <code>isDetached</code> option). </p>
+<p><strong>isDetached</strong>:  Operation data files are normally created within an installer
+<em>sub directory</em>, inside of the user/system temp directory.  Everything in this 
+directory is automatically purged when the installer/uninstaller completes.
+If you use a &ldquo;detached op data file path&rdquo;, however, the file will be written
+to the root of the temp directory, and will not be automatically purged. That
+clean up is left for you to perform.  The general use case for this feature
+is to support &ldquo;detached operations&rdquo; which can, and typically do, live beyond
+the installer/uninstaller&rsquo;s process..</p>
+<p><strong>isNative</strong>: By default, paths are returned in a native format, i.e. 
+with backslashes vs forward slashes as applicable.</p>
+<p><strong>quotes</strong>: Optionally, you may provide explicit quote strings 
+(e.g. <code>"</code> or <code>'</code>, or some escaped version of them) to wrap the 
+returned path in such.  </p>
+<p><strong>isDoubleBackslash</strong>: Optionally, use this on Windows, to escape backslashes 
+by doubling them up.</p>
+<h4 id="qtifwexternalopmakedir">QtIfwExternalOp.MakeDir<a class="headerlink" href="#qtifwexternalopmakedir" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>MakeDir( event, dirPath,
+         owner=QT_IFW_USER, group=QT_IFW_USER, &lt;LINUX/MAC ONLY&gt;
+         access=&quot;755&quot;,                         &lt;LINUX/MAC ONLY&gt;
+         isElevated=True )
+</code></pre></div>
+
+<h4 id="qtifwexternalopremovedir">QtIfwExternalOp.RemoveDir<a class="headerlink" href="#qtifwexternalopremovedir" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>RemoveDir( event, dirPath, isElevated=True )
+</code></pre></div>
+
+<h4 id="qtifwexternalopwritefile">QtIfwExternalOp.WriteFile<a class="headerlink" href="#qtifwexternalopwritefile" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>WriteFile( event, filePath, data, isOverwrite=True,
+           owner=QT_IFW_USER, group=QT_IFW_USER, &lt;LINUX/MAC ONLY&gt;
+           access=&quot;644&quot;,                         &lt;LINUX/MAC ONLY&gt;
+           isElevated=True )
+</code></pre></div>
+
+<h4 id="qtifwexternalopremovefile">QtIfwExternalOp.RemoveFile<a class="headerlink" href="#qtifwexternalopremovefile" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>RemoveFile( event, filePath, isElevated=True )
+</code></pre></div>
+
+<h4 id="qtifwexternalopcreateopflagfile">QtIfwExternalOp.CreateOpFlagFile<a class="headerlink" href="#qtifwexternalopcreateopflagfile" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>CreateOpFlagFile( event, fileName, dynamicVar=None, isElevated=True )
+</code></pre></div>
+
+<p><strong>dynamicVar</strong>: Control the creation of this file via a dynamic installer 
+variable. Note that a &ldquo;false&rdquo; condition will be met when a boolean variable is
+explicitly set to <code>false</code>, or if the variable is undefined, or it contains no 
+content, or if it is set to <code>0</code>. The opposing <code>true</code> condition, required to 
+create the flag file, is simply the inverse of that. By default, this argument 
+is set to <code>None</code>, and therefore the file will be created without any logical 
+controls.       </p>
+<h4 id="qtifwexternalopwriteopdatafile">QtIfwExternalOp.WriteOpDataFile<a class="headerlink" href="#qtifwexternalopwriteopdatafile" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>WriteOpDataFile( event, fileName, data, isElevated=True )
+</code></pre></div>
+
+<h4 id="qtifwexternaloprunprogram">QtIfwExternalOp.RunProgram<a class="headerlink" href="#qtifwexternaloprunprogram" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>RunProgram( event, path, arguments=None, isAutoQuote=True,  
+            isHidden=False, isSynchronous=True, isElevated=True, 
+            runConditionFileName=None, isRunConditionNegated=False,
+            isAutoBitContext=True )
+</code></pre></div>
+
+<p>On Windows, set <code>isAutoBitContext=False</code> if you need to execute a 64 bit
+program from the installer&rsquo;s 32 bit context.</p>
+<h4 id="qtifwexternalopwaitforprocess">QtIfwExternalOp.WaitForProcess<a class="headerlink" href="#qtifwexternalopwaitforprocess" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>WaitForProcess( event, exeName=None, pidFileName=None,
+                timeOutSeconds=30, onTimeOut=None,   
+                isWaitForStart=False,  
+                isSuccessNoWait=True, 
+                isAutoBitContext=True )
+</code></pre></div>
+
+<p><strong>pidFileName</strong>: This optional &ldquo;op data file&rdquo; argument, takes precedence over the exeName when provided. It should contain a process id to query. 
+Such a file would normally be created via a prior <a href="#qtifwexternalop-writeopdatafile">QtIfwExternalOp.WriteOpDataFile</a>  operation or via a
+<a href="LowLevel.html#python-qt-script-builders">writeFile()</a> invocation from QScript (leaning on <a href="#opdatapath">QtIfwExternalOp.opDataPath()</a> to dynamically resolve the path). </p>
+<p><strong>onTimeOut</strong>: Additional script snippet to inject.  Will be invoked on the event.</p>
+<p>On Windows, set <code>isAutoBitContext=False</code> if you need to execute a 64 bit
+program from the installer&rsquo;s 32 bit context.</p>
+<h4 id="qtifwexternalopcreatestartupentry">QtIfwExternalOp.CreateStartupEntry<a class="headerlink" href="#qtifwexternalopcreatestartupentry" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>CreateStartupEntry( pkg=None, exePath=None, displayName=None, 
+                    isAllUsers=False )
+
+TODO: Add Linux &amp; macOS implementations
+</code></pre></div>
+
+<h4 id="qtifwexternalopcreateexternpackagefoundflagfile">QtIfwExternalOp.CreateExternPackageFoundFlagFile<a class="headerlink" href="#qtifwexternalopcreateexternpackagefoundflagfile" title="Permanent link">&para;</a></h4>
+<p><strong> MAC / LINUX </strong></p>
+<div class="codehilite"><pre><span></span><code>CreateExternPackageFoundFlagFile( event, altPkgNames, fileName )
+</code></pre></div>
+
+<h4 id="qtifwexternalopinstallexternpackage">QtIfwExternalOp.InstallExternPackage<a class="headerlink" href="#qtifwexternalopinstallexternpackage" title="Permanent link">&para;</a></h4>
+<p><strong> MAC / LINUX </strong></p>
+<div class="codehilite"><pre><span></span><code>InstallExternPackage( event, altPkgNames )
+</code></pre></div>
+
+<p><strong>altPkgNames</strong>: May be a single string, or a list of them.  If 
+providing a list, alternate names will be used based on what is 
+available within a given package manager on the target.<br />
+For example, the package &ldquo;xvfb&rdquo; maybe specified as <code>["xvfb","Xvfb"]</code>.  That handles the fact the &ldquo;X&rdquo; is capitalized 
+within some contexts (e.g. within YUM on RHEL&hellip;) but is lower case in others.</p>
+<h4 id="qtifwexternalopuninstallexternpackage">QtIfwExternalOp.UninstallExternPackage<a class="headerlink" href="#qtifwexternalopuninstallexternpackage" title="Permanent link">&para;</a></h4>
+<p><strong> MAC / LINUX </strong></p>
+<div class="codehilite"><pre><span></span><code>UninstallExternPackage( event, altPkgNames )
+</code></pre></div>
+
+<p><strong>altPkgNames</strong>: May be a single string, or a list of them.  If 
+providing a list, alternate names will be used based on what is 
+available within a given package manager on the target.<br />
+For example, the package &ldquo;xvfb&rdquo; maybe specified as <code>["xvfb","Xvfb"]</code>.  That handles the fact the &ldquo;X&rdquo; is capitalized 
+within some contexts (e.g. within YUM on RHEL&hellip;) but is lower case in others.</p>
+<h4 id="qtifwexternalopcreatewindowsappfoundflagfile">QtIfwExternalOp.CreateWindowsAppFoundFlagFile<a class="headerlink" href="#qtifwexternalopcreatewindowsappfoundflagfile" title="Permanent link">&para;</a></h4>
+<p><strong>WINDOWS ONLY</strong></p>
+<div class="codehilite"><pre><span></span><code>CreateWindowsAppFoundFlagFile( event, appName, fileName, 
+                               isAutoBitContext=True )
+</code></pre></div>
+
+<h4 id="qtifwexternalopuninstallwindowsapp">QtIfwExternalOp.UninstallWindowsApp<a class="headerlink" href="#qtifwexternalopuninstallwindowsapp" title="Permanent link">&para;</a></h4>
+<p><strong>WINDOWS ONLY</strong></p>
+<div class="codehilite"><pre><span></span><code>UninstallWindowsApp( appName, arguments=None,
+                     isSynchronous=True, isHidden=True, 
+                     isAutoBitContext=True,
+                     isSuccessOnNotFound=True )
+</code></pre></div>
+
+<h4 id="qtifwexternalopcreateregistrykey">QtIfwExternalOp.CreateRegistryKey<a class="headerlink" href="#qtifwexternalopcreateregistrykey" title="Permanent link">&para;</a></h4>
+<p><strong>WINDOWS ONLY</strong></p>
+<div class="codehilite"><pre><span></span><code>CreateRegistryKey( event, key, isAutoBitContext=True )
+</code></pre></div>
+
+<p>Set <code>isAutoBitContext=False</code> if you need to access 64 bit entries
+from the installer&rsquo;s 32 bit context, and/or wish to be explicit in the
+use of SysWow64 nodes.</p>
+<h4 id="qtifwexternalopremoveregistrykey">QtIfwExternalOp.RemoveRegistryKey<a class="headerlink" href="#qtifwexternalopremoveregistrykey" title="Permanent link">&para;</a></h4>
+<p><strong>WINDOWS ONLY</strong></p>
+<div class="codehilite"><pre><span></span><code>RemoveRegistryKey( event, key, isAutoBitContext=True )
+</code></pre></div>
+
+<p>Set <code>isAutoBitContext=False</code> if you need to access 64 bit entries
+from the installer&rsquo;s 32 bit context, and/or wish to be explicit in the
+use of SysWow64 nodes.</p>
+<h4 id="qtifwexternalopcreateregistryentry">QtIfwExternalOp.CreateRegistryEntry<a class="headerlink" href="#qtifwexternalopcreateregistryentry" title="Permanent link">&para;</a></h4>
+<p><strong>WINDOWS ONLY</strong></p>
+<div class="codehilite"><pre><span></span><code>CreateRegistryEntry( event, 
+    key, valueName=None, value=&quot;&quot;, valueType=&quot;String&quot;,
+    isAutoBitContext=True )
+</code></pre></div>
+
+<p>Set <code>isAutoBitContext=False</code> if you need to access 64 bit entries
+from the installer&rsquo;s 32 bit context, and/or wish to be explicit in the
+use of SysWow64 nodes.</p>
+<h4 id="qtifwexternalopremoveregistryentry">QtIfwExternalOp.RemoveRegistryEntry<a class="headerlink" href="#qtifwexternalopremoveregistryentry" title="Permanent link">&para;</a></h4>
+<p><strong>WINDOWS ONLY</strong></p>
+<div class="codehilite"><pre><span></span><code>RemoveRegistryEntry( event, 
+    key, valueName=None, isAutoBitContext=True )
+</code></pre></div>
+
+<p>Set <code>isAutoBitContext=False</code> if you need to access 64 bit entries
+from the installer&rsquo;s 32 bit context, and/or wish to be explicit in the
+use of SysWow64 nodes.</p>
+<h4 id="qtifwexternalopcreateexefromscript">QtIfwExternalOp.CreateExeFromScript<a class="headerlink" href="#qtifwexternalopcreateexefromscript" title="Permanent link">&para;</a></h4>
+<p><strong>WINDOWS ONLY</strong></p>
+<div class="codehilite"><pre><span></span><code>CreateExeFromScript( script, brandingInfo, srcIconPath,
+                     targetDir=QT_IFW_TARGET_DIR )
+</code></pre></div>
+
+<p><strong>script</strong>: <a href="LowLevel.html#executablescript">ExecutableScripts</a></p>
+<h4 id="qtifwexternalopwrapperscript2exe">QtIfwExternalOp.WrapperScript2Exe<a class="headerlink" href="#qtifwexternalopwrapperscript2exe" title="Permanent link">&para;</a></h4>
+<p><strong>WINDOWS ONLY</strong></p>
+<div class="codehilite"><pre><span></span><code>Script2Exe( scriptPath, exePath, brandingInfo,
+            iconDirPath, iconName, 
+            isScriptRemoved=False, isIconDirRemoved=False )
+</code></pre></div>
+
+<h4 id="qtifwexternalopwrapperscript2exe_1">QtIfwExternalOp.WrapperScript2Exe<a class="headerlink" href="#qtifwexternalopwrapperscript2exe_1" title="Permanent link">&para;</a></h4>
+<p><strong>WINDOWS ONLY</strong></p>
+<div class="codehilite"><pre><span></span><code>WrapperScript2Exe( scriptPath, exePath, 
+                   targetPath, brandingInfo, iconName=&quot;0.ico&quot; )
+</code></pre></div>
+
+<h3 id="qtifwexternalop-convenience-scripts">QtIfwExternalOp Convenience Scripts<a class="headerlink" href="#qtifwexternalop-convenience-scripts" title="Permanent link">&para;</a></h3>
+<h4 id="self-destructing-script-snippets">Self-Destructing Script Snippets<a class="headerlink" href="#self-destructing-script-snippets" title="Permanent link">&para;</a></h4>
+<p>In some circumstances, e.g. when using scripts with 
+<a href="#qtifwonfinisheddetachedexec">QtIfwOnFinishedDetachedExec</a> or 
+<a href="#qtifwonfinishedcheckbox">QtIfwOnFinishedCheckbox</a>, you may wish for your
+scripts to &ldquo;self-destruct&rdquo; (i.e. delete themselves).</p>
+<p>The following functions return strings that you may append to / weave into
+your custom scripts to serve this purpose. </p>
+<h5 id="qtifwexternalopbatchselfdestructsnippet">QtIfwExternalOp.batchSelfDestructSnippet<a class="headerlink" href="#qtifwexternalopbatchselfdestructsnippet" title="Permanent link">&para;</a></h5>
+<h5 id="qtifwexternaloppowershellselfdestructsnippet">QtIfwExternalOp.powerShellSelfDestructSnippet<a class="headerlink" href="#qtifwexternaloppowershellselfdestructsnippet" title="Permanent link">&para;</a></h5>
+<h5 id="qtifwexternalopvbscriptselfdestructsnippet">QtIfwExternalOp.vbScriptSelfDestructSnippet<a class="headerlink" href="#qtifwexternalopvbscriptselfdestructsnippet" title="Permanent link">&para;</a></h5>
+<h5 id="qtifwexternalopshellscriptselfdestructsnippet">QtIfwExternalOp.shellScriptSelfDestructSnippet<a class="headerlink" href="#qtifwexternalopshellscriptselfdestructsnippet" title="Permanent link">&para;</a></h5>
+<h5 id="qtifwexternalopapplescriptselfdestructsnippet">QtIfwExternalOp.appleScriptSelfDestructSnippet<a class="headerlink" href="#qtifwexternalopapplescriptselfdestructsnippet" title="Permanent link">&para;</a></h5>
+<h4 id="qtifwexternalopcreateopflagfilescript">QtIfwExternalOp.CreateOpFlagFileScript<a class="headerlink" href="#qtifwexternalopcreateopflagfilescript" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>CreateOpFlagFile( fileName, dynamicVar=None )
+</code></pre></div>
+
+<p><strong>dynamicVar</strong>: Control the creation of the flag file via a dynamic installer 
+variable. Note that a &ldquo;false&rdquo; condition will be met when a boolean variable is
+explicitly set to <code>false</code>, or if the variable is <strong>undefined</strong>, or it contains <strong>no content</strong>, or if it is set to <code>0</code>. The opposing <code>true</code> condition, required 
+to create the flag file, is simply the inverse of that.  So notably, the flag 
+can be raised by having a value in the dynamic variable, to then just simply 
+&ldquo;true&rdquo;. By default, this argument is set to <code>None</code>, and therefore the file will be created without any logical 
+controls.  </p>
+<p>Note that the flag is either raised by this function or not. This function <strong>does 
+not remove</strong> a file that already exists.        </p>
+<h4 id="qtifwexternalopmakedirscript">QtIfwExternalOp.MakeDirScript<a class="headerlink" href="#qtifwexternalopmakedirscript" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>MakeDirScript( dirPath,
+               owner=QT_IFW_USER, group=QT_IFW_USER, &lt;LINUX/MAC ONLY&gt;
+               access=&quot;755&quot; )                        &lt;LINUX/MAC ONLY&gt;
+</code></pre></div>
+
+<p><strong>Windows Type</strong>: Batch 
+<strong>Mac/Linux Type</strong>: ShellScript </p>
+<h4 id="qtifwexternalopremovedirscript">QtIfwExternalOp.RemoveDirScript<a class="headerlink" href="#qtifwexternalopremovedirscript" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>RemoveDirScript( dirPath )
+</code></pre></div>
+
+<p><strong>Windows Type</strong>: Batch 
+<strong>Mac/Linux Type</strong>: ShellScript </p>
+<h4 id="qtifwexternalopwritefilescript">QtIfwExternalOp.WriteFileScript<a class="headerlink" href="#qtifwexternalopwritefilescript" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>WriteFileScript( filePath, data=None, isOverwrite=True,
+                 owner=QT_IFW_USER, group=QT_IFW_USER,  &lt;LINUX/MAC ONLY&gt;
+                 access=&quot;644&quot; )                         &lt;LINUX/MAC ONLY&gt;
+</code></pre></div>
+
+<p><strong>Windows Type</strong>: Batch 
+<strong>Mac/Linux Type</strong>: ShellScript </p>
+<h4 id="qtifwexternalopremovefilescript">QtIfwExternalOp.RemoveFileScript<a class="headerlink" href="#qtifwexternalopremovefilescript" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>RemoveFileScript( filePath )
+</code></pre></div>
+
+<p><strong>Windows Type</strong>: Batch 
+<strong>Mac/Linux Type</strong>: ShellScript </p>
+<h4 id="qtifwexternalopwriteopdatafilescript">QtIfwExternalOp.WriteOpDataFileScript<a class="headerlink" href="#qtifwexternalopwriteopdatafilescript" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>WriteOpDataFileScript( fileName, data=None )
+</code></pre></div>
+
+<p><strong>Windows Type</strong>: Batch 
+<strong>Mac/Linux Type</strong>: ShellScript </p>
+<h4 id="qtifwexternaloprunprogramscript">QtIfwExternalOp.RunProgramScript<a class="headerlink" href="#qtifwexternaloprunprogramscript" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>RunProgramScript( path, arguments=None, isAutoQuote=True, 
+                  isHidden=False, isSynchronous=True,
+                  runConditionFileName=None, isRunConditionNegated=False,
+                  isAutoBitContext=True, 
+                  replacements=None )
+</code></pre></div>
+
+<p><strong>Windows Type</strong>: Batch or PowerShell (determined by options employed)
+<strong>Mac/Linux Type</strong>: ShellScript </p>
+<p>On Windows, set <code>isAutoBitContext=False</code> if you need to execute a 64 bit
+program from the installer&rsquo;s 32 bit context.</p>
+<p>Note: Elevation is controlled via the operation executing the script 
+rather embedded within it.</p>
+<h4 id="qtifwexternalopwaitforprocessscript">QtIfwExternalOp.WaitForProcessScript<a class="headerlink" href="#qtifwexternalopwaitforprocessscript" title="Permanent link">&para;</a></h4>
+<div class="codehilite"><pre><span></span><code>WaitForProcessScript( exeName=None, pidFileName=None, 
+       timeOutSeconds=30, onTimeout=None, 
+       isWaitForStart=False,  
+       isExitOnSuccess=True, isExitOnNoWait=True, isExitOnTimeout=True,
+       isSelfDestruct=False, 
+       isAutoBitContext=True )
+</code></pre></div>
+
+<p><strong>Windows Type</strong>: PowerShell 
+<strong>Mac/Linux Type</strong>: ShellScript </p>
+<p><strong>pidFileName</strong>: This optional &ldquo;op data file&rdquo; argument, takes precedence over the exeName when provided. It should contain a process id to query. 
+Such a file would normally be created via a prior <a href="#qtifwexternalop-writeopdatafile">QtIfwExternalOp.WriteOpDataFile</a>  operation or via a
+<a href="LowLevel.html#python-qt-script-builders">writeFile()</a> invocation from QScript (leaning on <a href="#opdatapath">QtIfwExternalOp.opDataPath()</a> to dynamically resolve the path). </p>
+<p>On Windows, set <code>isAutoBitContext=False</code> if you need to execute a 64 bit
+program from the installer&rsquo;s 32 bit context.</p>
+<p>Note: Elevation is controlled via the operation executing the script 
+rather embedded within it.</p>
+<h4 id="qtifwexternalopcreateexternpackagefoundflagfilescript">QtIfwExternalOp.CreateExternPackageFoundFlagFileScript<a class="headerlink" href="#qtifwexternalopcreateexternpackagefoundflagfilescript" title="Permanent link">&para;</a></h4>
+<p><strong> MAC / LINUX </strong></p>
+<p><strong>Mac/Linux Type</strong>: ShellScript </p>
+<div class="codehilite"><pre><span></span><code>CreateExternPackageFoundFlagFile( altPkgNames, fileName, 
+                                  isSelfDestruct=False  )
+</code></pre></div>
+
+<h4 id="qtifwexternalopinstallexternpackagescript">QtIfwExternalOp.InstallExternPackageScript<a class="headerlink" href="#qtifwexternalopinstallexternpackagescript" title="Permanent link">&para;</a></h4>
+<p><strong> MAC / LINUX </strong></p>
+<p><strong>Mac/Linux Type</strong>: ShellScript </p>
+<div class="codehilite"><pre><span></span><code>InstallExternPackage( altPkgNames, isExitOnFailure=False )
+</code></pre></div>
+
+<p><strong>altPkgNames</strong>: May be a single string, or a list of them.  If 
+providing a list, alternate names will be used based on what is 
+available within a given package manager on the target.<br />
+For example, the package &ldquo;xvfb&rdquo; maybe specified as <code>["xvfb","Xvfb"]</code>.  That handles the fact the &ldquo;X&rdquo; is capitalized 
+within some contexts (e.g. within YUM on RHEL&hellip;) but is lower case in others.</p>
+<h4 id="qtifwexternalopuninstallexternpackagescript">QtIfwExternalOp.UninstallExternPackageScript<a class="headerlink" href="#qtifwexternalopuninstallexternpackagescript" title="Permanent link">&para;</a></h4>
+<p><strong> MAC / LINUX </strong></p>
+<p><strong>Mac/Linux Type</strong>: ShellScript </p>
+<div class="codehilite"><pre><span></span><code>UninstallExternPackage( altPkgNames, isExitOnFailure=False )
+</code></pre></div>
+
+<p><strong>altPkgNames</strong>: May be a single string, or a list of them.  If 
+providing a list, alternate names will be used based on what is 
+available within a given package manager on the target.<br />
+For example, the package &ldquo;xvfb&rdquo; maybe specified as <code>["xvfb","Xvfb"]</code>.  That handles the fact the &ldquo;X&rdquo; is capitalized 
+within some contexts (e.g. within YUM on RHEL&hellip;) but is lower case in others.</p>
+<h4 id="qtifwexternalopcreateregistrykeyscript">QtIfwExternalOp.CreateRegistryKeyScript<a class="headerlink" href="#qtifwexternalopcreateregistrykeyscript" title="Permanent link">&para;</a></h4>
+<p><strong>WINDOWS ONLY</strong></p>
+<div class="codehilite"><pre><span></span><code>CreateRegistryKeyScript( key, isAutoBitContext=True, 
+                         replacements=None )
+</code></pre></div>
+
+<p><strong>Type</strong>: PowerShell </p>
+<h4 id="qtifwexternalopremoveregistrykeyscript">QtIfwExternalOp.RemoveRegistryKeyScript<a class="headerlink" href="#qtifwexternalopremoveregistrykeyscript" title="Permanent link">&para;</a></h4>
+<p><strong>WINDOWS ONLY</strong></p>
+<div class="codehilite"><pre><span></span><code>RemoveRegistryKeyScript( key, isAutoBitContext=True, 
+                         replacements=None )
+</code></pre></div>
+
+<p><strong>Type</strong>: PowerShell </p>
+<h4 id="qtifwexternalopcreateregistryentryscript">QtIfwExternalOp.CreateRegistryEntryScript<a class="headerlink" href="#qtifwexternalopcreateregistryentryscript" title="Permanent link">&para;</a></h4>
+<p><strong>WINDOWS ONLY</strong></p>
+<div class="codehilite"><pre><span></span><code>CreateRegistryEntryScript( key, valueName=None, 
+                           value=&quot;&quot;, valueType=&quot;String&quot;,
+                           isAutoBitContext=True,
+                           replacements=None )
+</code></pre></div>
+
+<p><strong>Type</strong>: PowerShell </p>
+<h4 id="qtifwexternalopremoveregistryentryscript">QtIfwExternalOp.RemoveRegistryEntryScript<a class="headerlink" href="#qtifwexternalopremoveregistryentryscript" title="Permanent link">&para;</a></h4>
+<p><strong>WINDOWS ONLY</strong></p>
+<div class="codehilite"><pre><span></span><code>RemoveRegistryEntryScript( key, valueName=None, 
+                           isAutoBitContext=True, 
+                           replacements=None )
+</code></pre></div>
+
+<p><strong>Type</strong>: PowerShell </p>
+<h4 id="qtifwexternalopcreatewindowsappfoundflagfilescript">QtIfwExternalOp.CreateWindowsAppFoundFlagFileScript<a class="headerlink" href="#qtifwexternalopcreatewindowsappfoundflagfilescript" title="Permanent link">&para;</a></h4>
+<p><strong>WINDOWS ONLY</strong> </p>
+<div class="codehilite"><pre><span></span><code>CreateWindowsAppFoundFlagFileScript( appName, fileName,
+                                     isAutoBitContext=True,
+                                     isSelfDestruct=False )
+</code></pre></div>
+
+<p><strong>Type</strong>: PowerShell </p>
+<h4 id="qtifwexternalopuninstallwindowsappscript">QtIfwExternalOp.UninstallWindowsAppScript<a class="headerlink" href="#qtifwexternalopuninstallwindowsappscript" title="Permanent link">&para;</a></h4>
+<p><strong>WINDOWS ONLY</strong></p>
+<div class="codehilite"><pre><span></span><code>UninstallWindowsAppScript( appName, arguments=None,
+                           isSynchronous=True,
+                           isHidden=True,
+                           isAutoBitContext=True,
+                           isSelfDestruct=False )
+</code></pre></div>
+
+<p><strong>Type</strong>: PowerShell </p>
+<h2 id="qtifwkillop">QtIfwKillOp<a class="headerlink" href="#qtifwkillop" title="Permanent link">&para;</a></h2>
+<p>This class is used to drive process killing operations. Such actions are frequently 
+useful prior to installing or uninstalling software, especially when it comes to
+instances of the target programs themselves.  </p>
+<p>This class is employed by <a href="#qtifwpackagescript">QtIfwPackageScript</a>, and is internally
+used to actually generate and inject <a href="#qtifwexternalop">QtIfwExternalOp</a> objects.     </p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>QtIfwKillOp( processName, onInstall=True, onUninstall=True ):
+</code></pre></div>
+
+<p>Attributes &amp; default values:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">proc</span><span class="nb">es</span><span class="nv">sName</span> <span class="o">=</span> <span class="o">&lt;</span><span class="nv">required</span><span class="o">&gt;</span>
+<span class="nf">onInstall</span>   <span class="o">=</span> <span class="nv">True</span>
+<span class="nf">onUninstall</span> <span class="o">=</span> <span class="nv">True</span>
+<span class="nf">isElevated</span>  <span class="o">=</span> <span class="nv">True</span>
+</code></pre></div>
+
+<p>Notes:</p>
+<p>Kill operations are performed prior to any others during either on install or uninstall process.
+<strong>ALL</strong> processes with the given <code>processName</code> will be forcefully terminated.
+For convenience, instead of passing the explicit name the of process, you may instead pass a 
+<a href="#qtifwpackage">QtIfwPackage</a>.  In which case, the name of the &ldquo;primary executable&rdquo; will be 
+automatically extracted from that.  </p>
+<h2 id="qtifwexternalresource">QtIfwExternalResource<a class="headerlink" href="#qtifwexternalresource" title="Permanent link">&para;</a></h2>
+<p>This class provides as a means to include &ldquo;resources&rdquo; (e.g. third party utility programs),
+in the installer which are not part of the product or intended for direct use 
+by an end user. Such resources may then be utilized by your package script operations.
+These objects are typically added to in the <code>externalRes</code> attribute of 
+<a href="#qtifwexternalop">QtIfwExternalOp</a> objects, which in turn are utilized by<br />
+<a href="#qtifwpackagescript">QtIfwPackageScript</a> objects.</p>
+<p>By default, such resources will be extracted into a temporary location on the target and 
+removed at the end of installation. If you will require any for maintenance operations (i.e. 
+during updates or uninstallation), enabling the <code>isMaintenanceNeed</code> attribute will cause the 
+resource to be retained on the target, so it will be available later when needed. </p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>QtIfwExternalResource( name, srcPath, srcBasePath=None, 
+                       isMaintenanceNeed=False, contentKeys={} )
+</code></pre></div>
+
+<p>Object Attributes &amp; default values:</p>
+<div class="codehilite"><pre><span></span><code>name              = &lt;required&gt;               
+srcPath           = &lt;required&gt; 
+srcBasePath       = None
+isMaintenanceNeed = False
+contentKeys       = {}
+</code></pre></div>
+
+<p>Object Methods:</p>
+<div class="codehilite"><pre><span></span><code>targetPath( key=None )
+targetDirPath()
+
+targetPathVar( key=None )
+targetDirPathVar()
+</code></pre></div>
+
+<p>Static Methods:</p>
+<div class="codehilite"><pre><span></span><code>BuiltIn( name, isMaintenanceNeed=False )
+</code></pre></div>
+
+<p>Built In Windows Resource Names:</p>
+<div class="codehilite"><pre><span></span><code>RESOURCE_HACKER
+    http://www.angusj.com/resourcehacker/
+</code></pre></div>
+
+<p><strong>name</strong>:  The base id by which to reference the resources and to name a target 
+container directory.  </p>
+<p><strong>srcPath</strong>: The path to the resources <strong>file</strong> or <strong>directory</strong>.  This may be absolute or relative.</p>
+<p><strong>srcBasePath</strong>:  If using a relative <code>srcPath</code>, you may override the base path with this.</p>
+<p><strong>isMaintenanceNeed</strong>: Enabling this will cause the resource to be retained on the target, so it will be available for the maintenance tool / uninstaller. </p>
+<p><strong>contentKeys</strong>: A dictionary of key/value pairs to be registered in the installer, allowing 
+you to dynamically access the paths within scripts on your target.  If this detail is 
+omitted during construction, and your QtIfwExternalResource contains only one file, 
+a key will be automatically registered for you as the name of the object. </p>
+<p><strong>targetPath( key )</strong>: Use this to reference the resource paths when generating 
+QtScripts / operations which will utilize it.  Specify the key as registered via 
+<code>contentKeys</code>. If you omit the key when calling this, and only one key exists 
+(such as when bundling a single file), that default key will be implied.     </p>
+<p><strong>targetDirPath()</strong>: In the event you need to access the container directory for the tool,
+e.g. to change your working directory to it, you may employ this method.</p>
+<p><strong>targetPathVar( key=None ), targetDirPathVar()</strong>: The place holders / variable names
+to use inside an <a href="LowLevel.html#executablescript">ExecutableScript</a> to refer to these paths.
+Assuming a key is valid, you could also just hardcode it like <code>@key@</code> rather than call <code>targetPathVar( key=None )</code> to get that back! </p>
+<p><strong>QtIfwExternalResource.BuiltIn</strong>: Convenience method to bundle tools into an installer 
+which are included with the library. </p>
+<h2 id="qtifwexewrapper">QtIfwExeWrapper<a class="headerlink" href="#qtifwexewrapper" title="Permanent link">&para;</a></h2>
+<p>This class provides a means to &ldquo;wrap&rdquo; your exe inside of additional external layers.
+Such layers may take different forms, and be nested inside of one another.
+The benefit of this is to impose a specific environment and or set of parameters 
+onto the exe without having to modify it internally.  These options work cross
+platform, and could be slapped over the top of a program written in any language.
+You may, in fact, even wrap third-party (pre-compiled) programs in these layers!</p>
+<p>The easiest way to use this class is to set some of its basic attributes. For
+example, <code>workingDir</code>, <code>isElevated</code>, <code>envVars</code>, or <code>args</code>.  The approach taken by the 
+library is to use the &ldquo;lightest touch&rdquo; possible.  If you simply changed the 
+default values for those example attributes, their shortcuts (on applicable platforms) 
+and the way QtIFW would run the program post installation, would be altered to provided 
+the functionality.  </p>
+<p>The most flexible attribute you may impose is a <code>wrapperScript</code> layer.
+This is an <a href="LowLevel.html#executablescript">ExecutableScript</a> object, used to produce
+a persistent &ldquo;companion&rdquo; to your binary.  Executing the script rather then the 
+binary itself would be the intended means for launching the program.  If this attribute 
+is set, &ldquo;shortcuts&rdquo; which would normally point a user to the binary, will instead run this 
+wrapper layer.  On Windows, this (normally) equates to having a batch file companion. 
+On Linux, a shell script companion is created (with an explicit <code>.sh</code> extension). On macOS, 
+a shell script with no extension is embedded into the .app file when producing a gui application, 
+else the same design used on Linux is employed for non-gui programs.  </p>
+<p>The application of a wrapper script of this nature is not entirely uncommon - especially on Linux. 
+As an example, when deploying Qt C++ applications on Linux which are 
+dynamically linked, the <strong>standard procedure</strong> (per Qt documentation) is to use this 
+(slightly modified) shell script to load the required libraries: </p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div class="codehilite"><pre><span></span><code><span class="ch">#!/bin/sh</span>
+<span class="nv">appname</span><span class="o">=</span><span class="sb">`</span>basename <span class="s2">&quot;</span><span class="nv">$0</span><span class="s2">&quot;</span> <span class="p">|</span> sed s,<span class="se">\.</span>sh$,,<span class="sb">`</span>
+<span class="nv">dirname</span><span class="o">=</span><span class="sb">`</span>dirname <span class="s2">&quot;</span><span class="nv">$0</span><span class="s2">&quot;</span><span class="sb">`</span>
+<span class="nv">tmp</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">dirname</span><span class="p">#?</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">dirname</span><span class="p">%</span><span class="nv">$tmp</span><span class="si">}</span><span class="s2">&quot;</span> !<span class="o">=</span> <span class="s2">&quot;/&quot;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+<span class="nv">dirname</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">/</span><span class="nv">$dirname</span><span class="s2">&quot;</span>
+<span class="k">fi</span>
+<span class="nv">LD_LIBRARY_PATH</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$dirname</span><span class="s2">&quot;</span>
+<span class="nb">export</span> LD_LIBRARY_PATH
+<span class="s2">&quot;</span><span class="nv">$dirname</span><span class="s2">/</span><span class="nv">$appname</span><span class="s2">&quot;</span> <span class="s2">&quot;</span><span class="nv">$@</span><span class="s2">&quot;</span>
+</code></pre></div>
+</td></tr></table>
+<p>Other ways for using a wrapper like this include automatically detecting dependencies, and
+then downloading and installing them as needed.  Or, doing something similar for updates
+to your software. Using a wrapper, you could launch a &ldquo;companion application&rdquo; along side the 
+primary target. You could start a background service, or open help documentation&hellip; The
+possibilities are really boundless.  </p>
+<p>Note: On Windows and Linux desktops (e.g. Ubuntu) for a gui application with <strong>shortcuts</strong>,<br />
+the &ldquo;built-in wrapper&rdquo; features (<code>workingDir</code>, <code>isElevated</code>, <code>envVars</code>, <code>args</code>) maybe 
+used <strong>in combination</strong> with a custom <code>wrapperScript</code>. I.e. those options will be applied via 
+the shortcut launching the script OR the executable.  If you need the wrapper to work without 
+a shortcut involved, you will have to <strong>manually</strong> include these other features in the script.
+On <strong>macOS</strong>, this will <strong>always</strong> be applicable because there is no &ldquo;shortcut&rdquo; involved.
+To add these details yourself, you may wish to first use the built-in attributes without the 
+custom script, then copy what is written to the auto generated script into your own.<br />
+Alternately, you could programmatically manipulate the <code>wrapperScript</code> attribute referencing 
+an <a href="LowLevel.html#executablescript">ExecutableScript</a> generated for you by this class upon it&rsquo;s 
+construction (or upon a call to <code>refresh()</code>). </p>
+<p>On <strong>WINDOWS ONLY</strong>: You may optionally enable the <code>isExe</code> flag. Rather than a batch file, 
+this will produce a proxy exe, which will live adjacent to the target it wraps.<br />
+The icon and version / branding info from the original will be injected into it.</p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>QtIfwExeWrapper( exeName, isGui=False, 
+                 wrapperScript=None, 
+                 exeDir=QT_IFW_TARGET_DIR, workingDir=None, 
+                 args=None, envVars=None, isElevated=False,
+                 isExe=False )
+</code></pre></div>
+
+<p>Attributes &amp; default values:</p>
+<div class="codehilite"><pre><span></span><code>    <span class="n">exeName</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">required</span><span class="o">&gt;</span>        
+    <span class="n">isGui</span>   <span class="o">=</span> <span class="n">False</span>
+
+    <span class="n">wrapperScript</span> <span class="o">=</span> <span class="n">None</span>
+
+    <span class="n">exeDir</span>        <span class="o">=</span> <span class="s">&quot;@TargetDir@&quot;</span> <span class="o">&lt;</span><span class="n">QtIfw</span> <span class="n">Built</span><span class="o">-</span><span class="k">in</span> <span class="n">Variable</span><span class="o">&gt;</span>
+    <span class="n">workingDir</span>    <span class="o">=</span> <span class="n">None</span>  <span class="o">&lt;</span><span class="n">None</span><span class="o">=</span><span class="n">don</span><span class="err">&#39;</span><span class="n">t</span> <span class="n">impose</span> <span class="n">here</span><span class="p">,</span> <span class="n">use</span> <span class="n">QT_IFW_TARGET_DIR</span> <span class="n">via</span> <span class="n">other</span> <span class="n">means</span><span class="o">&gt;</span>
+
+    <span class="n">args</span>          <span class="o">=</span> <span class="n">None</span>      
+    <span class="n">envVars</span>       <span class="o">=</span> <span class="n">None</span>         
+    <span class="n">isElevated</span>    <span class="o">=</span> <span class="n">False</span>
+
+    <span class="o">&lt;</span><span class="n">Windows</span> <span class="n">only</span><span class="o">&gt;</span>
+        <span class="n">isExe</span>           <span class="o">=</span> <span class="n">False</span>
+        <span class="n">wrapperExeName</span>  <span class="o">=</span> <span class="s">&quot;&lt;exeName&gt;Launcher&quot;</span> 
+        <span class="n">wrapperIconName</span> <span class="o">=</span> <span class="s">&quot;0.ico&quot;</span>
+
+        <span class="n">_winPsStartArgs</span> <span class="o">=</span> <span class="n">None</span>
+
+    <span class="o">&lt;</span><span class="n">Auto</span> <span class="n">defined</span> <span class="n">via</span> <span class="n">refresh</span><span class="o">&gt;</span>
+    <span class="n">_runProgram</span>       
+    <span class="n">_runProgArgs</span>      
+    <span class="n">_shortcutCmd</span>      
+    <span class="n">_shortcutArgs</span>     
+    <span class="n">_shortcutWinStyle</span>
+</code></pre></div>
+
+<p>Functions:</p>
+<div class="codehilite"><pre><span></span><code>    refresh()
+</code></pre></div>
+
+<h2 id="qtifwonfinisheddetachedexec">QtIfwOnFinishedDetachedExec<a class="headerlink" href="#qtifwonfinisheddetachedexec" title="Permanent link">&para;</a></h2>
+<p>This class defines an action to be invoked upon completing the wizard.
+It will launch a detached / asynchronous process when the user clicks 
+the &ldquo;Finished&rdquo; button (which may occur virtually within a silent installer).
+Such actions may be invoked on installation, uninstallation, or both. </p>
+<p>While working independently from it, this class is closely related to 
+<a href="#qtifwonfinishedcheckbox">QtIfwOnFinishedCheckbox</a>.  This class provides the 
+framework for the core functionally, while that one contributes UI dimensions.    </p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>QtIfwOnFinishedDetachedExec( name, event=None,   
+                             ifwPackage=None, 
+                             runProgram=None, argList=None,
+                             shellCmd=None, script=None,
+                             openViaOsPath=None,                 
+                             isReboot=False, rebootDelaySecs=2,
+                             ifCondition=None )
+                             onLoad=None, onEnter=None )
+</code></pre></div>
+
+<p>Attributes:   </p>
+<div class="codehilite"><pre><span></span><code>name  = name
+
+    &lt;QtIfwOnFinishedDetachedExec.ON_INSTALL / ON_UNINSTALL / ON_BOTH&gt;
+event = ON_INSTALL
+
+runProgram  = None
+argList     = None
+script      = None 
+isReboot    = isReboot
+
+ifCondition = None &lt;QtScript snippet&gt;
+
+_action     = &lt;auto defined&gt;
+</code></pre></div>
+
+<p>Details:</p>
+<p><strong>ifCondition</strong>: Controls whether to invoke this action via QtScript.
+Note, this feature is not applied by the derived class QtIfwOnFinishedCheckbox.
+That class invokes the corresponding action if the checkbox is selected.     </p>
+<h2 id="qtifwuipage">QtIfwUiPage<a class="headerlink" href="#qtifwuipage" title="Permanent link">&para;</a></h2>
+<p>This class closely resembles <a href="#qtifwwidget">QtIfwWidget</a>.  They internally derive
+from a common (protected) base class.  In contrast, however, QtIfwWidgets are
+<strong>collections</strong> of user interface elements to be injected <em>into</em> default wizard pages, 
+where QtIfwUiPages are entirely new steps/pages injected <em>between</em> (or <em>over</em>) 
+default wizard pages.   </p>
+<p>A great deal can be done to customize the way an installer&rsquo;s interface works by
+simply adding custom widgets.  There are limitations, however, to that approach.</p>
+<p>This class is used to completely add or overwrite pages in the an installer.
+The content of the pages are defined as Qt &ldquo;forms&rdquo;, i.e. <code>.ui</code> (xml) files which 
+adhere to the
+<a href="https://doc.qt.io/qt-5/designer-ui-file-format.html">Qt UI file format</a>.
+While it is possible to <em>manually</em> create such forms, typically such files  <br />
+are machine generated using a WYSIWYG tool from within
+<a href="https://doc.qt.io/qtcreator/">Qt Creator</a> or
+<a href="https://doc.qt.io/qt-5/qtdesigner-manual.html">Qt Designer</a>.</p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>QtIfwUiPage( name, pageOrder=None, 
+             sourcePath=None, content=None,
+             onLoad=None, onEnter=None )
+</code></pre></div>
+
+<p>Attributes:   </p>
+<div class="codehilite"><pre><span></span><code>name             = &lt;required&gt;
+pageOrder        = None
+
+content          = None
+replacements     = {}
+
+onLoad           = None
+onEnter          = None       
+eventHandlers    = {}
+supportScript    = None
+
+isIncInAutoPilot = False
+_isOnLoadBase    = True    
+_isOnEnterBase   = True
+</code></pre></div>
+
+<p>Functions:</p>
+<div class="codehilite"><pre><span></span><code>fileName()
+resolve( qtIfwConfig )
+write( dirPath )
+</code></pre></div>
+
+<p>Details:</p>
+<p><strong>name</strong>: This identifier will be used to name a .ui file containing the form, and to reference the page widget within any scripting.</p>
+<p>If you wish to <em>replace</em> a default page, set the <code>name</code> for an object of this 
+type to <code>QT_IFW_REPLACE_PAGE_PREFIX</code> <em>concatenated</em> with one of the following page name constants: </p>
+<div class="codehilite"><pre><span></span><code>QT_IFW_INTRO_PAGE      
+QT_IFW_TARGET_DIR_PAGE 
+QT_IFW_COMPONENTS_PAGE 
+QT_IFW_LICENSE_PAGE    
+QT_IFW_START_MENU_PAGE 
+QT_IFW_READY_PAGE      
+QT_IFW_INSTALL_PAGE    
+QT_IFW_FINISHED_PAGE
+</code></pre></div>
+
+<p>Conversely, to add a <em>new</em> page, give it some other name and specify the 
+<code>pageOrder</code>using one the constants above. </p>
+<p><strong>pageOrder</strong>: If <strong>not</strong> a replacement, the page will be added added BEFORE 
+this specified page.</p>
+<p><strong>onLoad</strong>: Qt Script snippet invoked when loading the page into memory. This is executed within a <strong>package</strong> script, when then &ldquo;component&rdquo; is constructed.  It&rsquo;s scope therefore is limited to such, and it cannot call functions defined in the <strong>controller script</strong>.  UI page resources are contained within packages, which is why they are loaded and configured from there.</p>
+<p><strong>onEnter</strong>: Qt Script snippet invoked upon entering / displaying the page to the user.
+This is executed within a <strong>controller</strong> script, it&rsquo;s scope is limited to such.  Therefore,
+<strong>package</strong> script functions and globals are not available here.   </p>
+<p><strong>isIncInAutoPilot</strong>: This attribute is only applied when the page is <strong>not</strong> a replacement.  Note, this is <code>False</code> by default.  Set this to <code>True</code>, to load this &ldquo;additional&rdquo; page
+when running in &ldquo;auto pilot mode&rdquo; (e.g. within a 
+<a href="LowLevel.html#silent-installers">Silent Installer</a> context.  It is then on you to ensure
+that alternate installation mode functions as desired.  See <code>_isOnEnterBase</code>. </p>
+<p><strong>_isOnLoadBase</strong>: <em>Protected</em> Note, this is enabled by default. When this is set to <code>True</code>,
+an auto generated script will be added to the installer, which will execute prior to
+<code>onLoad</code>.  This &ldquo;base&rdquo; script will dynamically resize the page, so it fits properly on each
+alternate platform&rsquo;s version of the installer.
+It is recommended you leave this in place, unless you are overwriting it. 
+Having this in place will additionally create a <code>var page</code>, which refers to
+this page. The <code>onLoad</code> script may then make use of that variant to access the page widget or the child widgets on it.
+See <a href="LowLevel.html#installer-scripting">Installer Scripting</a></p>
+<p><strong>_isOnEnterBase</strong>: <em>Protected</em> Note, this is enabled by default. When this is set to <code>True</code>, 
+an auto generated script will be added to the installer, which will execute prior to <code>onEnter</code>.  This &ldquo;base&rdquo; script will automatically &ldquo;click&rdquo; the &ldquo;Next&rdquo; button upon displaying the page, when running in &ldquo;auto pilot mode&rdquo; (e.g. within a 
+<a href="LowLevel.html#silent-installers">Silent Installer</a> context.<br />
+Having this in place will additionally create a <code>var page</code>, which refers to
+this page. The <code>onEnter</code> script may then make use of that variant to access the page widget or the child widgets on it.
+See <a href="LowLevel.html#installer-scripting">Installer Scripting</a></p>
+<p><strong>eventHandlers</strong>: Qt Script simple &ldquo;event handler&rdquo; dictionary containing entries in the form: name:body.
+The typical use case for this attribute involves the <code>onLoad</code> script connecting events (e.g. button clicks) to handlers. The <code>eventHandlers</code> then provide the definitions for what to do
+upon event occurrences. (Note: These are defined within a <strong>package</strong> script, but are <strong>controller.prototypes</strong>.)
+Note this uses the Qt signal/slot mechanism for <strong>built-in</strong> widget types.  You must add your
+own &ldquo;connections&rdquo;, via the Qt Script rules for such (again typically within your <code>onLoad</code>).<br />
+An example of that would look like: <code>page.mybutton.released.connect(this, this.myhandler);</code>.</p>
+<p><strong>supportScript</strong>: A <strong>completely open ended</strong> Qt Script (string) attribute, for injecting 
+any additional support/helper function definitions which maybe handy.  Note that these will live in the global space of the <strong>controller</strong> script. Be careful to avoid name conflicts!</p>
+<p><strong>replacements</strong>: A dictionary containing entries in the form: placeholder:value.  Upon 
+writing the <code>.ui</code> file for the installer definition the library the generates, all &ldquo;replacements&rdquo;
+in the <code>content</code> will be resolved.</p>
+<p>TODO: further explain the complicate logic for page order (for replacement pages, or multiple pages with the same order&hellip;).  Also elaborate on ui replacements, the &ldquo;resolve&rdquo; function, provide a base example .ui in the docs&hellip;</p>
+<h3 id="qtifwdynamicoperationspage">QtIfwDynamicOperationsPage<a class="headerlink" href="#qtifwdynamicoperationspage" title="Permanent link">&para;</a></h3>
+<p>This class is derived from <code>QtIfwUiPage</code>. It provides a &ldquo;blank&rdquo; page for performing
+custom operations during the installation process.  Note that these operations take place
+outside of the main, built-in &ldquo;installer operations&rdquo;, and instead allow more dynamic 
+actions to place &ldquo;around&rdquo; that process. Optionally, you may also control the UI as your operation proceeds to indicate the status / result of the operations.  </p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>QtIfwDynamicOperationsPage( name, operation=&quot;&quot;, asyncFuncs=[],
+                            order=QT_IFW_PRE_INSTALL, 
+                            onCompletedDelayMillis=None )
+</code></pre></div>
+
+<p>Static Functions:</p>
+<div class="codehilite"><pre><span></span><code>onCompleted( name )
+</code></pre></div>
+
+<p>Details:</p>
+<p><strong>operation</strong>: The custom QtScript to execute, kicking off the operation. At the end of this
+script, you this should explicitly return a boolean indication of completion.  If completion is indicated (i.e. <strong>true</strong> is returned), the <code>onCompletedDelayMillis</code> parameter will dictate what occurs next (see the description for the constructor argument). If <strong>false</strong> is returned, then nothing will occur directly following the initial (synchronous) &ldquo;kick off&rdquo;.</p>
+<p>You may wish to return <strong>false</strong> from the <strong>operation</strong> script, so you that you may continue
+the custom task by employing a <a href="#qtifwdynamicoperationspage-asyncfunc">QtIfwDynamicOperationsPage.AsyncFunc</a> - or a series of them. At the end of such a 
+function, you may inject what is returned from the static <code>onCompleted( name )</code> function 
+of this class, in order to allow the advancement of the installer wizard.  </p>
+<p>The <code>operation</code> function will have a reference to the UI page passed to it (called <code>page</code>).
+During your operation, you may wish to call functions such as 
+<code>setCustomPageText( page, title, description )</code>
+(or build that script via the Python helper:
+<code>setCustomPageText( title, description, isAutoQuote=True, pageVar="page" )</code>).  </p>
+<p><strong>asyncFuncs</strong>: List of <a href="#qtifwdynamicoperationspage-asyncfunc">QtIfwDynamicOperationsPage.AsyncFunc</a> objects. See the description for <code>operation</code> above.</p>
+<p><strong>order</strong>: Specify either <code>QT_IFW_PRE_INSTALL</code> or <code>QT_IFW_POST_INSTALL</code>.
+Note: You may NOT specify one of the standard options for a <code>QtIfwUiPage</code> attribute
+ <code>pageOrder</code>.  </p>
+<p><strong>onCompletedDelayMillis</strong>: By default, this is set to <code>None</code>, which indicates that upon
+completion, the page should advanced instantly.  If a value greater than 0 is provided, the
+page will automatically advance after a delay of that duration.  Alternatively, an integer 
+value of 0 (or less than 0), will indicate a manual advancement will take place.  The
+&ldquo;Next&rdquo; button will become enabled, and the user may click such when they choose. </p>
+<p><strong>onCompleted( name )</strong>:  Returns a string to do be injected into QtScript being
+dynamically generating.</p>
+<h4 id="qtifwdynamicoperationspageasyncfunc">QtIfwDynamicOperationsPage.AsyncFunc<a class="headerlink" href="#qtifwdynamicoperationspageasyncfunc" title="Permanent link">&para;</a></h4>
+<p>This class is used to define QtScript functions to be used by a <a href="#qtifwdynamicoperationspage">QtIfwDynamicOperationsPage</a>, which may be invoked
+<strong>asynchronously</strong>.  The primary application for this mechanism is to allow UI modifications
+to be redrawn on the screen, while performing long &ldquo;blocking&rdquo; operations.  To use it
+in this manner, you should execute your UI modification code, and then invoke a
+blocking operation which is defined within one of these async functions.  The UI will
+thus be updated prior to the block.  At the end of the long running async function,
+you may repeat the pattern, if desired, to again update the screen prior to initiating
+another task which would prevent a screen refresh.  Such a design pattern simulates 
+synchronous code, while getting the benefit of having the UI change through out it.</p>
+<p><strong>Note: multiple overlapping AsyncFunc invocations are not currently supported.</strong> The result
+of attempting will yield undesired results!  Use these sequentially, one invoking another, 
+in a chain is described previously. </p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>AsyncFunc( name, parms=[], body=&quot;&quot;, delayMillis=1,
+           standardPageId=None, customPageName=None )
+</code></pre></div>
+
+<p>Attributes:   </p>
+<div class="codehilite"><pre><span></span><code>name        = &lt;required&gt;
+args        = []
+body        = &quot;&quot;
+delayMillis = 1
+standardPageId = None
+customPageName = None
+</code></pre></div>
+
+<p>Functions:</p>
+<div class="codehilite"><pre><span></span><code>invoke( args=[], isAutoQuote=True ):
+</code></pre></div>
+
+<p>Details:</p>
+<p><strong>name</strong>: The function name.  (Note this will not be the complete, <em>real</em> function name in the generated QtScript).</p>
+<p><strong>args</strong>: The names of the function arguments. </p>
+<p><strong>body</strong>: The body of the function.</p>
+<p><strong>delayMillis</strong>: The number of milliseconds to wait before invoking the function.</p>
+<p><strong>*standardPageId</strong>: Provide a standard page id constant to effectively bind the 
+function to the page.  You will magically have a <code>page</code> var within the function 
+to access the UI elements.</p>
+<p><strong>customPageName</strong>: Provide the name of a custom page effectively bind the 
+function to the page.  You will magically have a <code>page</code> var within the function 
+to access the UI elements.</p>
+<p><strong>invoke()</strong>: Returns a string to do be injected into whatever QtScript you are dynamically 
+generating.  (This not somehow literally &ldquo;invoke&rdquo; the function when called from the Python
+library! )</p>
+<h3 id="qtifwonpriorinstallationpage">QtIfwOnPriorInstallationPage<a class="headerlink" href="#qtifwonpriorinstallationpage" title="Permanent link">&para;</a></h3>
+<p>This class is derived from <code>QtIfwUiPage</code>. As one would assume, this provides a base
+from which to start modifying the distbuilder addition to QtIFW &ldquo;Prior Installation Detected&rdquo; 
+installer page.  If another page has not been supplied for this, distbuilder will use this class to apply it&rsquo;s own default customization to the natural QtIfw interface.  </p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>QtIfwOnPriorInstallationPage()  # 0 arguments!
+</code></pre></div>
+
+<h3 id="qtifwremovepriorinstallationpage">QtIfwRemovePriorInstallationPage<a class="headerlink" href="#qtifwremovepriorinstallationpage" title="Permanent link">&para;</a></h3>
+<p>This class is derived from <code>QtIfwDynamicOperationsPage</code>.  It works in concert with 
+<code>QtIfwOnPriorInstallationPage</code>, performing the actual action of the removal.  If desired,
+you may supply your own custom definition of this page, else the library will inject the
+default version of this.</p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>QtIfwRemoveInstallationPage()  # 0 arguments!
+</code></pre></div>
+
+<h3 id="qtifwtargetdirpage">QtIfwTargetDirPage<a class="headerlink" href="#qtifwtargetdirpage" title="Permanent link">&para;</a></h3>
+<p>This class is derived from <code>QtIfwUiPage</code>. As one would assume, this provides a base
+from which to start modifying the &ldquo;Target Directory&rdquo; installer page.  If another page 
+has not been supplied for this, distbuilder will use this class to apply it&rsquo;s own 
+default customization to the natural QtIfw interface.  </p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>QtIfwTargetDirPage()  # 0 arguments!
+</code></pre></div>
+
+<h3 id="qtifwsimpletextpage">QtIfwSimpleTextPage<a class="headerlink" href="#qtifwsimpletextpage" title="Permanent link">&para;</a></h3>
+<p>This class is derived from <code>QtIfwUiPage</code>.  It does not require ANY form / .ui 
+content passed to it. It provides a page layout with the only elements being
+<code>title</code> and <code>description</code>, which can both be set easily via arguments to the constructor of this class.  That text may contain all valid QtIFW dynamic substitutions e.g. these <a href="LowLevel.html#installer-variables">Installer Variables</a>, or directly using the <code>@variable@</code> syntax. See <a href="https://doc.qt.io/qtinstallerframework/scripting.html#predefined-variables">https://doc.qt.io/qtinstallerframework/scripting.html#predefined-variables</a>.  </p>
+<p>By providing an <code>onLoad</code> or <code>onEnter</code> script, you may define more comprehensive 
+manipulations of the pages elements. Alternatively, you wish to specify <strong>no text</strong> 
+or content at all for the page, other than perhaps including a message such as &ldquo;working&hellip;&rdquo; and then use the page as a place holder to perform a given process.<br />
+There are many imaginative ways for using this class as a convenient platform from which to start a custom, dynamic page.</p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>QtIfwSimpleTextPage( name, pageOrder=None, 
+                     title=&quot;&quot;, text=&quot;&quot;, 
+                     onLoad=None, onEnter=None )
+</code></pre></div>
+
+<h2 id="qtifwwidget">QtIfwWidget<a class="headerlink" href="#qtifwwidget" title="Permanent link">&para;</a></h2>
+<p>This class closely resembles <a href="#qtifwuipage">QtIfwUiPage</a>.  They internally derive
+from a common (protected) base class.  In contrast, however, QtIfwWidgets are
+<strong>collections</strong> of user interface elements to be injected <em>into</em> default wizard pages, 
+where QtIfwUiPages are entirely new steps/pages injected <em>between</em> (or <em>over</em>) 
+default wizard pages.    </p>
+<p>Note that a QtIfwWidget that you create and inject into a page will generally contain 
+other widgets.  To access the nested widgets in a QtScript, you would use the notation <code>page.parent.child</code>.</p>
+<p>The content of the widgets are defined as Qt &ldquo;forms&rdquo;, i.e. <code>.ui</code> (xml) files which 
+adhere to the
+<a href="https://doc.qt.io/qt-5/designer-ui-file-format.html">Qt UI file format</a>.
+While it is possible to <em>manually</em> create such forms, typically such files  <br />
+are machine generated using a WYSIWYG tool from within
+<a href="https://doc.qt.io/qtcreator/">Qt Creator</a> or
+<a href="https://doc.qt.io/qt-5/qtdesigner-manual.html">Qt Designer</a>.</p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>QtIfwWidget( name, pageName, position=None, 
+             sourcePath=None, content=None,
+             onLoad=None, onEnter=None )
+</code></pre></div>
+
+<p>Attributes:   </p>
+<div class="codehilite"><pre><span></span><code>name     = &lt;required&gt;
+pageName = &lt;required&gt;
+position = None
+
+content          = None
+replacements     = {}
+
+onLoad           = None
+onEnter          = None       
+eventHandlers    = {}
+supportScript    = None
+
+_isOnLoadBase    = True    
+_isOnEnterBase   = True
+</code></pre></div>
+
+<p>Functions:</p>
+<div class="codehilite"><pre><span></span><code>fileName()
+resolve( qtIfwConfig )
+write( dirPath )
+</code></pre></div>
+
+<p><strong>pageName</strong>: The wizard page where the widget will be added.</p>
+<p><strong>position</strong>: 0 based index where the widget will be injected onto the page.
+Injections occur at the bottom of the default page, below the default elements.
+(per Qt&rsquo;s design).</p>
+<p><strong>onEnter</strong>: Qt Script snippet invoked upon entering / displaying the page to the user.  This code will be invoked AFTER the initial &ldquo;page call back&rdquo; on which the widget was injected.  To modify those page call backs instead, see <a href="#qtifwcontrolscript">QtIfwControlScript</a>.     </p>
+<h3 id="qtifwonfinishedcheckbox">QtIfwOnFinishedCheckbox<a class="headerlink" href="#qtifwonfinishedcheckbox" title="Permanent link">&para;</a></h3>
+<p>A QtIfwWidget to be injected into the <strong>Finished</strong> QtIFW wizard page.
+If one of these checkboxes is selected upon exiting a successfully completed wizard,
+the action associated with that will be executed in a &ldquo;detached&rdquo; manner
+(i.e. a process which is spawned by the installer, but not bound to it,
+so that it may live on after the installer process no longer exists).   </p>
+<p>In addition to inheriting from class QtIfwWidget, this class is also
+a decedent of <a href="#qtifwonfinisheddetachedexec">QtIfwOnFinishedDetachedExec</a>.   <br />
+That class provides the framework for the core functionally, while this
+one contributes UI dimensions.</p>
+<p>Note: This class only adds checkboxes to the <strong>installer</strong> finished page.
+It is not possible to add custom widgets to the <strong>uninstaller</strong> finished page,
+because widgets are bundled and loaded via components (i.e. packages), and the 
+QtIFW uninstaller does not load components!  For comparable functionality, you 
+may employ QtIfwOnFinishedDetachedExec.      </p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>QtIfwOnFinishedCheckbox( name, text=None, position=None,  
+                         ifwPackage=None, 
+                         runProgram=None, argList=None,
+                         shellCmd=None, script=None,
+                         openViaOsPath=None,        
+                         isReboot=False, rebootDelaySecs=2,                                
+                         isVisible=True, isEnabled=True, isChecked=True )
+</code></pre></div>
+
+<p>Attributes &amp; default values:    </p>
+<div class="codehilite"><pre><span></span><code>name         = &lt;required&gt;
+checkboxName = &lt;automatic&gt;    
+position     = None &lt;automatic, per object instantiation order&gt;
+
+isReboot     = False
+</code></pre></div>
+
+<p>Functions:</p>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="nv">These</span> <span class="k">return</span> <span class="nv">QScript</span> <span class="nv">snippets</span><span class="o">&gt;</span>
+<span class="nv">isChecked</span><span class="ss">()</span>
+<span class="nv">setChecked</span><span class="ss">()</span>
+<span class="nv">enable</span><span class="ss">(</span> <span class="nv">isEnable</span><span class="o">=</span><span class="nv">True</span> <span class="ss">)</span>
+<span class="nv">setVisible</span><span class="ss">(</span> <span class="nv">isVisible</span><span class="o">=</span><span class="nv">True</span> <span class="ss">)</span>
+</code></pre></div>
+
+<h2 id="pipconfig">PipConfig<a class="headerlink" href="#pipconfig" title="Permanent link">&para;</a></h2>
+<p>Objects of this type define the details for downloading
+and/or installing Python libraries via the pip utility.
+These objects are used directly by the installLibrary 
+function as well indirectly via the obfuscation functions
+and support classes.</p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>PipConfig( source = None
+         , version = None
+         , verEquality = &quot;==&quot; 
+         , destPath = None
+         , asSource = False
+         , incDependencies = True        
+         , isForced= False
+         , isCacheUsed = True                
+         , isUpgrade = False
+         , otherPipArgs = &quot;&quot; )
+</code></pre></div>
+
+<p>Attributes:                        </p>
+<div class="codehilite"><pre><span></span><code>pipCmdBase = &quot;[PYTHON BINARY PATH]&quot; -m pip
+source          
+version         
+verEquality     
+destPath        
+asSource        
+incDependencies       
+isForced 
+isCacheUsed                  
+isUpgrade      
+otherPipArgs  (open ended argument string)
+</code></pre></div>
+
+<p>TODO: Expand on this considerably&hellip; </p>
+<p>The <code>source</code> attribute is the the &ldquo;heart&rdquo; of this class.
+It can take <em>many</em> different forms.  Including library
+names registered at PyPi, local paths, and urls. </p>
+<p>Other Notable attributes include <code>incDpndncsSwitch</code>,
+<code>destPath</code> and <code>asSource</code>.  These allow you to 
+skip dependency gathering if desired, install to 
+a specific path such as a temp build directory,
+and to request raw .py scripts be placed there.</p>
+<p>Note that remote raw pip packages will require an 
+alternate <a href="LowLevel.html#vcsurl">vcs url</a> be supplied to a &ldquo;development&rdquo; 
+repository in place of the simple package name as the <code>source</code> attribute.<br />
+See <a href="https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs">editable installs</a>  </p>
+<h2 id="opyconfig">OpyConfig<a class="headerlink" href="#opyconfig" title="Permanent link">&para;</a></h2>
+<p>Objects of this type define obfuscation details for 
+use by the Opy Library.
+<strong>Refer to the documentation for that library for details.</strong></p>
+<p>This library <strong>EXTENDS</strong> the natural OpyConfig, however,
+adding the attributes / features described below.
+See <a href="LowLevel.html#obfuscation-features">Obfuscation Features</a> for a 
+description of how objects of this type are used.</p>
+<p>Constructor:        </p>
+<div class="codehilite"><pre><span></span><code>OpyConfig( name, entryPointPy=None,
+           bundleLibs=None, sourceDir=None, patches=None )
+</code></pre></div>
+
+<p>Attributes:                </p>
+<div class="codehilite"><pre><span></span><code>name
+entryPointPy
+bundleLibs (list of LibToBundle objects)
+sourceDir (dynamically defined when ommited)
+patches (list of OpyPatch objects)
+</code></pre></div>
+
+<h2 id="opypatch">OpyPatch<a class="headerlink" href="#opypatch" title="Permanent link">&para;</a></h2>
+<p>See <a href="LowLevel.html#obfuscation-features">Obfuscation Features</a> for a 
+description of how objects of this type are used.</p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>OpyPatch( relPath, patches, parentDir=OBFUS_DIR_PATH )
+</code></pre></div>
+
+<p>Attributes:                    </p>
+<div class="codehilite"><pre><span></span><code>relPath 
+path    
+patches
+</code></pre></div>
+
+<p>Functions:</p>
+<div class="codehilite"><pre><span></span><code>obfuscatePath( obfuscatedFileDict )        
+apply()
+</code></pre></div>
+
+<h2 id="libtobundle">LibToBundle<a class="headerlink" href="#libtobundle" title="Permanent link">&para;</a></h2>
+<p>See <a href="LowLevel.html#obfuscation-features">Obfuscation Features</a> for a 
+description of how objects of this type are used.</p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>LibToBundle( name, localDirPath=None, pipConfig=None, isObfuscated=False )
+</code></pre></div>
+
+<p>Attributes:                    </p>
+<div class="codehilite"><pre><span></span><code>name         
+localDirPath 
+pipConfig    
+isObfuscated
+</code></pre></div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="HighLevel.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: High Level Classes" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              High Level Classes
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="LowLevel.html" class="md-footer__link md-footer__link--next" aria-label="Next: Low Level Functions" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Low Level Functions
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
+      
+    
+  </body>
+</html>

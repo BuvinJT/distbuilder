@@ -1,0 +1,993 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+    
+    
+      
+        <title>Troubleshooting - Distribution Builder</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#troubleshooting" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Distribution Builder" class="md-header__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Distribution Builder
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Troubleshooting
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Distribution Builder" class="md-nav__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Distribution Builder
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QuickStart.html" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Examples.html" class="md-nav__link">
+        Examples
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
+        Old Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Old Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Old Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="HighLevel.html" class="md-nav__link">
+        High Level Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ConfigClasses.html" class="md-nav__link">
+        Configuration Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="LowLevel.html" class="md-nav__link">
+        Low Level Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QtCpp.html" class="md-nav__link">
+        Qt C++ Integration
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      <label class="md-nav__link" for="__nav_5">
+        Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Config%20Factory.html" class="md-nav__link">
+        Config Factory
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20Installer%20Framework.html" class="md-nav__link">
+        Qt Installer Framework
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="PyInstaller.html" class="md-nav__link">
+        PyInstaller
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="IExpress.html" class="md-nav__link">
+        IExpress
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Code%20Signing.html" class="md-nav__link">
+        Code Signing
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20Obfuscation.html" class="md-nav__link">
+        Python Obfuscation
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20pip.html" class="md-nav__link">
+        Python pip
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20CPP.html" class="md-nav__link">
+        Qt CPP
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Logging.html" class="md-nav__link">
+        Logging
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Classes.html" class="md-nav__link">
+        Utility Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Functions.html" class="md-nav__link">
+        Utility Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Constants.html" class="md-nav__link">
+        Utility Constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Troubleshooting
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="Issues.html" class="md-nav__link md-nav__link--active">
+        Troubleshooting
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tested-against" class="md-nav__link">
+    Tested Against
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#binary-launching-runtime-issues" class="md-nav__link">
+    Binary launching runtime issues
+  </a>
+  
+    <nav class="md-nav" aria-label="Binary launching runtime issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#relative-resources" class="md-nav__link">
+    Relative resources
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#crash-failure-with-no-debugging-info" class="md-nav__link">
+    Crash / failure with no debugging info
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qt-installer-framework-issues" class="md-nav__link">
+    Qt Installer Framework issues
+  </a>
+  
+    <nav class="md-nav" aria-label="Qt Installer Framework issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setting-qt_ifw_dir" class="md-nav__link">
+    Setting QT_IFW_DIR
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#launch-app-at-end-of-install-failures" class="md-nav__link">
+    Launch App at end of install failures
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windows-8-and-earlier-crash-at-end-of-install" class="md-nav__link">
+    Windows 8 (and earlier?): Crash at end of install
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linux-sudo-password-not-accepted" class="md-nav__link">
+    Linux sudo password not accepted
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#get-help" class="md-nav__link">
+    Get Help
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ToDo.html" class="md-nav__link">
+        To-Do List
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Contribute.html" class="md-nav__link">
+        Contact / Contribute
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tested-against" class="md-nav__link">
+    Tested Against
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#binary-launching-runtime-issues" class="md-nav__link">
+    Binary launching runtime issues
+  </a>
+  
+    <nav class="md-nav" aria-label="Binary launching runtime issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#relative-resources" class="md-nav__link">
+    Relative resources
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#crash-failure-with-no-debugging-info" class="md-nav__link">
+    Crash / failure with no debugging info
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qt-installer-framework-issues" class="md-nav__link">
+    Qt Installer Framework issues
+  </a>
+  
+    <nav class="md-nav" aria-label="Qt Installer Framework issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setting-qt_ifw_dir" class="md-nav__link">
+    Setting QT_IFW_DIR
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#launch-app-at-end-of-install-failures" class="md-nav__link">
+    Launch App at end of install failures
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windows-8-and-earlier-crash-at-end-of-install" class="md-nav__link">
+    Windows 8 (and earlier?): Crash at end of install
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linux-sudo-password-not-accepted" class="md-nav__link">
+    Linux sudo password not accepted
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#get-help" class="md-nav__link">
+    Get Help
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h1>
+<p><img alt="distbuilder logo" src="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png" /></p>
+<h2 id="tested-against">Tested Against<a class="headerlink" href="#tested-against" title="Permanent link">&para;</a></h2>
+<p>Python:  </p>
+<ul>
+<li>2.7  </li>
+<li>3.5  </li>
+<li>3.7  </li>
+<li>3.8</li>
+</ul>
+<p>Windows:    </p>
+<ul>
+<li>7</li>
+<li>8.0  </li>
+<li>10</li>
+</ul>
+<p>macOS:    </p>
+<ul>
+<li>Sierra  </li>
+<li>Mojave</li>
+</ul>
+<p>Linux:   </p>
+<ul>
+<li>Ubuntu 16.04  </li>
+<li>Ubuntu 18.04  </li>
+<li>CentOS 7.6 (minimal)</li>
+</ul>
+<p>OS Language:  </p>
+<ul>
+<li>English  </li>
+</ul>
+<p>PyInstaller:  </p>
+<ul>
+<li>2.1</li>
+<li>3.4</li>
+<li>4.0</li>
+<li>Binary / Script</li>
+</ul>
+<p>Qt Installer Framework:  </p>
+<ul>
+<li>2.0.5</li>
+<li>3.0.6</li>
+<li>3.1.1</li>
+<li>3.2.2        </li>
+</ul>
+<p>Pip:  </p>
+<ul>
+<li>8.x  </li>
+<li>18.x  </li>
+<li>19.x  </li>
+<li>20.x</li>
+</ul>
+<p>Opy distbuilder:  </p>
+<ul>
+<li>0.9+  </li>
+</ul>
+<p>Qt C++ Integration:</p>
+<ul>
+<li>Qt 5.8</li>
+<li>Qt 5.14</li>
+<li>MSVC</li>
+<li>MinGW</li>
+<li>Clang</li>
+<li>GCC/G++</li>
+</ul>
+<h2 id="binary-launching-runtime-issues">Binary launching runtime issues<a class="headerlink" href="#binary-launching-runtime-issues" title="Permanent link">&para;</a></h2>
+<h3 id="relative-resources">Relative resources<a class="headerlink" href="#relative-resources" title="Permanent link">&para;</a></h3>
+<p>If your application uses &ldquo;relative resources&rdquo; (e.g. images, etc. packaged
+with it external to the binary), you may encounter problems with such
+based on the context in which your application is launched.</p>
+<p>Perhaps the easiest solution to this may be to &ldquo;force&rdquo; the work directory 
+prior to launching the program.  That can be accomplished via a &ldquo;wrapper script&rdquo;
+around the binary. See <a href="HighLevel.html#pkgexewrapperscript">pkgExeWrapperScript</a> 
+and <a href="LowLevel.html#executablescript">ExecutableScript</a> for help adding this
+&ldquo;quick fix&rdquo;.</p>
+<p>Here is a better solution&hellip; Rather than depending upon the current working 
+directory being set to your&rsquo;s program&rsquo;s location before it is started, you could
+acquire the directory path programmatically, and then resolving your 
+relative paths to ones which are absolute.  </p>
+<p>In Python, you could use a function such as this <code>absPath</code> example.<br />
+(Note, the <code>THIS_DIR</code> assignment shown here is valid in both a script and 
+binary (i.e. &ldquo;frozen&rdquo;) context.)</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
+
+<span class="n">THIS_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">absPath</span><span class="p">(</span> <span class="n">relativePath</span> <span class="p">):</span>    
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">THIS_DIR</span><span class="p">,</span> <span class="n">relativePath</span> <span class="p">)</span> <span class="p">)</span>
+</code></pre></div>
+
+<p>Unfortunately, in some situations, that preferred approach would take a great deal
+of effort to apply . In which case, yet another approach could be taken, which 
+resembles the &ldquo;wrapper script&rdquo; concept, but is built into your program itself.
+Just set the working directory when the program is launched, for inside of, and then
+set it back to what it was upon exit.</p>
+<p>Python example:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
+
+<span class="n">THIS_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
+
+<span class="n">__INIT_DIR</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="k">def</span> <span class="nf">normalizeWorkDir</span><span class="p">()</span> <span class="p">:</span>
+    <span class="k">global</span> <span class="n">__INIT_DIR</span>
+    <span class="n">__INIT_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">curdir</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span> <span class="n">THIS_DIR</span> <span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">restoreWorkDir</span><span class="p">()</span> <span class="p">:</span>
+    <span class="k">if</span> <span class="n">__INIT_DIR</span> <span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span> <span class="n">__INIT_DIR</span> <span class="p">)</span>
+</code></pre></div>
+
+<p>Example use of the above functions, to place in your &ldquo;entry point&rdquo;:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">if</span> <span class="nv">__name__</span> <span class="o">==</span> <span class="s2">&quot;</span><span class="s">__main__</span><span class="s2">&quot;</span>:
+    <span class="nv">normalizeWorkDir</span><span class="ss">()</span>
+    <span class="nv">launchApp</span><span class="ss">()</span>
+    <span class="nv">restoreWorkDir</span><span class="ss">()</span>
+</code></pre></div>
+
+<h3 id="crash-failure-with-no-debugging-info">Crash / failure with no debugging info<a class="headerlink" href="#crash-failure-with-no-debugging-info" title="Permanent link">&para;</a></h3>
+<p>If a (gui) PyInstaller built application fails,
+and you are seeking debugging info, refer to the 
+<a href="Reference.md#testing">Testing</a> section of the 
+Reference Manual for more details on viewing such.    </p>
+<h2 id="qt-installer-framework-issues">Qt Installer Framework issues<a class="headerlink" href="#qt-installer-framework-issues" title="Permanent link">&para;</a></h2>
+<h3 id="setting-qt_ifw_dir">Setting <code>QT_IFW_DIR</code><a class="headerlink" href="#setting-qt_ifw_dir" title="Permanent link">&para;</a></h3>
+<p>To use the Qt Installer Framework integration (manually), it is 
+recommended to you set the <code>QT_IFW_DIR</code> environmental 
+variable on a <em>permanent</em> (non-volatile) basis (so it
+doesn&rsquo;t have to set every time you want to use it). This 
+method makes your build script portable across platforms and 
+on all your project collaborator&rsquo;s machines.  If that proves
+to be difficult, however, you may set that within the script. <br />
+Refer to the <a href="Reference.md#installers">Installers</a> section of 
+the Reference Manual for details. </p>
+<p>Setting environmental variables is beyond the scope of this document,
+but here some places to start looking for help.  </p>
+<p><a href="https://superuser.com/questions/949560/how-do-i-set-system-environment-variables-in-windows-10">Windows variables</a></p>
+<p><a href="https://stackoverflow.com/questions/135688/setting-environment-variables-on-os-x">macOS variables</a></p>
+<p><a href="https://askubuntu.com/questions/58814/how-do-i-add-environment-variables">Ubuntu variables</a></p>
+<h3 id="launch-app-at-end-of-install-failures">Launch App at end of install failures<a class="headerlink" href="#launch-app-at-end-of-install-failures" title="Permanent link">&para;</a></h3>
+<p>If the application appears to run in every other context, except
+when launched at the end of the Qt installer, a likely
+reason is that working directory is incorrect when it is 
+executed. This library attempts to set the working
+directory for any program to the location where it resides
+implicitly.  QtIFW, however, does not currently support setting
+the working directory as a &ldquo;RunProgram&rdquo; directive.
+A feature request for this was filed with Qt (long ago):</p>
+<p><a href="https://bugreports.qt.io/browse/QTIFW-217">https://bugreports.qt.io/browse/QTIFW-217</a></p>
+<p>For now, while there are various potential solutions to this, 
+the <em>best</em> one is arguably to resolve this directly within your program.<br />
+See <a href="relative-resources">Relative resources</a> for more help. </p>
+<p>If Qt does not finally resolve this themselves sometime in 
+an upcoming IFW release, then distbuilder will provide a built-in
+work around.  Note, this is also a known issue on macOS, when launching 
+via symbolic links added to Applications or the desktop.  That is NOT
+a problem via Windows shortcuts or Linux desktops entries.</p>
+<h3 id="windows-8-and-earlier-crash-at-end-of-install">Windows 8 (and earlier?): Crash at end of install<a class="headerlink" href="#windows-8-and-earlier-crash-at-end-of-install" title="Permanent link">&para;</a></h3>
+<p>Recent versions of QtIFW have been observed to crash at the 
+end of the installation on Windows 8.  This bug has been 
+reported to Qt and they appear to be actively patching it.</p>
+<p><a href="https://bugreports.qt.io/browse/QTIFW-1248">https://bugreports.qt.io/browse/QTIFW-1248</a></p>
+<p>The current work around is to directly launch the installer 
+with elevated privileges (i.e as an administrator) on this
+version of Windows.</p>
+<h3 id="linux-sudo-password-not-accepted">Linux sudo password not accepted<a class="headerlink" href="#linux-sudo-password-not-accepted" title="Permanent link">&para;</a></h3>
+<p>It has been observed that sometimes the sudo password is
+not accepted by the installer when it prompts for it. The
+contexts and details have yet to be narrowed down.</p>
+<p>The current work around is to directly launch the installer 
+with elevated privileges (i.e as root / sudo) if you encounter
+this (inconsistent/odd) behavior.</p>
+<h2 id="get-help">Get Help<a class="headerlink" href="#get-help" title="Permanent link">&para;</a></h2>
+<p>Refer to <a href="Contribute.html#post-an-issue">Post An Issue</a>.</p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="Utility%20Constants.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Utility Constants" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Utility Constants
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="ToDo.html" class="md-footer__link md-footer__link--next" aria-label="Next: To-Do List" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              To-Do List
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
+      
+    
+  </body>
+</html>

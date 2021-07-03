@@ -1,0 +1,2457 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+    
+    
+      
+        <title>PyInstaller - Distribution Builder</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#PyInstHook" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Distribution Builder" class="md-header__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Distribution Builder
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              PyInstaller
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Distribution Builder" class="md-nav__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Distribution Builder
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QuickStart.html" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Examples.html" class="md-nav__link">
+        Examples
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
+        Old Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Old Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Old Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="HighLevel.html" class="md-nav__link">
+        High Level Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ConfigClasses.html" class="md-nav__link">
+        Configuration Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="LowLevel.html" class="md-nav__link">
+        Low Level Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QtCpp.html" class="md-nav__link">
+        Qt C++ Integration
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+      
+      <label class="md-nav__link" for="__nav_5">
+        Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Config%20Factory.html" class="md-nav__link">
+        Config Factory
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20Installer%20Framework.html" class="md-nav__link">
+        Qt Installer Framework
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          PyInstaller
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="PyInstaller.html" class="md-nav__link md-nav__link--active">
+        PyInstaller
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#PyInstHook" class="md-nav__link">
+    PyInstHook
+  </a>
+  
+    <nav class="md-nav" aria-label="PyInstHook">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#APPLESCRIPT_EXT" class="md-nav__link">
+    APPLESCRIPT_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#BATCH_EXT" class="md-nav__link">
+    BATCH_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#FILE_NAME_PREFIX" class="md-nav__link">
+    FILE_NAME_PREFIX
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#JSCRIPT_EXT" class="md-nav__link">
+    JSCRIPT_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#POWERSHELL_EXT" class="md-nav__link">
+    POWERSHELL_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SHELL_EXT" class="md-nav__link">
+    SHELL_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SUPPORTED_EXTS" class="md-nav__link">
+    SUPPORTED_EXTS
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#VBSCRIPT_EXT" class="md-nav__link">
+    VBSCRIPT_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linesToStr" class="md-nav__link">
+    linesToStr
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strToLines" class="md-nav__link">
+    strToLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#typeOf" class="md-nav__link">
+    typeOf
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asSnippet" class="md-nav__link">
+    asSnippet
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug" class="md-nav__link">
+    debug
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exists" class="md-nav__link">
+    exists
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fileName" class="md-nav__link">
+    fileName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filePath" class="md-nav__link">
+    filePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fromBase64" class="md-nav__link">
+    fromBase64
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fromLines" class="md-nav__link">
+    fromLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#injectLine" class="md-nav__link">
+    injectLine
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read" class="md-nav__link">
+    read
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove" class="md-nav__link">
+    remove
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toBase64" class="md-nav__link">
+    toBase64
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toLines" class="md-nav__link">
+    toLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    write
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isContribHook" class="md-nav__link">
+    isContribHook
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isRunTimeHook" class="md-nav__link">
+    isRunTimeHook
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hooksDirPath" class="md-nav__link">
+    hooksDirPath
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#PyInstSpec" class="md-nav__link">
+    PyInstSpec
+  </a>
+  
+    <nav class="md-nav" aria-label="PyInstSpec">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#WARN_ERROR" class="md-nav__link">
+    WARN_ERROR
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#WARN_IGNORE" class="md-nav__link">
+    WARN_IGNORE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#WARN_ONCE" class="md-nav__link">
+    WARN_ONCE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cfgToPath" class="md-nav__link">
+    cfgToPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug" class="md-nav__link">
+    debug
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fromLines" class="md-nav__link">
+    fromLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#injectDuplicateDataPatch" class="md-nav__link">
+    injectDuplicateDataPatch
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#injectInterpreterOptions" class="md-nav__link">
+    injectInterpreterOptions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#injectLine" class="md-nav__link">
+    injectLine
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path" class="md-nav__link">
+    path
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read" class="md-nav__link">
+    read
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove" class="md-nav__link">
+    remove
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toLines" class="md-nav__link">
+    toLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    write
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filePath" class="md-nav__link">
+    filePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyInstConfig" class="md-nav__link">
+    pyInstConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#warningBehavior" class="md-nav__link">
+    warningBehavior
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isUnBufferedStdIo" class="md-nav__link">
+    isUnBufferedStdIo
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isModInitDebug" class="md-nav__link">
+    isModInitDebug
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#PyInstallerConfig" class="md-nav__link">
+    PyInstallerConfig
+  </a>
+  
+    <nav class="md-nav" aria-label="PyInstallerConfig">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#toArgs" class="md-nav__link">
+    toArgs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#name" class="md-nav__link">
+    name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sourceDir" class="md-nav__link">
+    sourceDir
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entryPointPy" class="md-nav__link">
+    entryPointPy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyInstSpec" class="md-nav__link">
+    pyInstSpec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isGui" class="md-nav__link">
+    isGui
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iconFilePath" class="md-nav__link">
+    iconFilePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versionInfo" class="md-nav__link">
+    versionInfo
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versionFilePath" class="md-nav__link">
+    versionFilePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isAutoElevated" class="md-nav__link">
+    isAutoElevated
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isOneFile" class="md-nav__link">
+    isOneFile
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#importPaths" class="md-nav__link">
+    importPaths
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hiddenImports" class="md-nav__link">
+    hiddenImports
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dataFilePaths" class="md-nav__link">
+    dataFilePaths
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#binaryFilePaths" class="md-nav__link">
+    binaryFilePaths
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distResources" class="md-nav__link">
+    distResources
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distDirs" class="md-nav__link">
+    distDirs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codeSignConfig" class="md-nav__link">
+    codeSignConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codeSignTargets" class="md-nav__link">
+    codeSignTargets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distDirPath" class="md-nav__link">
+    distDirPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otherPyInstArgs" class="md-nav__link">
+    otherPyInstArgs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isSpecFileRemoved" class="md-nav__link">
+    isSpecFileRemoved
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#PyToBinInstallerProcess" class="md-nav__link">
+    PyToBinInstallerProcess
+  </a>
+  
+    <nav class="md-nav" aria-label="PyToBinInstallerProcess">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DIVIDER" class="md-nav__link">
+    DIVIDER
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onFinalize" class="md-nav__link">
+    onFinalize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onIExpressPackagesBuilt" class="md-nav__link">
+    onIExpressPackagesBuilt
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onInitialize" class="md-nav__link">
+    onInitialize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onMakeSpec" class="md-nav__link">
+    onMakeSpec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onOpyConfig" class="md-nav__link">
+    onOpyConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPackagesStaged" class="md-nav__link">
+    onPackagesStaged
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPyInstConfig" class="md-nav__link">
+    onPyInstConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPyPackageProcess" class="md-nav__link">
+    onPyPackageProcess
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPyPackagesBuilt" class="md-nav__link">
+    onPyPackagesBuilt
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onQtIfwConfig" class="md-nav__link">
+    onQtIfwConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run" class="md-nav__link">
+    run
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#PyToBinPackageProcess" class="md-nav__link">
+    PyToBinPackageProcess
+  </a>
+  
+    <nav class="md-nav" aria-label="PyToBinPackageProcess">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DIVIDER" class="md-nav__link">
+    DIVIDER
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onFinalize" class="md-nav__link">
+    onFinalize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onInitialize" class="md-nav__link">
+    onInitialize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onMakeSpec" class="md-nav__link">
+    onMakeSpec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onOpyConfig" class="md-nav__link">
+    onOpyConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPyInstConfig" class="md-nav__link">
+    onPyInstConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run" class="md-nav__link">
+    run
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isObfuscationTest" class="md-nav__link">
+    isObfuscationTest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isWarningSuppression" class="md-nav__link">
+    isWarningSuppression
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isUnBufferedStdIo" class="md-nav__link">
+    isUnBufferedStdIo
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isPyInstDupDataPatched" class="md-nav__link">
+    isPyInstDupDataPatched
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#Functions" class="md-nav__link">
+    Functions
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#PyInstallerMajorMinorVer" class="md-nav__link">
+    PyInstallerMajorMinorVer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#PyInstallerMajorVer" class="md-nav__link">
+    PyInstallerMajorVer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#PyInstallerVersion" class="md-nav__link">
+    PyInstallerVersion
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installPyInstaller" class="md-nav__link">
+    installPyInstaller
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#makePyInstSpec" class="md-nav__link">
+    makePyInstSpec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyScriptToExe" class="md-nav__link">
+    pyScriptToExe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uninstallPyInstaller" class="md-nav__link">
+    uninstallPyInstaller
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="IExpress.html" class="md-nav__link">
+        IExpress
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Code%20Signing.html" class="md-nav__link">
+        Code Signing
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20Obfuscation.html" class="md-nav__link">
+        Python Obfuscation
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20pip.html" class="md-nav__link">
+        Python pip
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20CPP.html" class="md-nav__link">
+        Qt CPP
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Logging.html" class="md-nav__link">
+        Logging
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Classes.html" class="md-nav__link">
+        Utility Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Functions.html" class="md-nav__link">
+        Utility Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Constants.html" class="md-nav__link">
+        Utility Constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Issues.html" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ToDo.html" class="md-nav__link">
+        To-Do List
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Contribute.html" class="md-nav__link">
+        Contact / Contribute
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#PyInstHook" class="md-nav__link">
+    PyInstHook
+  </a>
+  
+    <nav class="md-nav" aria-label="PyInstHook">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#APPLESCRIPT_EXT" class="md-nav__link">
+    APPLESCRIPT_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#BATCH_EXT" class="md-nav__link">
+    BATCH_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#FILE_NAME_PREFIX" class="md-nav__link">
+    FILE_NAME_PREFIX
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#JSCRIPT_EXT" class="md-nav__link">
+    JSCRIPT_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#POWERSHELL_EXT" class="md-nav__link">
+    POWERSHELL_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SHELL_EXT" class="md-nav__link">
+    SHELL_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SUPPORTED_EXTS" class="md-nav__link">
+    SUPPORTED_EXTS
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#VBSCRIPT_EXT" class="md-nav__link">
+    VBSCRIPT_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linesToStr" class="md-nav__link">
+    linesToStr
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strToLines" class="md-nav__link">
+    strToLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#typeOf" class="md-nav__link">
+    typeOf
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asSnippet" class="md-nav__link">
+    asSnippet
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug" class="md-nav__link">
+    debug
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exists" class="md-nav__link">
+    exists
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fileName" class="md-nav__link">
+    fileName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filePath" class="md-nav__link">
+    filePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fromBase64" class="md-nav__link">
+    fromBase64
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fromLines" class="md-nav__link">
+    fromLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#injectLine" class="md-nav__link">
+    injectLine
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read" class="md-nav__link">
+    read
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove" class="md-nav__link">
+    remove
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toBase64" class="md-nav__link">
+    toBase64
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toLines" class="md-nav__link">
+    toLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    write
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isContribHook" class="md-nav__link">
+    isContribHook
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isRunTimeHook" class="md-nav__link">
+    isRunTimeHook
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hooksDirPath" class="md-nav__link">
+    hooksDirPath
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#PyInstSpec" class="md-nav__link">
+    PyInstSpec
+  </a>
+  
+    <nav class="md-nav" aria-label="PyInstSpec">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#WARN_ERROR" class="md-nav__link">
+    WARN_ERROR
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#WARN_IGNORE" class="md-nav__link">
+    WARN_IGNORE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#WARN_ONCE" class="md-nav__link">
+    WARN_ONCE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cfgToPath" class="md-nav__link">
+    cfgToPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug" class="md-nav__link">
+    debug
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fromLines" class="md-nav__link">
+    fromLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#injectDuplicateDataPatch" class="md-nav__link">
+    injectDuplicateDataPatch
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#injectInterpreterOptions" class="md-nav__link">
+    injectInterpreterOptions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#injectLine" class="md-nav__link">
+    injectLine
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path" class="md-nav__link">
+    path
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read" class="md-nav__link">
+    read
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove" class="md-nav__link">
+    remove
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toLines" class="md-nav__link">
+    toLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    write
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filePath" class="md-nav__link">
+    filePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyInstConfig" class="md-nav__link">
+    pyInstConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#warningBehavior" class="md-nav__link">
+    warningBehavior
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isUnBufferedStdIo" class="md-nav__link">
+    isUnBufferedStdIo
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isModInitDebug" class="md-nav__link">
+    isModInitDebug
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#PyInstallerConfig" class="md-nav__link">
+    PyInstallerConfig
+  </a>
+  
+    <nav class="md-nav" aria-label="PyInstallerConfig">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#toArgs" class="md-nav__link">
+    toArgs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#name" class="md-nav__link">
+    name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sourceDir" class="md-nav__link">
+    sourceDir
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entryPointPy" class="md-nav__link">
+    entryPointPy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyInstSpec" class="md-nav__link">
+    pyInstSpec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isGui" class="md-nav__link">
+    isGui
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iconFilePath" class="md-nav__link">
+    iconFilePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versionInfo" class="md-nav__link">
+    versionInfo
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versionFilePath" class="md-nav__link">
+    versionFilePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isAutoElevated" class="md-nav__link">
+    isAutoElevated
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isOneFile" class="md-nav__link">
+    isOneFile
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#importPaths" class="md-nav__link">
+    importPaths
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hiddenImports" class="md-nav__link">
+    hiddenImports
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dataFilePaths" class="md-nav__link">
+    dataFilePaths
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#binaryFilePaths" class="md-nav__link">
+    binaryFilePaths
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distResources" class="md-nav__link">
+    distResources
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distDirs" class="md-nav__link">
+    distDirs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codeSignConfig" class="md-nav__link">
+    codeSignConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codeSignTargets" class="md-nav__link">
+    codeSignTargets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distDirPath" class="md-nav__link">
+    distDirPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otherPyInstArgs" class="md-nav__link">
+    otherPyInstArgs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isSpecFileRemoved" class="md-nav__link">
+    isSpecFileRemoved
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#PyToBinInstallerProcess" class="md-nav__link">
+    PyToBinInstallerProcess
+  </a>
+  
+    <nav class="md-nav" aria-label="PyToBinInstallerProcess">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DIVIDER" class="md-nav__link">
+    DIVIDER
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onFinalize" class="md-nav__link">
+    onFinalize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onIExpressPackagesBuilt" class="md-nav__link">
+    onIExpressPackagesBuilt
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onInitialize" class="md-nav__link">
+    onInitialize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onMakeSpec" class="md-nav__link">
+    onMakeSpec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onOpyConfig" class="md-nav__link">
+    onOpyConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPackagesStaged" class="md-nav__link">
+    onPackagesStaged
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPyInstConfig" class="md-nav__link">
+    onPyInstConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPyPackageProcess" class="md-nav__link">
+    onPyPackageProcess
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPyPackagesBuilt" class="md-nav__link">
+    onPyPackagesBuilt
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onQtIfwConfig" class="md-nav__link">
+    onQtIfwConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run" class="md-nav__link">
+    run
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#PyToBinPackageProcess" class="md-nav__link">
+    PyToBinPackageProcess
+  </a>
+  
+    <nav class="md-nav" aria-label="PyToBinPackageProcess">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DIVIDER" class="md-nav__link">
+    DIVIDER
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onFinalize" class="md-nav__link">
+    onFinalize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onInitialize" class="md-nav__link">
+    onInitialize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onMakeSpec" class="md-nav__link">
+    onMakeSpec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onOpyConfig" class="md-nav__link">
+    onOpyConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPyInstConfig" class="md-nav__link">
+    onPyInstConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run" class="md-nav__link">
+    run
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isObfuscationTest" class="md-nav__link">
+    isObfuscationTest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isWarningSuppression" class="md-nav__link">
+    isWarningSuppression
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isUnBufferedStdIo" class="md-nav__link">
+    isUnBufferedStdIo
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isPyInstDupDataPatched" class="md-nav__link">
+    isPyInstDupDataPatched
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#Functions" class="md-nav__link">
+    Functions
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#PyInstallerMajorMinorVer" class="md-nav__link">
+    PyInstallerMajorMinorVer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#PyInstallerMajorVer" class="md-nav__link">
+    PyInstallerMajorVer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#PyInstallerVersion" class="md-nav__link">
+    PyInstallerVersion
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installPyInstaller" class="md-nav__link">
+    installPyInstaller
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#makePyInstSpec" class="md-nav__link">
+    makePyInstSpec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyScriptToExe" class="md-nav__link">
+    pyScriptToExe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uninstallPyInstaller" class="md-nav__link">
+    uninstallPyInstaller
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                  <h1>PyInstaller</h1>
+                
+                <h2 id="PyInstHook"><strong>PyInstHook</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#PyInstHook" title="Permanent link">&para;</a></h2>
+<p><strong>Class/Static Attributes:</strong> </p>
+<ul>
+<li><a href="#APPLESCRIPT_EXT"><code>APPLESCRIPT_EXT</code></a></li>
+<li><a href="#BATCH_EXT"><code>BATCH_EXT</code></a></li>
+<li><a href="#FILE_NAME_PREFIX"><code>FILE_NAME_PREFIX</code></a></li>
+<li><a href="#JSCRIPT_EXT"><code>JSCRIPT_EXT</code></a></li>
+<li><a href="#POWERSHELL_EXT"><code>POWERSHELL_EXT</code></a></li>
+<li><a href="#SHELL_EXT"><code>SHELL_EXT</code></a></li>
+<li><a href="#SUPPORTED_EXTS"><code>SUPPORTED_EXTS</code></a></li>
+<li><a href="#VBSCRIPT_EXT"><code>VBSCRIPT_EXT</code></a></li>
+</ul>
+<p><strong>Class/Static Methods:</strong> </p>
+<ul>
+<li><a href="#linesToStr"><code>linesToStr</code></a></li>
+<li><a href="#strToLines"><code>strToLines</code></a></li>
+<li><a href="#typeOf"><code>typeOf</code></a></li>
+</ul>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#asSnippet"><code>asSnippet</code></a></li>
+<li><a href="#debug"><code>debug</code></a></li>
+<li><a href="#exists"><code>exists</code></a></li>
+<li><a href="#fileName"><code>fileName</code></a></li>
+<li><a href="#filePath"><code>filePath</code></a></li>
+<li><a href="#fromBase64"><code>fromBase64</code></a></li>
+<li><a href="#fromLines"><code>fromLines</code></a></li>
+<li><a href="#injectLine"><code>injectLine</code></a></li>
+<li><a href="#read"><code>read</code></a></li>
+<li><a href="#remove"><code>remove</code></a></li>
+<li><a href="#toBase64"><code>toBase64</code></a></li>
+<li><a href="#toLines"><code>toLines</code></a></li>
+<li><a href="#write"><code>write</code></a></li>
+</ul>
+<p><strong>Instance Attributes:</strong> </p>
+<ul>
+<li><a href="#isContribHook"><code>isContribHook</code></a></li>
+<li><a href="#isRunTimeHook"><code>isRunTimeHook</code></a></li>
+<li><a href="#hooksDirPath"><code>hooksDirPath</code></a></li>
+</ul>
+<h3 id="APPLESCRIPT_EXT"><em>PyInstHook</em>.<strong>APPLESCRIPT_EXT</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#APPLESCRIPT_EXT" title="Permanent link">&para;</a></h3>
+<h3 id="BATCH_EXT"><em>PyInstHook</em>.<strong>BATCH_EXT</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#BATCH_EXT" title="Permanent link">&para;</a></h3>
+<h3 id="FILE_NAME_PREFIX"><em>PyInstHook</em>.<strong>FILE_NAME_PREFIX</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#FILE_NAME_PREFIX" title="Permanent link">&para;</a></h3>
+<h3 id="JSCRIPT_EXT"><em>PyInstHook</em>.<strong>JSCRIPT_EXT</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#JSCRIPT_EXT" title="Permanent link">&para;</a></h3>
+<h3 id="POWERSHELL_EXT"><em>PyInstHook</em>.<strong>POWERSHELL_EXT</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#POWERSHELL_EXT" title="Permanent link">&para;</a></h3>
+<h3 id="SHELL_EXT"><em>PyInstHook</em>.<strong>SHELL_EXT</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#SHELL_EXT" title="Permanent link">&para;</a></h3>
+<h3 id="SUPPORTED_EXTS"><em>PyInstHook</em>.<strong>SUPPORTED_EXTS</strong> <em>class &lsquo;list&rsquo;</em><a class="headerlink" href="#SUPPORTED_EXTS" title="Permanent link">&para;</a></h3>
+<h3 id="VBSCRIPT_EXT"><em>PyInstHook</em>.<strong>VBSCRIPT_EXT</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#VBSCRIPT_EXT" title="Permanent link">&para;</a></h3>
+<h3 id="linesToStr"><em>PyInstHook</em>.<strong>linesToStr</strong><code class="highlight"><span class="p">(</span><span class="n">lines</span><span class="p">)</span></code><a class="headerlink" href="#linesToStr" title="Permanent link">&para;</a></h3>
+<h3 id="strToLines"><em>PyInstHook</em>.<strong>strToLines</strong><code class="highlight"><span class="p">(</span><span class="n">s</span><span class="p">)</span></code><a class="headerlink" href="#strToLines" title="Permanent link">&para;</a></h3>
+<h3 id="typeOf"><em>PyInstHook</em>.<strong>typeOf</strong><code class="highlight"><span class="p">(</span><span class="n">path</span><span class="p">)</span></code><a class="headerlink" href="#typeOf" title="Permanent link">&para;</a></h3>
+<h3 id="asSnippet"><em>obj</em>.<strong>asSnippet</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#asSnippet" title="Permanent link">&para;</a></h3>
+<h3 id="debug"><em>obj</em>.<strong>debug</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#debug" title="Permanent link">&para;</a></h3>
+<h3 id="exists"><em>obj</em>.<strong>exists</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scriptDirPath</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#exists" title="Permanent link">&para;</a></h3>
+<h3 id="fileName"><em>obj</em>.<strong>fileName</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#fileName" title="Permanent link">&para;</a></h3>
+<h3 id="filePath"><em>obj</em>.<strong>filePath</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#filePath" title="Permanent link">&para;</a></h3>
+<h3 id="fromBase64"><em>obj</em>.<strong>fromBase64</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></code><a class="headerlink" href="#fromBase64" title="Permanent link">&para;</a></h3>
+<h3 id="fromLines"><em>obj</em>.<strong>fromLines</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">)</span></code><a class="headerlink" href="#fromLines" title="Permanent link">&para;</a></h3>
+<h3 id="injectLine"><em>obj</em>.<strong>injectLine</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">injection</span><span class="p">,</span> <span class="n">lineNo</span><span class="p">)</span></code><a class="headerlink" href="#injectLine" title="Permanent link">&para;</a></h3>
+<h3 id="read"><em>obj</em>.<strong>read</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#read" title="Permanent link">&para;</a></h3>
+<h3 id="remove"><em>obj</em>.<strong>remove</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#remove" title="Permanent link">&para;</a></h3>
+<h3 id="toBase64"><em>obj</em>.<strong>toBase64</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">toString</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code><a class="headerlink" href="#toBase64" title="Permanent link">&para;</a></h3>
+<h3 id="toLines"><em>obj</em>.<strong>toLines</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#toLines" title="Permanent link">&para;</a></h3>
+<h3 id="write"><em>obj</em>.<strong>write</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#write" title="Permanent link">&para;</a></h3>
+<h3 id="isContribHook"><em>obj</em>.<strong>isContribHook</strong> <em>undefined</em><a class="headerlink" href="#isContribHook" title="Permanent link">&para;</a></h3>
+<h3 id="isRunTimeHook"><em>obj</em>.<strong>isRunTimeHook</strong> <em>undefined</em><a class="headerlink" href="#isRunTimeHook" title="Permanent link">&para;</a></h3>
+<h3 id="hooksDirPath"><em>obj</em>.<strong>hooksDirPath</strong> <em>undefined</em><a class="headerlink" href="#hooksDirPath" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="PyInstSpec"><strong>PyInstSpec</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#PyInstSpec" title="Permanent link">&para;</a></h2>
+<p><strong>Class/Static Attributes:</strong> </p>
+<ul>
+<li><a href="#WARN_ERROR"><code>WARN_ERROR</code></a></li>
+<li><a href="#WARN_IGNORE"><code>WARN_IGNORE</code></a></li>
+<li><a href="#WARN_ONCE"><code>WARN_ONCE</code></a></li>
+</ul>
+<p><strong>Class/Static Methods:</strong> </p>
+<ul>
+<li><a href="#cfgToPath"><code>cfgToPath</code></a></li>
+</ul>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#debug"><code>debug</code></a></li>
+<li><a href="#fromLines"><code>fromLines</code></a></li>
+<li><a href="#injectDuplicateDataPatch"><code>injectDuplicateDataPatch</code></a></li>
+<li><a href="#injectInterpreterOptions"><code>injectInterpreterOptions</code></a></li>
+<li><a href="#injectLine"><code>injectLine</code></a></li>
+<li><a href="#path"><code>path</code></a></li>
+<li><a href="#read"><code>read</code></a></li>
+<li><a href="#remove"><code>remove</code></a></li>
+<li><a href="#toLines"><code>toLines</code></a></li>
+<li><a href="#write"><code>write</code></a></li>
+</ul>
+<p><strong>Instance Attributes:</strong> </p>
+<ul>
+<li><a href="#filePath"><code>filePath</code></a></li>
+<li><a href="#pyInstConfig"><code>pyInstConfig</code></a></li>
+<li><a href="#warningBehavior"><code>warningBehavior</code></a></li>
+<li><a href="#isUnBufferedStdIo"><code>isUnBufferedStdIo</code></a></li>
+<li><a href="#isModInitDebug"><code>isModInitDebug</code></a></li>
+</ul>
+<h3 id="WARN_ERROR"><em>PyInstSpec</em>.<strong>WARN_ERROR</strong> <em>class &lsquo;int&rsquo;</em><a class="headerlink" href="#WARN_ERROR" title="Permanent link">&para;</a></h3>
+<h3 id="WARN_IGNORE"><em>PyInstSpec</em>.<strong>WARN_IGNORE</strong> <em>class &lsquo;int&rsquo;</em><a class="headerlink" href="#WARN_IGNORE" title="Permanent link">&para;</a></h3>
+<h3 id="WARN_ONCE"><em>PyInstSpec</em>.<strong>WARN_ONCE</strong> <em>class &lsquo;int&rsquo;</em><a class="headerlink" href="#WARN_ONCE" title="Permanent link">&para;</a></h3>
+<h3 id="cfgToPath"><em>PyInstSpec</em>.<strong>cfgToPath</strong><code class="highlight"><span class="p">(</span><span class="n">pyInstConfig</span><span class="p">)</span></code><a class="headerlink" href="#cfgToPath" title="Permanent link">&para;</a></h3>
+<h3 id="debug"><em>obj</em>.<strong>debug</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#debug" title="Permanent link">&para;</a></h3>
+<h3 id="fromLines"><em>obj</em>.<strong>fromLines</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">)</span></code><a class="headerlink" href="#fromLines" title="Permanent link">&para;</a></h3>
+<h3 id="injectDuplicateDataPatch"><em>obj</em>.<strong>injectDuplicateDataPatch</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#injectDuplicateDataPatch" title="Permanent link">&para;</a></h3>
+<p>This patches a known bug in PyInstaller on Windows. 
+PyInstaller analysis can build a set of data file names
+which contain &ldquo;duplicates&rdquo; due to the Windows 
+file system case insensitivity.  This patch eliminates
+such duplicates, thus preventing runtime errors in the 
+binary produced.</p>
+<h3 id="injectInterpreterOptions"><em>obj</em>.<strong>injectInterpreterOptions</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#injectInterpreterOptions" title="Permanent link">&para;</a></h3>
+<h3 id="injectLine"><em>obj</em>.<strong>injectLine</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">injection</span><span class="p">,</span> <span class="n">lineNo</span><span class="p">)</span></code><a class="headerlink" href="#injectLine" title="Permanent link">&para;</a></h3>
+<h3 id="path"><em>obj</em>.<strong>path</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#path" title="Permanent link">&para;</a></h3>
+<h3 id="read"><em>obj</em>.<strong>read</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#read" title="Permanent link">&para;</a></h3>
+<h3 id="remove"><em>obj</em>.<strong>remove</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#remove" title="Permanent link">&para;</a></h3>
+<h3 id="toLines"><em>obj</em>.<strong>toLines</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#toLines" title="Permanent link">&para;</a></h3>
+<h3 id="write"><em>obj</em>.<strong>write</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#write" title="Permanent link">&para;</a></h3>
+<h3 id="filePath"><em>obj</em>.<strong>filePath</strong> <em>undefined</em><a class="headerlink" href="#filePath" title="Permanent link">&para;</a></h3>
+<h3 id="pyInstConfig"><em>obj</em>.<strong>pyInstConfig</strong> <em>undefined</em><a class="headerlink" href="#pyInstConfig" title="Permanent link">&para;</a></h3>
+<h3 id="warningBehavior"><em>obj</em>.<strong>warningBehavior</strong> <em>undefined</em><a class="headerlink" href="#warningBehavior" title="Permanent link">&para;</a></h3>
+<h3 id="isUnBufferedStdIo"><em>obj</em>.<strong>isUnBufferedStdIo</strong> <em>undefined</em><a class="headerlink" href="#isUnBufferedStdIo" title="Permanent link">&para;</a></h3>
+<h3 id="isModInitDebug"><em>obj</em>.<strong>isModInitDebug</strong> <em>undefined</em><a class="headerlink" href="#isModInitDebug" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="PyInstallerConfig"><strong>PyInstallerConfig</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#PyInstallerConfig" title="Permanent link">&para;</a></h2>
+<p>See PyInstaller docs for details on these settings.</p>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#toArgs"><code>toArgs</code></a></li>
+</ul>
+<p><strong>Instance Attributes:</strong> </p>
+<ul>
+<li><a href="#name"><code>name</code></a></li>
+<li><a href="#sourceDir"><code>sourceDir</code></a></li>
+<li><a href="#entryPointPy"><code>entryPointPy</code></a></li>
+<li><a href="#pyInstSpec"><code>pyInstSpec</code></a></li>
+<li><a href="#isGui"><code>isGui</code></a></li>
+<li><a href="#iconFilePath"><code>iconFilePath</code></a></li>
+<li><a href="#versionInfo"><code>versionInfo</code></a></li>
+<li><a href="#versionFilePath"><code>versionFilePath</code></a></li>
+<li><a href="#isAutoElevated"><code>isAutoElevated</code></a></li>
+<li><a href="#isOneFile"><code>isOneFile</code></a></li>
+<li><a href="#importPaths"><code>importPaths</code></a></li>
+<li><a href="#hiddenImports"><code>hiddenImports</code></a></li>
+<li><a href="#dataFilePaths"><code>dataFilePaths</code></a></li>
+<li><a href="#binaryFilePaths"><code>binaryFilePaths</code></a></li>
+<li><a href="#distResources"><code>distResources</code></a></li>
+<li><a href="#distDirs"><code>distDirs</code></a></li>
+<li><a href="#codeSignConfig"><code>codeSignConfig</code></a></li>
+<li><a href="#codeSignTargets"><code>codeSignTargets</code></a></li>
+<li><a href="#distDirPath"><code>distDirPath</code></a></li>
+<li><a href="#otherPyInstArgs"><code>otherPyInstArgs</code></a></li>
+<li><a href="#isSpecFileRemoved"><code>isSpecFileRemoved</code></a></li>
+</ul>
+<h3 id="toArgs"><em>obj</em>.<strong>toArgs</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isMakeSpec</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code><a class="headerlink" href="#toArgs" title="Permanent link">&para;</a></h3>
+<h3 id="name"><em>obj</em>.<strong>name</strong> <em>undefined</em><a class="headerlink" href="#name" title="Permanent link">&para;</a></h3>
+<h3 id="sourceDir"><em>obj</em>.<strong>sourceDir</strong> <em>undefined</em><a class="headerlink" href="#sourceDir" title="Permanent link">&para;</a></h3>
+<h3 id="entryPointPy"><em>obj</em>.<strong>entryPointPy</strong> <em>undefined</em><a class="headerlink" href="#entryPointPy" title="Permanent link">&para;</a></h3>
+<h3 id="pyInstSpec"><em>obj</em>.<strong>pyInstSpec</strong> <em>undefined</em><a class="headerlink" href="#pyInstSpec" title="Permanent link">&para;</a></h3>
+<h3 id="isGui"><em>obj</em>.<strong>isGui</strong> <em>undefined</em><a class="headerlink" href="#isGui" title="Permanent link">&para;</a></h3>
+<h3 id="iconFilePath"><em>obj</em>.<strong>iconFilePath</strong> <em>undefined</em><a class="headerlink" href="#iconFilePath" title="Permanent link">&para;</a></h3>
+<h3 id="versionInfo"><em>obj</em>.<strong>versionInfo</strong> <em>undefined</em><a class="headerlink" href="#versionInfo" title="Permanent link">&para;</a></h3>
+<h3 id="versionFilePath"><em>obj</em>.<strong>versionFilePath</strong> <em>undefined</em><a class="headerlink" href="#versionFilePath" title="Permanent link">&para;</a></h3>
+<h3 id="isAutoElevated"><em>obj</em>.<strong>isAutoElevated</strong> <em>undefined</em><a class="headerlink" href="#isAutoElevated" title="Permanent link">&para;</a></h3>
+<h3 id="isOneFile"><em>obj</em>.<strong>isOneFile</strong> <em>undefined</em><a class="headerlink" href="#isOneFile" title="Permanent link">&para;</a></h3>
+<h3 id="importPaths"><em>obj</em>.<strong>importPaths</strong> <em>undefined</em><a class="headerlink" href="#importPaths" title="Permanent link">&para;</a></h3>
+<h3 id="hiddenImports"><em>obj</em>.<strong>hiddenImports</strong> <em>undefined</em><a class="headerlink" href="#hiddenImports" title="Permanent link">&para;</a></h3>
+<h3 id="dataFilePaths"><em>obj</em>.<strong>dataFilePaths</strong> <em>undefined</em><a class="headerlink" href="#dataFilePaths" title="Permanent link">&para;</a></h3>
+<h3 id="binaryFilePaths"><em>obj</em>.<strong>binaryFilePaths</strong> <em>undefined</em><a class="headerlink" href="#binaryFilePaths" title="Permanent link">&para;</a></h3>
+<h3 id="distResources"><em>obj</em>.<strong>distResources</strong> <em>undefined</em><a class="headerlink" href="#distResources" title="Permanent link">&para;</a></h3>
+<h3 id="distDirs"><em>obj</em>.<strong>distDirs</strong> <em>undefined</em><a class="headerlink" href="#distDirs" title="Permanent link">&para;</a></h3>
+<h3 id="codeSignConfig"><em>obj</em>.<strong>codeSignConfig</strong> <em>undefined</em><a class="headerlink" href="#codeSignConfig" title="Permanent link">&para;</a></h3>
+<h3 id="codeSignTargets"><em>obj</em>.<strong>codeSignTargets</strong> <em>undefined</em><a class="headerlink" href="#codeSignTargets" title="Permanent link">&para;</a></h3>
+<h3 id="distDirPath"><em>obj</em>.<strong>distDirPath</strong> <em>undefined</em><a class="headerlink" href="#distDirPath" title="Permanent link">&para;</a></h3>
+<h3 id="otherPyInstArgs"><em>obj</em>.<strong>otherPyInstArgs</strong> <em>undefined</em><a class="headerlink" href="#otherPyInstArgs" title="Permanent link">&para;</a></h3>
+<h3 id="isSpecFileRemoved"><em>obj</em>.<strong>isSpecFileRemoved</strong> <em>undefined</em><a class="headerlink" href="#isSpecFileRemoved" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="PyToBinInstallerProcess"><strong>PyToBinInstallerProcess</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#PyToBinInstallerProcess" title="Permanent link">&para;</a></h2>
+<p><strong>Class/Static Attributes:</strong> </p>
+<ul>
+<li><a href="#DIVIDER"><code>DIVIDER</code></a></li>
+</ul>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#onFinalize"><code>onFinalize</code></a></li>
+<li><a href="#onIExpressPackagesBuilt"><code>onIExpressPackagesBuilt</code></a></li>
+<li><a href="#onInitialize"><code>onInitialize</code></a></li>
+<li><a href="#onMakeSpec"><code>onMakeSpec</code></a></li>
+<li><a href="#onOpyConfig"><code>onOpyConfig</code></a></li>
+<li><a href="#onPackagesStaged"><code>onPackagesStaged</code></a></li>
+<li><a href="#onPyInstConfig"><code>onPyInstConfig</code></a></li>
+<li><a href="#onPyPackageProcess"><code>onPyPackageProcess</code></a></li>
+<li><a href="#onPyPackagesBuilt"><code>onPyPackagesBuilt</code></a></li>
+<li><a href="#onQtIfwConfig"><code>onQtIfwConfig</code></a></li>
+<li><a href="#run"><code>run</code></a></li>
+</ul>
+<h3 id="DIVIDER"><em>PyToBinInstallerProcess</em>.<strong>DIVIDER</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#DIVIDER" title="Permanent link">&para;</a></h3>
+<h3 id="onFinalize"><em>obj</em>.<strong>onFinalize</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#onFinalize" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onIExpressPackagesBuilt"><em>obj</em>.<strong>onIExpressPackagesBuilt</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkgs</span><span class="p">)</span></code><a class="headerlink" href="#onIExpressPackagesBuilt" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onInitialize"><em>obj</em>.<strong>onInitialize</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#onInitialize" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onMakeSpec"><em>obj</em>.<strong>onMakeSpec</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span></code><a class="headerlink" href="#onMakeSpec" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onOpyConfig"><em>obj</em>.<strong>onOpyConfig</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span></code><a class="headerlink" href="#onOpyConfig" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onPackagesStaged"><em>obj</em>.<strong>onPackagesStaged</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">pkgs</span><span class="p">)</span></code><a class="headerlink" href="#onPackagesStaged" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onPyInstConfig"><em>obj</em>.<strong>onPyInstConfig</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span></code><a class="headerlink" href="#onPyInstConfig" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onPyPackageProcess"><em>obj</em>.<strong>onPyPackageProcess</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prc</span><span class="p">)</span></code><a class="headerlink" href="#onPyPackageProcess" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onPyPackagesBuilt"><em>obj</em>.<strong>onPyPackagesBuilt</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkgs</span><span class="p">)</span></code><a class="headerlink" href="#onPyPackagesBuilt" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onQtIfwConfig"><em>obj</em>.<strong>onQtIfwConfig</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span></code><a class="headerlink" href="#onQtIfwConfig" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="run"><em>obj</em>.<strong>run</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#run" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="PyToBinPackageProcess"><strong>PyToBinPackageProcess</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#PyToBinPackageProcess" title="Permanent link">&para;</a></h2>
+<p><strong>Class/Static Attributes:</strong> </p>
+<ul>
+<li><a href="#DIVIDER"><code>DIVIDER</code></a></li>
+</ul>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#onFinalize"><code>onFinalize</code></a></li>
+<li><a href="#onInitialize"><code>onInitialize</code></a></li>
+<li><a href="#onMakeSpec"><code>onMakeSpec</code></a></li>
+<li><a href="#onOpyConfig"><code>onOpyConfig</code></a></li>
+<li><a href="#onPyInstConfig"><code>onPyInstConfig</code></a></li>
+<li><a href="#run"><code>run</code></a></li>
+</ul>
+<p><strong>Instance Attributes:</strong> </p>
+<ul>
+<li><a href="#isObfuscationTest"><code>isObfuscationTest</code></a></li>
+<li><a href="#isWarningSuppression"><code>isWarningSuppression</code></a></li>
+<li><a href="#isUnBufferedStdIo"><code>isUnBufferedStdIo</code></a></li>
+<li><a href="#isPyInstDupDataPatched"><code>isPyInstDupDataPatched</code></a></li>
+</ul>
+<h3 id="DIVIDER"><em>PyToBinPackageProcess</em>.<strong>DIVIDER</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#DIVIDER" title="Permanent link">&para;</a></h3>
+<h3 id="onFinalize"><em>obj</em>.<strong>onFinalize</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#onFinalize" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onInitialize"><em>obj</em>.<strong>onInitialize</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#onInitialize" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onMakeSpec"><em>obj</em>.<strong>onMakeSpec</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span></code><a class="headerlink" href="#onMakeSpec" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onOpyConfig"><em>obj</em>.<strong>onOpyConfig</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span></code><a class="headerlink" href="#onOpyConfig" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onPyInstConfig"><em>obj</em>.<strong>onPyInstConfig</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span></code><a class="headerlink" href="#onPyInstConfig" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="run"><em>obj</em>.<strong>run</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#run" title="Permanent link">&para;</a></h3>
+<h3 id="isObfuscationTest"><em>obj</em>.<strong>isObfuscationTest</strong> <em>undefined</em><a class="headerlink" href="#isObfuscationTest" title="Permanent link">&para;</a></h3>
+<h3 id="isWarningSuppression"><em>obj</em>.<strong>isWarningSuppression</strong> <em>undefined</em><a class="headerlink" href="#isWarningSuppression" title="Permanent link">&para;</a></h3>
+<h3 id="isUnBufferedStdIo"><em>obj</em>.<strong>isUnBufferedStdIo</strong> <em>undefined</em><a class="headerlink" href="#isUnBufferedStdIo" title="Permanent link">&para;</a></h3>
+<h3 id="isPyInstDupDataPatched"><em>obj</em>.<strong>isPyInstDupDataPatched</strong> <em>undefined</em><a class="headerlink" href="#isPyInstDupDataPatched" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="Functions"><strong>Functions</strong><a class="headerlink" href="#Functions" title="Permanent link">&para;</a></h2>
+<h3 id="PyInstallerMajorMinorVer"><strong>PyInstallerMajorMinorVer</strong><code class="highlight"><span class="p">()</span></code><a class="headerlink" href="#PyInstallerMajorMinorVer" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="PyInstallerMajorVer"><strong>PyInstallerMajorVer</strong><code class="highlight"><span class="p">()</span></code><a class="headerlink" href="#PyInstallerMajorVer" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="PyInstallerVersion"><strong>PyInstallerVersion</strong><code class="highlight"><span class="p">()</span></code><a class="headerlink" href="#PyInstallerVersion" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="installPyInstaller"><strong>installPyInstaller</strong><code class="highlight"><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#installPyInstaller" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="makePyInstSpec"><strong>makePyInstSpec</strong><code class="highlight"><span class="p">(</span><span class="n">pyInstConfig</span><span class="p">,</span> <span class="n">opyConfig</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#makePyInstSpec" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="pyScriptToExe"><strong>pyScriptToExe</strong><code class="highlight"><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">entryPointPy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pyInstConfig</span><span class="o">=&lt;</span><span class="n">py_installer</span><span class="o">.</span><span class="n">PyInstallerConfig</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x04419C50</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">opyConfig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distResources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distDirs</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#pyScriptToExe" title="Permanent link">&para;</a></h3>
+<p>returns: (binDir, binPath) </p>
+<hr />
+<h3 id="uninstallPyInstaller"><strong>uninstallPyInstaller</strong><code class="highlight"><span class="p">()</span></code><a class="headerlink" href="#uninstallPyInstaller" title="Permanent link">&para;</a></h3>
+<hr />
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="Qt%20Installer%20Framework.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Qt Installer Framework" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Qt Installer Framework
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="IExpress.html" class="md-footer__link md-footer__link--next" aria-label="Next: IExpress" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              IExpress
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
+      
+    
+  </body>
+</html>

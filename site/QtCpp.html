@@ -1,0 +1,1374 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+    
+    
+      
+        <title>Qt C++ Integration - Distribution Builder</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#qt-c-integration" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Distribution Builder" class="md-header__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Distribution Builder
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Qt C++ Integration
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Distribution Builder" class="md-nav__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Distribution Builder
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QuickStart.html" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Examples.html" class="md-nav__link">
+        Examples
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      <label class="md-nav__link" for="__nav_4">
+        Old Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Old Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Old Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="HighLevel.html" class="md-nav__link">
+        High Level Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ConfigClasses.html" class="md-nav__link">
+        Configuration Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="LowLevel.html" class="md-nav__link">
+        Low Level Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Qt C++ Integration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="QtCpp.html" class="md-nav__link md-nav__link--active">
+        Qt C++ Integration
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qt-c-module" class="md-nav__link">
+    Qt C++ Module
+  </a>
+  
+    <nav class="md-nav" aria-label="Qt C++ Module">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qmakeinit" class="md-nav__link">
+    qmakeInit
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qmakeargparser-qmakeargs" class="md-nav__link">
+    qmakeArgParser, qmakeArgs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installdeploytools" class="md-nav__link">
+    installDeployTools
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renameexe" class="md-nav__link">
+    renameExe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qmakemasterconfigfactory-qmakepackageconfigfactory" class="md-nav__link">
+    qmakeMasterConfigFactory, qmakePackageConfigFactory
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcppconfig" class="md-nav__link">
+    QtCppConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcppconfigcqtdeployerconfig" class="md-nav__link">
+    QtCppConfig.CQtDeployerConfig
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qmake-integration" class="md-nav__link">
+    QMake Integration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-world-qt-example" class="md-nav__link">
+    Hello World Qt Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-world-qml-example" class="md-nav__link">
+    Hello World QML Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-world-qml-new-example" class="md-nav__link">
+    Hello World QML New Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-options" class="md-nav__link">
+    Additional Options
+  </a>
+  
+    <nav class="md-nav" aria-label="Additional Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#srcdir" class="md-nav__link">
+    srcDir
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource" class="md-nav__link">
+    resource
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exename" class="md-nav__link">
+    exeName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#askpass" class="md-nav__link">
+    askPass
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      <label class="md-nav__link" for="__nav_5">
+        Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Config%20Factory.html" class="md-nav__link">
+        Config Factory
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20Installer%20Framework.html" class="md-nav__link">
+        Qt Installer Framework
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="PyInstaller.html" class="md-nav__link">
+        PyInstaller
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="IExpress.html" class="md-nav__link">
+        IExpress
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Code%20Signing.html" class="md-nav__link">
+        Code Signing
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20Obfuscation.html" class="md-nav__link">
+        Python Obfuscation
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20pip.html" class="md-nav__link">
+        Python pip
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20CPP.html" class="md-nav__link">
+        Qt CPP
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Logging.html" class="md-nav__link">
+        Logging
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Classes.html" class="md-nav__link">
+        Utility Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Functions.html" class="md-nav__link">
+        Utility Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Constants.html" class="md-nav__link">
+        Utility Constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Issues.html" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ToDo.html" class="md-nav__link">
+        To-Do List
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Contribute.html" class="md-nav__link">
+        Contact / Contribute
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qt-c-module" class="md-nav__link">
+    Qt C++ Module
+  </a>
+  
+    <nav class="md-nav" aria-label="Qt C++ Module">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qmakeinit" class="md-nav__link">
+    qmakeInit
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qmakeargparser-qmakeargs" class="md-nav__link">
+    qmakeArgParser, qmakeArgs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installdeploytools" class="md-nav__link">
+    installDeployTools
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renameexe" class="md-nav__link">
+    renameExe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qmakemasterconfigfactory-qmakepackageconfigfactory" class="md-nav__link">
+    qmakeMasterConfigFactory, qmakePackageConfigFactory
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcppconfig" class="md-nav__link">
+    QtCppConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcppconfigcqtdeployerconfig" class="md-nav__link">
+    QtCppConfig.CQtDeployerConfig
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qmake-integration" class="md-nav__link">
+    QMake Integration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-world-qt-example" class="md-nav__link">
+    Hello World Qt Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-world-qml-example" class="md-nav__link">
+    Hello World QML Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hello-world-qml-new-example" class="md-nav__link">
+    Hello World QML New Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-options" class="md-nav__link">
+    Additional Options
+  </a>
+  
+    <nav class="md-nav" aria-label="Additional Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#srcdir" class="md-nav__link">
+    srcDir
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource" class="md-nav__link">
+    resource
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exename" class="md-nav__link">
+    exeName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#askpass" class="md-nav__link">
+    askPass
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="qt-c-integration">Qt C++ Integration<a class="headerlink" href="#qt-c-integration" title="Permanent link">&para;</a></h1>
+<p><img alt="distbuilder logo" src="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png" /></p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The developers of Distribution Builder work in many languages and frameworks extending
+beyond Python.  Ultimately, we hope to provide a collection of rapid integration modules
+for this library for other modes of software development.  </p>
+<p>The first of these integrations we are rolling out is a ready means to allow your 
+<a href="https://www.qt.io/">Qt</a> C++ programs to flow directly into this tool.  The library can 
+then be used as a middleman between <a href="https://doc.qt.io/qtcreator/">Qt Creator</a> and the<br />
+<a href="http://doc.qt.io/qtinstallerframework">Qt Installer Framework</a>. This mechanism provides 
+far more flexibility than simply bridging those tools, however. Other packages, notably 
+Python based programs, can be built and bundled together simultaneously. This design 
+pattern gives you the full power of Distribution Builder (and Python on the whole) 
+by which to extend your Qt build process.</p>
+<p>If you have not done so yet, it is strongly recommended that you you get your feet wet 
+with this library by at least reviewing <a href="QuickStart.html#getting-started">Getting Started</a> 
+prior to diving into this extended feature set.  Also, you will need to be versed in using
+Qt Creator and writing code with the Qt Library in order to make use of this, or follow 
+the examples / documentation. </p>
+<h2 id="qt-c-module">Qt C++ Module<a class="headerlink" href="#qt-c-module" title="Permanent link">&para;</a></h2>
+<p>A module has been provided in distbuilder which is specifically dedicated to Qt C++
+integration, i.e. <code>distbuilder.qt_cpp</code>.  The following functions / classes can be imported 
+from that: </p>
+<div class="codehilite"><pre><span></span><code>qmakeInit()
+
+qmakeArgParser()
+qmakeArgs()
+
+installDeployTools( askPassPath=None )
+renameExe( args )
+
+qmakeMasterConfigFactory( args=None ) 
+qmakePackageConfigFactory( args=None )
+
+QtCppConfig( qtBinDirPath, exeCompiler, qmlScrDirPath=None )
+
+&lt;Linux Only&gt;
+QtCppConfig.CQtDeployerConfig
+</code></pre></div>
+
+<p>Under most circumstances, you will only need to call <code>qmakeInit</code>.  If you wish to 
+customize that process or receive additional specifications from an external source 
+(e.g. QMake), you may use the other functions to emulate and custom define what the 
+vanilla <code>qmakeInit</code> does for you.   </p>
+<h3 id="qmakeinit">qmakeInit<a class="headerlink" href="#qmakeinit" title="Permanent link">&para;</a></h3>
+<p>This function provides the standard way to set up an integration which allows QMake to
+drive the build process in distbuilder. The function receives parameters passed to the<br />
+script externally (normally via a system call from QMake), and returns a tuple of 
+<a href="HighLevel.html#configfactory">ConfigFactory</a> objects. The first factory in the tuple is 
+intended for use as a &ldquo;master&rdquo; from which to build robust multi-package distributions.<br />
+The other, is to build the C++ program package.  </p>
+<p>Since you may wish to roll your own equivalent of this, here is the entire source for 
+this function:         </p>
+<div class="codehilite"><pre><span></span><code><span class="nv">def</span> <span class="nv">qmakeInit</span><span class="ss">()</span>:     
+    <span class="nv">args</span> <span class="o">=</span> <span class="nv">qmakeArgs</span><span class="ss">()</span>
+    <span class="nv">installDeployTools</span><span class="ss">(</span> <span class="nv">args</span>.<span class="nv">askPass</span> <span class="ss">)</span>
+    <span class="k">if</span> <span class="nv">args</span>.<span class="nv">exeName</span>: <span class="nv">renameExe</span><span class="ss">(</span> <span class="nv">args</span> <span class="ss">)</span>    
+    <span class="k">return</span> <span class="nv">qmakeMasterConfigFactory</span><span class="ss">(</span> <span class="nv">args</span> <span class="ss">)</span>, <span class="nv">qmakePackageConfigFactory</span><span class="ss">(</span> <span class="nv">args</span> <span class="ss">)</span>
+</code></pre></div>
+
+<p><strong>Note:</strong> to modify a &ldquo;product&rdquo; of the library, it is strongly advised that you modify the 
+factory used to produce it, when possible, rather than creating an object with it first 
+and then altering that.  Changing the factory attributes can prevent the need to also 
+regenerate <em>nested</em> components, which may not align as desired otherwise and could lead to 
+subtle problems.  While this practice is applicable to distbuilder in general, it is 
+pointed out here because this standard Qt integration pattern directly involves the 
+creation of factories for the client to implement, as opposed to Qt C++ 
+&ldquo;configuration objects&rdquo; or &ldquo;process objects&rdquo;.    </p>
+<h3 id="qmakeargparser-qmakeargs">qmakeArgParser, qmakeArgs<a class="headerlink" href="#qmakeargparser-qmakeargs" title="Permanent link">&para;</a></h3>
+<p>If overwriting the standard <code>qmakeInit</code> function, you may call either of these 
+functions directly, in order to subsequently call <code>qmakeMasterConfigFactory</code> and/or 
+<code>qmakePackageConfigFactory</code>. <code>qmakeArgs()</code> directly collects the required parameters
+from the script arguments. In contrast, <code>qmakeArgParser</code> returns a raw 
+<a href="https://docs.python.org/3/library/argparse.html">ArgParse</a> object, which may be 
+<em>customized</em> to collect additional / alternate script arguments.   </p>
+<h3 id="installdeploytools">installDeployTools<a class="headerlink" href="#installdeploytools" title="Permanent link">&para;</a></h3>
+<p>Normally, you would not have to call this directly, as <code>qmakeInit</code> will for you.
+This function will install any tools required to produce distributions for 
+Qt C++ based programs.  </p>
+<p>On Linux, you may wish to pass a value for the <code>askPassPath</code> argument.  That is 
+needed to invoke the function from a non-tty gui context.  The value should 
+define the path to an &ldquo;ask password&rdquo; utility e.g. &ldquo;OpenSSH Askpass&rdquo;   </p>
+<h3 id="renameexe">renameExe<a class="headerlink" href="#renameexe" title="Permanent link">&para;</a></h3>
+<p>In some contexts, it is desirable to rename the exe which was built by QMake, when it
+comes time to package and distribute it. This is a primitive convenience function for that 
+purpose.  Using the <code>args</code> object, i.e. <a href="#qmakeArgs">qmakeArgs</a>, passed to it to determine 
+the old and new path, the original executable will simply be renamed (i.e. literally - on 
+the file system) and the <code>exePath</code> attribute of <code>args</code> will be revised to reflect the change. 
+This takes place within <code>qmakeInit</code>, allowing the rest of the subsequent configurations 
+and processes to remain oblivious to this initialization task.  </p>
+<h3 id="qmakemasterconfigfactory-qmakepackageconfigfactory">qmakeMasterConfigFactory, qmakePackageConfigFactory<a class="headerlink" href="#qmakemasterconfigfactory-qmakepackageconfigfactory" title="Permanent link">&para;</a></h3>
+<p>You may bypass the <code>qmakeInit</code> function, and call either of these functions directly
+to generate the corresponding ConfigFactory.  Both of the functions take an optional 
+argument called <code>args</code>, which is the product of a call to <code>parse_args()</code> from an 
+<a href="https://docs.python.org/3/library/argparse.html">ArgParse</a> object.  If that 
+is not provided, those values will be collected via the default command line mechanism.  </p>
+<h3 id="qtcppconfig">QtCppConfig<a class="headerlink" href="#qtcppconfig" title="Permanent link">&para;</a></h3>
+<p>This class is used for low level Qt C++ packaging configurations. You will NOT likely 
+need to manipulate this type of class directly, but it is included in this documentation 
+for the sake of completeness.</p>
+<p>This type of object is owned by a <a href="HighLevel.html#configfactory">ConfigFactory</a>, and 
+(as a product of that) by a <a href="ConfigClasses.html#qtifwpackage">QtIfwPackage</a> object. 
+It is ultimately employed by the <a href="LowLevel.html#buildinstaller">buildInstaller</a> function, 
+normally invoked via a <a href="HighLevel.html#process-classes">Process Class</a>.  </p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>QtCppConfig( qtBinDirPath, exeCompiler, qmlScrDirPath=None )
+</code></pre></div>
+
+<p>Attributes:                    </p>
+<div class="codehilite"><pre><span></span><code>qtBinDirPath             
+exeCompiler    
+qmlScrDirPath
+
+cQtDeployerConfig
+</code></pre></div>
+
+<p>Object Functions:</p>
+<div class="codehilite"><pre><span></span><code>qtDirPath()
+toQtPath( relativePath )
+validate()
+addDependencies( package )
+</code></pre></div>
+
+<p>Static Functions:</p>
+<div class="codehilite"><pre><span></span><code>srcCompilerOptions() 
+exeWrapper( exePath, isGui )
+</code></pre></div>
+
+<h3 id="qtcppconfigcqtdeployerconfig">QtCppConfig.CQtDeployerConfig<a class="headerlink" href="#qtcppconfigcqtdeployerconfig" title="Permanent link">&para;</a></h3>
+<p>On Linux, distbuilder uses a tool called
+<a href="https://github.com/QuasarApp/CQtDeployer/wiki">CQtDeployer</a>
+to assist with the build process for Qt C++ deployments.  This class
+allows you to customize how that utility is employed.  Please refer
+to that documentation for help.</p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>CQtDeployerConfig()
+</code></pre></div>
+
+<p>Attributes:      </p>
+<div class="codehilite"><pre><span></span><code>libDirs = []
+plugins = []
+
+&lt;custom addition, use package names&gt;           
+hiddenQml = []
+
+&lt;custom addition, open ended - works like distResources...&gt;           
+hiddenDependencies = []
+
+ignoreLibs = [] 
+ignoreEnv  = []
+
+recurseDepth = 0
+deploySystem = False            
+deployLibc   = False
+allQml       = False
+
+strip        = True 
+translations = True
+
+&lt;open ended string to append&gt;
+otherArgs = None
+</code></pre></div>
+
+<h2 id="qmake-integration">QMake Integration<a class="headerlink" href="#qmake-integration" title="Permanent link">&para;</a></h2>
+<p>To produce an executable binary from Qt C++ source, a developer normally defines a (scripted)
+build configuration in the form of a &ldquo;project file&rdquo; (<code>.pro</code>). That <code>.pro</code> file is 
+processed by <a href="https://doc.qt.io/qt-5/qmake-manual.html">QMake</a> to produce the program. 
+Typically, the <code>.pro</code> file initially originates from some basic template, and QMake is simply 
+run automatically from Qt Creator upon selecting a &ldquo;build&rdquo; action from the menu.  </p>
+<p>QMake is a very powerful mechanism, and these <code>.pro</code> files can be customized extensively to 
+setup complex build processes. In addition to <code>.pro</code> files, Qt uses more dynamic, user 
+specific <code>.pro.user</code> files. These are normally managed via Qt Creator tools, and not directly
+edited (though they may be). For extended information about such, you may wish to refer to any/all of the 
+following links:</p>
+<ul>
+<li>
+<p><a href="https://doc.qt.io/qtcreator/creator-project-opening.html">Opening Projects</a></p>
+</li>
+<li>
+<p><a href="https://doc.qt.io/qtcreator/creator-configuring-projects.html">Configuring Projects</a>.</p>
+</li>
+<li>
+<p><a href="https://doc.qt.io/qtcreator/creator-build-settings.html#editing-build-configurations">Editing Build Configurations</a></p>
+</li>
+</ul>
+<p>As illustrated in the Qt demos here, you can setup an easy work flow to allow use of this 
+Python library from Qt Creator.  The demos include custom QMake scripting which you may 
+copy into your own projects. Using these demo templates, the setup procedures are short 
+and sweet, but they do span both <code>.pro</code> and <code>.pro.user</code> files.   </p>
+<p>Since <code>.pro.user</code> files are specific to a user&rsquo;s environment, there is no way to 
+distribute those in a manner which would work anything close to universally.  As such, to
+run the demos, you must first <strong>manually</strong> perform the following tasks when 
+you open one of these <code>.pro</code> files (which can be distributed) for the first time on a given machine:</p>
+<ul>
+<li>
+<p>From the &ldquo;Projects&rdquo; screen, <strong>clone</strong> a &ldquo;Release&rdquo; build configuration.</p>
+</li>
+<li>
+<p>Name the new configuration &ldquo;Package&rdquo; (or a similiar name of your choice).</p>
+</li>
+<li>
+<p>For this configuration, find the <strong>Build steps&hellip; qmake&hellip; Additional arguments</strong>
+input field and add <code>CONFIG+=package</code>.</p>
+</li>
+<li>
+<p><em>CONDITIONALLY</em>: within the Build Environment, add an environmental variable named 
+<code>PYTHON_PATH</code> and define its value to be the path to the specific interpreter 
+you wish to use.  If you skip this, the build process will attempt to use <code>python</code> 
+from the system path.</p>
+</li>
+</ul>
+<p>To then use the new build option, choose the configuration (found along with Debug, 
+Release, etc.) from the menu in the bottom left corner of Creator (above the big green
+&ldquo;play&rdquo; button). Then, select <strong>Build&hellip; REBUILD Project</strong> from the menu.
+Do NOT chose &ldquo;deploy&rdquo; or &ldquo;run&rdquo; for this configuration, as they are not applicable.</p>
+<p>Upon selecting this build option, a key portion of the custom QMake logic should 
+be executed.  When it is, you will find important debugging information in the &ldquo;General 
+Messages&rdquo; output pane of Creator.  If this library can&rsquo;t be reached, you will see critical 
+error messages there, indicating what has gone wrong. If everything is in 
+order, however, you should see your Python version displayed, the version of distbuilder 
+being used, and the <strong>command which will be executed to run the build script</strong>. Note that
+you may wish to copy that command and execute it directly from the command prompt / terminal
+in the event you want to run the build script again without having to recompile the C++
+project.</p>
+<p>When you run the <strong>REBUILD</strong> operation, you will find important debugging information in 
+the &ldquo;Compile Output&rdquo; pane of Creator.  All messages produced by the Python script will 
+appear at the end of that build log.  </p>
+<p>For more details regarding the QMake script involved, and for ways to modify (or fix)
+your integration, please continue on to the <a href="#hello-world-qt-example">Hello World Qt Example</a>.</p>
+<h2 id="hello-world-qt-example">Hello World Qt Example<a class="headerlink" href="#hello-world-qt-example" title="Permanent link">&para;</a></h2>
+<p>This example Qt project was initially created from a simple built-in template, 
+i.e. what is given to you upon selecting a new &ldquo;Qt Widgets Application&rdquo; project in 
+Creator.  It was then modified slightly for this demo. This illustrates how you can 
+rapidly package a Widgets based program for distribution via this Python library.</p>
+<p>All of the examples discussed here are included in the &ldquo;source distribution&rdquo; of the 
+library. The <a href="https://pypi.org/project/distbuilder/#files">PyPi downloads</a> 
+page for this project is arguably the fastest route to acquire the examples.<br />
+Unlike many of the other examples stepped through in this documentation, not every file
+will be explicitly listed and discussed here.  </p>
+<p>Once you have the examples source, launch Qt Creator. Then select 
+<code>File... Open File Or Project...</code>, browse to the examples sub directory named <code>hello_qt</code>,
+and select <code>hello.pro</code>.   </p>
+<p>Upon opening the project, follow the instructions in the above 
+<a href="#qmake-integration">QMake Integration</a> section.  Test your new &ldquo;Package&rdquo; build configuration.  If anything fails, you might well spot your incompatibility by stepping
+through the QMake.  </p>
+<p>The place to begin this code review is in the 
+<a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qt/hello/hello.pro">hello.pro</a> 
+file.  It starts with pure boiler plate QMake, and then ends with the following:</p>
+<div class="codehilite"><pre><span></span><code>#<span class="w"> </span><span class="n">DISTRIBUTION</span><span class="w"> </span><span class="n">BUILDER</span><span class="w"> </span><span class="n">INTEGRATION</span><span class="w"></span>
+#<span class="o">==============================================================================</span><span class="w"></span>
+<span class="n">include</span><span class="p">(</span><span class="n">package</span><span class="o">/</span><span class="n">package</span><span class="p">.</span><span class="n">pri</span><span class="p">)</span><span class="w"></span>
+<span class="sx">!isEmpty(QMAKE_POST_LINK){</span><span class="w"></span>
+<span class="w">        </span><span class="n">message</span><span class="p">(</span><span class="n">Commands</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">execute</span><span class="w"> </span><span class="n">upon</span><span class="w"> </span><span class="n">rebuild</span><span class="p">:)</span><span class="w"></span>
+<span class="w">        </span><span class="n">message</span><span class="p">(</span>$$<span class="p">{</span><span class="n">QMAKE_POST_LINK</span><span class="p">})</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+
+<p>What this accomplishes is the inclusion of a &ldquo;sub project&rdquo; within the main one called 
+&ldquo;package&rdquo;.  That sub project has a corresponding sub directory, and <code>.pri</code> file of the same 
+the name.  This sub project include the resources for packaging the application, and all
+of that has been encapsulated rather then blending it with the rest of the work.  This
+template gives you an easy means to copy and paste this feature into your own existing 
+work.</p>
+<p>If you expand the &ldquo;package&rdquo; sub project in the side bar, you&rsquo;ll find the <code>pri</code>, and &ldquo;Other Files&rdquo;, which contains <code>package.py</code>.  The Python script is the distbuilder &ldquo;build&rdquo; script.  We elected the name that script &ldquo;package&rdquo; (along with rest of the sub project), so as to 
+not conflate the meaning of &ldquo;build&rdquo; in C++ with this additional step.       </p>
+<p>Next, let&rsquo;s look over 
+<a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qt/hello/package/package.pri">package.pri</a>.  At the top of that, you&rsquo;ll find:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Get the python interpreter path from an environmental variable, if possible.</span>
+<span class="c1"># Note, that may be assigned in a .pro.user. If that is not defined, fall-back to</span>
+<span class="c1"># a hard-coded value which assumes you want to use &quot;python&quot; from the system path.</span>
+<span class="n">PY_PATH</span><span class="o">=$$</span><span class="n">getenv</span><span class="p">(</span> <span class="n">PYTHON_PATH</span> <span class="p">)</span>
+<span class="n">isEmpty</span><span class="p">(</span><span class="n">PY_PATH</span><span class="p">){</span> <span class="n">PY_PATH</span><span class="o">=</span><span class="n">python</span> <span class="p">}</span>
+</code></pre></div>
+
+<p>As denoted by the comment, this is how Python is integrated in the most elementary 
+aspect of the mechanism.  If an environmental variable called <code>PYTHON_PATH</code> is defined, that
+is how the interpreter will be called upon. Note that may be either universally set on your 
+system, or added to your &ldquo;Package&rdquo; build configuration&rsquo;s &ldquo;run settings&rdquo; (i.e. in <code>pro.user</code>).<br />
+Alternatively, a hard-coded fall back to <code>python</code> on the system path is used.<br />
+If desired, you might change that to another fall-back e.g. <code>python3</code>. <br />
+Note that finding the interpreter will also dictate the availability of the<br />
+library.  If you have multiple instances of Python installed, make sure you use the 
+same one where you ran the pip installation for this library.</p>
+<p>The next portion of <code>package.pri</code> is comprised of assorted support functions.<br />
+Scroll down a bit, and you&rsquo;ll find the following:</p>
+<div class="codehilite"><pre><span></span><code># Global application info shared across the C++ layer,
+# the binary branding, and the Python installation builder!
+DEFINES += $$globalStrDef( APP_VERSION, 1.0.0.0 )
+DEFINES += $$globalStrDef( COMPANY_TRADE_NAME, Some Company )
+DEFINES += $$globalStrDef( COMPANY_LEGAL_NAME, Some Company Inc. )
+DEFINES += $$globalStrDef( COPYRIGHT_YEAR, $${currentYear} )
+DEFINES += $$globalStrDef( PRODUCT_TITLE, Hello World QML Example )
+DEFINES += $$globalStrDef( PRODUCT_DESCRIPTION, A Distribution Builder Example )
+</code></pre></div>
+
+<p>In this section, the custom details are defined for the name of the product, and 
+company, etc. Note, these values cascade down in the C++ in addition to being 
+passed around the QMake build process and finally onto distbuilder.  This provides the means
+to define such info in a single &ldquo;master&rdquo; location.  If you check out the
+<a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qt/hello/mainwindow.cpp">mainwindow.cpp</a> C++ implementation file, you will see this in action on 
+that side of the equation.</p>
+<p>Just below, the <code>.pri</code> contains:</p>
+<div class="codehilite"><pre><span></span><code>SETUP_NAME=HelloQtSetup
+
+win32: ICON_PATH=$${_PRO_FILE_PWD_}/icons/demo.ico
+macx:  ICON_PATH=$${_PRO_FILE_PWD_}/icons/demo.icns
+linux: ICON_PATH=$${_PRO_FILE_PWD_}/icons/demo.png
+</code></pre></div>
+
+<p>This section let&rsquo;s you define the name of setup file to be ultimately produced, along 
+with relative paths to icons.</p>
+<p>As you continue on, the script effectively builds a command to append onto 
+<code>QMAKE_POST_LINK</code>.  That is way in which the Python script is executed upon rebuilding
+the project using the &ldquo;Package&rdquo; build configuration.</p>
+<p>Now, onto the Python script 
+<a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qt/hello/package/package.py">package.py</a>.  It simply contains: </p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">distbuilder</span> <span class="kn">import</span> <span class="n">RobustInstallerProcess</span>   
+<span class="kn">from</span> <span class="nn">distbuilder.qt_cpp</span> <span class="kn">import</span> <span class="n">qmakeInit</span>
+
+<span class="n">masterFactory</span><span class="p">,</span> <span class="n">packageFactory</span> <span class="o">=</span> <span class="n">qmakeInit</span><span class="p">()</span>
+<span class="n">helloQtPkg</span> <span class="o">=</span> <span class="n">packageFactory</span><span class="o">.</span><span class="n">qtIfwPackage</span><span class="p">()</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">RobustInstallerProcess</span><span class="p">(</span> <span class="n">masterFactory</span><span class="p">,</span> <span class="n">ifwPackages</span><span class="o">=</span><span class="p">[</span><span class="n">helloQtPkg</span><span class="p">],</span>
+                            <span class="n">isDesktopTarget</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">isTestingInstall</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">p</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Most of this has been explained the <a href="#qt-c++-module">Qt C++ Module</a> section and / or
+the basic <a href="Examples.html">examples</a>.  The key points to to focus upon are:</p>
+<div class="codehilite"><pre><span></span><code>masterFactory, packageFactory = qmakeInit()
+</code></pre></div>
+
+<p>Creates <a href="HighLevel.html#configfactory">ConfigFactory</a> objects, 
+using the QMake passed values. </p>
+<div class="codehilite"><pre><span></span><code>helloQtPkg = packageFactory.qtIfwPackage()
+</code></pre></div>
+
+<p>Creates a <a href="ConfigClasses.html#qtifwpackage">QtIfwPackage</a> object.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RobustInstallerProcess</span><span class="p">(</span><span class="w"> </span><span class="n">masterFactory</span><span class="p">,</span><span class="w"> </span><span class="n">ifwPackages</span><span class="o">=[</span><span class="n">helloQtPkg</span><span class="o">]</span><span class="p">,</span><span class="w"></span>
+<span class="w">                            </span><span class="n">isDesktopTarget</span><span class="o">=</span><span class="k">True</span><span class="w"> </span><span class="p">)</span><span class="w"></span>
+</code></pre></div>
+
+<p>Creates a <a href="HighLevel.html#robustinstallerprocess">RobustInstallerProcess</a>,
+which will employ the <code>masterFactory</code> and include the package containing
+the C++ program.</p>
+<h2 id="hello-world-qml-example">Hello World QML Example<a class="headerlink" href="#hello-world-qml-example" title="Permanent link">&para;</a></h2>
+<p>This example was initially created from what is given to you upon selecting a new 
+&ldquo;Qt Quick Application - Canvas 3D&rdquo; (including three.js) project in Creator.<br />
+It was then modified for this demo.  Notably, some refactoring was done to shuffle
+select components into a &ldquo;ux&rdquo; sub project.  This illustrates how you can rapidly 
+package a QML based program, (with some dependencies and resources) for distribution
+via this Python library.  </p>
+<p><strong>NOTE:</strong>
+Please refer to <a href="#hello-world-qml-new-example">Hello World QML New Example</a> 
+if you are using a recent version of the Qt Library, as the 
+<a href="https://doc.qt.io/qt-5.12/qtcanvas3d-index.html">Canvas3D module was deprecated in Qt 5.12.</a> and entirely removed from later versions!</p>
+<p>Assuming you already have the examples source, launch Qt Creator. Then select 
+<code>File... Open File Or Project...</code>, browse to the examples sub directory named <code>hello_qml</code>,
+and select <code>hello.pro</code>.   </p>
+<p>Upon opening the project, follow the instructions in the above 
+<a href="#qmake-integration">QMake Integration</a> section.  Test your new &ldquo;Package&rdquo; build configuration.  </p>
+<p>Other than the C++ side of this, this example is nearly identical to the more primitive
+<a href="#hello-world-qt-example">Hello World Qt Example</a>. There is one key difference.
+In <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qml/hello/package/package.pri">package.pri</a>, 
+near the end you find this line:</p>
+<div class="codehilite"><pre><span></span><code>qmlSourcePath = $${_PRO_FILE_PWD_}/ux
+</code></pre></div>
+
+<p>Then, as <code>packageCmd</code> is being built, you&rsquo;ll find <code>qmlSourcePath</code> used:</p>
+<div class="codehilite"><pre><span></span><code>-q $$quot( $$clean_path( $${qmlSourcePath} ) )
+</code></pre></div>
+
+<p>This was the reason why the basic template was revised, to create a <code>ux</code> sub project
+/ sub directory.  The tools used in distbuilder to find and collect the dependencies 
+for QML components require a directory path to where the QML source resides for the 
+project.  The process works ideally if it scans a directory (recursively) which is 
+reserved primarily for these specific files.  It is a good practice to keep your C++ 
+and QML split apart anyway, so this is a logical design either way. </p>
+<h2 id="hello-world-qml-new-example">Hello World QML New Example<a class="headerlink" href="#hello-world-qml-new-example" title="Permanent link">&para;</a></h2>
+<p>This example was added to replace the original QML example, for use with newer
+versions of Qt.  This was based on the standard &ldquo;Qt 3D: Scene3dView QML Example&rdquo;, 
+which can be readily found from within the Creator.  </p>
+<p>Aside from the Qt specific / UX changes, it is <em>nearly</em> identical to the original 
+<a href="#hello-world-qml-example">Hello World QML Example</a>.</p>
+<p>One notable difference from the original example, is that one demonstrates the use
+of the <code>hiddenQml</code> attribute of class 
+<a href="#qtCppConfig.cqtdeployerconfig">QtCppConfig.CQtDeployerConfig</a>.  It would seem
+that the <a href="https://github.com/QuasarApp/CQtDeployer/wiki">CQtDeployer</a> tool used
+on Linux, is not able to bundle those resources automatically because Qt did not
+follow the path conventions for this QML module and/or do not reference it in the 
+example code in a manner which aligns with that.  This example, therefore, shows
+how to solve that problem!   </p>
+<h2 id="additional-options">Additional Options<a class="headerlink" href="#additional-options" title="Permanent link">&para;</a></h2>
+<p>In addition to the options for the QMake integration demoed and discussed, there are 
+a handful more worth noting. These are all optional command line switches provided by
+the default <code>qmakeInit</code> mechanism.</p>
+<h3 id="srcdir">srcDir<a class="headerlink" href="#srcdir" title="Permanent link">&para;</a></h3>
+<p>While this parameter is optional, it&rsquo;s generally a good idea to specify it.  The 
+<code>packageConfigFactory</code> object returned by <code>qmakeInit()</code> will have the <code>sourceDir</code>
+attribute set to this. That attribute is used to resolve relative paths to resources.<br />
+If omitted, the &ldquo;source directory&rdquo; will become the parent directory to the requisite 
+<code>exePath</code> value (i.e. the dynamic <em>build directory</em>) where QMake produced the C++ binary.  </p>
+<p>In the examples provided, as is more then likely desirable, the root directory to the 
+project&rsquo;s source has been explicitly passed.  If you wish to point this base path for 
+resources to some other location (e.g. a sub directory within your project), you may 
+do so with this option.</p>
+<h3 id="resource">resource<a class="headerlink" href="#resource" title="Permanent link">&para;</a></h3>
+<p>The <code>--resource</code> switch (or <code>-r</code> for short) maybe passed repeatedly.  Use this
+to bundle additional files or directories into the package.  Note that relative paths 
+will be resolved against the <code>--srcDir</code> switch.</p>
+<p>If you need to place the resource within a <strong>nested</strong> subdirectory in the target package
+(or simply rename the resource in the product), you may pass a semicolon <code>;</code> delimited
+pair of paths.  The first value in the pair is the source, and the second is the target
+path relative to the target package root.  </p>
+<p>Example:</p>
+<div class="codehilite"><pre><span></span><code>-r &quot;readme.txt;docs/help.txt&quot;
+</code></pre></div>
+
+<p>This would bundle the <code>readme.txt</code> (on the <code>--srcDir</code> root) into the package within a
+sub directory called &ldquo;docs&rdquo; and would rename the file &ldquo;help.txt&rdquo;.      </p>
+<p>You may, of course, add resources to the package from within the Python build script,
+rather than passing that in from an external source in this manner.    </p>
+<h3 id="exename">exeName<a class="headerlink" href="#exename" title="Permanent link">&para;</a></h3>
+<p>In some contexts, it is desirable to rename the exe which was built by QMake, when it
+comes time to package and distribute it.  This switch is employed by the simple 
+<a href="#renameExe">renameExe</a> function via the the default <code>qmakeInit</code> mechanism.</p>
+<h3 id="askpass">askPass<a class="headerlink" href="#askpass" title="Permanent link">&para;</a></h3>
+<p>This option is only pertinent for Linux users.</p>
+<p>In the examples, you&rsquo;ll find this near the end of the package QMake script:  </p>
+<div class="codehilite"><pre><span></span><code># <span class="nv">On</span> <span class="nv">Linux</span>, <span class="nv">you</span> <span class="nv">may</span> <span class="nv">optionally</span> <span class="nv">provide</span> <span class="nv">a</span> <span class="nv">custom</span> <span class="s2">&quot;</span><span class="s">AskPass</span><span class="s2">&quot;</span> <span class="nv">program</span> <span class="nv">to</span> <span class="nv">handle</span>
+# <span class="nv">password</span> <span class="nv">input</span> <span class="k">for</span> <span class="nv">root</span><span class="o">/</span><span class="nv">sudo</span> <span class="nv">privileges</span> <span class="k">if</span> <span class="nv">required</span>
+#<span class="nv">linux</span>: <span class="nv">packageCmd</span> <span class="o">+=</span> <span class="o">--</span><span class="nv">askPass</span> $$<span class="nv">quot</span><span class="ss">(</span> $<span class="mh">$c</span><span class="nv">lean_path</span><span class="ss">(</span> <span class="o">/</span><span class="nv">usr</span><span class="o">/</span><span class="nv">share</span><span class="o">/</span><span class="nv">git</span><span class="o">-</span><span class="nv">cola</span><span class="o">/</span><span class="nv">bin</span><span class="o">/</span><span class="nv">ssh</span><span class="o">-</span><span class="nv">askpass</span> <span class="ss">)</span> <span class="ss">)</span>
+</code></pre></div>
+
+<p>In order to run the integration from a non-tty gui context (e.g. Qt Creator),
+you will need to lean on an &ldquo;ask password&rdquo; utility.  When you attempt to use the 
+package script for the first time, it may fail because no such tool is found on the
+system. It will suggest you install &ldquo;OpenSSH Askpass&rdquo;.  If you prefer something else,
+or have that installed in a path the script can&rsquo;t locate, uncomment this QMake
+directive and provide that detail (e.g. the git-cola path demoed).</p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="LowLevel.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Low Level Functions" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Low Level Functions
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="Config%20Factory.html" class="md-footer__link md-footer__link--next" aria-label="Next: Config Factory" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Config Factory
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
+      
+    
+  </body>
+</html>

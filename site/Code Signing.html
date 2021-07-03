@@ -1,0 +1,1361 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+    
+    
+      
+        <title>Code Signing - Distribution Builder</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#CodeSignConfig" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Distribution Builder" class="md-header__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Distribution Builder
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Code Signing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Distribution Builder" class="md-nav__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Distribution Builder
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QuickStart.html" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Examples.html" class="md-nav__link">
+        Examples
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
+        Old Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Old Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Old Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="HighLevel.html" class="md-nav__link">
+        High Level Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ConfigClasses.html" class="md-nav__link">
+        Configuration Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="LowLevel.html" class="md-nav__link">
+        Low Level Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QtCpp.html" class="md-nav__link">
+        Qt C++ Integration
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+      
+      <label class="md-nav__link" for="__nav_5">
+        Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Config%20Factory.html" class="md-nav__link">
+        Config Factory
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20Installer%20Framework.html" class="md-nav__link">
+        Qt Installer Framework
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="PyInstaller.html" class="md-nav__link">
+        PyInstaller
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="IExpress.html" class="md-nav__link">
+        IExpress
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Code Signing
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="Code%20Signing.html" class="md-nav__link md-nav__link--active">
+        Code Signing
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#CodeSignConfig" class="md-nav__link">
+    CodeSignConfig
+  </a>
+  
+    <nav class="md-nav" aria-label="CodeSignConfig">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DEFAULT_DIGEST" class="md-nav__link">
+    DEFAULT_DIGEST
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#DEFAULT_TIMESTAMP_SERVER" class="md-nav__link">
+    DEFAULT_TIMESTAMP_SERVER
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyFilePath" class="md-nav__link">
+    keyFilePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyPassword" class="md-nav__link">
+    keyPassword
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signToolPath" class="md-nav__link">
+    signToolPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fileDigest" class="md-nav__link">
+    fileDigest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeStampDigest" class="md-nav__link">
+    timeStampDigest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeStampServerUrl" class="md-nav__link">
+    timeStampServerUrl
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otherSignToolArgs" class="md-nav__link">
+    otherSignToolArgs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isDebugMode" class="md-nav__link">
+    isDebugMode
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#SelfSignedCertConfig" class="md-nav__link">
+    SelfSignedCertConfig
+  </a>
+  
+    <nav class="md-nav" aria-label="SelfSignedCertConfig">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DEFAULT_END_DATE" class="md-nav__link">
+    DEFAULT_END_DATE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#LIFETIME_SIGNING_EKU" class="md-nav__link">
+    LIFETIME_SIGNING_EKU
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#NO_MAX_CHILDREN" class="md-nav__link">
+    NO_MAX_CHILDREN
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commonName" class="md-nav__link">
+    commonName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#endDate" class="md-nav__link">
+    endDate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#destDirPath" class="md-nav__link">
+    destDirPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caCertPath" class="md-nav__link">
+    caCertPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#privateKeyPath" class="md-nav__link">
+    privateKeyPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#makeCertPath" class="md-nav__link">
+    makeCertPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otherArgs" class="md-nav__link">
+    otherArgs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isDebugMode" class="md-nav__link">
+    isDebugMode
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#TrustInstallerBuilderProcess" class="md-nav__link">
+    TrustInstallerBuilderProcess
+  </a>
+  
+    <nav class="md-nav" aria-label="TrustInstallerBuilderProcess">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DIVIDER" class="md-nav__link">
+    DIVIDER
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onFinalize" class="md-nav__link">
+    onFinalize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onInitialize" class="md-nav__link">
+    onInitialize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onMakeSpec" class="md-nav__link">
+    onMakeSpec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onOpyConfig" class="md-nav__link">
+    onOpyConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPyInstConfig" class="md-nav__link">
+    onPyInstConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run" class="md-nav__link">
+    run
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#Functions" class="md-nav__link">
+    Functions
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generateTrustCerts" class="md-nav__link">
+    generateTrustCerts
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signExe" class="md-nav__link">
+    signExe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trustCertInstallerConfigFactory" class="md-nav__link">
+    trustCertInstallerConfigFactory
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#Constants-and-Globals" class="md-nav__link">
+    Constants and Globals
+  </a>
+  
+    <nav class="md-nav" aria-label="Constants and Globals">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#MAKECERT_PATH_ENV_VAR" class="md-nav__link">
+    MAKECERT_PATH_ENV_VAR
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#PVK2PFX_PATH_ENV_VAR" class="md-nav__link">
+    PVK2PFX_PATH_ENV_VAR
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SIGNTOOL_PATH_ENV_VAR" class="md-nav__link">
+    SIGNTOOL_PATH_ENV_VAR
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20Obfuscation.html" class="md-nav__link">
+        Python Obfuscation
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20pip.html" class="md-nav__link">
+        Python pip
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20CPP.html" class="md-nav__link">
+        Qt CPP
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Logging.html" class="md-nav__link">
+        Logging
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Classes.html" class="md-nav__link">
+        Utility Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Functions.html" class="md-nav__link">
+        Utility Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Constants.html" class="md-nav__link">
+        Utility Constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Issues.html" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ToDo.html" class="md-nav__link">
+        To-Do List
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Contribute.html" class="md-nav__link">
+        Contact / Contribute
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#CodeSignConfig" class="md-nav__link">
+    CodeSignConfig
+  </a>
+  
+    <nav class="md-nav" aria-label="CodeSignConfig">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DEFAULT_DIGEST" class="md-nav__link">
+    DEFAULT_DIGEST
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#DEFAULT_TIMESTAMP_SERVER" class="md-nav__link">
+    DEFAULT_TIMESTAMP_SERVER
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyFilePath" class="md-nav__link">
+    keyFilePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyPassword" class="md-nav__link">
+    keyPassword
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signToolPath" class="md-nav__link">
+    signToolPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fileDigest" class="md-nav__link">
+    fileDigest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeStampDigest" class="md-nav__link">
+    timeStampDigest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeStampServerUrl" class="md-nav__link">
+    timeStampServerUrl
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otherSignToolArgs" class="md-nav__link">
+    otherSignToolArgs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isDebugMode" class="md-nav__link">
+    isDebugMode
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#SelfSignedCertConfig" class="md-nav__link">
+    SelfSignedCertConfig
+  </a>
+  
+    <nav class="md-nav" aria-label="SelfSignedCertConfig">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DEFAULT_END_DATE" class="md-nav__link">
+    DEFAULT_END_DATE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#LIFETIME_SIGNING_EKU" class="md-nav__link">
+    LIFETIME_SIGNING_EKU
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#NO_MAX_CHILDREN" class="md-nav__link">
+    NO_MAX_CHILDREN
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commonName" class="md-nav__link">
+    commonName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#endDate" class="md-nav__link">
+    endDate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#destDirPath" class="md-nav__link">
+    destDirPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caCertPath" class="md-nav__link">
+    caCertPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#privateKeyPath" class="md-nav__link">
+    privateKeyPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#makeCertPath" class="md-nav__link">
+    makeCertPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otherArgs" class="md-nav__link">
+    otherArgs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isDebugMode" class="md-nav__link">
+    isDebugMode
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#TrustInstallerBuilderProcess" class="md-nav__link">
+    TrustInstallerBuilderProcess
+  </a>
+  
+    <nav class="md-nav" aria-label="TrustInstallerBuilderProcess">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DIVIDER" class="md-nav__link">
+    DIVIDER
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onFinalize" class="md-nav__link">
+    onFinalize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onInitialize" class="md-nav__link">
+    onInitialize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onMakeSpec" class="md-nav__link">
+    onMakeSpec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onOpyConfig" class="md-nav__link">
+    onOpyConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPyInstConfig" class="md-nav__link">
+    onPyInstConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run" class="md-nav__link">
+    run
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#Functions" class="md-nav__link">
+    Functions
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generateTrustCerts" class="md-nav__link">
+    generateTrustCerts
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signExe" class="md-nav__link">
+    signExe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trustCertInstallerConfigFactory" class="md-nav__link">
+    trustCertInstallerConfigFactory
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#Constants-and-Globals" class="md-nav__link">
+    Constants and Globals
+  </a>
+  
+    <nav class="md-nav" aria-label="Constants and Globals">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#MAKECERT_PATH_ENV_VAR" class="md-nav__link">
+    MAKECERT_PATH_ENV_VAR
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#PVK2PFX_PATH_ENV_VAR" class="md-nav__link">
+    PVK2PFX_PATH_ENV_VAR
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SIGNTOOL_PATH_ENV_VAR" class="md-nav__link">
+    SIGNTOOL_PATH_ENV_VAR
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                  <h1>Code Signing</h1>
+                
+                <h2 id="CodeSignConfig"><strong>CodeSignConfig</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#CodeSignConfig" title="Permanent link">&para;</a></h2>
+<p><strong>Class/Static Attributes:</strong> </p>
+<ul>
+<li><a href="#DEFAULT_DIGEST"><code>DEFAULT_DIGEST</code></a></li>
+<li><a href="#DEFAULT_TIMESTAMP_SERVER"><code>DEFAULT_TIMESTAMP_SERVER</code></a></li>
+</ul>
+<p><strong>Instance Attributes:</strong> </p>
+<ul>
+<li><a href="#keyFilePath"><code>keyFilePath</code></a></li>
+<li><a href="#keyPassword"><code>keyPassword</code></a></li>
+<li><a href="#signToolPath"><code>signToolPath</code></a></li>
+<li><a href="#fileDigest"><code>fileDigest</code></a></li>
+<li><a href="#timeStampDigest"><code>timeStampDigest</code></a></li>
+<li><a href="#timeStampServerUrl"><code>timeStampServerUrl</code></a></li>
+<li><a href="#otherSignToolArgs"><code>otherSignToolArgs</code></a></li>
+<li><a href="#isDebugMode"><code>isDebugMode</code></a></li>
+</ul>
+<h3 id="DEFAULT_DIGEST"><em>CodeSignConfig</em>.<strong>DEFAULT_DIGEST</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#DEFAULT_DIGEST" title="Permanent link">&para;</a></h3>
+<h3 id="DEFAULT_TIMESTAMP_SERVER"><em>CodeSignConfig</em>.<strong>DEFAULT_TIMESTAMP_SERVER</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#DEFAULT_TIMESTAMP_SERVER" title="Permanent link">&para;</a></h3>
+<h3 id="keyFilePath"><em>obj</em>.<strong>keyFilePath</strong> <em>undefined</em><a class="headerlink" href="#keyFilePath" title="Permanent link">&para;</a></h3>
+<h3 id="keyPassword"><em>obj</em>.<strong>keyPassword</strong> <em>undefined</em><a class="headerlink" href="#keyPassword" title="Permanent link">&para;</a></h3>
+<h3 id="signToolPath"><em>obj</em>.<strong>signToolPath</strong> <em>undefined</em><a class="headerlink" href="#signToolPath" title="Permanent link">&para;</a></h3>
+<h3 id="fileDigest"><em>obj</em>.<strong>fileDigest</strong> <em>undefined</em><a class="headerlink" href="#fileDigest" title="Permanent link">&para;</a></h3>
+<h3 id="timeStampDigest"><em>obj</em>.<strong>timeStampDigest</strong> <em>undefined</em><a class="headerlink" href="#timeStampDigest" title="Permanent link">&para;</a></h3>
+<h3 id="timeStampServerUrl"><em>obj</em>.<strong>timeStampServerUrl</strong> <em>undefined</em><a class="headerlink" href="#timeStampServerUrl" title="Permanent link">&para;</a></h3>
+<h3 id="otherSignToolArgs"><em>obj</em>.<strong>otherSignToolArgs</strong> <em>undefined</em><a class="headerlink" href="#otherSignToolArgs" title="Permanent link">&para;</a></h3>
+<h3 id="isDebugMode"><em>obj</em>.<strong>isDebugMode</strong> <em>undefined</em><a class="headerlink" href="#isDebugMode" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="SelfSignedCertConfig"><strong>SelfSignedCertConfig</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#SelfSignedCertConfig" title="Permanent link">&para;</a></h2>
+<p><strong>Class/Static Attributes:</strong> </p>
+<ul>
+<li><a href="#DEFAULT_END_DATE"><code>DEFAULT_END_DATE</code></a></li>
+<li><a href="#LIFETIME_SIGNING_EKU"><code>LIFETIME_SIGNING_EKU</code></a></li>
+<li><a href="#NO_MAX_CHILDREN"><code>NO_MAX_CHILDREN</code></a></li>
+</ul>
+<p><strong>Instance Attributes:</strong> </p>
+<ul>
+<li><a href="#commonName"><code>commonName</code></a></li>
+<li><a href="#endDate"><code>endDate</code></a></li>
+<li><a href="#destDirPath"><code>destDirPath</code></a></li>
+<li><a href="#caCertPath"><code>caCertPath</code></a></li>
+<li><a href="#privateKeyPath"><code>privateKeyPath</code></a></li>
+<li><a href="#makeCertPath"><code>makeCertPath</code></a></li>
+<li><a href="#otherArgs"><code>otherArgs</code></a></li>
+<li><a href="#isDebugMode"><code>isDebugMode</code></a></li>
+</ul>
+<h3 id="DEFAULT_END_DATE"><em>SelfSignedCertConfig</em>.<strong>DEFAULT_END_DATE</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#DEFAULT_END_DATE" title="Permanent link">&para;</a></h3>
+<h3 id="LIFETIME_SIGNING_EKU"><em>SelfSignedCertConfig</em>.<strong>LIFETIME_SIGNING_EKU</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#LIFETIME_SIGNING_EKU" title="Permanent link">&para;</a></h3>
+<h3 id="NO_MAX_CHILDREN"><em>SelfSignedCertConfig</em>.<strong>NO_MAX_CHILDREN</strong> <em>class &lsquo;int&rsquo;</em><a class="headerlink" href="#NO_MAX_CHILDREN" title="Permanent link">&para;</a></h3>
+<h3 id="commonName"><em>obj</em>.<strong>commonName</strong> <em>undefined</em><a class="headerlink" href="#commonName" title="Permanent link">&para;</a></h3>
+<h3 id="endDate"><em>obj</em>.<strong>endDate</strong> <em>undefined</em><a class="headerlink" href="#endDate" title="Permanent link">&para;</a></h3>
+<h3 id="destDirPath"><em>obj</em>.<strong>destDirPath</strong> <em>undefined</em><a class="headerlink" href="#destDirPath" title="Permanent link">&para;</a></h3>
+<h3 id="caCertPath"><em>obj</em>.<strong>caCertPath</strong> <em>undefined</em><a class="headerlink" href="#caCertPath" title="Permanent link">&para;</a></h3>
+<h3 id="privateKeyPath"><em>obj</em>.<strong>privateKeyPath</strong> <em>undefined</em><a class="headerlink" href="#privateKeyPath" title="Permanent link">&para;</a></h3>
+<h3 id="makeCertPath"><em>obj</em>.<strong>makeCertPath</strong> <em>undefined</em><a class="headerlink" href="#makeCertPath" title="Permanent link">&para;</a></h3>
+<h3 id="otherArgs"><em>obj</em>.<strong>otherArgs</strong> <em>undefined</em><a class="headerlink" href="#otherArgs" title="Permanent link">&para;</a></h3>
+<h3 id="isDebugMode"><em>obj</em>.<strong>isDebugMode</strong> <em>undefined</em><a class="headerlink" href="#isDebugMode" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="TrustInstallerBuilderProcess"><strong>TrustInstallerBuilderProcess</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#TrustInstallerBuilderProcess" title="Permanent link">&para;</a></h2>
+<p><strong>Class/Static Attributes:</strong> </p>
+<ul>
+<li><a href="#DIVIDER"><code>DIVIDER</code></a></li>
+</ul>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#onFinalize"><code>onFinalize</code></a></li>
+<li><a href="#onInitialize"><code>onInitialize</code></a></li>
+<li><a href="#onMakeSpec"><code>onMakeSpec</code></a></li>
+<li><a href="#onOpyConfig"><code>onOpyConfig</code></a></li>
+<li><a href="#onPyInstConfig"><code>onPyInstConfig</code></a></li>
+<li><a href="#run"><code>run</code></a></li>
+</ul>
+<h3 id="DIVIDER"><em>TrustInstallerBuilderProcess</em>.<strong>DIVIDER</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#DIVIDER" title="Permanent link">&para;</a></h3>
+<h3 id="onFinalize"><em>obj</em>.<strong>onFinalize</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#onFinalize" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onInitialize"><em>obj</em>.<strong>onInitialize</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#onInitialize" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onMakeSpec"><em>obj</em>.<strong>onMakeSpec</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span></code><a class="headerlink" href="#onMakeSpec" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onOpyConfig"><em>obj</em>.<strong>onOpyConfig</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span></code><a class="headerlink" href="#onOpyConfig" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onPyInstConfig"><em>obj</em>.<strong>onPyInstConfig</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span></code><a class="headerlink" href="#onPyInstConfig" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="run"><em>obj</em>.<strong>run</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#run" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="Functions"><strong>Functions</strong><a class="headerlink" href="#Functions" title="Permanent link">&para;</a></h2>
+<h3 id="generateTrustCerts"><strong>generateTrustCerts</strong><code class="highlight"><span class="p">(</span><span class="n">certConfig</span><span class="p">,</span> <span class="n">keyPassword</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">isOverwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code><a class="headerlink" href="#generateTrustCerts" title="Permanent link">&para;</a></h3>
+<p>Returns CA Cert Path, Key Path </p>
+<hr />
+<h3 id="signExe"><strong>signExe</strong><code class="highlight"><span class="p">(</span><span class="n">exePath</span><span class="p">,</span> <span class="n">codeSignConfig</span><span class="p">)</span></code><a class="headerlink" href="#signExe" title="Permanent link">&para;</a></h3>
+<p>Returns exePath </p>
+<hr />
+<h3 id="trustCertInstallerConfigFactory"><strong>trustCertInstallerConfigFactory</strong><code class="highlight"><span class="p">(</span><span class="n">companyTradeName</span><span class="p">,</span> <span class="n">caCertPath</span><span class="p">,</span> <span class="n">keyFilePath</span><span class="p">,</span> <span class="n">keyPassword</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">companyLegalName</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">iconFilePath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">isSilent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">script</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#trustCertInstallerConfigFactory" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="Constants-and-Globals"><strong>Constants and Globals</strong><a class="headerlink" href="#Constants-and-Globals" title="Permanent link">&para;</a></h2>
+<h3 id="MAKECERT_PATH_ENV_VAR"><strong>MAKECERT_PATH_ENV_VAR</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#MAKECERT_PATH_ENV_VAR" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="PVK2PFX_PATH_ENV_VAR"><strong>PVK2PFX_PATH_ENV_VAR</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#PVK2PFX_PATH_ENV_VAR" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="SIGNTOOL_PATH_ENV_VAR"><strong>SIGNTOOL_PATH_ENV_VAR</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#SIGNTOOL_PATH_ENV_VAR" title="Permanent link">&para;</a></h3>
+<hr />
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="IExpress.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: IExpress" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              IExpress
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="Python%20Obfuscation.html" class="md-footer__link md-footer__link--next" aria-label="Next: Python Obfuscation" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Python Obfuscation
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
+      
+    
+  </body>
+</html>

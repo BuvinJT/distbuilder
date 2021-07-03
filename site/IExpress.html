@@ -1,0 +1,1450 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+    
+    
+      
+        <title>IExpress - Distribution Builder</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#IExpressConfig" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Distribution Builder" class="md-header__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Distribution Builder
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              IExpress
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Distribution Builder" class="md-nav__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Distribution Builder
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QuickStart.html" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Examples.html" class="md-nav__link">
+        Examples
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
+        Old Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Old Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Old Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="HighLevel.html" class="md-nav__link">
+        High Level Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ConfigClasses.html" class="md-nav__link">
+        Configuration Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="LowLevel.html" class="md-nav__link">
+        Low Level Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QtCpp.html" class="md-nav__link">
+        Qt C++ Integration
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+      
+      <label class="md-nav__link" for="__nav_5">
+        Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Config%20Factory.html" class="md-nav__link">
+        Config Factory
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20Installer%20Framework.html" class="md-nav__link">
+        Qt Installer Framework
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="PyInstaller.html" class="md-nav__link">
+        PyInstaller
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          IExpress
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="IExpress.html" class="md-nav__link md-nav__link--active">
+        IExpress
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#IExpressConfig" class="md-nav__link">
+    IExpressConfig
+  </a>
+  
+    <nav class="md-nav" aria-label="IExpressConfig">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#iExpEmbResPath" class="md-nav__link">
+    iExpEmbResPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iExpLibPath" class="md-nav__link">
+    iExpLibPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iExpResPath" class="md-nav__link">
+    iExpResPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scriptType" class="md-nav__link">
+    scriptType
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#name" class="md-nav__link">
+    name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sourceDir" class="md-nav__link">
+    sourceDir
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entryPointScript" class="md-nav__link">
+    entryPointScript
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scriptHeader" class="md-nav__link">
+    scriptHeader
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isScriptDebug" class="md-nav__link">
+    isScriptDebug
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versionInfo" class="md-nav__link">
+    versionInfo
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iconFilePath" class="md-nav__link">
+    iconFilePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isAutoElevated" class="md-nav__link">
+    isAutoElevated
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scriptImports" class="md-nav__link">
+    scriptImports
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embeddedResources" class="md-nav__link">
+    embeddedResources
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distResources" class="md-nav__link">
+    distResources
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distDirs" class="md-nav__link">
+    distDirs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codeSignConfig" class="md-nav__link">
+    codeSignConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codeSignTargets" class="md-nav__link">
+    codeSignTargets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#destDirPath" class="md-nav__link">
+    destDirPath
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#IExpressInstallerProcess" class="md-nav__link">
+    IExpressInstallerProcess
+  </a>
+  
+    <nav class="md-nav" aria-label="IExpressInstallerProcess">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DIVIDER" class="md-nav__link">
+    DIVIDER
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onFinalize" class="md-nav__link">
+    onFinalize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onIExpressConfig" class="md-nav__link">
+    onIExpressConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onIExpressPackageProcess" class="md-nav__link">
+    onIExpressPackageProcess
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onIExpressPackagesBuilt" class="md-nav__link">
+    onIExpressPackagesBuilt
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onInitialize" class="md-nav__link">
+    onInitialize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPackagesStaged" class="md-nav__link">
+    onPackagesStaged
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPyPackagesBuilt" class="md-nav__link">
+    onPyPackagesBuilt
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onQtIfwConfig" class="md-nav__link">
+    onQtIfwConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run" class="md-nav__link">
+    run
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#IExpressPackageProcess" class="md-nav__link">
+    IExpressPackageProcess
+  </a>
+  
+    <nav class="md-nav" aria-label="IExpressPackageProcess">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DIVIDER" class="md-nav__link">
+    DIVIDER
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onFinalize" class="md-nav__link">
+    onFinalize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onIExpressConfig" class="md-nav__link">
+    onIExpressConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onInitialize" class="md-nav__link">
+    onInitialize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run" class="md-nav__link">
+    run
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#Functions" class="md-nav__link">
+    Functions
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#batchScriptToExe" class="md-nav__link">
+    batchScriptToExe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iExpEmbResPath" class="md-nav__link">
+    iExpEmbResPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iExpLibPath" class="md-nav__link">
+    iExpLibPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iExpResPath" class="md-nav__link">
+    iExpResPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jScriptToExe" class="md-nav__link">
+    jScriptToExe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#powerShellScriptToExe" class="md-nav__link">
+    powerShellScriptToExe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vbScriptToExe" class="md-nav__link">
+    vbScriptToExe
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Code%20Signing.html" class="md-nav__link">
+        Code Signing
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20Obfuscation.html" class="md-nav__link">
+        Python Obfuscation
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20pip.html" class="md-nav__link">
+        Python pip
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20CPP.html" class="md-nav__link">
+        Qt CPP
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Logging.html" class="md-nav__link">
+        Logging
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Classes.html" class="md-nav__link">
+        Utility Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Functions.html" class="md-nav__link">
+        Utility Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Constants.html" class="md-nav__link">
+        Utility Constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Issues.html" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ToDo.html" class="md-nav__link">
+        To-Do List
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Contribute.html" class="md-nav__link">
+        Contact / Contribute
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#IExpressConfig" class="md-nav__link">
+    IExpressConfig
+  </a>
+  
+    <nav class="md-nav" aria-label="IExpressConfig">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#iExpEmbResPath" class="md-nav__link">
+    iExpEmbResPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iExpLibPath" class="md-nav__link">
+    iExpLibPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iExpResPath" class="md-nav__link">
+    iExpResPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scriptType" class="md-nav__link">
+    scriptType
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#name" class="md-nav__link">
+    name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sourceDir" class="md-nav__link">
+    sourceDir
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entryPointScript" class="md-nav__link">
+    entryPointScript
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scriptHeader" class="md-nav__link">
+    scriptHeader
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isScriptDebug" class="md-nav__link">
+    isScriptDebug
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versionInfo" class="md-nav__link">
+    versionInfo
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iconFilePath" class="md-nav__link">
+    iconFilePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isAutoElevated" class="md-nav__link">
+    isAutoElevated
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scriptImports" class="md-nav__link">
+    scriptImports
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embeddedResources" class="md-nav__link">
+    embeddedResources
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distResources" class="md-nav__link">
+    distResources
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distDirs" class="md-nav__link">
+    distDirs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codeSignConfig" class="md-nav__link">
+    codeSignConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codeSignTargets" class="md-nav__link">
+    codeSignTargets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#destDirPath" class="md-nav__link">
+    destDirPath
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#IExpressInstallerProcess" class="md-nav__link">
+    IExpressInstallerProcess
+  </a>
+  
+    <nav class="md-nav" aria-label="IExpressInstallerProcess">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DIVIDER" class="md-nav__link">
+    DIVIDER
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onFinalize" class="md-nav__link">
+    onFinalize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onIExpressConfig" class="md-nav__link">
+    onIExpressConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onIExpressPackageProcess" class="md-nav__link">
+    onIExpressPackageProcess
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onIExpressPackagesBuilt" class="md-nav__link">
+    onIExpressPackagesBuilt
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onInitialize" class="md-nav__link">
+    onInitialize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPackagesStaged" class="md-nav__link">
+    onPackagesStaged
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onPyPackagesBuilt" class="md-nav__link">
+    onPyPackagesBuilt
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onQtIfwConfig" class="md-nav__link">
+    onQtIfwConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run" class="md-nav__link">
+    run
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#IExpressPackageProcess" class="md-nav__link">
+    IExpressPackageProcess
+  </a>
+  
+    <nav class="md-nav" aria-label="IExpressPackageProcess">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DIVIDER" class="md-nav__link">
+    DIVIDER
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onFinalize" class="md-nav__link">
+    onFinalize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onIExpressConfig" class="md-nav__link">
+    onIExpressConfig
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onInitialize" class="md-nav__link">
+    onInitialize
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run" class="md-nav__link">
+    run
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#Functions" class="md-nav__link">
+    Functions
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#batchScriptToExe" class="md-nav__link">
+    batchScriptToExe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iExpEmbResPath" class="md-nav__link">
+    iExpEmbResPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iExpLibPath" class="md-nav__link">
+    iExpLibPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iExpResPath" class="md-nav__link">
+    iExpResPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jScriptToExe" class="md-nav__link">
+    jScriptToExe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#powerShellScriptToExe" class="md-nav__link">
+    powerShellScriptToExe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vbScriptToExe" class="md-nav__link">
+    vbScriptToExe
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                  <h1>IExpress</h1>
+                
+                <h2 id="IExpressConfig"><strong>IExpressConfig</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#IExpressConfig" title="Permanent link">&para;</a></h2>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#iExpEmbResPath"><code>iExpEmbResPath</code></a></li>
+<li><a href="#iExpLibPath"><code>iExpLibPath</code></a></li>
+<li><a href="#iExpResPath"><code>iExpResPath</code></a></li>
+<li><a href="#scriptType"><code>scriptType</code></a></li>
+</ul>
+<p><strong>Instance Attributes:</strong> </p>
+<ul>
+<li><a href="#name"><code>name</code></a></li>
+<li><a href="#sourceDir"><code>sourceDir</code></a></li>
+<li><a href="#entryPointScript"><code>entryPointScript</code></a></li>
+<li><a href="#scriptHeader"><code>scriptHeader</code></a></li>
+<li><a href="#isScriptDebug"><code>isScriptDebug</code></a></li>
+<li><a href="#versionInfo"><code>versionInfo</code></a></li>
+<li><a href="#iconFilePath"><code>iconFilePath</code></a></li>
+<li><a href="#isAutoElevated"><code>isAutoElevated</code></a></li>
+<li><a href="#scriptImports"><code>scriptImports</code></a></li>
+<li><a href="#embeddedResources"><code>embeddedResources</code></a></li>
+<li><a href="#distResources"><code>distResources</code></a></li>
+<li><a href="#distDirs"><code>distDirs</code></a></li>
+<li><a href="#codeSignConfig"><code>codeSignConfig</code></a></li>
+<li><a href="#codeSignTargets"><code>codeSignTargets</code></a></li>
+<li><a href="#destDirPath"><code>destDirPath</code></a></li>
+</ul>
+<h3 id="iExpEmbResPath"><em>obj</em>.<strong>iExpEmbResPath</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></code><a class="headerlink" href="#iExpEmbResPath" title="Permanent link">&para;</a></h3>
+<h3 id="iExpLibPath"><em>obj</em>.<strong>iExpLibPath</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></code><a class="headerlink" href="#iExpLibPath" title="Permanent link">&para;</a></h3>
+<h3 id="iExpResPath"><em>obj</em>.<strong>iExpResPath</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">isEmbedded</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code><a class="headerlink" href="#iExpResPath" title="Permanent link">&para;</a></h3>
+<h3 id="scriptType"><em>obj</em>.<strong>scriptType</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#scriptType" title="Permanent link">&para;</a></h3>
+<h3 id="name"><em>obj</em>.<strong>name</strong> <em>undefined</em><a class="headerlink" href="#name" title="Permanent link">&para;</a></h3>
+<h3 id="sourceDir"><em>obj</em>.<strong>sourceDir</strong> <em>undefined</em><a class="headerlink" href="#sourceDir" title="Permanent link">&para;</a></h3>
+<h3 id="entryPointScript"><em>obj</em>.<strong>entryPointScript</strong> <em>undefined</em><a class="headerlink" href="#entryPointScript" title="Permanent link">&para;</a></h3>
+<h3 id="scriptHeader"><em>obj</em>.<strong>scriptHeader</strong> <em>undefined</em><a class="headerlink" href="#scriptHeader" title="Permanent link">&para;</a></h3>
+<h3 id="isScriptDebug"><em>obj</em>.<strong>isScriptDebug</strong> <em>undefined</em><a class="headerlink" href="#isScriptDebug" title="Permanent link">&para;</a></h3>
+<h3 id="versionInfo"><em>obj</em>.<strong>versionInfo</strong> <em>undefined</em><a class="headerlink" href="#versionInfo" title="Permanent link">&para;</a></h3>
+<h3 id="iconFilePath"><em>obj</em>.<strong>iconFilePath</strong> <em>undefined</em><a class="headerlink" href="#iconFilePath" title="Permanent link">&para;</a></h3>
+<h3 id="isAutoElevated"><em>obj</em>.<strong>isAutoElevated</strong> <em>undefined</em><a class="headerlink" href="#isAutoElevated" title="Permanent link">&para;</a></h3>
+<h3 id="scriptImports"><em>obj</em>.<strong>scriptImports</strong> <em>undefined</em><a class="headerlink" href="#scriptImports" title="Permanent link">&para;</a></h3>
+<h3 id="embeddedResources"><em>obj</em>.<strong>embeddedResources</strong> <em>undefined</em><a class="headerlink" href="#embeddedResources" title="Permanent link">&para;</a></h3>
+<h3 id="distResources"><em>obj</em>.<strong>distResources</strong> <em>undefined</em><a class="headerlink" href="#distResources" title="Permanent link">&para;</a></h3>
+<h3 id="distDirs"><em>obj</em>.<strong>distDirs</strong> <em>undefined</em><a class="headerlink" href="#distDirs" title="Permanent link">&para;</a></h3>
+<h3 id="codeSignConfig"><em>obj</em>.<strong>codeSignConfig</strong> <em>undefined</em><a class="headerlink" href="#codeSignConfig" title="Permanent link">&para;</a></h3>
+<h3 id="codeSignTargets"><em>obj</em>.<strong>codeSignTargets</strong> <em>undefined</em><a class="headerlink" href="#codeSignTargets" title="Permanent link">&para;</a></h3>
+<h3 id="destDirPath"><em>obj</em>.<strong>destDirPath</strong> <em>undefined</em><a class="headerlink" href="#destDirPath" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="IExpressInstallerProcess"><strong>IExpressInstallerProcess</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#IExpressInstallerProcess" title="Permanent link">&para;</a></h2>
+<p><strong>Class/Static Attributes:</strong> </p>
+<ul>
+<li><a href="#DIVIDER"><code>DIVIDER</code></a></li>
+</ul>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#onFinalize"><code>onFinalize</code></a></li>
+<li><a href="#onIExpressConfig"><code>onIExpressConfig</code></a></li>
+<li><a href="#onIExpressPackageProcess"><code>onIExpressPackageProcess</code></a></li>
+<li><a href="#onIExpressPackagesBuilt"><code>onIExpressPackagesBuilt</code></a></li>
+<li><a href="#onInitialize"><code>onInitialize</code></a></li>
+<li><a href="#onPackagesStaged"><code>onPackagesStaged</code></a></li>
+<li><a href="#onPyPackagesBuilt"><code>onPyPackagesBuilt</code></a></li>
+<li><a href="#onQtIfwConfig"><code>onQtIfwConfig</code></a></li>
+<li><a href="#run"><code>run</code></a></li>
+</ul>
+<h3 id="DIVIDER"><em>IExpressInstallerProcess</em>.<strong>DIVIDER</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#DIVIDER" title="Permanent link">&para;</a></h3>
+<h3 id="onFinalize"><em>obj</em>.<strong>onFinalize</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#onFinalize" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onIExpressConfig"><em>obj</em>.<strong>onIExpressConfig</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span></code><a class="headerlink" href="#onIExpressConfig" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onIExpressPackageProcess"><em>obj</em>.<strong>onIExpressPackageProcess</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prc</span><span class="p">)</span></code><a class="headerlink" href="#onIExpressPackageProcess" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onIExpressPackagesBuilt"><em>obj</em>.<strong>onIExpressPackagesBuilt</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkgs</span><span class="p">)</span></code><a class="headerlink" href="#onIExpressPackagesBuilt" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onInitialize"><em>obj</em>.<strong>onInitialize</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#onInitialize" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onPackagesStaged"><em>obj</em>.<strong>onPackagesStaged</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">pkgs</span><span class="p">)</span></code><a class="headerlink" href="#onPackagesStaged" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onPyPackagesBuilt"><em>obj</em>.<strong>onPyPackagesBuilt</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkgs</span><span class="p">)</span></code><a class="headerlink" href="#onPyPackagesBuilt" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onQtIfwConfig"><em>obj</em>.<strong>onQtIfwConfig</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span></code><a class="headerlink" href="#onQtIfwConfig" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="run"><em>obj</em>.<strong>run</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#run" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="IExpressPackageProcess"><strong>IExpressPackageProcess</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#IExpressPackageProcess" title="Permanent link">&para;</a></h2>
+<p><strong>Class/Static Attributes:</strong> </p>
+<ul>
+<li><a href="#DIVIDER"><code>DIVIDER</code></a></li>
+</ul>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#onFinalize"><code>onFinalize</code></a></li>
+<li><a href="#onIExpressConfig"><code>onIExpressConfig</code></a></li>
+<li><a href="#onInitialize"><code>onInitialize</code></a></li>
+<li><a href="#run"><code>run</code></a></li>
+</ul>
+<h3 id="DIVIDER"><em>IExpressPackageProcess</em>.<strong>DIVIDER</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#DIVIDER" title="Permanent link">&para;</a></h3>
+<h3 id="onFinalize"><em>obj</em>.<strong>onFinalize</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#onFinalize" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onIExpressConfig"><em>obj</em>.<strong>onIExpressConfig</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span></code><a class="headerlink" href="#onIExpressConfig" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="onInitialize"><em>obj</em>.<strong>onInitialize</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#onInitialize" title="Permanent link">&para;</a></h3>
+<p>VIRTUAL</p>
+<h3 id="run"><em>obj</em>.<strong>run</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#run" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="Functions"><strong>Functions</strong><a class="headerlink" href="#Functions" title="Permanent link">&para;</a></h2>
+<h3 id="batchScriptToExe"><strong>batchScriptToExe</strong><code class="highlight"><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">entryPointScript</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">iExpressConfig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distResources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distDirs</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#batchScriptToExe" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="iExpEmbResPath"><strong>iExpEmbResPath</strong><code class="highlight"><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">scriptType</span><span class="p">)</span></code><a class="headerlink" href="#iExpEmbResPath" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="iExpLibPath"><strong>iExpLibPath</strong><code class="highlight"><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">scriptType</span><span class="p">)</span></code><a class="headerlink" href="#iExpLibPath" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="iExpResPath"><strong>iExpResPath</strong><code class="highlight"><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">scriptType</span><span class="p">,</span> <span class="n">isEmbedded</span><span class="p">)</span></code><a class="headerlink" href="#iExpResPath" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="jScriptToExe"><strong>jScriptToExe</strong><code class="highlight"><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">entryPointScript</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">iExpressConfig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distResources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distDirs</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#jScriptToExe" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="powerShellScriptToExe"><strong>powerShellScriptToExe</strong><code class="highlight"><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">entryPointScript</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">iExpressConfig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distResources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distDirs</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#powerShellScriptToExe" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="vbScriptToExe"><strong>vbScriptToExe</strong><code class="highlight"><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">entryPointScript</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">iExpressConfig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distResources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distDirs</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#vbScriptToExe" title="Permanent link">&para;</a></h3>
+<hr />
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="PyInstaller.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: PyInstaller" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              PyInstaller
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="Code%20Signing.html" class="md-footer__link md-footer__link--next" aria-label="Next: Code Signing" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Code Signing
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
+      
+    
+  </body>
+</html>

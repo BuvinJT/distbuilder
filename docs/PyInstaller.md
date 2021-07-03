@@ -1,0 +1,447 @@
+## **PyInstHook**`#!py3 class` { #PyInstHook data-toc-label=PyInstHook }
+
+
+
+**Class/Static Attributes:** 
+
+ - [`APPLESCRIPT_EXT`](#APPLESCRIPT_EXT)
+ - [`BATCH_EXT`](#BATCH_EXT)
+ - [`FILE_NAME_PREFIX`](#FILE_NAME_PREFIX)
+ - [`JSCRIPT_EXT`](#JSCRIPT_EXT)
+ - [`POWERSHELL_EXT`](#POWERSHELL_EXT)
+ - [`SHELL_EXT`](#SHELL_EXT)
+ - [`SUPPORTED_EXTS`](#SUPPORTED_EXTS)
+ - [`VBSCRIPT_EXT`](#VBSCRIPT_EXT)
+
+**Class/Static Methods:** 
+
+ - [`linesToStr`](#linesToStr)
+ - [`strToLines`](#strToLines)
+ - [`typeOf`](#typeOf)
+
+**Instance Methods:** 
+
+ - [`asSnippet`](#asSnippet)
+ - [`debug`](#debug)
+ - [`exists`](#exists)
+ - [`fileName`](#fileName)
+ - [`filePath`](#filePath)
+ - [`fromBase64`](#fromBase64)
+ - [`fromLines`](#fromLines)
+ - [`injectLine`](#injectLine)
+ - [`read`](#read)
+ - [`remove`](#remove)
+ - [`toBase64`](#toBase64)
+ - [`toLines`](#toLines)
+ - [`write`](#write)
+
+**Instance Attributes:** 
+
+ - [`isContribHook`](#isContribHook)
+ - [`isRunTimeHook`](#isRunTimeHook)
+ - [`hooksDirPath`](#hooksDirPath)
+
+### *PyInstHook*.**APPLESCRIPT_EXT** *class 'str'* { #APPLESCRIPT_EXT data-toc-label=APPLESCRIPT_EXT }
+
+### *PyInstHook*.**BATCH_EXT** *class 'str'* { #BATCH_EXT data-toc-label=BATCH_EXT }
+
+### *PyInstHook*.**FILE_NAME_PREFIX** *class 'str'* { #FILE_NAME_PREFIX data-toc-label=FILE_NAME_PREFIX }
+
+### *PyInstHook*.**JSCRIPT_EXT** *class 'str'* { #JSCRIPT_EXT data-toc-label=JSCRIPT_EXT }
+
+### *PyInstHook*.**POWERSHELL_EXT** *class 'str'* { #POWERSHELL_EXT data-toc-label=POWERSHELL_EXT }
+
+### *PyInstHook*.**SHELL_EXT** *class 'str'* { #SHELL_EXT data-toc-label=SHELL_EXT }
+
+### *PyInstHook*.**SUPPORTED_EXTS** *class 'list'* { #SUPPORTED_EXTS data-toc-label=SUPPORTED_EXTS }
+
+### *PyInstHook*.**VBSCRIPT_EXT** *class 'str'* { #VBSCRIPT_EXT data-toc-label=VBSCRIPT_EXT }
+
+### *PyInstHook*.**linesToStr**`#!py3 (lines)` { #linesToStr data-toc-label=linesToStr }
+
+
+### *PyInstHook*.**strToLines**`#!py3 (s)` { #strToLines data-toc-label=strToLines }
+
+
+### *PyInstHook*.**typeOf**`#!py3 (path)` { #typeOf data-toc-label=typeOf }
+
+
+### *obj*.**asSnippet**`#!py3 (self)` { #asSnippet data-toc-label=asSnippet }
+
+
+### *obj*.**debug**`#!py3 (self)` { #debug data-toc-label=debug }
+
+
+### *obj*.**exists**`#!py3 (self, scriptDirPath=None)` { #exists data-toc-label=exists }
+
+
+### *obj*.**fileName**`#!py3 (self)` { #fileName data-toc-label=fileName }
+
+
+### *obj*.**filePath**`#!py3 (self)` { #filePath data-toc-label=filePath }
+
+
+### *obj*.**fromBase64**`#!py3 (self, data)` { #fromBase64 data-toc-label=fromBase64 }
+
+
+### *obj*.**fromLines**`#!py3 (self, lines)` { #fromLines data-toc-label=fromLines }
+
+
+### *obj*.**injectLine**`#!py3 (self, injection, lineNo)` { #injectLine data-toc-label=injectLine }
+
+
+### *obj*.**read**`#!py3 (self)` { #read data-toc-label=read }
+
+
+### *obj*.**remove**`#!py3 (self)` { #remove data-toc-label=remove }
+
+
+### *obj*.**toBase64**`#!py3 (self, toString=False)` { #toBase64 data-toc-label=toBase64 }
+
+
+### *obj*.**toLines**`#!py3 (self)` { #toLines data-toc-label=toLines }
+
+
+### *obj*.**write**`#!py3 (self)` { #write data-toc-label=write }
+
+
+### *obj*.**isContribHook** *undefined* { #isContribHook data-toc-label=isContribHook }
+
+### *obj*.**isRunTimeHook** *undefined* { #isRunTimeHook data-toc-label=isRunTimeHook }
+
+### *obj*.**hooksDirPath** *undefined* { #hooksDirPath data-toc-label=hooksDirPath }
+
+
+______
+
+## **PyInstSpec**`#!py3 class` { #PyInstSpec data-toc-label=PyInstSpec }
+
+
+
+**Class/Static Attributes:** 
+
+ - [`WARN_ERROR`](#WARN_ERROR)
+ - [`WARN_IGNORE`](#WARN_IGNORE)
+ - [`WARN_ONCE`](#WARN_ONCE)
+
+**Class/Static Methods:** 
+
+ - [`cfgToPath`](#cfgToPath)
+
+**Instance Methods:** 
+
+ - [`debug`](#debug)
+ - [`fromLines`](#fromLines)
+ - [`injectDuplicateDataPatch`](#injectDuplicateDataPatch)
+ - [`injectInterpreterOptions`](#injectInterpreterOptions)
+ - [`injectLine`](#injectLine)
+ - [`path`](#path)
+ - [`read`](#read)
+ - [`remove`](#remove)
+ - [`toLines`](#toLines)
+ - [`write`](#write)
+
+**Instance Attributes:** 
+
+ - [`filePath`](#filePath)
+ - [`pyInstConfig`](#pyInstConfig)
+ - [`warningBehavior`](#warningBehavior)
+ - [`isUnBufferedStdIo`](#isUnBufferedStdIo)
+ - [`isModInitDebug`](#isModInitDebug)
+
+### *PyInstSpec*.**WARN_ERROR** *class 'int'* { #WARN_ERROR data-toc-label=WARN_ERROR }
+
+### *PyInstSpec*.**WARN_IGNORE** *class 'int'* { #WARN_IGNORE data-toc-label=WARN_IGNORE }
+
+### *PyInstSpec*.**WARN_ONCE** *class 'int'* { #WARN_ONCE data-toc-label=WARN_ONCE }
+
+### *PyInstSpec*.**cfgToPath**`#!py3 (pyInstConfig)` { #cfgToPath data-toc-label=cfgToPath }
+
+
+### *obj*.**debug**`#!py3 (self)` { #debug data-toc-label=debug }
+
+
+### *obj*.**fromLines**`#!py3 (self, lines)` { #fromLines data-toc-label=fromLines }
+
+
+### *obj*.**injectDuplicateDataPatch**`#!py3 (self)` { #injectDuplicateDataPatch data-toc-label=injectDuplicateDataPatch }
+
+This patches a known bug in PyInstaller on Windows. 
+PyInstaller analysis can build a set of data file names
+which contain "duplicates" due to the Windows 
+file system case insensitivity.  This patch eliminates
+such duplicates, thus preventing runtime errors in the 
+binary produced.
+### *obj*.**injectInterpreterOptions**`#!py3 (self)` { #injectInterpreterOptions data-toc-label=injectInterpreterOptions }
+
+
+### *obj*.**injectLine**`#!py3 (self, injection, lineNo)` { #injectLine data-toc-label=injectLine }
+
+
+### *obj*.**path**`#!py3 (self)` { #path data-toc-label=path }
+
+
+### *obj*.**read**`#!py3 (self)` { #read data-toc-label=read }
+
+
+### *obj*.**remove**`#!py3 (self)` { #remove data-toc-label=remove }
+
+
+### *obj*.**toLines**`#!py3 (self)` { #toLines data-toc-label=toLines }
+
+
+### *obj*.**write**`#!py3 (self)` { #write data-toc-label=write }
+
+
+### *obj*.**filePath** *undefined* { #filePath data-toc-label=filePath }
+
+### *obj*.**pyInstConfig** *undefined* { #pyInstConfig data-toc-label=pyInstConfig }
+
+### *obj*.**warningBehavior** *undefined* { #warningBehavior data-toc-label=warningBehavior }
+
+### *obj*.**isUnBufferedStdIo** *undefined* { #isUnBufferedStdIo data-toc-label=isUnBufferedStdIo }
+
+### *obj*.**isModInitDebug** *undefined* { #isModInitDebug data-toc-label=isModInitDebug }
+
+
+______
+
+## **PyInstallerConfig**`#!py3 class` { #PyInstallerConfig data-toc-label=PyInstallerConfig }
+
+See PyInstaller docs for details on these settings.
+
+**Instance Methods:** 
+
+ - [`toArgs`](#toArgs)
+
+**Instance Attributes:** 
+
+ - [`name`](#name)
+ - [`sourceDir`](#sourceDir)
+ - [`entryPointPy`](#entryPointPy)
+ - [`pyInstSpec`](#pyInstSpec)
+ - [`isGui`](#isGui)
+ - [`iconFilePath`](#iconFilePath)
+ - [`versionInfo`](#versionInfo)
+ - [`versionFilePath`](#versionFilePath)
+ - [`isAutoElevated`](#isAutoElevated)
+ - [`isOneFile`](#isOneFile)
+ - [`importPaths`](#importPaths)
+ - [`hiddenImports`](#hiddenImports)
+ - [`dataFilePaths`](#dataFilePaths)
+ - [`binaryFilePaths`](#binaryFilePaths)
+ - [`distResources`](#distResources)
+ - [`distDirs`](#distDirs)
+ - [`codeSignConfig`](#codeSignConfig)
+ - [`codeSignTargets`](#codeSignTargets)
+ - [`distDirPath`](#distDirPath)
+ - [`otherPyInstArgs`](#otherPyInstArgs)
+ - [`isSpecFileRemoved`](#isSpecFileRemoved)
+
+### *obj*.**toArgs**`#!py3 (self, isMakeSpec=False)` { #toArgs data-toc-label=toArgs }
+
+
+### *obj*.**name** *undefined* { #name data-toc-label=name }
+
+### *obj*.**sourceDir** *undefined* { #sourceDir data-toc-label=sourceDir }
+
+### *obj*.**entryPointPy** *undefined* { #entryPointPy data-toc-label=entryPointPy }
+
+### *obj*.**pyInstSpec** *undefined* { #pyInstSpec data-toc-label=pyInstSpec }
+
+### *obj*.**isGui** *undefined* { #isGui data-toc-label=isGui }
+
+### *obj*.**iconFilePath** *undefined* { #iconFilePath data-toc-label=iconFilePath }
+
+### *obj*.**versionInfo** *undefined* { #versionInfo data-toc-label=versionInfo }
+
+### *obj*.**versionFilePath** *undefined* { #versionFilePath data-toc-label=versionFilePath }
+
+### *obj*.**isAutoElevated** *undefined* { #isAutoElevated data-toc-label=isAutoElevated }
+
+### *obj*.**isOneFile** *undefined* { #isOneFile data-toc-label=isOneFile }
+
+### *obj*.**importPaths** *undefined* { #importPaths data-toc-label=importPaths }
+
+### *obj*.**hiddenImports** *undefined* { #hiddenImports data-toc-label=hiddenImports }
+
+### *obj*.**dataFilePaths** *undefined* { #dataFilePaths data-toc-label=dataFilePaths }
+
+### *obj*.**binaryFilePaths** *undefined* { #binaryFilePaths data-toc-label=binaryFilePaths }
+
+### *obj*.**distResources** *undefined* { #distResources data-toc-label=distResources }
+
+### *obj*.**distDirs** *undefined* { #distDirs data-toc-label=distDirs }
+
+### *obj*.**codeSignConfig** *undefined* { #codeSignConfig data-toc-label=codeSignConfig }
+
+### *obj*.**codeSignTargets** *undefined* { #codeSignTargets data-toc-label=codeSignTargets }
+
+### *obj*.**distDirPath** *undefined* { #distDirPath data-toc-label=distDirPath }
+
+### *obj*.**otherPyInstArgs** *undefined* { #otherPyInstArgs data-toc-label=otherPyInstArgs }
+
+### *obj*.**isSpecFileRemoved** *undefined* { #isSpecFileRemoved data-toc-label=isSpecFileRemoved }
+
+
+______
+
+## **PyToBinInstallerProcess**`#!py3 class` { #PyToBinInstallerProcess data-toc-label=PyToBinInstallerProcess }
+
+
+
+**Class/Static Attributes:** 
+
+ - [`DIVIDER`](#DIVIDER)
+
+**Instance Methods:** 
+
+ - [`onFinalize`](#onFinalize)
+ - [`onIExpressPackagesBuilt`](#onIExpressPackagesBuilt)
+ - [`onInitialize`](#onInitialize)
+ - [`onMakeSpec`](#onMakeSpec)
+ - [`onOpyConfig`](#onOpyConfig)
+ - [`onPackagesStaged`](#onPackagesStaged)
+ - [`onPyInstConfig`](#onPyInstConfig)
+ - [`onPyPackageProcess`](#onPyPackageProcess)
+ - [`onPyPackagesBuilt`](#onPyPackagesBuilt)
+ - [`onQtIfwConfig`](#onQtIfwConfig)
+ - [`run`](#run)
+
+### *PyToBinInstallerProcess*.**DIVIDER** *class 'str'* { #DIVIDER data-toc-label=DIVIDER }
+
+### *obj*.**onFinalize**`#!py3 (self)` { #onFinalize data-toc-label=onFinalize }
+
+VIRTUAL
+### *obj*.**onIExpressPackagesBuilt**`#!py3 (self, pkgs)` { #onIExpressPackagesBuilt data-toc-label=onIExpressPackagesBuilt }
+
+VIRTUAL
+### *obj*.**onInitialize**`#!py3 (self)` { #onInitialize data-toc-label=onInitialize }
+
+VIRTUAL
+### *obj*.**onMakeSpec**`#!py3 (self, spec)` { #onMakeSpec data-toc-label=onMakeSpec }
+
+VIRTUAL
+### *obj*.**onOpyConfig**`#!py3 (self, cfg)` { #onOpyConfig data-toc-label=onOpyConfig }
+
+VIRTUAL
+### *obj*.**onPackagesStaged**`#!py3 (self, cfg, pkgs)` { #onPackagesStaged data-toc-label=onPackagesStaged }
+
+VIRTUAL
+### *obj*.**onPyInstConfig**`#!py3 (self, cfg)` { #onPyInstConfig data-toc-label=onPyInstConfig }
+
+VIRTUAL
+### *obj*.**onPyPackageProcess**`#!py3 (self, prc)` { #onPyPackageProcess data-toc-label=onPyPackageProcess }
+
+VIRTUAL
+### *obj*.**onPyPackagesBuilt**`#!py3 (self, pkgs)` { #onPyPackagesBuilt data-toc-label=onPyPackagesBuilt }
+
+VIRTUAL
+### *obj*.**onQtIfwConfig**`#!py3 (self, cfg)` { #onQtIfwConfig data-toc-label=onQtIfwConfig }
+
+VIRTUAL
+### *obj*.**run**`#!py3 (self)` { #run data-toc-label=run }
+
+
+
+______
+
+## **PyToBinPackageProcess**`#!py3 class` { #PyToBinPackageProcess data-toc-label=PyToBinPackageProcess }
+
+
+
+**Class/Static Attributes:** 
+
+ - [`DIVIDER`](#DIVIDER)
+
+**Instance Methods:** 
+
+ - [`onFinalize`](#onFinalize)
+ - [`onInitialize`](#onInitialize)
+ - [`onMakeSpec`](#onMakeSpec)
+ - [`onOpyConfig`](#onOpyConfig)
+ - [`onPyInstConfig`](#onPyInstConfig)
+ - [`run`](#run)
+
+**Instance Attributes:** 
+
+ - [`isObfuscationTest`](#isObfuscationTest)
+ - [`isWarningSuppression`](#isWarningSuppression)
+ - [`isUnBufferedStdIo`](#isUnBufferedStdIo)
+ - [`isPyInstDupDataPatched`](#isPyInstDupDataPatched)
+
+### *PyToBinPackageProcess*.**DIVIDER** *class 'str'* { #DIVIDER data-toc-label=DIVIDER }
+
+### *obj*.**onFinalize**`#!py3 (self)` { #onFinalize data-toc-label=onFinalize }
+
+VIRTUAL
+### *obj*.**onInitialize**`#!py3 (self)` { #onInitialize data-toc-label=onInitialize }
+
+VIRTUAL
+### *obj*.**onMakeSpec**`#!py3 (self, spec)` { #onMakeSpec data-toc-label=onMakeSpec }
+
+VIRTUAL
+### *obj*.**onOpyConfig**`#!py3 (self, cfg)` { #onOpyConfig data-toc-label=onOpyConfig }
+
+VIRTUAL
+### *obj*.**onPyInstConfig**`#!py3 (self, cfg)` { #onPyInstConfig data-toc-label=onPyInstConfig }
+
+VIRTUAL
+### *obj*.**run**`#!py3 (self)` { #run data-toc-label=run }
+
+
+### *obj*.**isObfuscationTest** *undefined* { #isObfuscationTest data-toc-label=isObfuscationTest }
+
+### *obj*.**isWarningSuppression** *undefined* { #isWarningSuppression data-toc-label=isWarningSuppression }
+
+### *obj*.**isUnBufferedStdIo** *undefined* { #isUnBufferedStdIo data-toc-label=isUnBufferedStdIo }
+
+### *obj*.**isPyInstDupDataPatched** *undefined* { #isPyInstDupDataPatched data-toc-label=isPyInstDupDataPatched }
+
+
+______
+
+## **Functions** { #Functions data-toc-label=Functions }
+
+### **PyInstallerMajorMinorVer**`#!py3 ()` { #PyInstallerMajorMinorVer data-toc-label=PyInstallerMajorMinorVer }
+
+
+
+______
+
+### **PyInstallerMajorVer**`#!py3 ()` { #PyInstallerMajorVer data-toc-label=PyInstallerMajorVer }
+
+
+
+______
+
+### **PyInstallerVersion**`#!py3 ()` { #PyInstallerVersion data-toc-label=PyInstallerVersion }
+
+
+
+______
+
+### **installPyInstaller**`#!py3 (version=None)` { #installPyInstaller data-toc-label=installPyInstaller }
+
+
+
+______
+
+### **makePyInstSpec**`#!py3 (pyInstConfig, opyConfig=None)` { #makePyInstSpec data-toc-label=makePyInstSpec }
+
+
+
+______
+
+### **pyScriptToExe**`#!py3 (name=None, entryPointPy=None, pyInstConfig=<py_installer.PyInstallerConfig object at 0x04419C50>, opyConfig=None, distResources=None, distDirs=None)` { #pyScriptToExe data-toc-label=pyScriptToExe }
+
+returns: (binDir, binPath) 
+
+______
+
+### **uninstallPyInstaller**`#!py3 ()` { #uninstallPyInstaller data-toc-label=uninstallPyInstaller }
+
+
+
+______
+

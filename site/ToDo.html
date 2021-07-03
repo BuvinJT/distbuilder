@@ -1,0 +1,1045 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+    
+    
+      
+        <title>To-Do List - Distribution Builder</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#to-do-list" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Distribution Builder" class="md-header__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Distribution Builder
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              To-Do List
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Distribution Builder" class="md-nav__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Distribution Builder
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QuickStart.html" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Examples.html" class="md-nav__link">
+        Examples
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
+        Old Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Old Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Old Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="HighLevel.html" class="md-nav__link">
+        High Level Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ConfigClasses.html" class="md-nav__link">
+        Configuration Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="LowLevel.html" class="md-nav__link">
+        Low Level Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QtCpp.html" class="md-nav__link">
+        Qt C++ Integration
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      <label class="md-nav__link" for="__nav_5">
+        Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Config%20Factory.html" class="md-nav__link">
+        Config Factory
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20Installer%20Framework.html" class="md-nav__link">
+        Qt Installer Framework
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="PyInstaller.html" class="md-nav__link">
+        PyInstaller
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="IExpress.html" class="md-nav__link">
+        IExpress
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Code%20Signing.html" class="md-nav__link">
+        Code Signing
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20Obfuscation.html" class="md-nav__link">
+        Python Obfuscation
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20pip.html" class="md-nav__link">
+        Python pip
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20CPP.html" class="md-nav__link">
+        Qt CPP
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Logging.html" class="md-nav__link">
+        Logging
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Classes.html" class="md-nav__link">
+        Utility Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Functions.html" class="md-nav__link">
+        Utility Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Constants.html" class="md-nav__link">
+        Utility Constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Issues.html" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          To-Do List
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="ToDo.html" class="md-nav__link md-nav__link--active">
+        To-Do List
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#v078x-wip" class="md-nav__link">
+    v.0.7.8.x (WIP)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v079x" class="md-nav__link">
+    v.0.7.9.x
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v080" class="md-nav__link">
+    v.0.8.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v081" class="md-nav__link">
+    v.0.8.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v082" class="md-nav__link">
+    v.0.8.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v083" class="md-nav__link">
+    v.0.8.3
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v09x" class="md-nav__link">
+    v.0.9.x
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v10" class="md-nav__link">
+    v.1.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v11x" class="md-nav__link">
+    v.1.1.x
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v12x" class="md-nav__link">
+    v.1.2.x
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v13x" class="md-nav__link">
+    v.1.3.x
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v2x" class="md-nav__link">
+    v.2.x
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spit-balls" class="md-nav__link">
+    Spit balls...
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Contribute.html" class="md-nav__link">
+        Contact / Contribute
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#v078x-wip" class="md-nav__link">
+    v.0.7.8.x (WIP)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v079x" class="md-nav__link">
+    v.0.7.9.x
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v080" class="md-nav__link">
+    v.0.8.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v081" class="md-nav__link">
+    v.0.8.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v082" class="md-nav__link">
+    v.0.8.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v083" class="md-nav__link">
+    v.0.8.3
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v09x" class="md-nav__link">
+    v.0.9.x
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v10" class="md-nav__link">
+    v.1.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v11x" class="md-nav__link">
+    v.1.1.x
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v12x" class="md-nav__link">
+    v.1.2.x
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v13x" class="md-nav__link">
+    v.1.3.x
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v2x" class="md-nav__link">
+    v.2.x
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spit-balls" class="md-nav__link">
+    Spit balls...
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="to-do-list">To-Do List<a class="headerlink" href="#to-do-list" title="Permanent link">&para;</a></h1>
+<p><img alt="distbuilder logo" src="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png" /></p>
+<p>The following is a loose, ever evolving &ldquo;road map&rdquo; for planned releases of the library, 
+ grouped / ordered by release number:</p>
+<h2 id="v078x-wip">v.0.7.8.x <strong>(WIP)</strong><a class="headerlink" href="#v078x-wip" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>Code signing for Windows</p>
+</li>
+<li>
+<p>Provide a &ldquo;natural&rdquo; silent uninstall / wrapper to run the Maintenance Tool.  </p>
+</li>
+<li>
+<p>Directory creation on target (e.g. user data directories)     </p>
+</li>
+<li>
+<p>Resource installation outside of the target directory</p>
+</li>
+<li>
+<p>QtIFW graphic features</p>
+</li>
+</ul>
+<h2 id="v079x">v.0.7.9.x<a class="headerlink" href="#v079x" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>RESTORE Linux / Mac QtIFW integration (broken during Windows development of 0.7.8.x)</p>
+</li>
+<li>
+<p>Dependency installation for QtIFW via Linux package managers (partially developed already), and Homebrew on Mac</p>
+</li>
+<li>
+<p>Add she bang respect / a Windows equivalent to ExecutableScript / QtIwfExternalOp 
+embedded scripting mechanism, allowing interpreter paths / options to be defined.  Thus
+allowing options for embedding Python, Java, ect.</p>
+</li>
+<li>
+<p>Code signing for Mac / Linux </p>
+</li>
+<li>
+<p>Direct Bat/Vbs/Ps to Exe high level process class</p>
+</li>
+</ul>
+<h2 id="v080">v.0.8.0<a class="headerlink" href="#v080" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>Add &ldquo;version control&rdquo; / &ldquo;update control&rdquo; for installers. 
+Auto launch maintainencetool when trying to install the same version.
+Have prompts questioning if the using wants to update or revert to a prior version.</p>
+</li>
+<li>
+<p>TEST (and develop as needed) QtIFW packages which: </p>
+<ul>
+<li>contain only &ldquo;data&rdquo; (no exe)</li>
+<li>are not enabled for install by default</li>
+<li>do not install shortcuts</li>
+</ul>
+</li>
+<li>
+<p>More Windows registry functions, and analogous settings on other platforms
+    (e.g. plist on Mac)     </p>
+</li>
+<li>
+<p>Add &ldquo;pure&rdquo; QScript (custom operations) examples / features for QtIFW. </p>
+</li>
+<li>
+<p>Determine if custom UI elements can be used in an uninstaller context? How about an update?
+The ui forms are contained in packages, per QtIFW design.  But packages are not loaded
+during uninstallation, so it seems an uninstaller couldn&rsquo;t support such ui customization&hellip;     </p>
+</li>
+</ul>
+<h2 id="v081">v.0.8.1<a class="headerlink" href="#v081" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>Revisit &ldquo;QtIfwExeWrapper&rdquo; details.  Specifically: NON gui on Windows? Used with QtIfwOnFinishedCheckbox?</p>
+</li>
+<li>
+<p>Revisit QtIfwOnFinishedCheckbox.  It has several TODOs documented in the code. </p>
+</li>
+<li>
+<p>Add option for appending platform suffix onto installer file names. </p>
+</li>
+<li>
+<p>Add tarball alternative to zip packaging.</p>
+</li>
+</ul>
+<h2 id="v082">v.0.8.2<a class="headerlink" href="#v082" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>Add all yet to be provided parameters for PyInstaller.  </p>
+</li>
+<li>
+<p>Add all yet to be provided elements for the various Qt IFW XML config classes.  </p>
+</li>
+</ul>
+<h2 id="v083">v.0.8.3<a class="headerlink" href="#v083" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Large scale refactoring, to simplify the library and make it more user friendly. 
+Rename high level process classes and functions.  Consider dialing back the volume
+of published low level functions? </li>
+</ul>
+<h2 id="v09x">v.0.9.x<a class="headerlink" href="#v09x" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>Improve and stabilize Opy to the point it can handle <em>most</em> scripts without <em>any</em>
+manual intervention. </p>
+</li>
+<li>
+<p>&ldquo;Perfect&rdquo; Opy &ldquo;library bundling&rdquo; (for both private and PyPi libraries). </p>
+</li>
+</ul>
+<h2 id="v10">v.1.0<a class="headerlink" href="#v10" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>Extended QA&hellip; TBD</p>
+</li>
+<li>
+<p>TEST on more Windows versions (Servers?, 8.1?)</p>
+</li>
+<li>
+<p>TEST on more Linux distros (Debian, Fedora, Arch&hellip;?)</p>
+</li>
+<li>
+<p>TEST on OSes with alternate language settings? (Hunting for path names or unicode glitches, etc.?) </p>
+</li>
+<li>
+<p>Continue to expand upon / clean up the documentation.</p>
+</li>
+</ul>
+<h2 id="v11x">v.1.1.x<a class="headerlink" href="#v11x" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Add QtIFW &ldquo;online&rdquo; installer features.</li>
+</ul>
+<h2 id="v12x">v.1.2.x<a class="headerlink" href="#v12x" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>Add git integration: Clone/pull to build project from multiple remote sources</p>
+</li>
+<li>
+<p>Add Anaconda integration</p>
+</li>
+</ul>
+<h2 id="v13x">v.1.3.x<a class="headerlink" href="#v13x" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>Add more git integration: auto commit / push / tag&hellip;</p>
+</li>
+<li>
+<p>Add auto conversion of alternate icon formats, so a project only needs one file for such.</p>
+</li>
+<li>
+<p>Further develop QtIfwUiPage derived classes and resources.</p>
+</li>
+</ul>
+<h2 id="v2x">v.2.x<a class="headerlink" href="#v2x" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Provide PyInstaller forward/backward compatibility across OS versions.</li>
+</ul>
+<p>Currently, (depending upon the platform) building with PyInstaller (and/or QtIFW?) 
+on an older or newer version of an OS can result in the product NOT being forwards 
+or backwards compatible!  </p>
+<p>Notably, there are known complications e.g. GCC .so dynamic linkage:</p>
+<p>Refer to:  <br />
+<a href="https://pythonhosted.org/PyInstaller/usage.html#making-linux-apps-forward-compatible">https://pythonhosted.org/PyInstaller/usage.html#making-linux-apps-forward-compatible</a></p>
+<ul>
+<li>
+<p>Automate builds for multiple environments / platforms:
+   Pyinstaller reference:</p>
+<ul>
+<li><a href="https://pythonhosted.org/PyInstaller/usage.html#supporting-multiple-python-environments">https://pythonhosted.org/PyInstaller/usage.html#supporting-multiple-python-environments</a> </li>
+<li><a href="https://pythonhosted.org/PyInstaller/usage.html#supporting-multiple-operating-systems">https://pythonhosted.org/PyInstaller/usage.html#supporting-multiple-operating-systems</a></li>
+</ul>
+</li>
+<li>
+<p>QtIFW cross platform single run master script (several binaries produced of course)</p>
+</li>
+</ul>
+<h2 id="spit-balls">Spit balls&hellip;<a class="headerlink" href="#spit-balls" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>Add a Py2Exe wrapper as alternative to PyInstaller.</p>
+</li>
+<li>
+<p>Add Py2Exe driven functions for Windows specific features 
+which PyInstaller simply lacks (e.g. COM server dll creation).</p>
+</li>
+<li>
+<p>Add an NSIS wrapper as alternative to Qt IFW.</p>
+</li>
+<li>
+<p>Add setuptools / distutil wrappers an as alternative to pip.  </p>
+</li>
+<li>
+<p>Add the option to build projects outside of the build script directory 
+e.g. in temp.  </p>
+</li>
+<li>
+<p>Add PyPi integration to publish open source releases.</p>
+</li>
+<li>
+<p>Add (configurable) interactive ui feature, to select various 
+operations at runtime (cli or gui).  Use the selected options
+to define the attributes of a process class, which is subsequently
+executed.  The purpose of such is to allow the developer to
+select the options needed at the moment e.g. build exe, run exe, 
+build installer, include obfuscation&hellip;</p>
+</li>
+</ul>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="Issues.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Troubleshooting" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Troubleshooting
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="Contribute.html" class="md-footer__link md-footer__link--next" aria-label="Next: Contact / Contribute" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Contact / Contribute
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
+      
+    
+  </body>
+</html>

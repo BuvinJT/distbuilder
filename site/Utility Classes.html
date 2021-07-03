@@ -1,0 +1,3467 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+    
+    
+      
+        <title>Utility Classes - Distribution Builder</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ConfigParser" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Distribution Builder" class="md-header__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Distribution Builder
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Utility Classes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Distribution Builder" class="md-nav__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Distribution Builder
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QuickStart.html" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Examples.html" class="md-nav__link">
+        Examples
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
+        Old Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Old Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Old Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="HighLevel.html" class="md-nav__link">
+        High Level Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ConfigClasses.html" class="md-nav__link">
+        Configuration Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="LowLevel.html" class="md-nav__link">
+        Low Level Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QtCpp.html" class="md-nav__link">
+        Qt C++ Integration
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+      
+      <label class="md-nav__link" for="__nav_5">
+        Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Config%20Factory.html" class="md-nav__link">
+        Config Factory
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20Installer%20Framework.html" class="md-nav__link">
+        Qt Installer Framework
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="PyInstaller.html" class="md-nav__link">
+        PyInstaller
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="IExpress.html" class="md-nav__link">
+        IExpress
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Code%20Signing.html" class="md-nav__link">
+        Code Signing
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20Obfuscation.html" class="md-nav__link">
+        Python Obfuscation
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20pip.html" class="md-nav__link">
+        Python pip
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20CPP.html" class="md-nav__link">
+        Qt CPP
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Logging.html" class="md-nav__link">
+        Logging
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Utility Classes
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="Utility%20Classes.html" class="md-nav__link md-nav__link--active">
+        Utility Classes
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ConfigParser" class="md-nav__link">
+    ConfigParser
+  </a>
+  
+    <nav class="md-nav" aria-label="ConfigParser">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#BOOLEAN_STATES" class="md-nav__link">
+    BOOLEAN_STATES
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#NONSPACECRE" class="md-nav__link">
+    NONSPACECRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#OPTCRE" class="md-nav__link">
+    OPTCRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#OPTCRE_NV" class="md-nav__link">
+    OPTCRE_NV
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SECTCRE" class="md-nav__link">
+    SECTCRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#converters" class="md-nav__link">
+    converters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update" class="md-nav__link">
+    update
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_section" class="md-nav__link">
+    add_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clear" class="md-nav__link">
+    clear
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defaults" class="md-nav__link">
+    defaults
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get" class="md-nav__link">
+    get
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getboolean" class="md-nav__link">
+    getboolean
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getfloat" class="md-nav__link">
+    getfloat
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getint" class="md-nav__link">
+    getint
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#has_option" class="md-nav__link">
+    has_option
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#has_section" class="md-nav__link">
+    has_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#items" class="md-nav__link">
+    items
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keys" class="md-nav__link">
+    keys
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    options
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optionxform" class="md-nav__link">
+    optionxform
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pop" class="md-nav__link">
+    pop
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#popitem" class="md-nav__link">
+    popitem
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read" class="md-nav__link">
+    read
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_dict" class="md-nav__link">
+    read_dict
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_file" class="md-nav__link">
+    read_file
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_string" class="md-nav__link">
+    read_string
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#readfp" class="md-nav__link">
+    readfp
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove_option" class="md-nav__link">
+    remove_option
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove_section" class="md-nav__link">
+    remove_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sections" class="md-nav__link">
+    sections
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set" class="md-nav__link">
+    set
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setdefault" class="md-nav__link">
+    setdefault
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#values" class="md-nav__link">
+    values
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    write
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ExecutableScript" class="md-nav__link">
+    ExecutableScript
+  </a>
+  
+    <nav class="md-nav" aria-label="ExecutableScript">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#APPLESCRIPT_EXT" class="md-nav__link">
+    APPLESCRIPT_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#BATCH_EXT" class="md-nav__link">
+    BATCH_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#JSCRIPT_EXT" class="md-nav__link">
+    JSCRIPT_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#POWERSHELL_EXT" class="md-nav__link">
+    POWERSHELL_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SHELL_EXT" class="md-nav__link">
+    SHELL_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SUPPORTED_EXTS" class="md-nav__link">
+    SUPPORTED_EXTS
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#VBSCRIPT_EXT" class="md-nav__link">
+    VBSCRIPT_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linesToStr" class="md-nav__link">
+    linesToStr
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strToLines" class="md-nav__link">
+    strToLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#typeOf" class="md-nav__link">
+    typeOf
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asSnippet" class="md-nav__link">
+    asSnippet
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug" class="md-nav__link">
+    debug
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exists" class="md-nav__link">
+    exists
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fileName" class="md-nav__link">
+    fileName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filePath" class="md-nav__link">
+    filePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fromBase64" class="md-nav__link">
+    fromBase64
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fromLines" class="md-nav__link">
+    fromLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#injectLine" class="md-nav__link">
+    injectLine
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read" class="md-nav__link">
+    read
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove" class="md-nav__link">
+    remove
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toBase64" class="md-nav__link">
+    toBase64
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toLines" class="md-nav__link">
+    toLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    write
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rootName" class="md-nav__link">
+    rootName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scriptDirPath" class="md-nav__link">
+    scriptDirPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replacements" class="md-nav__link">
+    replacements
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isIfwVarEscapeBackslash" class="md-nav__link">
+    isIfwVarEscapeBackslash
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isDebug" class="md-nav__link">
+    isDebug
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#RawConfigParser" class="md-nav__link">
+    RawConfigParser
+  </a>
+  
+    <nav class="md-nav" aria-label="RawConfigParser">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#BOOLEAN_STATES" class="md-nav__link">
+    BOOLEAN_STATES
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#NONSPACECRE" class="md-nav__link">
+    NONSPACECRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#OPTCRE" class="md-nav__link">
+    OPTCRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#OPTCRE_NV" class="md-nav__link">
+    OPTCRE_NV
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SECTCRE" class="md-nav__link">
+    SECTCRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#converters" class="md-nav__link">
+    converters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update" class="md-nav__link">
+    update
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_section" class="md-nav__link">
+    add_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clear" class="md-nav__link">
+    clear
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defaults" class="md-nav__link">
+    defaults
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get" class="md-nav__link">
+    get
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getboolean" class="md-nav__link">
+    getboolean
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getfloat" class="md-nav__link">
+    getfloat
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getint" class="md-nav__link">
+    getint
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#has_option" class="md-nav__link">
+    has_option
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#has_section" class="md-nav__link">
+    has_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#items" class="md-nav__link">
+    items
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keys" class="md-nav__link">
+    keys
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    options
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optionxform" class="md-nav__link">
+    optionxform
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pop" class="md-nav__link">
+    pop
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#popitem" class="md-nav__link">
+    popitem
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read" class="md-nav__link">
+    read
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_dict" class="md-nav__link">
+    read_dict
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_file" class="md-nav__link">
+    read_file
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_string" class="md-nav__link">
+    read_string
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#readfp" class="md-nav__link">
+    readfp
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove_option" class="md-nav__link">
+    remove_option
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove_section" class="md-nav__link">
+    remove_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sections" class="md-nav__link">
+    sections
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set" class="md-nav__link">
+    set
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setdefault" class="md-nav__link">
+    setdefault
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#values" class="md-nav__link">
+    values
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    write
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#default_section" class="md-nav__link">
+    default_section
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#SafeConfigParser" class="md-nav__link">
+    SafeConfigParser
+  </a>
+  
+    <nav class="md-nav" aria-label="SafeConfigParser">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#BOOLEAN_STATES" class="md-nav__link">
+    BOOLEAN_STATES
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#NONSPACECRE" class="md-nav__link">
+    NONSPACECRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#OPTCRE" class="md-nav__link">
+    OPTCRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#OPTCRE_NV" class="md-nav__link">
+    OPTCRE_NV
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SECTCRE" class="md-nav__link">
+    SECTCRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#converters" class="md-nav__link">
+    converters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update" class="md-nav__link">
+    update
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_section" class="md-nav__link">
+    add_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clear" class="md-nav__link">
+    clear
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defaults" class="md-nav__link">
+    defaults
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get" class="md-nav__link">
+    get
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getboolean" class="md-nav__link">
+    getboolean
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getfloat" class="md-nav__link">
+    getfloat
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getint" class="md-nav__link">
+    getint
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#has_option" class="md-nav__link">
+    has_option
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#has_section" class="md-nav__link">
+    has_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#items" class="md-nav__link">
+    items
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keys" class="md-nav__link">
+    keys
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    options
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optionxform" class="md-nav__link">
+    optionxform
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pop" class="md-nav__link">
+    pop
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#popitem" class="md-nav__link">
+    popitem
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read" class="md-nav__link">
+    read
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_dict" class="md-nav__link">
+    read_dict
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_file" class="md-nav__link">
+    read_file
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_string" class="md-nav__link">
+    read_string
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#readfp" class="md-nav__link">
+    readfp
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove_option" class="md-nav__link">
+    remove_option
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove_section" class="md-nav__link">
+    remove_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sections" class="md-nav__link">
+    sections
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set" class="md-nav__link">
+    set
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setdefault" class="md-nav__link">
+    setdefault
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#values" class="md-nav__link">
+    values
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    write
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#WindowsExeVersionInfo" class="md-nav__link">
+    WindowsExeVersionInfo
+  </a>
+  
+    <nav class="md-nav" aria-label="WindowsExeVersionInfo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#defaultPath" class="md-nav__link">
+    defaultPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#copyright" class="md-nav__link">
+    copyright
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug" class="md-nav__link">
+    debug
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fromLines" class="md-nav__link">
+    fromLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#injectLine" class="md-nav__link">
+    injectLine
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internalName" class="md-nav__link">
+    internalName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path" class="md-nav__link">
+    path
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read" class="md-nav__link">
+    read
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove" class="md-nav__link">
+    remove
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toLines" class="md-nav__link">
+    toLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version" class="md-nav__link">
+    version
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    write
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#major" class="md-nav__link">
+    major
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minor" class="md-nav__link">
+    minor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#micro" class="md-nav__link">
+    micro
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build" class="md-nav__link">
+    build
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#companyName" class="md-nav__link">
+    companyName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#productName" class="md-nav__link">
+    productName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    description
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exeName" class="md-nav__link">
+    exeName
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Functions.html" class="md-nav__link">
+        Utility Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Constants.html" class="md-nav__link">
+        Utility Constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Issues.html" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ToDo.html" class="md-nav__link">
+        To-Do List
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Contribute.html" class="md-nav__link">
+        Contact / Contribute
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ConfigParser" class="md-nav__link">
+    ConfigParser
+  </a>
+  
+    <nav class="md-nav" aria-label="ConfigParser">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#BOOLEAN_STATES" class="md-nav__link">
+    BOOLEAN_STATES
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#NONSPACECRE" class="md-nav__link">
+    NONSPACECRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#OPTCRE" class="md-nav__link">
+    OPTCRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#OPTCRE_NV" class="md-nav__link">
+    OPTCRE_NV
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SECTCRE" class="md-nav__link">
+    SECTCRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#converters" class="md-nav__link">
+    converters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update" class="md-nav__link">
+    update
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_section" class="md-nav__link">
+    add_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clear" class="md-nav__link">
+    clear
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defaults" class="md-nav__link">
+    defaults
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get" class="md-nav__link">
+    get
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getboolean" class="md-nav__link">
+    getboolean
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getfloat" class="md-nav__link">
+    getfloat
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getint" class="md-nav__link">
+    getint
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#has_option" class="md-nav__link">
+    has_option
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#has_section" class="md-nav__link">
+    has_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#items" class="md-nav__link">
+    items
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keys" class="md-nav__link">
+    keys
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    options
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optionxform" class="md-nav__link">
+    optionxform
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pop" class="md-nav__link">
+    pop
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#popitem" class="md-nav__link">
+    popitem
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read" class="md-nav__link">
+    read
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_dict" class="md-nav__link">
+    read_dict
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_file" class="md-nav__link">
+    read_file
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_string" class="md-nav__link">
+    read_string
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#readfp" class="md-nav__link">
+    readfp
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove_option" class="md-nav__link">
+    remove_option
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove_section" class="md-nav__link">
+    remove_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sections" class="md-nav__link">
+    sections
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set" class="md-nav__link">
+    set
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setdefault" class="md-nav__link">
+    setdefault
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#values" class="md-nav__link">
+    values
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    write
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ExecutableScript" class="md-nav__link">
+    ExecutableScript
+  </a>
+  
+    <nav class="md-nav" aria-label="ExecutableScript">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#APPLESCRIPT_EXT" class="md-nav__link">
+    APPLESCRIPT_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#BATCH_EXT" class="md-nav__link">
+    BATCH_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#JSCRIPT_EXT" class="md-nav__link">
+    JSCRIPT_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#POWERSHELL_EXT" class="md-nav__link">
+    POWERSHELL_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SHELL_EXT" class="md-nav__link">
+    SHELL_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SUPPORTED_EXTS" class="md-nav__link">
+    SUPPORTED_EXTS
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#VBSCRIPT_EXT" class="md-nav__link">
+    VBSCRIPT_EXT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linesToStr" class="md-nav__link">
+    linesToStr
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strToLines" class="md-nav__link">
+    strToLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#typeOf" class="md-nav__link">
+    typeOf
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asSnippet" class="md-nav__link">
+    asSnippet
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug" class="md-nav__link">
+    debug
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exists" class="md-nav__link">
+    exists
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fileName" class="md-nav__link">
+    fileName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filePath" class="md-nav__link">
+    filePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fromBase64" class="md-nav__link">
+    fromBase64
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fromLines" class="md-nav__link">
+    fromLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#injectLine" class="md-nav__link">
+    injectLine
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read" class="md-nav__link">
+    read
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove" class="md-nav__link">
+    remove
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toBase64" class="md-nav__link">
+    toBase64
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toLines" class="md-nav__link">
+    toLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    write
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rootName" class="md-nav__link">
+    rootName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scriptDirPath" class="md-nav__link">
+    scriptDirPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replacements" class="md-nav__link">
+    replacements
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isIfwVarEscapeBackslash" class="md-nav__link">
+    isIfwVarEscapeBackslash
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isDebug" class="md-nav__link">
+    isDebug
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#RawConfigParser" class="md-nav__link">
+    RawConfigParser
+  </a>
+  
+    <nav class="md-nav" aria-label="RawConfigParser">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#BOOLEAN_STATES" class="md-nav__link">
+    BOOLEAN_STATES
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#NONSPACECRE" class="md-nav__link">
+    NONSPACECRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#OPTCRE" class="md-nav__link">
+    OPTCRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#OPTCRE_NV" class="md-nav__link">
+    OPTCRE_NV
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SECTCRE" class="md-nav__link">
+    SECTCRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#converters" class="md-nav__link">
+    converters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update" class="md-nav__link">
+    update
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_section" class="md-nav__link">
+    add_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clear" class="md-nav__link">
+    clear
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defaults" class="md-nav__link">
+    defaults
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get" class="md-nav__link">
+    get
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getboolean" class="md-nav__link">
+    getboolean
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getfloat" class="md-nav__link">
+    getfloat
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getint" class="md-nav__link">
+    getint
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#has_option" class="md-nav__link">
+    has_option
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#has_section" class="md-nav__link">
+    has_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#items" class="md-nav__link">
+    items
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keys" class="md-nav__link">
+    keys
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    options
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optionxform" class="md-nav__link">
+    optionxform
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pop" class="md-nav__link">
+    pop
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#popitem" class="md-nav__link">
+    popitem
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read" class="md-nav__link">
+    read
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_dict" class="md-nav__link">
+    read_dict
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_file" class="md-nav__link">
+    read_file
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_string" class="md-nav__link">
+    read_string
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#readfp" class="md-nav__link">
+    readfp
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove_option" class="md-nav__link">
+    remove_option
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove_section" class="md-nav__link">
+    remove_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sections" class="md-nav__link">
+    sections
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set" class="md-nav__link">
+    set
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setdefault" class="md-nav__link">
+    setdefault
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#values" class="md-nav__link">
+    values
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    write
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#default_section" class="md-nav__link">
+    default_section
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#SafeConfigParser" class="md-nav__link">
+    SafeConfigParser
+  </a>
+  
+    <nav class="md-nav" aria-label="SafeConfigParser">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#BOOLEAN_STATES" class="md-nav__link">
+    BOOLEAN_STATES
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#NONSPACECRE" class="md-nav__link">
+    NONSPACECRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#OPTCRE" class="md-nav__link">
+    OPTCRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#OPTCRE_NV" class="md-nav__link">
+    OPTCRE_NV
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#SECTCRE" class="md-nav__link">
+    SECTCRE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#converters" class="md-nav__link">
+    converters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update" class="md-nav__link">
+    update
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_section" class="md-nav__link">
+    add_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clear" class="md-nav__link">
+    clear
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defaults" class="md-nav__link">
+    defaults
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get" class="md-nav__link">
+    get
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getboolean" class="md-nav__link">
+    getboolean
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getfloat" class="md-nav__link">
+    getfloat
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getint" class="md-nav__link">
+    getint
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#has_option" class="md-nav__link">
+    has_option
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#has_section" class="md-nav__link">
+    has_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#items" class="md-nav__link">
+    items
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keys" class="md-nav__link">
+    keys
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    options
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optionxform" class="md-nav__link">
+    optionxform
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pop" class="md-nav__link">
+    pop
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#popitem" class="md-nav__link">
+    popitem
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read" class="md-nav__link">
+    read
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_dict" class="md-nav__link">
+    read_dict
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_file" class="md-nav__link">
+    read_file
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read_string" class="md-nav__link">
+    read_string
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#readfp" class="md-nav__link">
+    readfp
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove_option" class="md-nav__link">
+    remove_option
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove_section" class="md-nav__link">
+    remove_section
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sections" class="md-nav__link">
+    sections
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set" class="md-nav__link">
+    set
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setdefault" class="md-nav__link">
+    setdefault
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#values" class="md-nav__link">
+    values
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    write
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#WindowsExeVersionInfo" class="md-nav__link">
+    WindowsExeVersionInfo
+  </a>
+  
+    <nav class="md-nav" aria-label="WindowsExeVersionInfo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#defaultPath" class="md-nav__link">
+    defaultPath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#copyright" class="md-nav__link">
+    copyright
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug" class="md-nav__link">
+    debug
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fromLines" class="md-nav__link">
+    fromLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#injectLine" class="md-nav__link">
+    injectLine
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internalName" class="md-nav__link">
+    internalName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path" class="md-nav__link">
+    path
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read" class="md-nav__link">
+    read
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove" class="md-nav__link">
+    remove
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toLines" class="md-nav__link">
+    toLines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version" class="md-nav__link">
+    version
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write" class="md-nav__link">
+    write
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#major" class="md-nav__link">
+    major
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minor" class="md-nav__link">
+    minor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#micro" class="md-nav__link">
+    micro
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build" class="md-nav__link">
+    build
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#companyName" class="md-nav__link">
+    companyName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#productName" class="md-nav__link">
+    productName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    description
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exeName" class="md-nav__link">
+    exeName
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                  <h1>Utility Classes</h1>
+                
+                <h2 id="ConfigParser"><strong>ConfigParser</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#ConfigParser" title="Permanent link">&para;</a></h2>
+<p>ConfigParser implementing interpolation.</p>
+<p><strong>Class/Static Attributes:</strong> </p>
+<ul>
+<li><a href="#BOOLEAN_STATES"><code>BOOLEAN_STATES</code></a></li>
+<li><a href="#NONSPACECRE"><code>NONSPACECRE</code></a></li>
+<li><a href="#OPTCRE"><code>OPTCRE</code></a></li>
+<li><a href="#OPTCRE_NV"><code>OPTCRE_NV</code></a></li>
+<li><a href="#SECTCRE"><code>SECTCRE</code></a></li>
+<li><a href="#converters"><code>converters</code></a></li>
+</ul>
+<p><strong>Class/Static Methods:</strong> </p>
+<ul>
+<li><a href="#update"><code>update</code></a></li>
+</ul>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#add_section"><code>add_section</code></a></li>
+<li><a href="#clear"><code>clear</code></a></li>
+<li><a href="#defaults"><code>defaults</code></a></li>
+<li><a href="#get"><code>get</code></a></li>
+<li><a href="#getboolean"><code>getboolean</code></a></li>
+<li><a href="#getfloat"><code>getfloat</code></a></li>
+<li><a href="#getint"><code>getint</code></a></li>
+<li><a href="#has_option"><code>has_option</code></a></li>
+<li><a href="#has_section"><code>has_section</code></a></li>
+<li><a href="#items"><code>items</code></a></li>
+<li><a href="#keys"><code>keys</code></a></li>
+<li><a href="#options"><code>options</code></a></li>
+<li><a href="#optionxform"><code>optionxform</code></a></li>
+<li><a href="#pop"><code>pop</code></a></li>
+<li><a href="#popitem"><code>popitem</code></a></li>
+<li><a href="#read"><code>read</code></a></li>
+<li><a href="#read_dict"><code>read_dict</code></a></li>
+<li><a href="#read_file"><code>read_file</code></a></li>
+<li><a href="#read_string"><code>read_string</code></a></li>
+<li><a href="#readfp"><code>readfp</code></a></li>
+<li><a href="#remove_option"><code>remove_option</code></a></li>
+<li><a href="#remove_section"><code>remove_section</code></a></li>
+<li><a href="#sections"><code>sections</code></a></li>
+<li><a href="#set"><code>set</code></a></li>
+<li><a href="#setdefault"><code>setdefault</code></a></li>
+<li><a href="#values"><code>values</code></a></li>
+<li><a href="#write"><code>write</code></a></li>
+</ul>
+<h3 id="BOOLEAN_STATES"><em>ConfigParser</em>.<strong>BOOLEAN_STATES</strong> <em>class &lsquo;dict&rsquo;</em><a class="headerlink" href="#BOOLEAN_STATES" title="Permanent link">&para;</a></h3>
+<h3 id="NONSPACECRE"><em>ConfigParser</em>.<strong>NONSPACECRE</strong> <em>class &lsquo;re.Pattern&rsquo;</em><a class="headerlink" href="#NONSPACECRE" title="Permanent link">&para;</a></h3>
+<h3 id="OPTCRE"><em>ConfigParser</em>.<strong>OPTCRE</strong> <em>class &lsquo;re.Pattern&rsquo;</em><a class="headerlink" href="#OPTCRE" title="Permanent link">&para;</a></h3>
+<h3 id="OPTCRE_NV"><em>ConfigParser</em>.<strong>OPTCRE_NV</strong> <em>class &lsquo;re.Pattern&rsquo;</em><a class="headerlink" href="#OPTCRE_NV" title="Permanent link">&para;</a></h3>
+<h3 id="SECTCRE"><em>ConfigParser</em>.<strong>SECTCRE</strong> <em>class &lsquo;re.Pattern&rsquo;</em><a class="headerlink" href="#SECTCRE" title="Permanent link">&para;</a></h3>
+<h3 id="converters"><em>ConfigParser</em>.<strong>converters</strong> <em>class &lsquo;property&rsquo;</em><a class="headerlink" href="#converters" title="Permanent link">&para;</a></h3>
+<h3 id="update"><em>ConfigParser</em>.<strong>update</strong><code class="highlight"><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span></code><a class="headerlink" href="#update" title="Permanent link">&para;</a></h3>
+<p>D.update([E, ]**F) -&gt; None.  Update D from mapping/iterable E and F.
+If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
+If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
+In either case, this is followed by: for k, v in F.items(): D[k] = v</p>
+<h3 id="add_section"><em>obj</em>.<strong>add_section</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span></code><a class="headerlink" href="#add_section" title="Permanent link">&para;</a></h3>
+<p>Create a new section in the configuration.  Extends
+RawConfigParser.add_section by validating if the section name is
+a string.</p>
+<h3 id="clear"><em>obj</em>.<strong>clear</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#clear" title="Permanent link">&para;</a></h3>
+<p>D.clear() -&gt; None.  Remove all items from D.</p>
+<h3 id="defaults"><em>obj</em>.<strong>defaults</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#defaults" title="Permanent link">&para;</a></h3>
+<h3 id="get"><em>obj</em>.<strong>get</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604900</span><span class="o">&gt;</span><span class="p">)</span></code><a class="headerlink" href="#get" title="Permanent link">&para;</a></h3>
+<p>Get an option value for a given section.</p>
+<p>If <code>vars' is provided, it must be a dictionary. The option is looked up
+in</code>vars&rsquo; (if provided), <code>section', and in</code>DEFAULTSECT&rsquo; in that order.
+If the key is not found and <code>fallback' is provided, it is used as
+a fallback value.</code>None&rsquo; can be provided as a `fallback&rsquo; value.</p>
+<p>If interpolation is enabled and the optional argument `raw&rsquo; is False,
+all interpolations are expanded in the return values.</p>
+<p>Arguments <code>raw',</code>vars&rsquo;, and `fallback&rsquo; are keyword only.</p>
+<p>The section DEFAULT is special.</p>
+<h3 id="getboolean"><em>obj</em>.<strong>getboolean</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604900</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code><a class="headerlink" href="#getboolean" title="Permanent link">&para;</a></h3>
+<h3 id="getfloat"><em>obj</em>.<strong>getfloat</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604900</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code><a class="headerlink" href="#getfloat" title="Permanent link">&para;</a></h3>
+<h3 id="getint"><em>obj</em>.<strong>getint</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604900</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code><a class="headerlink" href="#getint" title="Permanent link">&para;</a></h3>
+<h3 id="has_option"><em>obj</em>.<strong>has_option</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">)</span></code><a class="headerlink" href="#has_option" title="Permanent link">&para;</a></h3>
+<p>Check for the existence of a given option in a given section.
+If the specified <code>section' is None or an empty string, DEFAULT is
+assumed. If the specified</code>section&rsquo; does not exist, returns False.</p>
+<h3 id="has_section"><em>obj</em>.<strong>has_section</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span></code><a class="headerlink" href="#has_section" title="Permanent link">&para;</a></h3>
+<p>Indicate whether the named section is present in the configuration.</p>
+<p>The DEFAULT section is not acknowledged.</p>
+<h3 id="items"><em>obj</em>.<strong>items</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604900</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#items" title="Permanent link">&para;</a></h3>
+<p>Return a list of (name, value) tuples for each option in a section.</p>
+<p>All % interpolations are expanded in the return values, based on the
+defaults passed into the constructor, unless the optional argument
+<code>raw' is true.  Additional substitutions may be provided using the</code>vars&rsquo; argument, which must be a dictionary whose contents overrides
+any pre-existing defaults.</p>
+<p>The section DEFAULT is special.</p>
+<h3 id="keys"><em>obj</em>.<strong>keys</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#keys" title="Permanent link">&para;</a></h3>
+<p>D.keys() -&gt; a set-like object providing a view on D&rsquo;s keys</p>
+<h3 id="options"><em>obj</em>.<strong>options</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span></code><a class="headerlink" href="#options" title="Permanent link">&para;</a></h3>
+<p>Return a list of option names for the given section name.</p>
+<h3 id="optionxform"><em>obj</em>.<strong>optionxform</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optionstr</span><span class="p">)</span></code><a class="headerlink" href="#optionxform" title="Permanent link">&para;</a></h3>
+<h3 id="pop"><em>obj</em>.<strong>pop</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604098</span><span class="o">&gt;</span><span class="p">)</span></code><a class="headerlink" href="#pop" title="Permanent link">&para;</a></h3>
+<p>D.pop(k[,d]) -&gt; v, remove specified key and return the corresponding value.
+If key is not found, d is returned if given, otherwise KeyError is raised.</p>
+<h3 id="popitem"><em>obj</em>.<strong>popitem</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#popitem" title="Permanent link">&para;</a></h3>
+<p>Remove a section from the parser and return it as
+a (section_name, section_proxy) tuple. If no section is present, raise
+KeyError.</p>
+<p>The section DEFAULT is never returned because it cannot be removed.</p>
+<h3 id="read"><em>obj</em>.<strong>read</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#read" title="Permanent link">&para;</a></h3>
+<p>Read and parse a filename or an iterable of filenames.</p>
+<p>Files that cannot be opened are silently ignored; this is
+designed so that you can specify an iterable of potential
+configuration file locations (e.g. current directory, user&rsquo;s
+home directory, systemwide directory), and all existing
+configuration files in the iterable will be read.  A single
+filename may also be given.</p>
+<p>Return list of successfully read files.</p>
+<h3 id="read_dict"><em>obj</em>.<strong>read_dict</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;&lt;dict&gt;&#39;</span><span class="p">)</span></code><a class="headerlink" href="#read_dict" title="Permanent link">&para;</a></h3>
+<p>Read configuration from a dictionary.</p>
+<p>Keys are section names, values are dictionaries with keys and values
+that should be present in the section. If the used dictionary type
+preserves order, sections and their keys will be added in order.</p>
+<p>All types held in the dictionary are converted to strings during
+reading, including section names, option names and keys.</p>
+<p>Optional second argument is the `source&rsquo; specifying the name of the
+dictionary being read.</p>
+<h3 id="read_file"><em>obj</em>.<strong>read_file</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#read_file" title="Permanent link">&para;</a></h3>
+<p>Like read() but the argument must be a file-like object.</p>
+<p>The <code>f' argument must be iterable, returning one line at a time.
+Optional second argument is the</code>source&rsquo; specifying the name of the
+file being read. If not given, it is taken from f.name. If <code>f' has no</code>name&rsquo; attribute, `&lt;???&gt;&rsquo; is used.</p>
+<h3 id="read_string"><em>obj</em>.<strong>read_string</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;&lt;string&gt;&#39;</span><span class="p">)</span></code><a class="headerlink" href="#read_string" title="Permanent link">&para;</a></h3>
+<p>Read configuration from a given string.</p>
+<h3 id="readfp"><em>obj</em>.<strong>readfp</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#readfp" title="Permanent link">&para;</a></h3>
+<p>Deprecated, use read_file instead.</p>
+<h3 id="remove_option"><em>obj</em>.<strong>remove_option</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">)</span></code><a class="headerlink" href="#remove_option" title="Permanent link">&para;</a></h3>
+<p>Remove an option.</p>
+<h3 id="remove_section"><em>obj</em>.<strong>remove_section</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span></code><a class="headerlink" href="#remove_section" title="Permanent link">&para;</a></h3>
+<p>Remove a file section.</p>
+<h3 id="sections"><em>obj</em>.<strong>sections</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#sections" title="Permanent link">&para;</a></h3>
+<p>Return a list of section names, excluding [DEFAULT]</p>
+<h3 id="set"><em>obj</em>.<strong>set</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#set" title="Permanent link">&para;</a></h3>
+<p>Set an option.  Extends RawConfigParser.set by validating type and
+interpolation syntax on the value.</p>
+<h3 id="setdefault"><em>obj</em>.<strong>setdefault</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#setdefault" title="Permanent link">&para;</a></h3>
+<p>D.setdefault(k[,d]) -&gt; D.get(k,d), also set D[k]=d if k not in D</p>
+<h3 id="values"><em>obj</em>.<strong>values</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#values" title="Permanent link">&para;</a></h3>
+<p>D.values() -&gt; an object providing a view on D&rsquo;s values</p>
+<h3 id="write"><em>obj</em>.<strong>write</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">space_around_delimiters</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code><a class="headerlink" href="#write" title="Permanent link">&para;</a></h3>
+<p>Write an .ini-format representation of the configuration state.</p>
+<p>If `space_around_delimiters&rsquo; is True (the default), delimiters
+between keys and values are surrounded by spaces.</p>
+<hr />
+<h2 id="ExecutableScript"><strong>ExecutableScript</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#ExecutableScript" title="Permanent link">&para;</a></h2>
+<p><strong>Class/Static Attributes:</strong> </p>
+<ul>
+<li><a href="#APPLESCRIPT_EXT"><code>APPLESCRIPT_EXT</code></a></li>
+<li><a href="#BATCH_EXT"><code>BATCH_EXT</code></a></li>
+<li><a href="#JSCRIPT_EXT"><code>JSCRIPT_EXT</code></a></li>
+<li><a href="#POWERSHELL_EXT"><code>POWERSHELL_EXT</code></a></li>
+<li><a href="#SHELL_EXT"><code>SHELL_EXT</code></a></li>
+<li><a href="#SUPPORTED_EXTS"><code>SUPPORTED_EXTS</code></a></li>
+<li><a href="#VBSCRIPT_EXT"><code>VBSCRIPT_EXT</code></a></li>
+</ul>
+<p><strong>Class/Static Methods:</strong> </p>
+<ul>
+<li><a href="#linesToStr"><code>linesToStr</code></a></li>
+<li><a href="#strToLines"><code>strToLines</code></a></li>
+<li><a href="#typeOf"><code>typeOf</code></a></li>
+</ul>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#asSnippet"><code>asSnippet</code></a></li>
+<li><a href="#debug"><code>debug</code></a></li>
+<li><a href="#exists"><code>exists</code></a></li>
+<li><a href="#fileName"><code>fileName</code></a></li>
+<li><a href="#filePath"><code>filePath</code></a></li>
+<li><a href="#fromBase64"><code>fromBase64</code></a></li>
+<li><a href="#fromLines"><code>fromLines</code></a></li>
+<li><a href="#injectLine"><code>injectLine</code></a></li>
+<li><a href="#read"><code>read</code></a></li>
+<li><a href="#remove"><code>remove</code></a></li>
+<li><a href="#toBase64"><code>toBase64</code></a></li>
+<li><a href="#toLines"><code>toLines</code></a></li>
+<li><a href="#write"><code>write</code></a></li>
+</ul>
+<p><strong>Instance Attributes:</strong> </p>
+<ul>
+<li><a href="#rootName"><code>rootName</code></a></li>
+<li><a href="#scriptDirPath"><code>scriptDirPath</code></a></li>
+<li><a href="#replacements"><code>replacements</code></a></li>
+<li><a href="#isIfwVarEscapeBackslash"><code>isIfwVarEscapeBackslash</code></a></li>
+<li><a href="#isDebug"><code>isDebug</code></a></li>
+</ul>
+<h3 id="APPLESCRIPT_EXT"><em>ExecutableScript</em>.<strong>APPLESCRIPT_EXT</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#APPLESCRIPT_EXT" title="Permanent link">&para;</a></h3>
+<h3 id="BATCH_EXT"><em>ExecutableScript</em>.<strong>BATCH_EXT</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#BATCH_EXT" title="Permanent link">&para;</a></h3>
+<h3 id="JSCRIPT_EXT"><em>ExecutableScript</em>.<strong>JSCRIPT_EXT</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#JSCRIPT_EXT" title="Permanent link">&para;</a></h3>
+<h3 id="POWERSHELL_EXT"><em>ExecutableScript</em>.<strong>POWERSHELL_EXT</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#POWERSHELL_EXT" title="Permanent link">&para;</a></h3>
+<h3 id="SHELL_EXT"><em>ExecutableScript</em>.<strong>SHELL_EXT</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#SHELL_EXT" title="Permanent link">&para;</a></h3>
+<h3 id="SUPPORTED_EXTS"><em>ExecutableScript</em>.<strong>SUPPORTED_EXTS</strong> <em>class &lsquo;list&rsquo;</em><a class="headerlink" href="#SUPPORTED_EXTS" title="Permanent link">&para;</a></h3>
+<h3 id="VBSCRIPT_EXT"><em>ExecutableScript</em>.<strong>VBSCRIPT_EXT</strong> <em>class &lsquo;str&rsquo;</em><a class="headerlink" href="#VBSCRIPT_EXT" title="Permanent link">&para;</a></h3>
+<h3 id="linesToStr"><em>ExecutableScript</em>.<strong>linesToStr</strong><code class="highlight"><span class="p">(</span><span class="n">lines</span><span class="p">)</span></code><a class="headerlink" href="#linesToStr" title="Permanent link">&para;</a></h3>
+<h3 id="strToLines"><em>ExecutableScript</em>.<strong>strToLines</strong><code class="highlight"><span class="p">(</span><span class="n">s</span><span class="p">)</span></code><a class="headerlink" href="#strToLines" title="Permanent link">&para;</a></h3>
+<h3 id="typeOf"><em>ExecutableScript</em>.<strong>typeOf</strong><code class="highlight"><span class="p">(</span><span class="n">path</span><span class="p">)</span></code><a class="headerlink" href="#typeOf" title="Permanent link">&para;</a></h3>
+<h3 id="asSnippet"><em>obj</em>.<strong>asSnippet</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#asSnippet" title="Permanent link">&para;</a></h3>
+<h3 id="debug"><em>obj</em>.<strong>debug</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#debug" title="Permanent link">&para;</a></h3>
+<h3 id="exists"><em>obj</em>.<strong>exists</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scriptDirPath</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#exists" title="Permanent link">&para;</a></h3>
+<h3 id="fileName"><em>obj</em>.<strong>fileName</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#fileName" title="Permanent link">&para;</a></h3>
+<h3 id="filePath"><em>obj</em>.<strong>filePath</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#filePath" title="Permanent link">&para;</a></h3>
+<h3 id="fromBase64"><em>obj</em>.<strong>fromBase64</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></code><a class="headerlink" href="#fromBase64" title="Permanent link">&para;</a></h3>
+<h3 id="fromLines"><em>obj</em>.<strong>fromLines</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">)</span></code><a class="headerlink" href="#fromLines" title="Permanent link">&para;</a></h3>
+<h3 id="injectLine"><em>obj</em>.<strong>injectLine</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">injection</span><span class="p">,</span> <span class="n">lineNo</span><span class="p">)</span></code><a class="headerlink" href="#injectLine" title="Permanent link">&para;</a></h3>
+<h3 id="read"><em>obj</em>.<strong>read</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scriptDirPath</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#read" title="Permanent link">&para;</a></h3>
+<h3 id="remove"><em>obj</em>.<strong>remove</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scriptDirPath</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#remove" title="Permanent link">&para;</a></h3>
+<h3 id="toBase64"><em>obj</em>.<strong>toBase64</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">toString</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code><a class="headerlink" href="#toBase64" title="Permanent link">&para;</a></h3>
+<h3 id="toLines"><em>obj</em>.<strong>toLines</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#toLines" title="Permanent link">&para;</a></h3>
+<h3 id="write"><em>obj</em>.<strong>write</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scriptDirPath</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#write" title="Permanent link">&para;</a></h3>
+<h3 id="rootName"><em>obj</em>.<strong>rootName</strong> <em>undefined</em><a class="headerlink" href="#rootName" title="Permanent link">&para;</a></h3>
+<h3 id="scriptDirPath"><em>obj</em>.<strong>scriptDirPath</strong> <em>undefined</em><a class="headerlink" href="#scriptDirPath" title="Permanent link">&para;</a></h3>
+<h3 id="replacements"><em>obj</em>.<strong>replacements</strong> <em>undefined</em><a class="headerlink" href="#replacements" title="Permanent link">&para;</a></h3>
+<h3 id="isIfwVarEscapeBackslash"><em>obj</em>.<strong>isIfwVarEscapeBackslash</strong> <em>undefined</em><a class="headerlink" href="#isIfwVarEscapeBackslash" title="Permanent link">&para;</a></h3>
+<h3 id="isDebug"><em>obj</em>.<strong>isDebug</strong> <em>undefined</em><a class="headerlink" href="#isDebug" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="RawConfigParser"><strong>RawConfigParser</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#RawConfigParser" title="Permanent link">&para;</a></h2>
+<p>ConfigParser that does not do interpolation.</p>
+<p><strong>Class/Static Attributes:</strong> </p>
+<ul>
+<li><a href="#BOOLEAN_STATES"><code>BOOLEAN_STATES</code></a></li>
+<li><a href="#NONSPACECRE"><code>NONSPACECRE</code></a></li>
+<li><a href="#OPTCRE"><code>OPTCRE</code></a></li>
+<li><a href="#OPTCRE_NV"><code>OPTCRE_NV</code></a></li>
+<li><a href="#SECTCRE"><code>SECTCRE</code></a></li>
+<li><a href="#converters"><code>converters</code></a></li>
+</ul>
+<p><strong>Class/Static Methods:</strong> </p>
+<ul>
+<li><a href="#update"><code>update</code></a></li>
+</ul>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#add_section"><code>add_section</code></a></li>
+<li><a href="#clear"><code>clear</code></a></li>
+<li><a href="#defaults"><code>defaults</code></a></li>
+<li><a href="#get"><code>get</code></a></li>
+<li><a href="#getboolean"><code>getboolean</code></a></li>
+<li><a href="#getfloat"><code>getfloat</code></a></li>
+<li><a href="#getint"><code>getint</code></a></li>
+<li><a href="#has_option"><code>has_option</code></a></li>
+<li><a href="#has_section"><code>has_section</code></a></li>
+<li><a href="#items"><code>items</code></a></li>
+<li><a href="#keys"><code>keys</code></a></li>
+<li><a href="#options"><code>options</code></a></li>
+<li><a href="#optionxform"><code>optionxform</code></a></li>
+<li><a href="#pop"><code>pop</code></a></li>
+<li><a href="#popitem"><code>popitem</code></a></li>
+<li><a href="#read"><code>read</code></a></li>
+<li><a href="#read_dict"><code>read_dict</code></a></li>
+<li><a href="#read_file"><code>read_file</code></a></li>
+<li><a href="#read_string"><code>read_string</code></a></li>
+<li><a href="#readfp"><code>readfp</code></a></li>
+<li><a href="#remove_option"><code>remove_option</code></a></li>
+<li><a href="#remove_section"><code>remove_section</code></a></li>
+<li><a href="#sections"><code>sections</code></a></li>
+<li><a href="#set"><code>set</code></a></li>
+<li><a href="#setdefault"><code>setdefault</code></a></li>
+<li><a href="#values"><code>values</code></a></li>
+<li><a href="#write"><code>write</code></a></li>
+</ul>
+<p><strong>Instance Attributes:</strong> </p>
+<ul>
+<li><a href="#default_section"><code>default_section</code></a></li>
+</ul>
+<h3 id="BOOLEAN_STATES"><em>RawConfigParser</em>.<strong>BOOLEAN_STATES</strong> <em>class &lsquo;dict&rsquo;</em><a class="headerlink" href="#BOOLEAN_STATES" title="Permanent link">&para;</a></h3>
+<h3 id="NONSPACECRE"><em>RawConfigParser</em>.<strong>NONSPACECRE</strong> <em>class &lsquo;re.Pattern&rsquo;</em><a class="headerlink" href="#NONSPACECRE" title="Permanent link">&para;</a></h3>
+<h3 id="OPTCRE"><em>RawConfigParser</em>.<strong>OPTCRE</strong> <em>class &lsquo;re.Pattern&rsquo;</em><a class="headerlink" href="#OPTCRE" title="Permanent link">&para;</a></h3>
+<h3 id="OPTCRE_NV"><em>RawConfigParser</em>.<strong>OPTCRE_NV</strong> <em>class &lsquo;re.Pattern&rsquo;</em><a class="headerlink" href="#OPTCRE_NV" title="Permanent link">&para;</a></h3>
+<h3 id="SECTCRE"><em>RawConfigParser</em>.<strong>SECTCRE</strong> <em>class &lsquo;re.Pattern&rsquo;</em><a class="headerlink" href="#SECTCRE" title="Permanent link">&para;</a></h3>
+<h3 id="converters"><em>RawConfigParser</em>.<strong>converters</strong> <em>class &lsquo;property&rsquo;</em><a class="headerlink" href="#converters" title="Permanent link">&para;</a></h3>
+<h3 id="update"><em>RawConfigParser</em>.<strong>update</strong><code class="highlight"><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span></code><a class="headerlink" href="#update" title="Permanent link">&para;</a></h3>
+<p>D.update([E, ]**F) -&gt; None.  Update D from mapping/iterable E and F.
+If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
+If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
+In either case, this is followed by: for k, v in F.items(): D[k] = v</p>
+<h3 id="add_section"><em>obj</em>.<strong>add_section</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span></code><a class="headerlink" href="#add_section" title="Permanent link">&para;</a></h3>
+<p>Create a new section in the configuration.</p>
+<p>Raise DuplicateSectionError if a section by the specified name
+already exists. Raise ValueError if name is DEFAULT.</p>
+<h3 id="clear"><em>obj</em>.<strong>clear</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#clear" title="Permanent link">&para;</a></h3>
+<p>D.clear() -&gt; None.  Remove all items from D.</p>
+<h3 id="defaults"><em>obj</em>.<strong>defaults</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#defaults" title="Permanent link">&para;</a></h3>
+<h3 id="get"><em>obj</em>.<strong>get</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604900</span><span class="o">&gt;</span><span class="p">)</span></code><a class="headerlink" href="#get" title="Permanent link">&para;</a></h3>
+<p>Get an option value for a given section.</p>
+<p>If <code>vars' is provided, it must be a dictionary. The option is looked up
+in</code>vars&rsquo; (if provided), <code>section', and in</code>DEFAULTSECT&rsquo; in that order.
+If the key is not found and <code>fallback' is provided, it is used as
+a fallback value.</code>None&rsquo; can be provided as a `fallback&rsquo; value.</p>
+<p>If interpolation is enabled and the optional argument `raw&rsquo; is False,
+all interpolations are expanded in the return values.</p>
+<p>Arguments <code>raw',</code>vars&rsquo;, and `fallback&rsquo; are keyword only.</p>
+<p>The section DEFAULT is special.</p>
+<h3 id="getboolean"><em>obj</em>.<strong>getboolean</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604900</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code><a class="headerlink" href="#getboolean" title="Permanent link">&para;</a></h3>
+<h3 id="getfloat"><em>obj</em>.<strong>getfloat</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604900</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code><a class="headerlink" href="#getfloat" title="Permanent link">&para;</a></h3>
+<h3 id="getint"><em>obj</em>.<strong>getint</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604900</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code><a class="headerlink" href="#getint" title="Permanent link">&para;</a></h3>
+<h3 id="has_option"><em>obj</em>.<strong>has_option</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">)</span></code><a class="headerlink" href="#has_option" title="Permanent link">&para;</a></h3>
+<p>Check for the existence of a given option in a given section.
+If the specified <code>section' is None or an empty string, DEFAULT is
+assumed. If the specified</code>section&rsquo; does not exist, returns False.</p>
+<h3 id="has_section"><em>obj</em>.<strong>has_section</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span></code><a class="headerlink" href="#has_section" title="Permanent link">&para;</a></h3>
+<p>Indicate whether the named section is present in the configuration.</p>
+<p>The DEFAULT section is not acknowledged.</p>
+<h3 id="items"><em>obj</em>.<strong>items</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604900</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#items" title="Permanent link">&para;</a></h3>
+<p>Return a list of (name, value) tuples for each option in a section.</p>
+<p>All % interpolations are expanded in the return values, based on the
+defaults passed into the constructor, unless the optional argument
+<code>raw' is true.  Additional substitutions may be provided using the</code>vars&rsquo; argument, which must be a dictionary whose contents overrides
+any pre-existing defaults.</p>
+<p>The section DEFAULT is special.</p>
+<h3 id="keys"><em>obj</em>.<strong>keys</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#keys" title="Permanent link">&para;</a></h3>
+<p>D.keys() -&gt; a set-like object providing a view on D&rsquo;s keys</p>
+<h3 id="options"><em>obj</em>.<strong>options</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span></code><a class="headerlink" href="#options" title="Permanent link">&para;</a></h3>
+<p>Return a list of option names for the given section name.</p>
+<h3 id="optionxform"><em>obj</em>.<strong>optionxform</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optionstr</span><span class="p">)</span></code><a class="headerlink" href="#optionxform" title="Permanent link">&para;</a></h3>
+<h3 id="pop"><em>obj</em>.<strong>pop</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604098</span><span class="o">&gt;</span><span class="p">)</span></code><a class="headerlink" href="#pop" title="Permanent link">&para;</a></h3>
+<p>D.pop(k[,d]) -&gt; v, remove specified key and return the corresponding value.
+If key is not found, d is returned if given, otherwise KeyError is raised.</p>
+<h3 id="popitem"><em>obj</em>.<strong>popitem</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#popitem" title="Permanent link">&para;</a></h3>
+<p>Remove a section from the parser and return it as
+a (section_name, section_proxy) tuple. If no section is present, raise
+KeyError.</p>
+<p>The section DEFAULT is never returned because it cannot be removed.</p>
+<h3 id="read"><em>obj</em>.<strong>read</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#read" title="Permanent link">&para;</a></h3>
+<p>Read and parse a filename or an iterable of filenames.</p>
+<p>Files that cannot be opened are silently ignored; this is
+designed so that you can specify an iterable of potential
+configuration file locations (e.g. current directory, user&rsquo;s
+home directory, systemwide directory), and all existing
+configuration files in the iterable will be read.  A single
+filename may also be given.</p>
+<p>Return list of successfully read files.</p>
+<h3 id="read_dict"><em>obj</em>.<strong>read_dict</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;&lt;dict&gt;&#39;</span><span class="p">)</span></code><a class="headerlink" href="#read_dict" title="Permanent link">&para;</a></h3>
+<p>Read configuration from a dictionary.</p>
+<p>Keys are section names, values are dictionaries with keys and values
+that should be present in the section. If the used dictionary type
+preserves order, sections and their keys will be added in order.</p>
+<p>All types held in the dictionary are converted to strings during
+reading, including section names, option names and keys.</p>
+<p>Optional second argument is the `source&rsquo; specifying the name of the
+dictionary being read.</p>
+<h3 id="read_file"><em>obj</em>.<strong>read_file</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#read_file" title="Permanent link">&para;</a></h3>
+<p>Like read() but the argument must be a file-like object.</p>
+<p>The <code>f' argument must be iterable, returning one line at a time.
+Optional second argument is the</code>source&rsquo; specifying the name of the
+file being read. If not given, it is taken from f.name. If <code>f' has no</code>name&rsquo; attribute, `&lt;???&gt;&rsquo; is used.</p>
+<h3 id="read_string"><em>obj</em>.<strong>read_string</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;&lt;string&gt;&#39;</span><span class="p">)</span></code><a class="headerlink" href="#read_string" title="Permanent link">&para;</a></h3>
+<p>Read configuration from a given string.</p>
+<h3 id="readfp"><em>obj</em>.<strong>readfp</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#readfp" title="Permanent link">&para;</a></h3>
+<p>Deprecated, use read_file instead.</p>
+<h3 id="remove_option"><em>obj</em>.<strong>remove_option</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">)</span></code><a class="headerlink" href="#remove_option" title="Permanent link">&para;</a></h3>
+<p>Remove an option.</p>
+<h3 id="remove_section"><em>obj</em>.<strong>remove_section</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span></code><a class="headerlink" href="#remove_section" title="Permanent link">&para;</a></h3>
+<p>Remove a file section.</p>
+<h3 id="sections"><em>obj</em>.<strong>sections</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#sections" title="Permanent link">&para;</a></h3>
+<p>Return a list of section names, excluding [DEFAULT]</p>
+<h3 id="set"><em>obj</em>.<strong>set</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#set" title="Permanent link">&para;</a></h3>
+<p>Set an option.</p>
+<h3 id="setdefault"><em>obj</em>.<strong>setdefault</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#setdefault" title="Permanent link">&para;</a></h3>
+<p>D.setdefault(k[,d]) -&gt; D.get(k,d), also set D[k]=d if k not in D</p>
+<h3 id="values"><em>obj</em>.<strong>values</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#values" title="Permanent link">&para;</a></h3>
+<p>D.values() -&gt; an object providing a view on D&rsquo;s values</p>
+<h3 id="write"><em>obj</em>.<strong>write</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">space_around_delimiters</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code><a class="headerlink" href="#write" title="Permanent link">&para;</a></h3>
+<p>Write an .ini-format representation of the configuration state.</p>
+<p>If `space_around_delimiters&rsquo; is True (the default), delimiters
+between keys and values are surrounded by spaces.</p>
+<h3 id="default_section"><em>obj</em>.<strong>default_section</strong> <em>undefined</em><a class="headerlink" href="#default_section" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="SafeConfigParser"><strong>SafeConfigParser</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#SafeConfigParser" title="Permanent link">&para;</a></h2>
+<p>ConfigParser alias for backwards compatibility purposes.</p>
+<p><strong>Class/Static Attributes:</strong> </p>
+<ul>
+<li><a href="#BOOLEAN_STATES"><code>BOOLEAN_STATES</code></a></li>
+<li><a href="#NONSPACECRE"><code>NONSPACECRE</code></a></li>
+<li><a href="#OPTCRE"><code>OPTCRE</code></a></li>
+<li><a href="#OPTCRE_NV"><code>OPTCRE_NV</code></a></li>
+<li><a href="#SECTCRE"><code>SECTCRE</code></a></li>
+<li><a href="#converters"><code>converters</code></a></li>
+</ul>
+<p><strong>Class/Static Methods:</strong> </p>
+<ul>
+<li><a href="#update"><code>update</code></a></li>
+</ul>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#add_section"><code>add_section</code></a></li>
+<li><a href="#clear"><code>clear</code></a></li>
+<li><a href="#defaults"><code>defaults</code></a></li>
+<li><a href="#get"><code>get</code></a></li>
+<li><a href="#getboolean"><code>getboolean</code></a></li>
+<li><a href="#getfloat"><code>getfloat</code></a></li>
+<li><a href="#getint"><code>getint</code></a></li>
+<li><a href="#has_option"><code>has_option</code></a></li>
+<li><a href="#has_section"><code>has_section</code></a></li>
+<li><a href="#items"><code>items</code></a></li>
+<li><a href="#keys"><code>keys</code></a></li>
+<li><a href="#options"><code>options</code></a></li>
+<li><a href="#optionxform"><code>optionxform</code></a></li>
+<li><a href="#pop"><code>pop</code></a></li>
+<li><a href="#popitem"><code>popitem</code></a></li>
+<li><a href="#read"><code>read</code></a></li>
+<li><a href="#read_dict"><code>read_dict</code></a></li>
+<li><a href="#read_file"><code>read_file</code></a></li>
+<li><a href="#read_string"><code>read_string</code></a></li>
+<li><a href="#readfp"><code>readfp</code></a></li>
+<li><a href="#remove_option"><code>remove_option</code></a></li>
+<li><a href="#remove_section"><code>remove_section</code></a></li>
+<li><a href="#sections"><code>sections</code></a></li>
+<li><a href="#set"><code>set</code></a></li>
+<li><a href="#setdefault"><code>setdefault</code></a></li>
+<li><a href="#values"><code>values</code></a></li>
+<li><a href="#write"><code>write</code></a></li>
+</ul>
+<h3 id="BOOLEAN_STATES"><em>SafeConfigParser</em>.<strong>BOOLEAN_STATES</strong> <em>class &lsquo;dict&rsquo;</em><a class="headerlink" href="#BOOLEAN_STATES" title="Permanent link">&para;</a></h3>
+<h3 id="NONSPACECRE"><em>SafeConfigParser</em>.<strong>NONSPACECRE</strong> <em>class &lsquo;re.Pattern&rsquo;</em><a class="headerlink" href="#NONSPACECRE" title="Permanent link">&para;</a></h3>
+<h3 id="OPTCRE"><em>SafeConfigParser</em>.<strong>OPTCRE</strong> <em>class &lsquo;re.Pattern&rsquo;</em><a class="headerlink" href="#OPTCRE" title="Permanent link">&para;</a></h3>
+<h3 id="OPTCRE_NV"><em>SafeConfigParser</em>.<strong>OPTCRE_NV</strong> <em>class &lsquo;re.Pattern&rsquo;</em><a class="headerlink" href="#OPTCRE_NV" title="Permanent link">&para;</a></h3>
+<h3 id="SECTCRE"><em>SafeConfigParser</em>.<strong>SECTCRE</strong> <em>class &lsquo;re.Pattern&rsquo;</em><a class="headerlink" href="#SECTCRE" title="Permanent link">&para;</a></h3>
+<h3 id="converters"><em>SafeConfigParser</em>.<strong>converters</strong> <em>class &lsquo;property&rsquo;</em><a class="headerlink" href="#converters" title="Permanent link">&para;</a></h3>
+<h3 id="update"><em>SafeConfigParser</em>.<strong>update</strong><code class="highlight"><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span></code><a class="headerlink" href="#update" title="Permanent link">&para;</a></h3>
+<p>D.update([E, ]**F) -&gt; None.  Update D from mapping/iterable E and F.
+If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
+If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
+In either case, this is followed by: for k, v in F.items(): D[k] = v</p>
+<h3 id="add_section"><em>obj</em>.<strong>add_section</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span></code><a class="headerlink" href="#add_section" title="Permanent link">&para;</a></h3>
+<p>Create a new section in the configuration.  Extends
+RawConfigParser.add_section by validating if the section name is
+a string.</p>
+<h3 id="clear"><em>obj</em>.<strong>clear</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#clear" title="Permanent link">&para;</a></h3>
+<p>D.clear() -&gt; None.  Remove all items from D.</p>
+<h3 id="defaults"><em>obj</em>.<strong>defaults</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#defaults" title="Permanent link">&para;</a></h3>
+<h3 id="get"><em>obj</em>.<strong>get</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604900</span><span class="o">&gt;</span><span class="p">)</span></code><a class="headerlink" href="#get" title="Permanent link">&para;</a></h3>
+<p>Get an option value for a given section.</p>
+<p>If <code>vars' is provided, it must be a dictionary. The option is looked up
+in</code>vars&rsquo; (if provided), <code>section', and in</code>DEFAULTSECT&rsquo; in that order.
+If the key is not found and <code>fallback' is provided, it is used as
+a fallback value.</code>None&rsquo; can be provided as a `fallback&rsquo; value.</p>
+<p>If interpolation is enabled and the optional argument `raw&rsquo; is False,
+all interpolations are expanded in the return values.</p>
+<p>Arguments <code>raw',</code>vars&rsquo;, and `fallback&rsquo; are keyword only.</p>
+<p>The section DEFAULT is special.</p>
+<h3 id="getboolean"><em>obj</em>.<strong>getboolean</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604900</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code><a class="headerlink" href="#getboolean" title="Permanent link">&para;</a></h3>
+<h3 id="getfloat"><em>obj</em>.<strong>getfloat</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604900</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code><a class="headerlink" href="#getfloat" title="Permanent link">&para;</a></h3>
+<h3 id="getint"><em>obj</em>.<strong>getint</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604900</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code><a class="headerlink" href="#getint" title="Permanent link">&para;</a></h3>
+<h3 id="has_option"><em>obj</em>.<strong>has_option</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">)</span></code><a class="headerlink" href="#has_option" title="Permanent link">&para;</a></h3>
+<p>Check for the existence of a given option in a given section.
+If the specified <code>section' is None or an empty string, DEFAULT is
+assumed. If the specified</code>section&rsquo; does not exist, returns False.</p>
+<h3 id="has_section"><em>obj</em>.<strong>has_section</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span></code><a class="headerlink" href="#has_section" title="Permanent link">&para;</a></h3>
+<p>Indicate whether the named section is present in the configuration.</p>
+<p>The DEFAULT section is not acknowledged.</p>
+<h3 id="items"><em>obj</em>.<strong>items</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604900</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#items" title="Permanent link">&para;</a></h3>
+<p>Return a list of (name, value) tuples for each option in a section.</p>
+<p>All % interpolations are expanded in the return values, based on the
+defaults passed into the constructor, unless the optional argument
+<code>raw' is true.  Additional substitutions may be provided using the</code>vars&rsquo; argument, which must be a dictionary whose contents overrides
+any pre-existing defaults.</p>
+<p>The section DEFAULT is special.</p>
+<h3 id="keys"><em>obj</em>.<strong>keys</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#keys" title="Permanent link">&para;</a></h3>
+<p>D.keys() -&gt; a set-like object providing a view on D&rsquo;s keys</p>
+<h3 id="options"><em>obj</em>.<strong>options</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span></code><a class="headerlink" href="#options" title="Permanent link">&para;</a></h3>
+<p>Return a list of option names for the given section name.</p>
+<h3 id="optionxform"><em>obj</em>.<strong>optionxform</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optionstr</span><span class="p">)</span></code><a class="headerlink" href="#optionxform" title="Permanent link">&para;</a></h3>
+<h3 id="pop"><em>obj</em>.<strong>pop</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=&lt;</span><span class="nb">object</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x01604098</span><span class="o">&gt;</span><span class="p">)</span></code><a class="headerlink" href="#pop" title="Permanent link">&para;</a></h3>
+<p>D.pop(k[,d]) -&gt; v, remove specified key and return the corresponding value.
+If key is not found, d is returned if given, otherwise KeyError is raised.</p>
+<h3 id="popitem"><em>obj</em>.<strong>popitem</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#popitem" title="Permanent link">&para;</a></h3>
+<p>Remove a section from the parser and return it as
+a (section_name, section_proxy) tuple. If no section is present, raise
+KeyError.</p>
+<p>The section DEFAULT is never returned because it cannot be removed.</p>
+<h3 id="read"><em>obj</em>.<strong>read</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#read" title="Permanent link">&para;</a></h3>
+<p>Read and parse a filename or an iterable of filenames.</p>
+<p>Files that cannot be opened are silently ignored; this is
+designed so that you can specify an iterable of potential
+configuration file locations (e.g. current directory, user&rsquo;s
+home directory, systemwide directory), and all existing
+configuration files in the iterable will be read.  A single
+filename may also be given.</p>
+<p>Return list of successfully read files.</p>
+<h3 id="read_dict"><em>obj</em>.<strong>read_dict</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;&lt;dict&gt;&#39;</span><span class="p">)</span></code><a class="headerlink" href="#read_dict" title="Permanent link">&para;</a></h3>
+<p>Read configuration from a dictionary.</p>
+<p>Keys are section names, values are dictionaries with keys and values
+that should be present in the section. If the used dictionary type
+preserves order, sections and their keys will be added in order.</p>
+<p>All types held in the dictionary are converted to strings during
+reading, including section names, option names and keys.</p>
+<p>Optional second argument is the `source&rsquo; specifying the name of the
+dictionary being read.</p>
+<h3 id="read_file"><em>obj</em>.<strong>read_file</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#read_file" title="Permanent link">&para;</a></h3>
+<p>Like read() but the argument must be a file-like object.</p>
+<p>The <code>f' argument must be iterable, returning one line at a time.
+Optional second argument is the</code>source&rsquo; specifying the name of the
+file being read. If not given, it is taken from f.name. If <code>f' has no</code>name&rsquo; attribute, `&lt;???&gt;&rsquo; is used.</p>
+<h3 id="read_string"><em>obj</em>.<strong>read_string</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;&lt;string&gt;&#39;</span><span class="p">)</span></code><a class="headerlink" href="#read_string" title="Permanent link">&para;</a></h3>
+<p>Read configuration from a given string.</p>
+<h3 id="readfp"><em>obj</em>.<strong>readfp</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#readfp" title="Permanent link">&para;</a></h3>
+<p>Deprecated, use read_file instead.</p>
+<h3 id="remove_option"><em>obj</em>.<strong>remove_option</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">)</span></code><a class="headerlink" href="#remove_option" title="Permanent link">&para;</a></h3>
+<p>Remove an option.</p>
+<h3 id="remove_section"><em>obj</em>.<strong>remove_section</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span></code><a class="headerlink" href="#remove_section" title="Permanent link">&para;</a></h3>
+<p>Remove a file section.</p>
+<h3 id="sections"><em>obj</em>.<strong>sections</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#sections" title="Permanent link">&para;</a></h3>
+<p>Return a list of section names, excluding [DEFAULT]</p>
+<h3 id="set"><em>obj</em>.<strong>set</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#set" title="Permanent link">&para;</a></h3>
+<p>Set an option.  Extends RawConfigParser.set by validating type and
+interpolation syntax on the value.</p>
+<h3 id="setdefault"><em>obj</em>.<strong>setdefault</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#setdefault" title="Permanent link">&para;</a></h3>
+<p>D.setdefault(k[,d]) -&gt; D.get(k,d), also set D[k]=d if k not in D</p>
+<h3 id="values"><em>obj</em>.<strong>values</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#values" title="Permanent link">&para;</a></h3>
+<p>D.values() -&gt; an object providing a view on D&rsquo;s values</p>
+<h3 id="write"><em>obj</em>.<strong>write</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">space_around_delimiters</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code><a class="headerlink" href="#write" title="Permanent link">&para;</a></h3>
+<p>Write an .ini-format representation of the configuration state.</p>
+<p>If `space_around_delimiters&rsquo; is True (the default), delimiters
+between keys and values are surrounded by spaces.</p>
+<hr />
+<h2 id="WindowsExeVersionInfo"><strong>WindowsExeVersionInfo</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#WindowsExeVersionInfo" title="Permanent link">&para;</a></h2>
+<p><strong>Class/Static Methods:</strong> </p>
+<ul>
+<li><a href="#defaultPath"><code>defaultPath</code></a></li>
+</ul>
+<p><strong>Instance Methods:</strong> </p>
+<ul>
+<li><a href="#copyright"><code>copyright</code></a></li>
+<li><a href="#debug"><code>debug</code></a></li>
+<li><a href="#fromLines"><code>fromLines</code></a></li>
+<li><a href="#injectLine"><code>injectLine</code></a></li>
+<li><a href="#internalName"><code>internalName</code></a></li>
+<li><a href="#path"><code>path</code></a></li>
+<li><a href="#read"><code>read</code></a></li>
+<li><a href="#remove"><code>remove</code></a></li>
+<li><a href="#toLines"><code>toLines</code></a></li>
+<li><a href="#version"><code>version</code></a></li>
+<li><a href="#write"><code>write</code></a></li>
+</ul>
+<p><strong>Instance Attributes:</strong> </p>
+<ul>
+<li><a href="#major"><code>major</code></a></li>
+<li><a href="#minor"><code>minor</code></a></li>
+<li><a href="#micro"><code>micro</code></a></li>
+<li><a href="#build"><code>build</code></a></li>
+<li><a href="#companyName"><code>companyName</code></a></li>
+<li><a href="#productName"><code>productName</code></a></li>
+<li><a href="#description"><code>description</code></a></li>
+<li><a href="#exeName"><code>exeName</code></a></li>
+</ul>
+<h3 id="defaultPath"><em>WindowsExeVersionInfo</em>.<strong>defaultPath</strong><code class="highlight"><span class="p">()</span></code><a class="headerlink" href="#defaultPath" title="Permanent link">&para;</a></h3>
+<h3 id="copyright"><em>obj</em>.<strong>copyright</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#copyright" title="Permanent link">&para;</a></h3>
+<h3 id="debug"><em>obj</em>.<strong>debug</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#debug" title="Permanent link">&para;</a></h3>
+<h3 id="fromLines"><em>obj</em>.<strong>fromLines</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">)</span></code><a class="headerlink" href="#fromLines" title="Permanent link">&para;</a></h3>
+<h3 id="injectLine"><em>obj</em>.<strong>injectLine</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">injection</span><span class="p">,</span> <span class="n">lineNo</span><span class="p">)</span></code><a class="headerlink" href="#injectLine" title="Permanent link">&para;</a></h3>
+<h3 id="internalName"><em>obj</em>.<strong>internalName</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#internalName" title="Permanent link">&para;</a></h3>
+<h3 id="path"><em>obj</em>.<strong>path</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#path" title="Permanent link">&para;</a></h3>
+<h3 id="read"><em>obj</em>.<strong>read</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#read" title="Permanent link">&para;</a></h3>
+<h3 id="remove"><em>obj</em>.<strong>remove</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#remove" title="Permanent link">&para;</a></h3>
+<h3 id="toLines"><em>obj</em>.<strong>toLines</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#toLines" title="Permanent link">&para;</a></h3>
+<h3 id="version"><em>obj</em>.<strong>version</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isCommaDelim</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code><a class="headerlink" href="#version" title="Permanent link">&para;</a></h3>
+<h3 id="write"><em>obj</em>.<strong>write</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#write" title="Permanent link">&para;</a></h3>
+<h3 id="major"><em>obj</em>.<strong>major</strong> <em>undefined</em><a class="headerlink" href="#major" title="Permanent link">&para;</a></h3>
+<h3 id="minor"><em>obj</em>.<strong>minor</strong> <em>undefined</em><a class="headerlink" href="#minor" title="Permanent link">&para;</a></h3>
+<h3 id="micro"><em>obj</em>.<strong>micro</strong> <em>undefined</em><a class="headerlink" href="#micro" title="Permanent link">&para;</a></h3>
+<h3 id="build"><em>obj</em>.<strong>build</strong> <em>undefined</em><a class="headerlink" href="#build" title="Permanent link">&para;</a></h3>
+<h3 id="companyName"><em>obj</em>.<strong>companyName</strong> <em>undefined</em><a class="headerlink" href="#companyName" title="Permanent link">&para;</a></h3>
+<h3 id="productName"><em>obj</em>.<strong>productName</strong> <em>undefined</em><a class="headerlink" href="#productName" title="Permanent link">&para;</a></h3>
+<h3 id="description"><em>obj</em>.<strong>description</strong> <em>undefined</em><a class="headerlink" href="#description" title="Permanent link">&para;</a></h3>
+<h3 id="exeName"><em>obj</em>.<strong>exeName</strong> <em>undefined</em><a class="headerlink" href="#exeName" title="Permanent link">&para;</a></h3>
+<hr />
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="Logging.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Logging" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Logging
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="Utility%20Functions.html" class="md-footer__link md-footer__link--next" aria-label="Next: Utility Functions" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Utility Functions
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
+      
+    
+  </body>
+</html>

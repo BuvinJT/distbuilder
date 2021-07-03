@@ -3,3 +3,4 @@
 /.settings
 *.pyc
 *.log
+/distbuilder/util_res/windows

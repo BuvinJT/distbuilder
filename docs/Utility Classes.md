@@ -1,0 +1,837 @@
+## **ConfigParser**`#!py3 class` { #ConfigParser data-toc-label=ConfigParser }
+
+ConfigParser implementing interpolation.
+
+**Class/Static Attributes:** 
+
+ - [`BOOLEAN_STATES`](#BOOLEAN_STATES)
+ - [`NONSPACECRE`](#NONSPACECRE)
+ - [`OPTCRE`](#OPTCRE)
+ - [`OPTCRE_NV`](#OPTCRE_NV)
+ - [`SECTCRE`](#SECTCRE)
+ - [`converters`](#converters)
+
+**Class/Static Methods:** 
+
+ - [`update`](#update)
+
+**Instance Methods:** 
+
+ - [`add_section`](#add_section)
+ - [`clear`](#clear)
+ - [`defaults`](#defaults)
+ - [`get`](#get)
+ - [`getboolean`](#getboolean)
+ - [`getfloat`](#getfloat)
+ - [`getint`](#getint)
+ - [`has_option`](#has_option)
+ - [`has_section`](#has_section)
+ - [`items`](#items)
+ - [`keys`](#keys)
+ - [`options`](#options)
+ - [`optionxform`](#optionxform)
+ - [`pop`](#pop)
+ - [`popitem`](#popitem)
+ - [`read`](#read)
+ - [`read_dict`](#read_dict)
+ - [`read_file`](#read_file)
+ - [`read_string`](#read_string)
+ - [`readfp`](#readfp)
+ - [`remove_option`](#remove_option)
+ - [`remove_section`](#remove_section)
+ - [`sections`](#sections)
+ - [`set`](#set)
+ - [`setdefault`](#setdefault)
+ - [`values`](#values)
+ - [`write`](#write)
+
+### *ConfigParser*.**BOOLEAN_STATES** *class 'dict'* { #BOOLEAN_STATES data-toc-label=BOOLEAN_STATES }
+
+### *ConfigParser*.**NONSPACECRE** *class 're.Pattern'* { #NONSPACECRE data-toc-label=NONSPACECRE }
+
+### *ConfigParser*.**OPTCRE** *class 're.Pattern'* { #OPTCRE data-toc-label=OPTCRE }
+
+### *ConfigParser*.**OPTCRE_NV** *class 're.Pattern'* { #OPTCRE_NV data-toc-label=OPTCRE_NV }
+
+### *ConfigParser*.**SECTCRE** *class 're.Pattern'* { #SECTCRE data-toc-label=SECTCRE }
+
+### *ConfigParser*.**converters** *class 'property'* { #converters data-toc-label=converters }
+
+### *ConfigParser*.**update**`#!py3 (*args, **kwds)` { #update data-toc-label=update }
+
+D.update([E, ]**F) -> None.  Update D from mapping/iterable E and F.
+If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
+If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
+In either case, this is followed by: for k, v in F.items(): D[k] = v
+### *obj*.**add_section**`#!py3 (self, section)` { #add_section data-toc-label=add_section }
+
+Create a new section in the configuration.  Extends
+RawConfigParser.add_section by validating if the section name is
+a string.
+### *obj*.**clear**`#!py3 (self)` { #clear data-toc-label=clear }
+
+D.clear() -> None.  Remove all items from D.
+### *obj*.**defaults**`#!py3 (self)` { #defaults data-toc-label=defaults }
+
+
+### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>)` { #get data-toc-label=get }
+
+Get an option value for a given section.
+
+If `vars' is provided, it must be a dictionary. The option is looked up
+in `vars' (if provided), `section', and in `DEFAULTSECT' in that order.
+If the key is not found and `fallback' is provided, it is used as
+a fallback value. `None' can be provided as a `fallback' value.
+
+If interpolation is enabled and the optional argument `raw' is False,
+all interpolations are expanded in the return values.
+
+Arguments `raw', `vars', and `fallback' are keyword only.
+
+The section DEFAULT is special.
+### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getboolean data-toc-label=getboolean }
+
+
+### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getfloat data-toc-label=getfloat }
+
+
+### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getint data-toc-label=getint }
+
+
+### *obj*.**has_option**`#!py3 (self, section, option)` { #has_option data-toc-label=has_option }
+
+Check for the existence of a given option in a given section.
+If the specified `section' is None or an empty string, DEFAULT is
+assumed. If the specified `section' does not exist, returns False.
+### *obj*.**has_section**`#!py3 (self, section)` { #has_section data-toc-label=has_section }
+
+Indicate whether the named section is present in the configuration.
+
+The DEFAULT section is not acknowledged.
+### *obj*.**items**`#!py3 (self, section=<object object at 0x01604900>, raw=False, vars=None)` { #items data-toc-label=items }
+
+Return a list of (name, value) tuples for each option in a section.
+
+All % interpolations are expanded in the return values, based on the
+defaults passed into the constructor, unless the optional argument
+`raw' is true.  Additional substitutions may be provided using the
+`vars' argument, which must be a dictionary whose contents overrides
+any pre-existing defaults.
+
+The section DEFAULT is special.
+### *obj*.**keys**`#!py3 (self)` { #keys data-toc-label=keys }
+
+D.keys() -> a set-like object providing a view on D's keys
+### *obj*.**options**`#!py3 (self, section)` { #options data-toc-label=options }
+
+Return a list of option names for the given section name.
+### *obj*.**optionxform**`#!py3 (self, optionstr)` { #optionxform data-toc-label=optionxform }
+
+
+### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01604098>)` { #pop data-toc-label=pop }
+
+D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
+If key is not found, d is returned if given, otherwise KeyError is raised.
+### *obj*.**popitem**`#!py3 (self)` { #popitem data-toc-label=popitem }
+
+Remove a section from the parser and return it as
+a (section_name, section_proxy) tuple. If no section is present, raise
+KeyError.
+
+The section DEFAULT is never returned because it cannot be removed.
+### *obj*.**read**`#!py3 (self, filenames, encoding=None)` { #read data-toc-label=read }
+
+Read and parse a filename or an iterable of filenames.
+
+Files that cannot be opened are silently ignored; this is
+designed so that you can specify an iterable of potential
+configuration file locations (e.g. current directory, user's
+home directory, systemwide directory), and all existing
+configuration files in the iterable will be read.  A single
+filename may also be given.
+
+Return list of successfully read files.
+### *obj*.**read_dict**`#!py3 (self, dictionary, source='<dict>')` { #read_dict data-toc-label=read_dict }
+
+Read configuration from a dictionary.
+
+Keys are section names, values are dictionaries with keys and values
+that should be present in the section. If the used dictionary type
+preserves order, sections and their keys will be added in order.
+
+All types held in the dictionary are converted to strings during
+reading, including section names, option names and keys.
+
+Optional second argument is the `source' specifying the name of the
+dictionary being read.
+### *obj*.**read_file**`#!py3 (self, f, source=None)` { #read_file data-toc-label=read_file }
+
+Like read() but the argument must be a file-like object.
+
+The `f' argument must be iterable, returning one line at a time.
+Optional second argument is the `source' specifying the name of the
+file being read. If not given, it is taken from f.name. If `f' has no
+`name' attribute, `<???>' is used.
+### *obj*.**read_string**`#!py3 (self, string, source='<string>')` { #read_string data-toc-label=read_string }
+
+Read configuration from a given string.
+### *obj*.**readfp**`#!py3 (self, fp, filename=None)` { #readfp data-toc-label=readfp }
+
+Deprecated, use read_file instead.
+### *obj*.**remove_option**`#!py3 (self, section, option)` { #remove_option data-toc-label=remove_option }
+
+Remove an option.
+### *obj*.**remove_section**`#!py3 (self, section)` { #remove_section data-toc-label=remove_section }
+
+Remove a file section.
+### *obj*.**sections**`#!py3 (self)` { #sections data-toc-label=sections }
+
+Return a list of section names, excluding [DEFAULT]
+### *obj*.**set**`#!py3 (self, section, option, value=None)` { #set data-toc-label=set }
+
+Set an option.  Extends RawConfigParser.set by validating type and
+interpolation syntax on the value.
+### *obj*.**setdefault**`#!py3 (self, key, default=None)` { #setdefault data-toc-label=setdefault }
+
+D.setdefault(k[,d]) -> D.get(k,d), also set D[k]=d if k not in D
+### *obj*.**values**`#!py3 (self)` { #values data-toc-label=values }
+
+D.values() -> an object providing a view on D's values
+### *obj*.**write**`#!py3 (self, fp, space_around_delimiters=True)` { #write data-toc-label=write }
+
+Write an .ini-format representation of the configuration state.
+
+If `space_around_delimiters' is True (the default), delimiters
+between keys and values are surrounded by spaces.
+
+______
+
+## **ExecutableScript**`#!py3 class` { #ExecutableScript data-toc-label=ExecutableScript }
+
+
+
+**Class/Static Attributes:** 
+
+ - [`APPLESCRIPT_EXT`](#APPLESCRIPT_EXT)
+ - [`BATCH_EXT`](#BATCH_EXT)
+ - [`JSCRIPT_EXT`](#JSCRIPT_EXT)
+ - [`POWERSHELL_EXT`](#POWERSHELL_EXT)
+ - [`SHELL_EXT`](#SHELL_EXT)
+ - [`SUPPORTED_EXTS`](#SUPPORTED_EXTS)
+ - [`VBSCRIPT_EXT`](#VBSCRIPT_EXT)
+
+**Class/Static Methods:** 
+
+ - [`linesToStr`](#linesToStr)
+ - [`strToLines`](#strToLines)
+ - [`typeOf`](#typeOf)
+
+**Instance Methods:** 
+
+ - [`asSnippet`](#asSnippet)
+ - [`debug`](#debug)
+ - [`exists`](#exists)
+ - [`fileName`](#fileName)
+ - [`filePath`](#filePath)
+ - [`fromBase64`](#fromBase64)
+ - [`fromLines`](#fromLines)
+ - [`injectLine`](#injectLine)
+ - [`read`](#read)
+ - [`remove`](#remove)
+ - [`toBase64`](#toBase64)
+ - [`toLines`](#toLines)
+ - [`write`](#write)
+
+**Instance Attributes:** 
+
+ - [`rootName`](#rootName)
+ - [`scriptDirPath`](#scriptDirPath)
+ - [`replacements`](#replacements)
+ - [`isIfwVarEscapeBackslash`](#isIfwVarEscapeBackslash)
+ - [`isDebug`](#isDebug)
+
+### *ExecutableScript*.**APPLESCRIPT_EXT** *class 'str'* { #APPLESCRIPT_EXT data-toc-label=APPLESCRIPT_EXT }
+
+### *ExecutableScript*.**BATCH_EXT** *class 'str'* { #BATCH_EXT data-toc-label=BATCH_EXT }
+
+### *ExecutableScript*.**JSCRIPT_EXT** *class 'str'* { #JSCRIPT_EXT data-toc-label=JSCRIPT_EXT }
+
+### *ExecutableScript*.**POWERSHELL_EXT** *class 'str'* { #POWERSHELL_EXT data-toc-label=POWERSHELL_EXT }
+
+### *ExecutableScript*.**SHELL_EXT** *class 'str'* { #SHELL_EXT data-toc-label=SHELL_EXT }
+
+### *ExecutableScript*.**SUPPORTED_EXTS** *class 'list'* { #SUPPORTED_EXTS data-toc-label=SUPPORTED_EXTS }
+
+### *ExecutableScript*.**VBSCRIPT_EXT** *class 'str'* { #VBSCRIPT_EXT data-toc-label=VBSCRIPT_EXT }
+
+### *ExecutableScript*.**linesToStr**`#!py3 (lines)` { #linesToStr data-toc-label=linesToStr }
+
+
+### *ExecutableScript*.**strToLines**`#!py3 (s)` { #strToLines data-toc-label=strToLines }
+
+
+### *ExecutableScript*.**typeOf**`#!py3 (path)` { #typeOf data-toc-label=typeOf }
+
+
+### *obj*.**asSnippet**`#!py3 (self)` { #asSnippet data-toc-label=asSnippet }
+
+
+### *obj*.**debug**`#!py3 (self)` { #debug data-toc-label=debug }
+
+
+### *obj*.**exists**`#!py3 (self, scriptDirPath=None)` { #exists data-toc-label=exists }
+
+
+### *obj*.**fileName**`#!py3 (self)` { #fileName data-toc-label=fileName }
+
+
+### *obj*.**filePath**`#!py3 (self)` { #filePath data-toc-label=filePath }
+
+
+### *obj*.**fromBase64**`#!py3 (self, data)` { #fromBase64 data-toc-label=fromBase64 }
+
+
+### *obj*.**fromLines**`#!py3 (self, lines)` { #fromLines data-toc-label=fromLines }
+
+
+### *obj*.**injectLine**`#!py3 (self, injection, lineNo)` { #injectLine data-toc-label=injectLine }
+
+
+### *obj*.**read**`#!py3 (self, scriptDirPath=None)` { #read data-toc-label=read }
+
+
+### *obj*.**remove**`#!py3 (self, scriptDirPath=None)` { #remove data-toc-label=remove }
+
+
+### *obj*.**toBase64**`#!py3 (self, toString=False)` { #toBase64 data-toc-label=toBase64 }
+
+
+### *obj*.**toLines**`#!py3 (self)` { #toLines data-toc-label=toLines }
+
+
+### *obj*.**write**`#!py3 (self, scriptDirPath=None)` { #write data-toc-label=write }
+
+
+### *obj*.**rootName** *undefined* { #rootName data-toc-label=rootName }
+
+### *obj*.**scriptDirPath** *undefined* { #scriptDirPath data-toc-label=scriptDirPath }
+
+### *obj*.**replacements** *undefined* { #replacements data-toc-label=replacements }
+
+### *obj*.**isIfwVarEscapeBackslash** *undefined* { #isIfwVarEscapeBackslash data-toc-label=isIfwVarEscapeBackslash }
+
+### *obj*.**isDebug** *undefined* { #isDebug data-toc-label=isDebug }
+
+
+______
+
+## **RawConfigParser**`#!py3 class` { #RawConfigParser data-toc-label=RawConfigParser }
+
+ConfigParser that does not do interpolation.
+
+**Class/Static Attributes:** 
+
+ - [`BOOLEAN_STATES`](#BOOLEAN_STATES)
+ - [`NONSPACECRE`](#NONSPACECRE)
+ - [`OPTCRE`](#OPTCRE)
+ - [`OPTCRE_NV`](#OPTCRE_NV)
+ - [`SECTCRE`](#SECTCRE)
+ - [`converters`](#converters)
+
+**Class/Static Methods:** 
+
+ - [`update`](#update)
+
+**Instance Methods:** 
+
+ - [`add_section`](#add_section)
+ - [`clear`](#clear)
+ - [`defaults`](#defaults)
+ - [`get`](#get)
+ - [`getboolean`](#getboolean)
+ - [`getfloat`](#getfloat)
+ - [`getint`](#getint)
+ - [`has_option`](#has_option)
+ - [`has_section`](#has_section)
+ - [`items`](#items)
+ - [`keys`](#keys)
+ - [`options`](#options)
+ - [`optionxform`](#optionxform)
+ - [`pop`](#pop)
+ - [`popitem`](#popitem)
+ - [`read`](#read)
+ - [`read_dict`](#read_dict)
+ - [`read_file`](#read_file)
+ - [`read_string`](#read_string)
+ - [`readfp`](#readfp)
+ - [`remove_option`](#remove_option)
+ - [`remove_section`](#remove_section)
+ - [`sections`](#sections)
+ - [`set`](#set)
+ - [`setdefault`](#setdefault)
+ - [`values`](#values)
+ - [`write`](#write)
+
+**Instance Attributes:** 
+
+ - [`default_section`](#default_section)
+
+### *RawConfigParser*.**BOOLEAN_STATES** *class 'dict'* { #BOOLEAN_STATES data-toc-label=BOOLEAN_STATES }
+
+### *RawConfigParser*.**NONSPACECRE** *class 're.Pattern'* { #NONSPACECRE data-toc-label=NONSPACECRE }
+
+### *RawConfigParser*.**OPTCRE** *class 're.Pattern'* { #OPTCRE data-toc-label=OPTCRE }
+
+### *RawConfigParser*.**OPTCRE_NV** *class 're.Pattern'* { #OPTCRE_NV data-toc-label=OPTCRE_NV }
+
+### *RawConfigParser*.**SECTCRE** *class 're.Pattern'* { #SECTCRE data-toc-label=SECTCRE }
+
+### *RawConfigParser*.**converters** *class 'property'* { #converters data-toc-label=converters }
+
+### *RawConfigParser*.**update**`#!py3 (*args, **kwds)` { #update data-toc-label=update }
+
+D.update([E, ]**F) -> None.  Update D from mapping/iterable E and F.
+If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
+If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
+In either case, this is followed by: for k, v in F.items(): D[k] = v
+### *obj*.**add_section**`#!py3 (self, section)` { #add_section data-toc-label=add_section }
+
+Create a new section in the configuration.
+
+Raise DuplicateSectionError if a section by the specified name
+already exists. Raise ValueError if name is DEFAULT.
+### *obj*.**clear**`#!py3 (self)` { #clear data-toc-label=clear }
+
+D.clear() -> None.  Remove all items from D.
+### *obj*.**defaults**`#!py3 (self)` { #defaults data-toc-label=defaults }
+
+
+### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>)` { #get data-toc-label=get }
+
+Get an option value for a given section.
+
+If `vars' is provided, it must be a dictionary. The option is looked up
+in `vars' (if provided), `section', and in `DEFAULTSECT' in that order.
+If the key is not found and `fallback' is provided, it is used as
+a fallback value. `None' can be provided as a `fallback' value.
+
+If interpolation is enabled and the optional argument `raw' is False,
+all interpolations are expanded in the return values.
+
+Arguments `raw', `vars', and `fallback' are keyword only.
+
+The section DEFAULT is special.
+### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getboolean data-toc-label=getboolean }
+
+
+### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getfloat data-toc-label=getfloat }
+
+
+### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getint data-toc-label=getint }
+
+
+### *obj*.**has_option**`#!py3 (self, section, option)` { #has_option data-toc-label=has_option }
+
+Check for the existence of a given option in a given section.
+If the specified `section' is None or an empty string, DEFAULT is
+assumed. If the specified `section' does not exist, returns False.
+### *obj*.**has_section**`#!py3 (self, section)` { #has_section data-toc-label=has_section }
+
+Indicate whether the named section is present in the configuration.
+
+The DEFAULT section is not acknowledged.
+### *obj*.**items**`#!py3 (self, section=<object object at 0x01604900>, raw=False, vars=None)` { #items data-toc-label=items }
+
+Return a list of (name, value) tuples for each option in a section.
+
+All % interpolations are expanded in the return values, based on the
+defaults passed into the constructor, unless the optional argument
+`raw' is true.  Additional substitutions may be provided using the
+`vars' argument, which must be a dictionary whose contents overrides
+any pre-existing defaults.
+
+The section DEFAULT is special.
+### *obj*.**keys**`#!py3 (self)` { #keys data-toc-label=keys }
+
+D.keys() -> a set-like object providing a view on D's keys
+### *obj*.**options**`#!py3 (self, section)` { #options data-toc-label=options }
+
+Return a list of option names for the given section name.
+### *obj*.**optionxform**`#!py3 (self, optionstr)` { #optionxform data-toc-label=optionxform }
+
+
+### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01604098>)` { #pop data-toc-label=pop }
+
+D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
+If key is not found, d is returned if given, otherwise KeyError is raised.
+### *obj*.**popitem**`#!py3 (self)` { #popitem data-toc-label=popitem }
+
+Remove a section from the parser and return it as
+a (section_name, section_proxy) tuple. If no section is present, raise
+KeyError.
+
+The section DEFAULT is never returned because it cannot be removed.
+### *obj*.**read**`#!py3 (self, filenames, encoding=None)` { #read data-toc-label=read }
+
+Read and parse a filename or an iterable of filenames.
+
+Files that cannot be opened are silently ignored; this is
+designed so that you can specify an iterable of potential
+configuration file locations (e.g. current directory, user's
+home directory, systemwide directory), and all existing
+configuration files in the iterable will be read.  A single
+filename may also be given.
+
+Return list of successfully read files.
+### *obj*.**read_dict**`#!py3 (self, dictionary, source='<dict>')` { #read_dict data-toc-label=read_dict }
+
+Read configuration from a dictionary.
+
+Keys are section names, values are dictionaries with keys and values
+that should be present in the section. If the used dictionary type
+preserves order, sections and their keys will be added in order.
+
+All types held in the dictionary are converted to strings during
+reading, including section names, option names and keys.
+
+Optional second argument is the `source' specifying the name of the
+dictionary being read.
+### *obj*.**read_file**`#!py3 (self, f, source=None)` { #read_file data-toc-label=read_file }
+
+Like read() but the argument must be a file-like object.
+
+The `f' argument must be iterable, returning one line at a time.
+Optional second argument is the `source' specifying the name of the
+file being read. If not given, it is taken from f.name. If `f' has no
+`name' attribute, `<???>' is used.
+### *obj*.**read_string**`#!py3 (self, string, source='<string>')` { #read_string data-toc-label=read_string }
+
+Read configuration from a given string.
+### *obj*.**readfp**`#!py3 (self, fp, filename=None)` { #readfp data-toc-label=readfp }
+
+Deprecated, use read_file instead.
+### *obj*.**remove_option**`#!py3 (self, section, option)` { #remove_option data-toc-label=remove_option }
+
+Remove an option.
+### *obj*.**remove_section**`#!py3 (self, section)` { #remove_section data-toc-label=remove_section }
+
+Remove a file section.
+### *obj*.**sections**`#!py3 (self)` { #sections data-toc-label=sections }
+
+Return a list of section names, excluding [DEFAULT]
+### *obj*.**set**`#!py3 (self, section, option, value=None)` { #set data-toc-label=set }
+
+Set an option.
+### *obj*.**setdefault**`#!py3 (self, key, default=None)` { #setdefault data-toc-label=setdefault }
+
+D.setdefault(k[,d]) -> D.get(k,d), also set D[k]=d if k not in D
+### *obj*.**values**`#!py3 (self)` { #values data-toc-label=values }
+
+D.values() -> an object providing a view on D's values
+### *obj*.**write**`#!py3 (self, fp, space_around_delimiters=True)` { #write data-toc-label=write }
+
+Write an .ini-format representation of the configuration state.
+
+If `space_around_delimiters' is True (the default), delimiters
+between keys and values are surrounded by spaces.
+### *obj*.**default_section** *undefined* { #default_section data-toc-label=default_section }
+
+
+______
+
+## **SafeConfigParser**`#!py3 class` { #SafeConfigParser data-toc-label=SafeConfigParser }
+
+ConfigParser alias for backwards compatibility purposes.
+
+**Class/Static Attributes:** 
+
+ - [`BOOLEAN_STATES`](#BOOLEAN_STATES)
+ - [`NONSPACECRE`](#NONSPACECRE)
+ - [`OPTCRE`](#OPTCRE)
+ - [`OPTCRE_NV`](#OPTCRE_NV)
+ - [`SECTCRE`](#SECTCRE)
+ - [`converters`](#converters)
+
+**Class/Static Methods:** 
+
+ - [`update`](#update)
+
+**Instance Methods:** 
+
+ - [`add_section`](#add_section)
+ - [`clear`](#clear)
+ - [`defaults`](#defaults)
+ - [`get`](#get)
+ - [`getboolean`](#getboolean)
+ - [`getfloat`](#getfloat)
+ - [`getint`](#getint)
+ - [`has_option`](#has_option)
+ - [`has_section`](#has_section)
+ - [`items`](#items)
+ - [`keys`](#keys)
+ - [`options`](#options)
+ - [`optionxform`](#optionxform)
+ - [`pop`](#pop)
+ - [`popitem`](#popitem)
+ - [`read`](#read)
+ - [`read_dict`](#read_dict)
+ - [`read_file`](#read_file)
+ - [`read_string`](#read_string)
+ - [`readfp`](#readfp)
+ - [`remove_option`](#remove_option)
+ - [`remove_section`](#remove_section)
+ - [`sections`](#sections)
+ - [`set`](#set)
+ - [`setdefault`](#setdefault)
+ - [`values`](#values)
+ - [`write`](#write)
+
+### *SafeConfigParser*.**BOOLEAN_STATES** *class 'dict'* { #BOOLEAN_STATES data-toc-label=BOOLEAN_STATES }
+
+### *SafeConfigParser*.**NONSPACECRE** *class 're.Pattern'* { #NONSPACECRE data-toc-label=NONSPACECRE }
+
+### *SafeConfigParser*.**OPTCRE** *class 're.Pattern'* { #OPTCRE data-toc-label=OPTCRE }
+
+### *SafeConfigParser*.**OPTCRE_NV** *class 're.Pattern'* { #OPTCRE_NV data-toc-label=OPTCRE_NV }
+
+### *SafeConfigParser*.**SECTCRE** *class 're.Pattern'* { #SECTCRE data-toc-label=SECTCRE }
+
+### *SafeConfigParser*.**converters** *class 'property'* { #converters data-toc-label=converters }
+
+### *SafeConfigParser*.**update**`#!py3 (*args, **kwds)` { #update data-toc-label=update }
+
+D.update([E, ]**F) -> None.  Update D from mapping/iterable E and F.
+If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
+If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
+In either case, this is followed by: for k, v in F.items(): D[k] = v
+### *obj*.**add_section**`#!py3 (self, section)` { #add_section data-toc-label=add_section }
+
+Create a new section in the configuration.  Extends
+RawConfigParser.add_section by validating if the section name is
+a string.
+### *obj*.**clear**`#!py3 (self)` { #clear data-toc-label=clear }
+
+D.clear() -> None.  Remove all items from D.
+### *obj*.**defaults**`#!py3 (self)` { #defaults data-toc-label=defaults }
+
+
+### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>)` { #get data-toc-label=get }
+
+Get an option value for a given section.
+
+If `vars' is provided, it must be a dictionary. The option is looked up
+in `vars' (if provided), `section', and in `DEFAULTSECT' in that order.
+If the key is not found and `fallback' is provided, it is used as
+a fallback value. `None' can be provided as a `fallback' value.
+
+If interpolation is enabled and the optional argument `raw' is False,
+all interpolations are expanded in the return values.
+
+Arguments `raw', `vars', and `fallback' are keyword only.
+
+The section DEFAULT is special.
+### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getboolean data-toc-label=getboolean }
+
+
+### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getfloat data-toc-label=getfloat }
+
+
+### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getint data-toc-label=getint }
+
+
+### *obj*.**has_option**`#!py3 (self, section, option)` { #has_option data-toc-label=has_option }
+
+Check for the existence of a given option in a given section.
+If the specified `section' is None or an empty string, DEFAULT is
+assumed. If the specified `section' does not exist, returns False.
+### *obj*.**has_section**`#!py3 (self, section)` { #has_section data-toc-label=has_section }
+
+Indicate whether the named section is present in the configuration.
+
+The DEFAULT section is not acknowledged.
+### *obj*.**items**`#!py3 (self, section=<object object at 0x01604900>, raw=False, vars=None)` { #items data-toc-label=items }
+
+Return a list of (name, value) tuples for each option in a section.
+
+All % interpolations are expanded in the return values, based on the
+defaults passed into the constructor, unless the optional argument
+`raw' is true.  Additional substitutions may be provided using the
+`vars' argument, which must be a dictionary whose contents overrides
+any pre-existing defaults.
+
+The section DEFAULT is special.
+### *obj*.**keys**`#!py3 (self)` { #keys data-toc-label=keys }
+
+D.keys() -> a set-like object providing a view on D's keys
+### *obj*.**options**`#!py3 (self, section)` { #options data-toc-label=options }
+
+Return a list of option names for the given section name.
+### *obj*.**optionxform**`#!py3 (self, optionstr)` { #optionxform data-toc-label=optionxform }
+
+
+### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01604098>)` { #pop data-toc-label=pop }
+
+D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
+If key is not found, d is returned if given, otherwise KeyError is raised.
+### *obj*.**popitem**`#!py3 (self)` { #popitem data-toc-label=popitem }
+
+Remove a section from the parser and return it as
+a (section_name, section_proxy) tuple. If no section is present, raise
+KeyError.
+
+The section DEFAULT is never returned because it cannot be removed.
+### *obj*.**read**`#!py3 (self, filenames, encoding=None)` { #read data-toc-label=read }
+
+Read and parse a filename or an iterable of filenames.
+
+Files that cannot be opened are silently ignored; this is
+designed so that you can specify an iterable of potential
+configuration file locations (e.g. current directory, user's
+home directory, systemwide directory), and all existing
+configuration files in the iterable will be read.  A single
+filename may also be given.
+
+Return list of successfully read files.
+### *obj*.**read_dict**`#!py3 (self, dictionary, source='<dict>')` { #read_dict data-toc-label=read_dict }
+
+Read configuration from a dictionary.
+
+Keys are section names, values are dictionaries with keys and values
+that should be present in the section. If the used dictionary type
+preserves order, sections and their keys will be added in order.
+
+All types held in the dictionary are converted to strings during
+reading, including section names, option names and keys.
+
+Optional second argument is the `source' specifying the name of the
+dictionary being read.
+### *obj*.**read_file**`#!py3 (self, f, source=None)` { #read_file data-toc-label=read_file }
+
+Like read() but the argument must be a file-like object.
+
+The `f' argument must be iterable, returning one line at a time.
+Optional second argument is the `source' specifying the name of the
+file being read. If not given, it is taken from f.name. If `f' has no
+`name' attribute, `<???>' is used.
+### *obj*.**read_string**`#!py3 (self, string, source='<string>')` { #read_string data-toc-label=read_string }
+
+Read configuration from a given string.
+### *obj*.**readfp**`#!py3 (self, fp, filename=None)` { #readfp data-toc-label=readfp }
+
+Deprecated, use read_file instead.
+### *obj*.**remove_option**`#!py3 (self, section, option)` { #remove_option data-toc-label=remove_option }
+
+Remove an option.
+### *obj*.**remove_section**`#!py3 (self, section)` { #remove_section data-toc-label=remove_section }
+
+Remove a file section.
+### *obj*.**sections**`#!py3 (self)` { #sections data-toc-label=sections }
+
+Return a list of section names, excluding [DEFAULT]
+### *obj*.**set**`#!py3 (self, section, option, value=None)` { #set data-toc-label=set }
+
+Set an option.  Extends RawConfigParser.set by validating type and
+interpolation syntax on the value.
+### *obj*.**setdefault**`#!py3 (self, key, default=None)` { #setdefault data-toc-label=setdefault }
+
+D.setdefault(k[,d]) -> D.get(k,d), also set D[k]=d if k not in D
+### *obj*.**values**`#!py3 (self)` { #values data-toc-label=values }
+
+D.values() -> an object providing a view on D's values
+### *obj*.**write**`#!py3 (self, fp, space_around_delimiters=True)` { #write data-toc-label=write }
+
+Write an .ini-format representation of the configuration state.
+
+If `space_around_delimiters' is True (the default), delimiters
+between keys and values are surrounded by spaces.
+
+______
+
+## **WindowsExeVersionInfo**`#!py3 class` { #WindowsExeVersionInfo data-toc-label=WindowsExeVersionInfo }
+
+
+
+**Class/Static Methods:** 
+
+ - [`defaultPath`](#defaultPath)
+
+**Instance Methods:** 
+
+ - [`copyright`](#copyright)
+ - [`debug`](#debug)
+ - [`fromLines`](#fromLines)
+ - [`injectLine`](#injectLine)
+ - [`internalName`](#internalName)
+ - [`path`](#path)
+ - [`read`](#read)
+ - [`remove`](#remove)
+ - [`toLines`](#toLines)
+ - [`version`](#version)
+ - [`write`](#write)
+
+**Instance Attributes:** 
+
+ - [`major`](#major)
+ - [`minor`](#minor)
+ - [`micro`](#micro)
+ - [`build`](#build)
+ - [`companyName`](#companyName)
+ - [`productName`](#productName)
+ - [`description`](#description)
+ - [`exeName`](#exeName)
+
+### *WindowsExeVersionInfo*.**defaultPath**`#!py3 ()` { #defaultPath data-toc-label=defaultPath }
+
+
+### *obj*.**copyright**`#!py3 (self)` { #copyright data-toc-label=copyright }
+
+
+### *obj*.**debug**`#!py3 (self)` { #debug data-toc-label=debug }
+
+
+### *obj*.**fromLines**`#!py3 (self, lines)` { #fromLines data-toc-label=fromLines }
+
+
+### *obj*.**injectLine**`#!py3 (self, injection, lineNo)` { #injectLine data-toc-label=injectLine }
+
+
+### *obj*.**internalName**`#!py3 (self)` { #internalName data-toc-label=internalName }
+
+
+### *obj*.**path**`#!py3 (self)` { #path data-toc-label=path }
+
+
+### *obj*.**read**`#!py3 (self)` { #read data-toc-label=read }
+
+
+### *obj*.**remove**`#!py3 (self)` { #remove data-toc-label=remove }
+
+
+### *obj*.**toLines**`#!py3 (self)` { #toLines data-toc-label=toLines }
+
+
+### *obj*.**version**`#!py3 (self, isCommaDelim=False)` { #version data-toc-label=version }
+
+
+### *obj*.**write**`#!py3 (self)` { #write data-toc-label=write }
+
+
+### *obj*.**major** *undefined* { #major data-toc-label=major }
+
+### *obj*.**minor** *undefined* { #minor data-toc-label=minor }
+
+### *obj*.**micro** *undefined* { #micro data-toc-label=micro }
+
+### *obj*.**build** *undefined* { #build data-toc-label=build }
+
+### *obj*.**companyName** *undefined* { #companyName data-toc-label=companyName }
+
+### *obj*.**productName** *undefined* { #productName data-toc-label=productName }
+
+### *obj*.**description** *undefined* { #description data-toc-label=description }
+
+### *obj*.**exeName** *undefined* { #exeName data-toc-label=exeName }
+
+
+______
+

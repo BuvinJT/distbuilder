@@ -1,0 +1,1908 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+    
+    
+      
+        <title>High Level Classes - Distribution Builder</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#high-level-classes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Distribution Builder" class="md-header__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Distribution Builder
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              High Level Classes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Distribution Builder" class="md-nav__button md-logo" aria-label="Distribution Builder" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Distribution Builder
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QuickStart.html" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Examples.html" class="md-nav__link">
+        Examples
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      <label class="md-nav__link" for="__nav_4">
+        Old Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Old Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Old Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          High Level Classes
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="HighLevel.html" class="md-nav__link md-nav__link--active">
+        High Level Classes
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#configfactory" class="md-nav__link">
+    ConfigFactory
+  </a>
+  
+    <nav class="md-nav" aria-label="ConfigFactory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ifwpkgisdefault-ifwpkgisrequired-ifwpkgishidden" class="md-nav__link">
+    ifwPkgIsDefault, ifwPkgIsRequired, ifwPkgIsHidden
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pkgtype" class="md-nav__link">
+    pkgType
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pkgsubdirname" class="md-nav__link">
+    pkgSubDirName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pkgsrcdirpath-pkgsrcexepath" class="md-nav__link">
+    pkgSrcDirPath, pkgSrcExePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pkgexewrapper" class="md-nav__link">
+    pkgExeWrapper
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pkgexternaldependencies" class="md-nav__link">
+    pkgExternalDependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#startonboot" class="md-nav__link">
+    startOnBoot
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcppconfig" class="md-nav__link">
+    qtCppConfig
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#process-classes-overview" class="md-nav__link">
+    Process Classes Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pytobinpackageprocess" class="md-nav__link">
+    PyToBinPackageProcess
+  </a>
+  
+    <nav class="md-nav" aria-label="PyToBinPackageProcess">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#iswarningsuppression" class="md-nav__link">
+    isWarningSuppression
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isunbufferedstdio" class="md-nav__link">
+    isUnBufferedStdIo
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iexpresspackageprocess" class="md-nav__link">
+    IExpressPackageProcess
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pytobininstallerprocess" class="md-nav__link">
+    PyToBinInstallerProcess
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iexpressinstallerprocess" class="md-nav__link">
+    IExpressInstallerProcess
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#robustinstallerprocess" class="md-nav__link">
+    RobustInstallerProcess
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ConfigClasses.html" class="md-nav__link">
+        Configuration Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="LowLevel.html" class="md-nav__link">
+        Low Level Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="QtCpp.html" class="md-nav__link">
+        Qt C++ Integration
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      <label class="md-nav__link" for="__nav_5">
+        Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Config%20Factory.html" class="md-nav__link">
+        Config Factory
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20Installer%20Framework.html" class="md-nav__link">
+        Qt Installer Framework
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="PyInstaller.html" class="md-nav__link">
+        PyInstaller
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="IExpress.html" class="md-nav__link">
+        IExpress
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Code%20Signing.html" class="md-nav__link">
+        Code Signing
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20Obfuscation.html" class="md-nav__link">
+        Python Obfuscation
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Python%20pip.html" class="md-nav__link">
+        Python pip
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Qt%20CPP.html" class="md-nav__link">
+        Qt CPP
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Logging.html" class="md-nav__link">
+        Logging
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Classes.html" class="md-nav__link">
+        Utility Classes
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Functions.html" class="md-nav__link">
+        Utility Functions
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Utility%20Constants.html" class="md-nav__link">
+        Utility Constants
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Issues.html" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ToDo.html" class="md-nav__link">
+        To-Do List
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Contribute.html" class="md-nav__link">
+        Contact / Contribute
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#configfactory" class="md-nav__link">
+    ConfigFactory
+  </a>
+  
+    <nav class="md-nav" aria-label="ConfigFactory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ifwpkgisdefault-ifwpkgisrequired-ifwpkgishidden" class="md-nav__link">
+    ifwPkgIsDefault, ifwPkgIsRequired, ifwPkgIsHidden
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pkgtype" class="md-nav__link">
+    pkgType
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pkgsubdirname" class="md-nav__link">
+    pkgSubDirName
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pkgsrcdirpath-pkgsrcexepath" class="md-nav__link">
+    pkgSrcDirPath, pkgSrcExePath
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pkgexewrapper" class="md-nav__link">
+    pkgExeWrapper
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pkgexternaldependencies" class="md-nav__link">
+    pkgExternalDependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#startonboot" class="md-nav__link">
+    startOnBoot
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcppconfig" class="md-nav__link">
+    qtCppConfig
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#process-classes-overview" class="md-nav__link">
+    Process Classes Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pytobinpackageprocess" class="md-nav__link">
+    PyToBinPackageProcess
+  </a>
+  
+    <nav class="md-nav" aria-label="PyToBinPackageProcess">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#iswarningsuppression" class="md-nav__link">
+    isWarningSuppression
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isunbufferedstdio" class="md-nav__link">
+    isUnBufferedStdIo
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iexpresspackageprocess" class="md-nav__link">
+    IExpressPackageProcess
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pytobininstallerprocess" class="md-nav__link">
+    PyToBinInstallerProcess
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iexpressinstallerprocess" class="md-nav__link">
+    IExpressInstallerProcess
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#robustinstallerprocess" class="md-nav__link">
+    RobustInstallerProcess
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="high-level-classes">High Level Classes<a class="headerlink" href="#high-level-classes" title="Permanent link">&para;</a></h1>
+<p><img alt="distbuilder logo" src="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png" /></p>
+<h2 id="configfactory">ConfigFactory<a class="headerlink" href="#configfactory" title="Permanent link">&para;</a></h2>
+<p>It is typical for a build script to start by creating
+a high-level <em>ConfigFactory</em> object and set its attributes.</p>
+<p>The major functions within the library rely
+upon a collection of &ldquo;configuration&rdquo; objects which supply
+extended sets of parameters to drive various processes.  Many of these 
+classes have overlapping attributes, and scripts employing 
+a series of those (on a low level) tend to have a great deal of redundant
+parameter assignment.  With this in mind, the ConfigFactory class 
+was created.</p>
+<p>See <a href="ConfigClasses.html#configuration-classes">Configuration Classes</a> for more 
+information on the types of objects generated by this factory class.  </p>
+<p>Note that this class is NOT intended to have a one-to-one correspondence 
+for <strong>every</strong> attribute within all of the configuration objects it can generate.
+If that were provided, this class would become an overwhelmingly bloated monster! 
+Only the more commonly needed (and/or shared) attributes are provided on this level.  You 
+must manipulate those config objects generated by the factory <em>directly</em> if you need to 
+access their more extended features.  Typically, you will want to access those
+objects from a &ldquo;callback&rdquo; function within a derived &ldquo;Process&rdquo; class implementation.    </p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>ConfigFactory( cfgId=None )
+</code></pre></div>
+
+<p>Attributes &amp; default values:  </p>
+<div class="codehilite"><pre><span></span><code><span class="nv">cfgId</span> <span class="o">=</span> <span class="nv">None</span>
+
+<span class="nv">productName</span> <span class="o">=</span> <span class="nv">None</span>
+<span class="nv">description</span> <span class="o">=</span> <span class="nv">None</span>
+
+<span class="nv">companyTradeName</span> <span class="o">=</span> <span class="nv">None</span>
+<span class="nv">companyLegalName</span> <span class="o">=</span> <span class="nv">None</span>
+
+<span class="nv">version</span>    <span class="o">=</span> <span class="ss">(</span><span class="mi">0</span>,<span class="mi">0</span>,<span class="mi">0</span>,<span class="mi">0</span><span class="ss">)</span>
+<span class="nv">isGui</span>      <span class="o">=</span> <span class="nv">False</span>
+
+<span class="nv">sourceDir</span>    <span class="o">=</span> <span class="nv">None</span>
+<span class="nv">binaryName</span>   <span class="o">=</span> <span class="nv">None</span>  
+<span class="nv">iconFilePath</span> <span class="o">=</span> <span class="nv">None</span>
+
+<span class="o">&lt;</span><span class="nv">PyInstaller</span><span class="o">&gt;</span>
+
+    <span class="nv">entryPointPy</span>  <span class="o">=</span> <span class="nv">None</span>               
+    <span class="nv">specFilePath</span>  <span class="o">=</span> <span class="nv">None</span>
+    <span class="nv">isOneFile</span>     <span class="o">=</span> <span class="nv">True</span> <span class="ss">(</span><span class="nv">note</span> <span class="nv">this</span> <span class="nv">differs</span> <span class="nv">from</span> <span class="nv">PyInstaller</span> <span class="nv">default</span><span class="ss">)</span>
+
+ <span class="o">&lt;</span><span class="nv">Other</span> <span class="nv">Script</span> <span class="nv">to</span> <span class="nv">Binary</span> <span class="nv">sources</span><span class="o">&gt;</span>
+
+    <span class="nv">entryPointScript</span> <span class="o">=</span> <span class="nv">None</span>
+
+<span class="o">&lt;</span><span class="nv">External</span> <span class="nv">resource</span> <span class="nv">bundling</span><span class="o">&gt;</span>
+
+    <span class="nv">distResources</span> <span class="o">=</span> []
+
+<span class="o">&lt;</span><span class="nv">Python</span> <span class="nv">Obfuscation</span><span class="o">&gt;</span>
+
+    <span class="nv">isObfuscating</span> <span class="o">=</span> <span class="nv">False</span>             
+    <span class="nv">opyBundleLibs</span> <span class="o">=</span> <span class="nv">None</span>
+    <span class="nv">opyPatches</span>    <span class="o">=</span> <span class="nv">None</span>
+
+<span class="o">&lt;</span><span class="k">For</span> <span class="nv">Installers</span> <span class="ss">(</span><span class="nv">applied</span> <span class="nv">via</span> <span class="s2">&quot;</span><span class="s">master</span><span class="s2">&quot;</span> <span class="nv">factories</span><span class="ss">)</span><span class="o">&gt;</span>
+
+    <span class="nv">isSilentSetup</span>    <span class="o">=</span> <span class="nv">False</span>            
+    <span class="nv">setupName</span>        <span class="o">=</span> <span class="s2">&quot;</span><span class="s">setup</span><span class="s2">&quot;</span>
+    <span class="nv">ifwDefDirPath</span>    <span class="o">=</span> <span class="nv">None</span>
+    <span class="nv">ifwPackages</span>      <span class="o">=</span> <span class="nv">None</span>
+
+    <span class="nv">isLimitedMaintenance</span> <span class="o">=</span> <span class="nv">True</span>
+    <span class="nv">replaceTarget</span> <span class="o">=</span> <span class="nv">False</span>
+
+    <span class="nv">licensePath</span> <span class="o">=</span> <span class="nv">None</span>    
+    <span class="nv">ifwUiPages</span>  <span class="o">=</span> <span class="nv">None</span>
+    <span class="nv">ifwWidgets</span>  <span class="o">=</span> <span class="nv">None</span>
+
+    <span class="nv">ifwWizardStyle</span>    <span class="o">=</span> <span class="nv">None</span>
+    <span class="nv">ifwLogoFilePath</span>   <span class="o">=</span> <span class="nv">None</span>
+    <span class="nv">ifwBannerFilePath</span> <span class="o">=</span> <span class="nv">None</span>
+
+    <span class="nv">ifwCntrlScript</span>     <span class="o">=</span> <span class="nv">None</span> # <span class="nv">None</span><span class="o">=</span><span class="nv">Default</span> <span class="nv">False</span><span class="o">=</span><span class="nv">Exclude</span>                
+    <span class="nv">ifwCntrlScriptText</span> <span class="o">=</span> <span class="nv">None</span>
+    <span class="nv">ifwCntrlScriptPath</span> <span class="o">=</span> <span class="nv">None</span>
+    <span class="nv">ifwCntrlScriptName</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="s">installscript.qs</span><span class="s2">&quot;</span>
+
+<span class="o">&lt;</span><span class="k">For</span> <span class="nv">Installer</span> <span class="nv">Packages</span><span class="o">&gt;</span>
+
+    <span class="nv">ifwPkgId</span>         <span class="o">=</span> <span class="nv">None</span>
+    <span class="nv">ifwPkgName</span>       <span class="o">=</span> <span class="nv">None</span>
+    <span class="nv">ifwPkgNamePrefix</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="s">com</span><span class="s2">&quot;</span>
+
+    <span class="nv">ifwPkgIsDefault</span>  <span class="o">=</span> <span class="nv">True</span>
+    <span class="nv">ifwPkgIsRequired</span> <span class="o">=</span> <span class="nv">False</span> 
+    <span class="nv">ifwPkgIsHidden</span>   <span class="o">=</span> <span class="nv">False</span>
+
+    <span class="nv">ifwPkgScript</span>     <span class="o">=</span> <span class="nv">None</span>           
+    <span class="nv">ifwPkgScriptText</span> <span class="o">=</span> <span class="nv">None</span>
+    <span class="nv">ifwPkgScriptPath</span> <span class="o">=</span> <span class="nv">None</span>        
+    <span class="nv">ifwPkgScriptName</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="s">installscript.qs</span><span class="s2">&quot;</span>
+
+    <span class="nv">pkgType</span>            <span class="o">=</span> <span class="nv">None</span>    
+    <span class="nv">pkgSubDirName</span>      <span class="o">=</span> <span class="nv">None</span>
+    <span class="nv">pkgSrcDirPath</span>      <span class="o">=</span> <span class="nv">None</span>
+    <span class="nv">pkgSrcExePath</span>      <span class="o">=</span> <span class="nv">None</span>
+    <span class="nv">pkgCodeSignTargets</span> <span class="o">=</span> <span class="nv">None</span>
+
+    <span class="nv">pkgExeWrapper</span>      <span class="o">=</span> <span class="nv">None</span>
+    <span class="nv">pkgExternalDependencies</span> <span class="o">=</span> <span class="nv">None</span>  <span class="o">&lt;</span><span class="nv">LINUX</span> <span class="o">/</span> <span class="nv">MAC</span> <span class="nv">only</span><span class="o">&gt;</span>
+
+    <span class="nv">startOnBoot</span>   <span class="o">=</span> <span class="nv">False</span> <span class="o">&lt;</span><span class="nv">CURRENT_USER</span>, <span class="nv">ALL_USERS</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nv">Code</span> <span class="nv">Signing</span><span class="o">&gt;</span>
+
+    <span class="nv">codeSignConfig</span>
+
+<span class="o">&lt;</span><span class="s2">&quot;</span><span class="s">Special</span><span class="s2">&quot;</span> <span class="nv">Contexts</span><span class="o">&gt;</span>
+
+    <span class="nv">qtCppConfig</span> <span class="o">=</span> <span class="nv">None</span>
+</code></pre></div>
+
+<p>Object creation functions:</p>
+<div class="codehilite"><pre><span></span><code>pyInstallerConfig()    
+opyConfig()
+qtIfwConfig( packages=None )
+qtIfwConfigXml()
+qtIfwControlScript( configXml )
+qtIfwPackage( pyInstConfig=None, isTempSrc=False )
+qtIfwPackageXml()    
+qtIfwPackageScript( pyInstConfig=None )
+qtIfwExeWrapper( wrapperScript=None,
+                 workingDir=None, isElevated=False, 
+                 envVars=None, args=None,
+                 isExe=False ) &lt;Windows Only&gt;
+
+&lt;Windows Only&gt;
+     iExpressConfig()      
+    exeVersionInfo( iwfConfig=None )
+</code></pre></div>
+
+<p>Cloning:</p>
+<div class="codehilite"><pre><span></span><code>newFactory = ConfigFactory.copy( instance )
+</code></pre></div>
+
+<h4 id="cfgid">cfgId<a class="headerlink" href="#cfgid" title="Permanent link">&para;</a></h4>
+<p>Useful to distinguish between multiple ConfigFactory objects, as
+are often employed by a <a href="#robustinstallerprocess">RobustInstallerProcess</a>. </p>
+<h4 id="productname-description">productName, description<a class="headerlink" href="#productname-description" title="Permanent link">&para;</a></h4>
+<p>The name and description for the product on the whole, or a sub component
+within it (based upon the context of how the factory object is used).  Such
+will appear as &ldquo;brandings&rdquo; upon a <a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a> 
+and/or as labels/details within <a href="LowLevel.html#installers">Installer</a> menus.  </p>
+<h4 id="companytradename-companylegalname">companyTradeName, companyLegalName<a class="headerlink" href="#companytradename-companylegalname" title="Permanent link">&para;</a></h4>
+<p>Akin to <code>productName</code> and <code>description</code> attributes.  </p>
+<p>Note the <code>companyTradeName</code> will be used in standard labels, directory names, shortcuts, etc.
+produced by the process employing the ConfigFactory.  In contrast, <code>companyLegalName</code>
+will appear within copyrights, EULAs, and the like where an &ldquo;official&rdquo; / legal name is 
+called for.  </p>
+<h4 id="isobfuscating-opybundlelibs-opypatches">isObfuscating, opyBundleLibs, opyPatches<a class="headerlink" href="#isobfuscating-opybundlelibs-opypatches" title="Permanent link">&para;</a></h4>
+<p>The <code>isObfuscating</code> switch toggles whether code obfuscation is employed by a process
+using the config factory (based upon context).  </p>
+<p>The <code>opyBundleLibs</code> and <code>opyPatches</code> are details used for generating an 
+<a href="ConfigClasses.html#opyconfig">OpyConfig</a> object when invoking the <code>opyConfig()</code>
+function for this class.</p>
+<p>For more information, refer to the following:</p>
+<ul>
+<li><a href="LowLevel.html#executable-obfuscation">Executable Obfuscation</a>  </li>
+<li><a href="LowLevel.html#obfuscation-features">Obfuscation Features</a>  </li>
+<li><a href="Examples.html#hello-world-tk-example">Hello World Tk Example</a>    </li>
+<li><a href="https://pypi.org/project/opy-distbuilder/">Opy for Distribution Builder</a></li>
+</ul>
+<h4 id="version">version<a class="headerlink" href="#version" title="Permanent link">&para;</a></h4>
+<p>Akin to <code>productName</code> and <code>description</code> attributes, this can be applied to
+either a <a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a> 
+or an <a href="LowLevel.html#installers">Installer</a> based on the context of what uses
+the config factory.</p>
+<p>A version should be defined as a 4 part tuple of unsigned integers, in the form:</p>
+<div class="codehilite"><pre><span></span><code>( MAJOR, MINOR, PATCH, BUILD )
+</code></pre></div>
+
+<p>Alternatively, a string representation may be supplied.
+See <a href="LowLevel.html#versiontuple,-versionstr">versionTuple, versionStr</a>.</p>
+<p>Note that each part maybe any number of digits long.  i.e. this is a perfectly 
+valid version stamp: <code>2.11.6.139</code>.  That example would be denoted in tuple form 
+as: <code>(2,11,6,139)</code>     </p>
+<h4 id="binaryname-isgui">binaryName, isGui<a class="headerlink" href="#binaryname-isgui" title="Permanent link">&para;</a></h4>
+<p>These are attribute used for a variety of purposes, which would be difficult to 
+list here. Perhaps most notably, they are applied directly to the production of<br />
+<a href="LowLevel.html#stand-alone-executables">Stand Alone Executables</a>. In that specific 
+process these details are set on a <a href="ConfigClasses.html#pyinstconfig">PyInstallerConfig</a> 
+object when invoking the <code>pyInstallerConfig()</code> function for this class.</p>
+<h4 id="sourcedir">sourceDir<a class="headerlink" href="#sourcedir" title="Permanent link">&para;</a></h4>
+<p>This attribute is used to resolve relative paths to absolute paths in various 
+contexts. When omitted, such paths are normally resolved relative to the directory 
+containing the build script (NOT the current working directory!).</p>
+<h4 id="entrypointpy">entryPointPy<a class="headerlink" href="#entrypointpy" title="Permanent link">&para;</a></h4>
+<p>This attribute is most notably used when producing a 
+<a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a>.
+In that context, it points PyInstaller to the starting point for the source 
+from which to build a binary.</p>
+<p>This is also used during an <a href="LowLevel.html#executable-obfuscation">Executable Obfuscation</a>
+process.  The entry point module <strong>name</strong> is <strong>not</strong> obfuscated (though its contents are). </p>
+<h4 id="entrypointscript">entryPointScript<a class="headerlink" href="#entrypointscript" title="Permanent link">&para;</a></h4>
+<p>This attribute is used when producing a 
+<a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a> 
+via an implementation of <em>IExpress</em>. Using this mechanism, you may convert a program written in a native Windows 
+script (currently supporting Batch, PowerShell, VBScript, and JScript), into a
+binary executable. </p>
+<p>For more information on <em>IExpress</em>, see:</p>
+<p><a href="https://en.wikipedia.org/wiki/IExpress">https://en.wikipedia.org/wiki/IExpress</a>
+<a href="https://docs.microsoft.com/en-us/internet-explorer/ie11-ieak/iexpress-wizard-for-win-server">https://docs.microsoft.com/en-us/internet-explorer/ie11-ieak/iexpress-wizard-for-win-server</a>
+<a href="https://ss64.com/nt/iexpress.html">https://ss64.com/nt/iexpress.html</a>
+<a href="http://www.mdgx.com/INF_web/">http://www.mdgx.com/INF_web/</a></p>
+<p>Note this argument may be simple file path, pointing to source script, 
+or an object of type <a href="LowLevel.html#executablescript">ExecutableScript</a>.</p>
+<p>When using an <code>ExecutableScript</code>, a &ldquo;script header&rdquo; will automatically be 
+injected.  This header modifies the context so that the implied working
+directory will be where the exe&rsquo;s is launched from.  Without this code, 
+the script will run from a (pseudo random) temporary location.<br />
+This is a critical detail when resources are bundled with the program. 
+Additionally the header provides the following global variables 
+(which are named identically across the supported scripting languages):
+<code>PID</code>, <code>PPID</code>, <code>EXE_PATH</code>, <code>THIS_DIR</code>, <code>LIB_DIR</code>, <code>RES_DIR</code> </p>
+<h4 id="specfilepath">specFilePath<a class="headerlink" href="#specfilepath" title="Permanent link">&para;</a></h4>
+<p>This attribute is a relatively sophisticated component used for <br />
+producing a given <a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a>.
+Most users of this library will never need to use this, though some may
+wish to if they are migrating from a legacy build script which employed
+a PyInstaller &ldquo;spec file&rdquo; they maintained.</p>
+<p>This attribute is a means to specify a relative file path to an existing 
+&ldquo;spec&rdquo; file. </p>
+<p>Note that distbuilder provides a <a href="ConfigClasses.html#pyinstspec">PyInstSpec</a>
+class which allows for programmatic generation and manipulation of such
+files and configurations.  Also, many of the process classes which employ a 
+config factory provide an <code>onMakeSpec( spec )</code> function.  And, if writing your 
+own low level equivalents of the process class operations, the library provides
+an <a href="LowLevel.html#makePyInstSpec">makePyInstSpec</a> function.</p>
+<h4 id="isonefile">isOneFile<a class="headerlink" href="#isonefile" title="Permanent link">&para;</a></h4>
+<p>This switch controls a notable PyInstaller feature, i.e. bundling dependencies
+into a single (compressed) exe when creating a 
+<a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a> vs leaving the 
+dependencies outside of the exe.  Unlike PyInstaller, this library wrapper 
+defaults to employing the single file feature. That produces a more &ldquo;clean&rdquo;, streamlined, product which appears (on the surface) nearly identical across 
+build environments - including cross platform.  But, this comes at the expense
+of slowing down the launching of an executable.  </p>
+<p>We recommend using the one file option for &ldquo;small&rdquo; programs, or ones which will
+not likely be opened very often.  Set this to <code>False</code>, however, to boost 
+a program&rsquo;s performance as far as load time is concerned. </p>
+<h4 id="iconfilepath">iconFilePath<a class="headerlink" href="#iconfilepath" title="Permanent link">&para;</a></h4>
+<p>Based upon context, this attribute is used to embedded (or bundle) an icon for
+a <a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a> or an
+<a href="LowLevel.html#installers">Installer</a>. </p>
+<p>As demoed in the <a href="Examples.html#hello-world-example">Hello World Example</a>,
+on Windows you must use a &ldquo;.ico&rdquo; file, on macOS a &ldquo;.icns&rdquo;, or on Linux a &ldquo;.png&rdquo;.
+You do NOT have to specify the extension, however, when setting this attribute.
+Such will be automatically determined per the platform at runtime. </p>
+<h4 id="distresources">distResources<a class="headerlink" href="#distresources" title="Permanent link">&para;</a></h4>
+<p>The <code>distResources</code> attribute is an optional list of external resources to bundle 
+into the distribution package.  You may use a simple list of strings containing 
+file/directory names or paths <em>relative</em> to the build script directory. Else, you 
+may provide a list of two element tuples, with a specific source and destination. 
+In addition, source paths may be specified with globing <em>wildcards</em> if desired.<br />
+They may even include environmental variables or path symbols.
+See <strong>distResources</strong> within <a href="LowLevel.html#pyscripttoexe">pyScriptToExe</a> for
+more details on this.</p>
+<p>Notably, this attribute is used when generating a 
+<a href="ConfigClasses.html#pyinstconfig">PyInstallerConfig</a>
+object when invoking the <code>pyInstallerConfig()</code> function for this class, 
+and then ultimately invoking the low level 
+<a href="LowLevel.html#pyscripttoexe">pyScriptToExe</a> operation with that.
+Note this may be done for you via various high level process classes.</p>
+<p>This attribute is also used for producing a
+<a href="ConfigClasses.html#qtifwpackage">QtIfwPackage</a> object when invoking the
+<code>qtIfwPackage()</code> function for this class.
+This too may be done for you via various high level process classes.</p>
+<h4 id="setupname">setupName<a class="headerlink" href="#setupname" title="Permanent link">&para;</a></h4>
+<p>This is the file name given to a QtIFW installer when the config factory is used in a 
+context to produce one. This attribute is specifically applied when generating a 
+<a href="ConfigClasses.html#qtifwconfig">QtIfwConfig</a> object upon invoking the <code>qtIfwConfig()</code>
+function for this class.</p>
+<h4 id="issilentsetup">isSilentSetup<a class="headerlink" href="#issilentsetup" title="Permanent link">&para;</a></h4>
+<p>When <code>isSilentSetup</code> is enabled, the QtIFW installer produced will not display a GUI or 
+provide any interactive prompts for the user.  All options are dictated by command line 
+arguments. While this may certainly be desirable on any platform, it is<br />
+<em>necessary</em> to create an installer for a target OS with no GUI (e.g. many Linux distros).</p>
+<p>For more information refer to: </p>
+<ul>
+<li><a href="LowLevel.html#buildInstaller">buildInstaller</a></li>
+<li><a href="LowLevel.html#silent-installers">Silent Installers</a></li>
+<li><a href="Examples.html#hello-silent-example">Hello Silent Example</a>        </li>
+</ul>
+<h4 id="ifwdefdirpath">ifwDefDirPath<a class="headerlink" href="#ifwdefdirpath" title="Permanent link">&para;</a></h4>
+<p>When producing a QtIFW installer this attribute may <em>optionally</em> be used to specify 
+an external, hard coded definition for the installer.  This is useful when either 
+integrating the distbuilder library with an existing QtIFW installer, or when a 
+developer would prefer to use the traditional QtIFW approach (perhaps due to extensive 
+customizations).    </p>
+<p>Note: This hard coded definition may include target installation content, and it 
+may be used as a <strong>partial</strong> definition or <strong>hybrid</strong> with distbuilder manipulations 
+and additions applied to it.    </p>
+<p>This attribute is specifically applied when generating a 
+<a href="ConfigClasses.html#qtifwconfig">QtIfwConfig</a> object upon invoking the <code>qtIfwConfig()</code>
+function for this class.</p>
+<h4 id="ifwpackages">ifwPackages<a class="headerlink" href="#ifwpackages" title="Permanent link">&para;</a></h4>
+<p>When producing a QtIFW installer, this attribute maybe used to list of &ldquo;Qt IFW Packages&rdquo;.
+Items in this list may be dynamic <a href="ConfigClasses.html#qtifwpackage">QtIfwPackage</a> objects,
+or be simple strings defining relative paths to QtIFW packages which are defined
+as external resources, in the traditional (hard coded, content containing) IFW manner.</p>
+<p>When building Python only derived installers, this attribute will be set automatically 
+by a process class, and <em>NOT</em> have to be manually defined or manipulated unless 
+there is a need to merge or modify packages pro grammatically.      </p>
+<p>This attribute is specifically applied when upon invoking the <code>qtIfwPackage()</code>
+function for this class.</p>
+<p>For more information refer to: </p>
+<ul>
+<li><a href="#robustinstallerprocess">RobustInstallerProcess</a></li>
+<li><a href="LowLevel.html#qtifwpackage-list-manipulation">QtIfwPackage list manipulation</a> </li>
+</ul>
+<h4 id="islimitedmaintenance">isLimitedMaintenance<a class="headerlink" href="#islimitedmaintenance" title="Permanent link">&para;</a></h4>
+<p>When producing a QtIFW installer, when this attribute is set to <code>True</code> (the 
+default) the &ldquo;maintenance tool&rdquo; included with the distribution will not display
+an introduction page with the options to add, remove, or update components.
+It will only allow for uninstallation.  The extended options are only naturally
+functional within QtIFW in the context of an <strong>online</strong> installer, which is 
+not the default product of this library, and thus the selection of these radio 
+buttons only produce errors.  Further, having this limitation imposed 
+simplifies both the end user workflow and the developer&rsquo;s coding / testing tasks.  </p>
+<p>When building an online installer, you may wish to enable the extended 
+features, by disabling this switch.    </p>
+<h4 id="replacetarget">replaceTarget<a class="headerlink" href="#replacetarget" title="Permanent link">&para;</a></h4>
+<p>When producing a QtIFW installer, switch this attribute to <code>True</code> if you wish for the
+installer to automatically replace a prior installation.  On Windows, this will reference
+the applications registered in the OS, and run the uninstallation for the prior install
+via that mechanism.  On other platforms, this uses the QtIFW Maintenance Tool directly to 
+&ldquo;silently&rdquo; uninstall a prior install found at the target location.</p>
+<h4 id="ifwuipages">ifwUiPages<a class="headerlink" href="#ifwuipages" title="Permanent link">&para;</a></h4>
+<p>Use this to specify a list of <a href="ConfigClasses.html#qtifwuipage">QtIfwUiPage</a> 
+objects.  With that, you may fully customize the installer&rsquo;s UI using the
+<a href="https://doc.qt.io/qt-5/designer-quick-start.html">Qt Designer WYSIWYG</a> tool!</p>
+<p><a href="LowLevel.html#installer-scripting">Installer Scripting</a>, or the higher level
+script abstraction classes <a href="ConfigClasses.html#qtifwcontrolscript">QtIfwControlScript</a> and
+<a href="ConfigClasses.html#qtifwpackagescript">QtIfwPackageScript</a> can be used to provide
+dynamic features for the page. </p>
+<h4 id="licensepath">licensePath<a class="headerlink" href="#licensepath" title="Permanent link">&para;</a></h4>
+<p>Relative or absolute path to a license file to be included in an installer, which the 
+end user will be required to agree to.</p>
+<h4 id="ifwwizardstyle">ifwWizardStyle<a class="headerlink" href="#ifwwizardstyle" title="Permanent link">&para;</a></h4>
+<p>QtIFW installer predefined visual style.  </p>
+<div class="codehilite"><pre><span></span><code>QtIfwConfigXml.DEFAULT_WIZARD_STYLE &lt;per platform&gt;
+
+QtIfwConfigXml.WizardStyle.AERO     &lt;Windows Default&gt;    
+QtIfwConfigXml.WizardStyle.MAC      &lt;MacOS Default&gt;
+QtIfwConfigXml.WizardStyle.MODERN   &lt;Linux Default&gt;
+QtIfwConfigXml.WizardStyle.CLASSIC  &lt;Simliar to MODERN&gt;
+</code></pre></div>
+
+<h4 id="ifwlogofilepath-ifwbannerfilepath">ifwLogoFilePath, ifwBannerFilePath<a class="headerlink" href="#ifwlogofilepath-ifwbannerfilepath" title="Permanent link">&para;</a></h4>
+<p>Relative or absolute path to QtIFW installer image resources.  These should .png 
+files (on any platform).  Transparency is supported.</p>
+<p>Note: <code>ifwLogoFilePath</code> is only applied in MODERN or CLASSIC style installers.
+Note: <code>ifwBannerFilePath</code> is only applied in MODERN style installers.   </p>
+<h4 id="ifwcntrlscript-ifwcntrlscripttext-ifwcntrlscriptpath-ifwcntrlscriptname">ifwCntrlScript, ifwCntrlScriptText, ifwCntrlScriptPath, ifwCntrlScriptName<a class="headerlink" href="#ifwcntrlscript-ifwcntrlscripttext-ifwcntrlscriptpath-ifwcntrlscriptname" title="Permanent link">&para;</a></h4>
+<p>QtIFW installers may have a &ldquo;Control Script&rdquo; and/or a collection of &ldquo;Package Scripts&rdquo;.
+The &ldquo;Control Script&rdquo; is intended to dictate how the installer <em>interface</em>  behaves, and
+other high level logic pertaining to the installer itself. In contrast, &ldquo;Package Scripts&rdquo;
+are intended for applying custom logic to manipulate a target environment when installing 
+a given package.</p>
+<p>These &ldquo;Control Script&rdquo; attributes are specifically applied when invoking the 
+<code>qtIfwControlScript()</code> function for this class.</p>
+<p>The attributes <code>ifwCntrlScript</code>, <code>ifwCntrlScriptText</code>, <code>ifwCntrlScriptPath</code> are mutually
+exclusive.  Only one will be applied (the others such be set to <code>None</code>), with the 
+priority being in that order. </p>
+<p>The <code>ifwCntrlScript</code> attribute is a <a href="ConfigClasses.html#qtifwcontrolscript">QtIfwControlScript</a>   <br />
+object.</p>
+<p>The <code>ifwCntrlScriptText</code> attribute is a means to supply the script as a raw string.</p>
+<p>The <code>ifwCntrlScriptPath</code> is a file path (relative to the build script) to an externally 
+defined script.</p>
+<p><code>ifwCntrlScriptName</code> provides a means to define the name of the file generated, in case 
+there is need or desire to override the default. </p>
+<h4 id="ifwpkgscript-ifwpkgscripttext-ifwpkgscriptpath-ifwpkgscriptname">ifwPkgScript, ifwPkgScriptText, ifwPkgScriptPath, ifwPkgScriptName<a class="headerlink" href="#ifwpkgscript-ifwpkgscripttext-ifwpkgscriptpath-ifwpkgscriptname" title="Permanent link">&para;</a></h4>
+<p>QtIFW installers may have a &ldquo;Control Script&rdquo; and/or a collection of &ldquo;Package Scripts&rdquo;.
+The &ldquo;Control Script&rdquo; is intended to dictate how the installer <em>interface</em>  behaves, and
+other high level logic pertaining to the installer itself. In contrast, &ldquo;Package Scripts&rdquo;
+are intended for applying custom logic to manipulate a target environment when installing 
+a given package.</p>
+<p>These &ldquo;Package Script&rdquo; attributes are specifically applied when invoking the 
+<code>qtIfwPackageScript()</code> function for this class.</p>
+<p>The attributes <code>ifwPkgScript</code>, <code>ifwPkgScriptText</code>, <code>ifwPkgScriptPath</code> are mutually
+exclusive.  Only one will be applied (the others such be set to <code>None</code>), with the 
+priority being in that order. </p>
+<p>The <code>ifwPkgScript</code> attribute is a <a href="ConfigClasses.html#qtifwpackagescript">QtIfwPackageScript</a>   <br />
+object.</p>
+<p>The <code>ifwPkgScriptText</code> attribute is a means to supply the script as a raw string.</p>
+<p>The <code>ifwPkgScriptPath</code> is a file path (relative to the build script) to an externally 
+defined script.</p>
+<p><code>ifwPkgScriptName</code> provides a means to define the name of the file generated, in case 
+there is need or desire to override the default. </p>
+<h4 id="ifwpkgid-ifwpkgname-ifwpkgnameprefix">ifwPkgId, ifwPkgName, ifwPkgNamePrefix<a class="headerlink" href="#ifwpkgid-ifwpkgname-ifwpkgnameprefix" title="Permanent link">&para;</a></h4>
+<p>These attributes are utilized to differentiate <a href="ConfigClasses.html#qtifwpackage">QtIfwPackage</a> 
+objects, and the packages which are produced for an installer.</p>
+<p><code>ifwPkgId</code> is employed for distbuilder operations where multiple packages are
+involved. For more information refer to: </p>
+<p><a href="#robustinstallerprocess">RobustInstallerProcess</a>. </p>
+<p><a href="LowLevel.html#qtifwpackage-list-manipulation">QtIfwPackage list manipulation</a> </p>
+<p><code>ifwPkgName</code> and <code>ifwPkgNamePrefix</code> are provided to override the name used by the
+QtInstaller for deployment on a target environment.  Normally, you may allow
+distbuilder to set the name for you automatically.</p>
+<h3 id="ifwpkgisdefault-ifwpkgisrequired-ifwpkgishidden">ifwPkgIsDefault, ifwPkgIsRequired, ifwPkgIsHidden<a class="headerlink" href="#ifwpkgisdefault-ifwpkgisrequired-ifwpkgishidden" title="Permanent link">&para;</a></h3>
+<p>These switches are commonly used, simple options for controlling how the package 
+(i.e. component) will selected by the end user of the installer.
+<code>ifwPkgIsDefault</code> will automatically select (or not select) the component by
+default. <code>ifwPkgIsRequired</code> dictates if the user can opt out of the component.
+<code>ifwPkgIsHidden</code> is similar to the prior switches, but insulates the user from 
+even seeing the component as separate entity when enabled.  </p>
+<h3 id="pkgtype">pkgType<a class="headerlink" href="#pkgtype" title="Permanent link">&para;</a></h3>
+<p>This specifies the type (<code>QtIfwPackage.Type</code>) of package being built.<br />
+The options for this include:  </p>
+<div class="codehilite"><pre><span></span><code>QtIfwPackage.Type.RAW
+QtIfwPackage.Type.DATA
+QtIfwPackage.Type.RESOURCE
+QtIfwPackage.Type.PY_INSTALLER
+QtIfwPackage.Type.IEXPRESS
+QtIfwPackage.Type.QT_CPP
+</code></pre></div>
+
+<p>If this is omitted, and a <code>binaryName</code> attribute is specified, type <code>PY_INSTALLER</code> is assumed.  If this is omitted, but no <code>binaryName</code> is specified, the <code>DATA</code> type is assumed.  </p>
+<p>The <code>RESOURCE</code> type indicates that the package does not contain any &ldquo;directly installed 
+content&rdquo; (in the traditional sense at least).  This is to be used in situations where you 
+want to simply bundle custom installation operations / scripts as a &ldquo;component&rdquo;.  Note, 
+however, that installer <strong>resources</strong> may be attached to such operations, and which are <em>not</em> 
+&ldquo;directly installed content&rdquo;.  A notable use case where you would include a resource, 
+but no content files in a package, would be to &ldquo;nest&rdquo; another installer inside of the outer one.  The nested installer would be a resource, invoked by a custom operation.<br />
+See: 
+<a href="ConfigClasses.html#qtifwexternalresource">QtIfwExternalResource</a>
+<a href="ConfigClasses.html#qtifwexternalop">QtIfwExternalOp</a>   </p>
+<h3 id="pkgsubdirname">pkgSubDirName<a class="headerlink" href="#pkgsubdirname" title="Permanent link">&para;</a></h3>
+<p>If a <code>pkgSubDirName</code> is specified, this places the package inside of sub directory, 
+rather than having the contents there of installed directly to the top level directory
+of the target.</p>
+<p>By default, this attribute is <code>None</code>, which is ideal for single package products. 
+When multiple packages are present, however, the content of each will be merged into 
+one directory during installation (if the end user selects more than one package).<br />
+In the event &ldquo;collisions&rdquo; could occur (at installation or run time) due to this, 
+the suggested resolution is to employ this option, thereby encapsulating the package(s). </p>
+<h3 id="pkgsrcdirpath-pkgsrcexepath">pkgSrcDirPath, pkgSrcExePath<a class="headerlink" href="#pkgsrcdirpath-pkgsrcexepath" title="Permanent link">&para;</a></h3>
+<p>When building installers that have external resources which are not part of
+automatically generated products/packages, these attributes may be used to define the paths
+to that package&rsquo;s content.  </p>
+<p>When the <code>pkgSrcDirPath</code> is not supplied, this is path defined 
+by either a <a href="ConfigClasses.html#pyinstallerconfig">PyInstallerConfig</a> object definition,
+or assumed to simply be a sub directory adjacent to the build script
+<em>with the same name</em> as the <code>binaryName</code> attribute.</p>
+<p>The attribute <code>pkgSrcExePath</code> must only be supplied when the package contains a
+&ldquo;primary&rdquo; executable which was not produced by a process with the library (i.e. 
+it was complied previously by some other build system).  Note, that if <code>binaryName</code>
+is also defined, the <code>pkgSrcExePath</code> file will be renamed to that name upon building
+the package. </p>
+<p>See: <a href="#robustinstallerprocess">RobustInstallerProcess</a>. </p>
+<h3 id="pkgexewrapper">pkgExeWrapper<a class="headerlink" href="#pkgexewrapper" title="Permanent link">&para;</a></h3>
+<p>A <a href="ConfigClasses.html#qtifwexewrapper">QtIfwExeWrapper</a> object used to &ldquo;wrap&rdquo;
+the primary executable in a <a href="ConfigClasses.html#qtifwpackage">QtIfwPackage</a> 
+being built using the factory provided configurations.</p>
+<p>Such a wrapper can super impose environmental conditions on the context
+within which the binary is run.  Notably, this may include an 
+<a href="LowLevel.html#executablescript">ExecutableScript</a> for maximum flexibility.
+Follow the links to learn to more.</p>
+<h3 id="pkgexternaldependencies">pkgExternalDependencies<a class="headerlink" href="#pkgexternaldependencies" title="Permanent link">&para;</a></h3>
+<p><strong> MAC / LINUX Only </strong></p>
+<p>External packages to be installed.  This takes place prior to any 
+other installer operations, in case those operations (rather the 
+program being installed) are dependent upon such.</p>
+<p>Provide a list of either simple strings and/or nested lists of strings.
+When nesting lists, such represents alternate names to try based upon
+what is available within a given package manager on the target.<br />
+For example, the package &ldquo;xvfb&rdquo; maybe specified as <code>["xvfb","Xvfb"]</code>.  That handles the fact the &ldquo;X&rdquo; is capitalized 
+within some contexts (e.g. within YUM on RHEL&hellip;) but is lower case in others.</p>
+<h3 id="startonboot">startOnBoot<a class="headerlink" href="#startonboot" title="Permanent link">&para;</a></h3>
+<p>Enable <code>startOnBoot</code> to have the installer register the &ldquo;primary&rdquo; exe 
+within a package as a program to launch upon booting the system. By default,
+this is set to <code>False</code>, setting it to either <code>True</code> or to <code>CURRENT_USER</code> will have the same 
+effect.  Assign it to <code>ALL_USERS</code> to have this applied for all system users. </p>
+<p>In Windows, this will lead to an auto implementation of a <a href="ConfigClasses.html#qtifwexewrapper">QtIfwExeWrapper</a>, which employs the special <code>isExe</code> feature,
+producing a &ldquo;wrapper/proxy/launcher&rdquo; exe adjacent to the actual one.  That 
+launcher is what will actually be registered in the OS.  </p>
+<h3 id="qtcppconfig">qtCppConfig<a class="headerlink" href="#qtcppconfig" title="Permanent link">&para;</a></h3>
+<p>A <a href="ConfigClasses.html#qtcppconfig">QtCppConfig</a> object.  Used to define how to
+package programs developed within the Qt C++ libraries / framework. </p>
+<p>See the <a href="QtCpp.html">Qt C++ Integration</a> document for more information.  </p>
+<h2 id="process-classes-overview">Process Classes Overview<a class="headerlink" href="#process-classes-overview" title="Permanent link">&para;</a></h2>
+<p>Many build scripts will follow the same essential
+logic flow, to produce analogous distributions. 
+As such, using high-level &ldquo;process classes&rdquo; can prevent 
+having multiple implementation scripts be virtual 
+duplicates of one another, each containing a fair volume 
+of code which employs the &ldquo;low level&rdquo; functions in the
+library.  </p>
+<p>Distbuilder currently provides three high-level &ldquo;process classes&rdquo;,
+each more powerful (and complex) then the prior:</p>
+<ul>
+<li><a href="#pytobinpackageprocess">PyToBinPackageProcess</a></li>
+<li><a href="#pytobininstallerprocess">PyToBinInstallerProcess</a></li>
+<li><a href="#robustinstallerprocess">RobustInstallerProcess</a></li>
+</ul>
+<h2 id="pytobinpackageprocess">PyToBinPackageProcess<a class="headerlink" href="#pytobinpackageprocess" title="Permanent link">&para;</a></h2>
+<p>This &ldquo;simple&rdquo; process class converts a program written in Python
+scripts into a stand-alone executable binary.  It additionally
+has built-in options for employing code obfuscation, for testing the 
+resulting product, for &ldquo;resource bundling&rdquo;, and for packaging into 
+an archive file.</p>
+<p>The process uses a <a href="#configfactory">ConfigFactory</a> to automatically 
+produce the config objects it requires, but allows a client to modify
+those objects before they are implemented by defining a derived class 
+and overriding certain functions as needed for this purpose.       </p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>PyToBinPackageProcess( configFactory,                  
+   name=&quot;Python to Binary Package Process&quot;,
+   isZipped=False, isDesktopTarget=False, isHomeDirTarget=False )
+</code></pre></div>
+
+<p>Attributes &amp; default values:</p>
+<div class="codehilite"><pre><span></span><code>configFactory          = &lt;required&gt;                              
+name                   = &quot;Python to Binary Package Process&quot;
+
+isZipped               = False
+isDesktopTarget        = False
+isHomeDirTarget        = False
+
+isWarningSuppression   = True          
+isUnBufferedStdIo      = False          
+isPyInstDupDataPatched = None &lt;auto&gt;
+
+isObfuscationTest      = False
+isExeTest              = False
+isElevatedTest         = False      
+exeTestArgs            = []
+
+# Results 
+binDir  = None
+binPath = None
+</code></pre></div>
+
+<p>&ldquo;Virtual&rdquo; configuration functions to optionally override:<br />
+(Note the order shown is that in which these functions are invoked)</p>
+<div class="codehilite"><pre><span></span><code>onInitialize()    
+onOpyConfig( cfg )                    
+onPyInstConfig( cfg )
+onMakeSpec( spec )
+onFinalize()
+</code></pre></div>
+
+<p>Use:</p>
+<p>Simply invoke the <code>run()</code> function to execute the process. </p>
+<p>Examples:</p>
+<p><a href="Examples.html#hello-world-example">Hello World Example</a>        </p>
+<h4 id="configfactory_1">configFactory<a class="headerlink" href="#configfactory_1" title="Permanent link">&para;</a></h4>
+<p>The required <a href="#configfactory">ConfigFactory</a> attribute contains
+many of the details used to drive this process.</p>
+<h4 id="name">name<a class="headerlink" href="#name" title="Permanent link">&para;</a></h4>
+<p>Used simply for logging or custom implementations where it
+may be useful to distinguish between multiple processes. </p>
+<h4 id="iszipped">isZipped<a class="headerlink" href="#iszipped" title="Permanent link">&para;</a></h4>
+<p>Setting this to <code>True</code> bundles the results into a zip file.</p>
+<h3 id="iswarningsuppression">isWarningSuppression<a class="headerlink" href="#iswarningsuppression" title="Permanent link">&para;</a></h3>
+<p>By default, this is enabled by the library (thus differing from the standard in Python
+or PyInstaller). Such will prevent Python <strong>warning</strong> messages from being output to the 
+terminal (they will be &ldquo;ignored&rdquo; instead).</p>
+<p>Note this neither suppresses nor exposes <em>exception</em> messages / stderr output.  That is
+an entirely distinct matter.</p>
+<p>Note that the inclusion of warning suppression which may be present in your Python source 
+code will not actually be respected by PyInstaller binaries naturally!  This
+mechanism (driven via a .spec file manipulation under the hood) is the means to control such.  </p>
+<p>For more on Python warnings in general, refer to: 
+<a href="https://docs.python.org/3/library/warnings.html">https://docs.python.org/3/library/warnings.html</a></p>
+<h3 id="isunbufferedstdio">isUnBufferedStdIo<a class="headerlink" href="#isunbufferedstdio" title="Permanent link">&para;</a></h3>
+<p>By default, this is disabled.  Python stdin/out/err streams are naturally buffered, as that
+is more efficient and thus preferable for most use cases.  Switching to &ldquo;unbuffered&rdquo; mode, 
+will, however, produce more rapid responsiveness on these streams.  Such may be desirable  <br />
+if your program will communicate with other programs via these streams, or if you want to 
+view &ldquo;real-time debugging&rdquo; messages, or have other uses for fast i/o on in a shell/terminal
+context perhaps.   </p>
+<h4 id="ispyinstdupdatapatched">isPyInstDupDataPatched<a class="headerlink" href="#ispyinstdupdatapatched" title="Permanent link">&para;</a></h4>
+<p>If this is set to <code>None</code> (the default) or <code>True</code>, the results are the same.
+You must set this to <code>False</code> explicitly to disable this built-in feature. </p>
+<p>When enabled, this patches a known bug in PyInstaller when it is on Windows. 
+PyInstaller analysis can build a set of data file names
+which contain &ldquo;duplicates&rdquo; due to the Windows 
+file system case insensitivity.  This patch eliminates
+such duplicates, thus preventing runtime errors in the 
+binary produced.</p>
+<p>You will nearly always when to leave this alone.  It is only
+made optional because it is not a &ldquo;standard&rdquo; part of a PyInstaller<br />
+process.</p>
+<h4 id="isobfuscationtest">isObfuscationTest<a class="headerlink" href="#isobfuscationtest" title="Permanent link">&para;</a></h4>
+<p>This option is intended to be toggled manually during a testing and 
+debugging phase of the build process definition.</p>
+<p>This is only applicable when when code obfuscation is enabled.
+When this is also enabled, this will interrupt the normal build process.</p>
+<p>Upon creating an obfuscated version of the scripts, the revised entry point
+module will be launched, thereby allowing you to confirm the program
+is still functional in this new state.  Upon exiting the program,
+the build process is also exited.  </p>
+<p>This option LEAVES the obfuscated code in place for further testing and 
+inspection.  This is in opposition to the normal
+deletion of such after having embedded the code in the binary.       </p>
+<h4 id="isexetest-exetestargs-iselevatedtest">isExeTest, exeTestArgs, isElevatedTest<a class="headerlink" href="#isexetest-exetestargs-iselevatedtest" title="Permanent link">&para;</a></h4>
+<p>The <code>isExeTest</code> attribute is similar in nature to is <code>isObfuscationTest</code>.<br />
+This launches the resulting binary after building it.<br />
+Unlike <code>isObfuscationTest</code>, this does NOT exit the build process.  Upon exiting 
+the program you are testing, any remaining steps in the build process are continued.       <br />
+The <code>exeTestArgs</code> and <code>isElevatedTest</code> attributes are additionally provided
+to vet the result in an automated fashion in the event such options are useful.</p>
+<h4 id="oninitialize">onInitialize()<a class="headerlink" href="#oninitialize" title="Permanent link">&para;</a></h4>
+<p>This function is intended for adding any custom setup procedures
+to be run before any other operations are begun.  That involve
+shuffling around files, downloading resources, etc.  </p>
+<p>Notably, this is the ideal place to gather and install Python dependencies. 
+By installing all of your dependencies here, you make your project and build 
+script far more portable across machines / environments. Refer to the 
+documentation on these useful utility functions for this purpose:</p>
+<ul>
+<li><a href="LowLevel.html#installlibrary">installLibrary</a></li>
+<li><a href="LowLevel.html#installlibraries">installLibraries</a></li>
+</ul>
+<h4 id="onopyconfig-cfg">onOpyConfig( cfg )<a class="headerlink" href="#onopyconfig-cfg" title="Permanent link">&para;</a></h4>
+<p>When code obfuscation is enabled, an <a href="ConfigClasses.html#opyconfig">OpyConfig</a> object
+will be generated and passed here.  You may then configure the details of such.       </p>
+<h4 id="onpyinstconfig-cfg">onPyInstConfig( cfg )<a class="headerlink" href="#onpyinstconfig-cfg" title="Permanent link">&para;</a></h4>
+<p>Prior to running PyInstaller, a <a href="ConfigClasses.html#pyinstallerconfig">PyInstallerConfig</a> object
+will be generated and passed here.  You may then configure the details of such.       </p>
+<h4 id="onmakespec-spec">onMakeSpec( spec )<a class="headerlink" href="#onmakespec-spec" title="Permanent link">&para;</a></h4>
+<p>This class employs the more advanced option of running PyInstaller against
+a &ldquo;spec&rdquo; file.  After initial processing of the <a href="ConfigClasses.html#pyinstallerconfig">PyInstallerConfig</a>
+object, a <a href="ConfigClasses.html#pyinstspec">PyInstSpec</a> object (with a corresponding temp
+spec file) will be generated.  The <code>onMakeSpec</code> function allows a final manipulation
+of that prior to running the PyInstaller process.    </p>
+<h4 id="onfinalize">onFinalize()<a class="headerlink" href="#onfinalize" title="Permanent link">&para;</a></h4>
+<p>After every other task has been performed by this process class, this function
+will be called.  This allows you to perform any custom clean up tasks, or other
+manipulations of the results.</p>
+<p>These notable object attributes will now be set for you to potentially use at this 
+stage: <code>binDir</code>, <code>binPath</code>.         </p>
+<h2 id="iexpresspackageprocess">IExpressPackageProcess<a class="headerlink" href="#iexpresspackageprocess" title="Permanent link">&para;</a></h2>
+<p><strong>WINDOWS ONLY</strong></p>
+<p>This &ldquo;simple&rdquo; process class converts a program written in a native Windows 
+script (currently supporting Batch, PowerShell, VBScript, and JScript), into a 
+stand-alone executable binary.  It additionally has built-in options for
+testing the resulting product, for &ldquo;resource bundling&rdquo;, and for packaging into 
+an archive file.</p>
+<p>The process uses a <a href="#configfactory">ConfigFactory</a> to automatically 
+produce the config objects it requires, but allows a client to modify
+those objects before they are implemented by defining a derived class 
+and overriding certain functions as needed for this purpose.       </p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>IExpressPackageProcess( configFactory,                  
+   name=&quot;Windows Script to Binary Package Process&quot;,
+   isZipped=False, isDesktopTarget=False, isHomeDirTarget=False )
+</code></pre></div>
+
+<p>Attributes &amp; default values:</p>
+<div class="codehilite"><pre><span></span><code>configFactory          = &lt;required&gt;                              
+name                   = &quot;Windows Script to Binary Package Process&quot;
+
+isZipped               = False
+isDesktopTarget        = False
+isHomeDirTarget        = False
+
+isExeTest              = False
+isElevatedTest         = False      
+exeTestArgs            = []
+
+# Results 
+binDir  = None
+binPath = None
+</code></pre></div>
+
+<p>&ldquo;Virtual&rdquo; configuration functions to optionally override:<br />
+(Note the order shown is that in which these functions are invoked)</p>
+<div class="codehilite"><pre><span></span><code>onInitialize()    
+onIExpressConfig( cfg )
+onFinalize()
+</code></pre></div>
+
+<p>Use:</p>
+<p>Simply invoke the <code>run()</code> function to execute the process. </p>
+<h2 id="pytobininstallerprocess">PyToBinInstallerProcess<a class="headerlink" href="#pytobininstallerprocess" title="Permanent link">&para;</a></h2>
+<p>A PyToBinInstallerProcess process <em>contains</em> a 
+<a href="#pytobinpackageprocess">PyToBinPackageProcess</a>
+within it, and thus provides the full functionality of that to begin with.
+In addition, however, it rolls the product of that lower level process within
+a full fledged installer.  Like the other process classes, this uses a
+<a href="#configfactory">ConfigFactory</a> to automatically produce the config 
+objects it requires, but allows a client to modify those objects before 
+they are implemented by defining a derived class and overriding certain 
+functions as needed for this purpose.       </p>
+<p>This process is basically a simplified version of a
+<a href="#robustinstallerprocess">RobustInstallerProcess</a>.  Use <em>that</em> class instead
+if you need to build an installable distribution which does NOT involve
+a Python to binary conversion process (e.g. packaging binaries
+produced in another language with some other compiler), or if
+you have more comprehensive needs such as producing multiple Python derived 
+binaries or installable &ldquo;packages&rdquo; bundled together. </p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>PyToBinInstallerProcess( configFactory, 
+     name=&quot;Python To Binary Installer Process&quot;,
+     isDesktopTarget=False, isHomeDirTarget=False )
+</code></pre></div>
+
+<p>Attributes &amp; default values:</p>
+<div class="codehilite"><pre><span></span><code>configFactory = &lt;required&gt;
+
+name = &quot;Python To Binary Installer Process&quot;
+
+isDesktopTarget = False
+isHomeDirTarget = False
+
+isInstallTest            = False
+isAutoInstallTest        = False
+isVerboseInstallTest     = True
+isScriptDebugInstallTest = False
+</code></pre></div>
+
+<p>&ldquo;Virtual&rdquo; configuration functions to override:<br />
+(Note the order shown is that in which these functions are invoked)</p>
+<div class="codehilite"><pre><span></span><code>onInitialize()   
+onPyPackageProcess( prc )
+onOpyConfig( cfg )                    
+onPyInstConfig( cfg )
+onMakeSpec( spec )
+onQtIfwConfig( cfg )              
+onFinalize()
+</code></pre></div>
+
+<p>Use:</p>
+<p>Simply invoke the <code>run()</code> function to execute the process. </p>
+<p>Examples:</p>
+<p><a href="Examples.html#hello-world-tk-example">Hello World Tk Example</a>      <br />
+<a href="Examples.html#hello-silent-example">Hello Silent Example</a></p>
+<h4 id="configfactory-name">configFactory, name<a class="headerlink" href="#configfactory-name" title="Permanent link">&para;</a></h4>
+<p>See the documentation for these attributes as provided for the 
+<a href="#pytobinpackageprocess">PyToBinPackageProcess</a> class.  </p>
+<h4 id="isdesktoptarget-ishomedirtarget">isDesktopTarget, isHomeDirTarget<a class="headerlink" href="#isdesktoptarget-ishomedirtarget" title="Permanent link">&para;</a></h4>
+<p>Set either of these to <code>True</code>, to have the final installer that is produced 
+moved to either of these respective locations in the end.<br />
+If neither are <code>True</code>, the installer is simply left in the build directory.
+If both are <code>True</code>, priority is given to <code>isDesktopTarget</code>.  </p>
+<h4 id="isinstalltest-isautoinstalltest-isverboseinstalltest">isInstallTest, isAutoInstallTest, isVerboseInstallTest<a class="headerlink" href="#isinstalltest-isautoinstalltest-isverboseinstalltest" title="Permanent link">&para;</a></h4>
+<p>Upon building the installer (and moving it to a target directory if so
+directed), the installer will be launched when either <code>isInstallTest</code>,
+or <code>isAutoInstallTest</code> is enabled. The <code>isVerboseInstallTest</code> option controls
+the level of debugging output logged to the console during the installation.</p>
+<p>The <code>isInstallTest</code> simply launches the installer. In contrast, <code>isAutoInstallTest</code>
+runs it in &ldquo;auto pilot&rdquo; mode (i.e. performs the installation as well).  Note that an 
+&ldquo;elevated privileges&rdquo; option was NOT provided as such is to built into all silent 
+installers (i.e. they auto elevate themselves), and &ldquo;loud&rdquo;/gui installers have their 
+own internal controls for this. </p>
+<h4 id="isscriptdebuginstalltest">isScriptDebugInstallTest<a class="headerlink" href="#isscriptdebuginstalltest" title="Permanent link">&para;</a></h4>
+<p>This flag may be useful in the event you are embedding scripts into an installer
+via a <a href="ConfigClasses.html#qtifwexternalop">QtIfwExternalOp</a> using an<br />
+<a href="LowLevel.html#executablescript">ExecutableScript</a>.  When enabled, the dynamically
+generated script (with installer driven value substitutions where applicable) 
+will be left behind in a temp folder after running the installer,
+rather than auto purging that upon completion.  If you have effectively built the 
+script via Python &ldquo;helpers&rdquo; using a function e.g. 
+<code>QtIfwExternalOp.CreateStartupEntry(...)</code>, this may be especially helpful to see
+what was actually produced and executed, through a series of abstraction layers
+that ultimately produce platform specific scripts, nested under the hood inside
+an installer.   </p>
+<h4 id="oninitialize-onfinalize">onInitialize(), onFinalize()<a class="headerlink" href="#oninitialize-onfinalize" title="Permanent link">&para;</a></h4>
+<p>See the documentation for these functions as provided for the 
+<a href="#pytobinpackageprocess">PyToBinPackageProcess</a> class.  </p>
+<h4 id="onopyconfig-cfg-onpyinstconfig-cfg-onmakespec-spec">onOpyConfig( cfg ), onPyInstConfig( cfg ), onMakeSpec( spec ),<a class="headerlink" href="#onopyconfig-cfg-onpyinstconfig-cfg-onmakespec-spec" title="Permanent link">&para;</a></h4>
+<p>See the documentation for these functions as provided for the 
+<a href="#pytobinpackageprocess">PyToBinPackageProcess</a> class.  </p>
+<h4 id="onpypackageprocess-prc">onPyPackageProcess( prc )<a class="headerlink" href="#onpypackageprocess-prc" title="Permanent link">&para;</a></h4>
+<p>As stated in the overview, this class generates and employs its own 
+<a href="#pytobinpackageprocess">PyToBinPackageProcess</a> object. Upon doing so, it
+passes that object through this function, where you can manipulate it as
+needed for your implementation.  </p>
+<h4 id="onqtifwconfig-cfg">onQtIfwConfig( cfg )<a class="headerlink" href="#onqtifwconfig-cfg" title="Permanent link">&para;</a></h4>
+<p>After building a &ldquo;package&rdquo; from the Python source, QtIFW is employed to build
+an installer for deploying that content.  Those tasks are driven by a master <br />
+<a href="ConfigClasses.html#qtifwconfig">QtIfwConfig</a> object.  A collection of related
+sub components are nested inside of that (e.g. <a href="ConfigClasses.html#qtifwpackage">QtIfwPackage</a>).</p>
+<p>Before running the process to build the installer, that master config object
+is passed through this function, where you can manipulate it as needed for your 
+implementation.  </p>
+<h2 id="iexpressinstallerprocess">IExpressInstallerProcess<a class="headerlink" href="#iexpressinstallerprocess" title="Permanent link">&para;</a></h2>
+<p>A IExpressInstallerProcess process <em>contains</em> an 
+<a href="#iexpresspackageprocess">IExpressPackageProcess</a>
+within it, and thus provides the full functionality of that to begin with.
+In addition, however, it rolls the product of that lower level process within
+a full fledged installer.  Like the other process classes, this uses a
+<a href="#configfactory">ConfigFactory</a> to automatically produce the config 
+objects it requires, but allows a client to modify those objects before 
+they are implemented by defining a derived class and overriding certain 
+functions as needed for this purpose.       </p>
+<p>This process is basically a simplified version of a
+<a href="#robustinstallerprocess">RobustInstallerProcess</a>.  Use <em>that</em> class instead
+if you need to build an installable distribution if
+you have more comprehensive needs such as producing multiple 
+binaries or installable &ldquo;packages&rdquo; bundled together. </p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>IExpressInstallerProcess( configFactory, 
+     name=&quot;Windows Script to Binary Installer Process&quot;,
+     isDesktopTarget=False, isHomeDirTarget=False )
+</code></pre></div>
+
+<p>Attributes &amp; default values:</p>
+<div class="codehilite"><pre><span></span><code>configFactory = &lt;required&gt;
+
+name = &quot;Windows Script to Binary Installer Process&quot;
+
+isDesktopTarget = False
+isHomeDirTarget = False
+
+isInstallTest            = False
+isAutoInstallTest        = False
+isVerboseInstallTest     = True
+isScriptDebugInstallTest = False
+</code></pre></div>
+
+<p>&ldquo;Virtual&rdquo; configuration functions to override:<br />
+(Note the order shown is that in which these functions are invoked)</p>
+<div class="codehilite"><pre><span></span><code>onInitialize()   
+onIExpressPackageProcess( prc )
+onIExpressConfig( cfg )
+onQtIfwConfig( cfg )              
+onFinalize()
+</code></pre></div>
+
+<p>Use:</p>
+<p>Simply invoke the <code>run()</code> function to execute the process. </p>
+<h2 id="robustinstallerprocess">RobustInstallerProcess<a class="headerlink" href="#robustinstallerprocess" title="Permanent link">&para;</a></h2>
+<p>A RobustInstallerProcess is the most advanced and intricate of these processes.<br />
+It exposes details of the build process that <a href="#pytobininstallerprocess">PyToBinInstallerProcess</a> 
+insulates from the user.  In addition to providing access to more nitty gritty details,
+this class is primarily intended for use when you need to produce multiple binaries
+from Python scripts and/or multiple installable &ldquo;packages&rdquo; bundled together.
+This class is also useful for building an installer which does NOT involve
+a Python to binary conversion process (e.g. packaging binaries
+produced in another language, using some other compiler).</p>
+<p>What is most notable about this process class, compared to others, is that
+uses a &ldquo;Master Config Factory&rdquo;, plus a dictionary containing multiple 
+&ldquo;Py Package Config Factories&rdquo;.  Further, it can additionally use a list of 
+independent (non-Python related) &ldquo;Qt IFW Packages&rdquo;.</p>
+<p>The &ldquo;Master Config Factory&rdquo; is used to define the top level &ldquo;wrapper&rdquo; installer.
+For each element in the &ldquo;Py Package Config Factories&rdquo; dictionary, a &ldquo;package&rdquo; is created
+from a Python script.  Those entries are sub components within the whole, built using
+separate instances of a <a href="#pytobinpackageprocess">PyToBinPackageProcess</a>.</p>
+<p>If a value in the &ldquo;Py Package Config Factories&rdquo; dictionary is set to <code>None</code>, one will 
+be generated for it, by <em>cloning</em> the master config.  That cloned ConfigFactory will 
+then be passed to the overridable function <code>onConfigFactory( key, factory )</code>.  Within
+that, your implementation may modify the object, but it will not have to start from
+&ldquo;scratch&rdquo; because whatever common attributes might be shared between the master and 
+the sub components will already be defined (hence the purpose of the cloning option).  </p>
+<p>The other notable attribute of this class is the list of &ldquo;Qt IFW Packages&rdquo;.
+Items in this list may be dynamic <a href="ConfigClasses.html#qtifwpackage">QtIfwPackage</a> objects,
+or be simple strings defining relative paths to QtIFW packages which are defined
+as external resources, in the traditional (hard coded, content containing) IFW manner.
+Using this class attribute, you may build installers with packages containing 
+other programs that are not Python related, or may be comprised of optional 
+resources that the end user might wish to selectively install.  </p>
+<p>Constructor:</p>
+<div class="codehilite"><pre><span></span><code>RobustInstallerProcess( masterConfigFactory, 
+  name=&quot;Multi-Package Python to Binary Installer Process&quot;,
+  pyPkgConfigFactoryDict={},
+  iExpressPkgConfigFactoryDict={},  
+  ifwPackages=[],                                     
+  isDesktopTarget=False, isHomeDirTarget=False )
+</code></pre></div>
+
+<p>Attributes &amp; default values:</p>
+<div class="codehilite"><pre><span></span><code>configFactory = &lt;required&gt;
+
+name = &quot;Multi-Package Python to Binary Installer Process&quot;
+
+pyToBinPkgProcesses  = []        
+iexpressPkgProcesses = []
+ifwPackages          = []
+
+isDesktopTarget = False
+isHomeDirTarget = False
+
+isInstallTest            = False
+isAutoInstallTest        = False
+isVerboseInstallTest     = True
+isScriptDebugInstallTest = False
+</code></pre></div>
+
+<p>&ldquo;Virtual&rdquo; configuration functions to override:<br />
+(Note the order shown is that in which these functions are invoked)</p>
+<div class="codehilite"><pre><span></span><code>onInitialize()   
+onConfigFactory( key, factory )
+
+onPyPackageProcess( key, prc )
+onPyPackageInitialize( key )
+onOpyConfig( key, cfg )                    
+onPyInstConfig( key, cfg )
+onMakeSpec( key, spec )   
+onPyPackageFinalize( key )
+onPyPackagesBuilt( pkgs )
+
+onIExpressPackageProcess( key, prc )
+onIExpressPackageInitialize( key )
+onIExpressConfig( key, cfg )
+onIExpressPackageFinalize( key )
+onIExpressPackagesBuilt( pkgs )
+
+onQtIfwConfig( cfg )
+onPackagesStaged( cfg, pkgs )            
+onFinalize()
+</code></pre></div>
+
+<p>Use:</p>
+<p>Simply invoke the <code>run()</code> function to execute the process. </p>
+<p>Examples:</p>
+<p><a href="Examples.html#hello-packages-example">Hello Packages Example</a>      <br />
+<a href="Examples.html#hello-merge-example">Hello Merge Example</a></p>
+<h4 id="configfactory-name_1">configFactory, name<a class="headerlink" href="#configfactory-name_1" title="Permanent link">&para;</a></h4>
+<p>See the documentation for these attributes as provided for the 
+<a href="#pytobinpackageprocess">PyToBinPackageProcess</a> class.  </p>
+<p>Note <code>configFactory</code> == &ldquo;Master Config Factory&rdquo; for this class. 
+See the class overview for an explanation of what that means.</p>
+<h4 id="pytobinpkgprocesses-iexpresspkgprocesses-ifwpackages">pyToBinPkgProcesses, iexpressPkgProcesses, ifwPackages<a class="headerlink" href="#pytobinpkgprocesses-iexpresspkgprocesses-ifwpackages" title="Permanent link">&para;</a></h4>
+<p>While technically exposed for access by an implementation,
+<strong>it is not generally advised that you directly modify these attributes</strong>.</p>
+<p>The <code>pyToBinPkgProcesses</code> list will be generated for you.  If you 
+need to manipulate a given sub process definition before its use, 
+it is recommended that you do so via <code>onPyPackageProcess( key, prc )</code>.
+If you wish to manipulate the packages after they have all been 
+built, that should normally be done via <code>onPyPackagesBuilt( pkgs )</code>.   </p>
+<p><code>iexpressPkgProcesses</code> &hellip;</p>
+<p>The <code>ifwPackages</code> attribute should normally be defined prior to
+creating this class, and simply be passed to its constructor. 
+See the class overview for an explanation of how this attribute
+is used.</p>
+<h4 id="isdesktoptarget-ishomedirtarget_1">isDesktopTarget, isHomeDirTarget<a class="headerlink" href="#isdesktoptarget-ishomedirtarget_1" title="Permanent link">&para;</a></h4>
+<p>See the documentation for these attributes as provided for the 
+<a href="#pytobininstallerprocess">PyToBinInstallerProcess</a> class.  </p>
+<h4 id="isinstalltest-isautoinstalltest-isverboseinstalltest_1">isInstallTest, isAutoInstallTest, isVerboseInstallTest<a class="headerlink" href="#isinstalltest-isautoinstalltest-isverboseinstalltest_1" title="Permanent link">&para;</a></h4>
+<p>See the documentation for these attributes as provided for the 
+<a href="#pytobininstallerprocess">PyToBinInstallerProcess</a> class.  </p>
+<h4 id="oninitialize-onfinalize_1">onInitialize(), onFinalize()<a class="headerlink" href="#oninitialize-onfinalize_1" title="Permanent link">&para;</a></h4>
+<p>See the documentation for these functions as provided for the 
+<a href="#pytobinpackageprocess">PyToBinPackageProcess</a> class.  </p>
+<p>Note these are to be used in relation to the <em>master</em> process.  </p>
+<h4 id="onpypackageinitialize-key-onpypackagefinalize-key">onPyPackageInitialize( key ), onPyPackageFinalize( key )<a class="headerlink" href="#onpypackageinitialize-key-onpypackagefinalize-key" title="Permanent link">&para;</a></h4>
+<p>These functions are analogous to <code>onInitialize()</code> and <code>onFinalize()</code>.
+They are, however, invoked around each <a href="#pytobinpackageprocess">PyToBinPackageProcess</a> 
+this <em>master</em> process runs.</p>
+<p>A <code>key</code> argument is provided to supply a means by which to identify the package being built
+upon on the given invocation of these functions.  The keys passed here align with
+those defined in the <code>pyPkgConfigFactoryDict</code> argument passed to the constructor.</p>
+<h4 id="onconfigfactory-key-factory">onConfigFactory( key, factory )<a class="headerlink" href="#onconfigfactory-key-factory" title="Permanent link">&para;</a></h4>
+<p>This function receives a clone of the &ldquo;Master Config Factory&rdquo; for each entry in
+the &ldquo;Py Package Config Factories&rdquo; dictionary that has a value set to <code>None</code>.</p>
+<p>A <code>key</code> argument is provided to supply a means by which to identify the Factory 
+being configured upon on the given invocation of this function.  The keys passed 
+here align with those defined in the <code>pyPkgConfigFactoryDict</code> argument passed to 
+the constructor.</p>
+<p>See the class overview for an explanation of how this is used.</p>
+<h4 id="onopyconfig-key-cfg-onpyinstconfig-key-cfg-onmakespec-key-spec">onOpyConfig( key, cfg ), onPyInstConfig( key, cfg ), onMakeSpec( key, spec )<a class="headerlink" href="#onopyconfig-key-cfg-onpyinstconfig-key-cfg-onmakespec-key-spec" title="Permanent link">&para;</a></h4>
+<p>See the documentation for these functions as provided for the 
+<a href="#pytobinpackageprocess">PyToBinPackageProcess</a> class.  </p>
+<p>In addition to the standard object passed through these functions, a <code>key</code>
+is provided to supply a means by which to identify the package being built
+upon on the given invocation of these functions.  The keys passed here align with
+those defined in the <code>pyPkgConfigFactoryDict</code> argument passed to the constructor.</p>
+<h4 id="onpypackageprocess-key-prc">onPyPackageProcess( key, prc )<a class="headerlink" href="#onpypackageprocess-key-prc" title="Permanent link">&para;</a></h4>
+<p>See the documentation for this function as provided for the 
+<a href="#pytobininstallerprocess">PyToBinInstallerProcess</a> class.  </p>
+<p>In addition to the standard object passed through this function, a <code>key</code>
+is provided to supply a means by which to identify the package being built
+upon on the given invocation of this function.  The keys passed here align with 
+those defined in the <code>pyPkgConfigFactoryDict</code> argument passed to the constructor.</p>
+<h4 id="onpypackagesbuilt-pkgs">onPyPackagesBuilt( pkgs )<a class="headerlink" href="#onpypackagesbuilt-pkgs" title="Permanent link">&para;</a></h4>
+<p>After all of the Python packages have been built (if applicable), this function is invoked
+prior to running the installer building process.  The <code>pkgs</code> parameter this 
+receives is the list of corresponding <a href="ConfigClasses.html#qtifwpackage">QtIfwPackage</a> 
+objects, including those which have been generated from Python source.</p>
+<h4 id="onpackagesstaged-cfg-pkgs">onPackagesStaged( cfg, pkgs )<a class="headerlink" href="#onpackagesstaged-cfg-pkgs" title="Permanent link">&para;</a></h4>
+<p>After ALL of the packages have been fully staged, just prior to running the QtIFW process,
+this function is invoked. The <code>cfg</code> parameter this receives is the master <br />
+<a href="ConfigClasses.html#qtifwconfig">QtIfwConfig</a> object used to drive the installer build. <br />
+The <code>pkgs</code> parameter this receives is the list of<br />
+<a href="ConfigClasses.html#qtifwpackage">QtIfwPackage</a> objects. Note, you could also access those
+via <code>cfg.packages</code>.  The <code>pkgs</code> parameter is provided for convenience . </p>
+<p>This function maybe used to manipulate the packages before the final send off
+to QtIFW.  See <a href="LowLevel.html#qtifwpackage-list-manipulation">QtIfwPackage list manipulation</a> 
+for details, utility functions, and ideas surrounding how this can be applied. </p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="Examples.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Examples" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Examples
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="ConfigClasses.html" class="md-footer__link md-footer__link--next" aria-label="Next: Configuration Classes" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Configuration Classes
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
+      
+    
+  </body>
+</html>

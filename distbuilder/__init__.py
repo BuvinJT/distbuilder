@@ -1,10 +1,10 @@
-# DOCS > NULL
+# docs > null
 from ._version import __version__ 
 
-# DOCS > Config Factory.md
+# docs > Config Factory.md
 from distbuilder.process import ConfigFactory
 
-# DOCS > Qt Installer Framework.md
+# docs > Qt Installer Framework.md
 from distbuilder.process import RobustInstallerProcess
 from distbuilder.qt_installer import( 
       QtIfwConfig 
@@ -75,7 +75,7 @@ from distbuilder.qt_installer import(
     , QT_IFW_POST_INSTALL 
 )
        
-# DOCS > PyInstaller.md       
+# docs > PyInstaller.md       
 from distbuilder.process import( 
       PyToBinPackageProcess 
     , PyToBinInstallerProcess
@@ -93,7 +93,7 @@ from distbuilder.py_installer import(
     , PyInstallerMajorMinorVer
 )
 
-# DOCS > IExpress.md
+# docs > IExpress.md
 from distbuilder.process import( 
       IExpressPackageProcess
     , IExpressInstallerProcess
@@ -109,7 +109,7 @@ from distbuilder.iexpress import(
     , iExpLibPath
 )
 
-# DOCS > Code Signing.md
+# docs > Code Signing.md
 from distbuilder.code_sign import( 
       SelfSignedCertConfig 
     , CodeSignConfig 
@@ -122,7 +122,7 @@ from distbuilder.code_sign import(
     , signExe 
 )
 
-# DOCS > Python Obfuscation.md
+# docs > Python Obfuscation.md
 from distbuilder.opy_library import( 
       OpyConfigExt as OpyConfig 
     , OpyPatch 
@@ -135,7 +135,7 @@ from distbuilder.opy_library import(
 
 ExtLibHandling = OpyConfig.ExtLibHandling 
 
-# DOCS > Python pip.md
+# docs > Python pip.md
 from distbuilder.pip_installer import( 
       PipConfig 
     , updatePip 
@@ -145,7 +145,7 @@ from distbuilder.pip_installer import(
     , vcsUrl
 )
 
-# DOCS > Qt CPP.md 
+# docs > Qt CPP.md 
 """ DOCS > VIRTUAL
 from distbuilder.qt_cpp import (
     QtCppConfig, 
@@ -155,18 +155,18 @@ from distbuilder.qt_cpp import (
 )
 """
             
-# DOCS > Logging.md            
+# docs > Logging.md            
 from distbuilder.log import( 
     Logger, startLogging, stopLogging, isLogging, log )
 
-# DOCS > Utility Classes.md            
+# docs > Utility Classes.md            
 from distbuilder.util import(
       RawConfigParser, ConfigParser, SafeConfigParser
     , ExecutableScript    
     , WindowsExeVersionInfo        
 )
 
-# DOCS > Utility Functions.md            
+# docs > Utility Functions.md            
 from distbuilder.util import(
       absPath 
     , homePath
@@ -247,7 +247,7 @@ from distbuilder.util import(
 def assertBuilderVer( ver ): 
     assertMinVer( __version__, ver, descr="Distribution Builder Library" )
 
-# DOCS > Utility Constants.md            
+# docs > Utility Constants.md            
 from distbuilder.util import(
       IS_WINDOWS 
     , IS_LINUX 
