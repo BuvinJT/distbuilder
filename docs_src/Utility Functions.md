@@ -216,7 +216,7 @@ ______
 
 ______
 
-### **move**`#!py3 (src, dst, copy_function=<function copy2 at 0x0247A738>)` { #move data-toc-label=move }
+### **move**`#!py3 (src, dst, copy_function=<function copy2 at 0x022A9738>)` { #move data-toc-label=move }
 
 Recursively move a file or directory to another location. This is
 similar to the Unix "mv" command. Return the file or directory's

@@ -74,7 +74,7 @@ D.clear() -> None.  Remove all items from D.
 ### *obj*.**defaults**`#!py3 (self)` { #defaults data-toc-label=defaults }
 
 
-### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>)` { #get data-toc-label=get }
+### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>)` { #get data-toc-label=get }
 
 Get an option value for a given section.
 
@@ -89,13 +89,13 @@ all interpolations are expanded in the return values.
 Arguments `raw', `vars', and `fallback' are keyword only.
 
 The section DEFAULT is special.
-### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getboolean data-toc-label=getboolean }
+### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getboolean data-toc-label=getboolean }
 
 
-### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getfloat data-toc-label=getfloat }
+### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getfloat data-toc-label=getfloat }
 
 
-### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getint data-toc-label=getint }
+### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getint data-toc-label=getint }
 
 
 ### *obj*.**has_option**`#!py3 (self, section, option)` { #has_option data-toc-label=has_option }
@@ -108,7 +108,7 @@ assumed. If the specified `section' does not exist, returns False.
 Indicate whether the named section is present in the configuration.
 
 The DEFAULT section is not acknowledged.
-### *obj*.**items**`#!py3 (self, section=<object object at 0x01604900>, raw=False, vars=None)` { #items data-toc-label=items }
+### *obj*.**items**`#!py3 (self, section=<object object at 0x01E44900>, raw=False, vars=None)` { #items data-toc-label=items }
 
 Return a list of (name, value) tuples for each option in a section.
 
@@ -128,7 +128,7 @@ Return a list of option names for the given section name.
 ### *obj*.**optionxform**`#!py3 (self, optionstr)` { #optionxform data-toc-label=optionxform }
 
 
-### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01604098>)` { #pop data-toc-label=pop }
+### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01E44098>)` { #pop data-toc-label=pop }
 
 D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
 If key is not found, d is returned if given, otherwise KeyError is raised.
@@ -406,7 +406,7 @@ D.clear() -> None.  Remove all items from D.
 ### *obj*.**defaults**`#!py3 (self)` { #defaults data-toc-label=defaults }
 
 
-### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>)` { #get data-toc-label=get }
+### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>)` { #get data-toc-label=get }
 
 Get an option value for a given section.
 
@@ -421,13 +421,13 @@ all interpolations are expanded in the return values.
 Arguments `raw', `vars', and `fallback' are keyword only.
 
 The section DEFAULT is special.
-### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getboolean data-toc-label=getboolean }
+### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getboolean data-toc-label=getboolean }
 
 
-### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getfloat data-toc-label=getfloat }
+### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getfloat data-toc-label=getfloat }
 
 
-### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getint data-toc-label=getint }
+### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getint data-toc-label=getint }
 
 
 ### *obj*.**has_option**`#!py3 (self, section, option)` { #has_option data-toc-label=has_option }
@@ -440,7 +440,7 @@ assumed. If the specified `section' does not exist, returns False.
 Indicate whether the named section is present in the configuration.
 
 The DEFAULT section is not acknowledged.
-### *obj*.**items**`#!py3 (self, section=<object object at 0x01604900>, raw=False, vars=None)` { #items data-toc-label=items }
+### *obj*.**items**`#!py3 (self, section=<object object at 0x01E44900>, raw=False, vars=None)` { #items data-toc-label=items }
 
 Return a list of (name, value) tuples for each option in a section.
 
@@ -460,7 +460,7 @@ Return a list of option names for the given section name.
 ### *obj*.**optionxform**`#!py3 (self, optionstr)` { #optionxform data-toc-label=optionxform }
 
 
-### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01604098>)` { #pop data-toc-label=pop }
+### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01E44098>)` { #pop data-toc-label=pop }
 
 D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
 If key is not found, d is returned if given, otherwise KeyError is raised.
@@ -615,7 +615,7 @@ D.clear() -> None.  Remove all items from D.
 ### *obj*.**defaults**`#!py3 (self)` { #defaults data-toc-label=defaults }
 
 
-### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>)` { #get data-toc-label=get }
+### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>)` { #get data-toc-label=get }
 
 Get an option value for a given section.
 
@@ -630,13 +630,13 @@ all interpolations are expanded in the return values.
 Arguments `raw', `vars', and `fallback' are keyword only.
 
 The section DEFAULT is special.
-### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getboolean data-toc-label=getboolean }
+### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getboolean data-toc-label=getboolean }
 
 
-### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getfloat data-toc-label=getfloat }
+### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getfloat data-toc-label=getfloat }
 
 
-### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01604900>, **kwargs)` { #getint data-toc-label=getint }
+### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getint data-toc-label=getint }
 
 
 ### *obj*.**has_option**`#!py3 (self, section, option)` { #has_option data-toc-label=has_option }
@@ -649,7 +649,7 @@ assumed. If the specified `section' does not exist, returns False.
 Indicate whether the named section is present in the configuration.
 
 The DEFAULT section is not acknowledged.
-### *obj*.**items**`#!py3 (self, section=<object object at 0x01604900>, raw=False, vars=None)` { #items data-toc-label=items }
+### *obj*.**items**`#!py3 (self, section=<object object at 0x01E44900>, raw=False, vars=None)` { #items data-toc-label=items }
 
 Return a list of (name, value) tuples for each option in a section.
 
@@ -669,7 +669,7 @@ Return a list of option names for the given section name.
 ### *obj*.**optionxform**`#!py3 (self, optionstr)` { #optionxform data-toc-label=optionxform }
 
 
-### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01604098>)` { #pop data-toc-label=pop }
+### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01E44098>)` { #pop data-toc-label=pop }
 
 D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
 If key is not found, d is returned if given, otherwise KeyError is raised.

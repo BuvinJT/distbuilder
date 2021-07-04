@@ -39,3 +39,5 @@ markdown_extensions:
     - pymdownx.emoji
     - pymdownx.inlinehilite
     - pymdownx.magiclink
+docs_dir: docs_src
+site_dir: docs

@@ -433,7 +433,7 @@ ______
 
 ______
 
-### **pyScriptToExe**`#!py3 (name=None, entryPointPy=None, pyInstConfig=<py_installer.PyInstallerConfig object at 0x04419C50>, opyConfig=None, distResources=None, distDirs=None)` { #pyScriptToExe data-toc-label=pyScriptToExe }
+### **pyScriptToExe**`#!py3 (name=None, entryPointPy=None, pyInstConfig=<py_installer.PyInstallerConfig object at 0x040DDF90>, opyConfig=None, distResources=None, distDirs=None)` { #pyScriptToExe data-toc-label=pyScriptToExe }
 
 returns: (binDir, binPath) 
 
