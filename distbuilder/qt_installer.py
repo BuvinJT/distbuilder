@@ -5654,7 +5654,8 @@ class QtIfwExternalOp:
                     exeName = normBinaryName( pkg.exeName, pkg.isGui )                        
                 exePath = joinPath( exeDir, exeName ) 
         if exePath is None or displayName is None:
-            raise DistBuilderError( "Missing required arguments" )    
+            raise DistBuilderError( "Missing required arguments" )
+        exePath = normpath(exePath)    
         if IS_WINDOWS:
             # TODO: IS THIS SUPPORTED IN LEGACY WINDOWS VERSIONS?
             #     If not, just fall back to shortcuts in startup folders... 
@@ -5662,7 +5663,7 @@ class QtIfwExternalOp:
             return QtIfwExternalOp.CreateRegistryEntry( QtIfwExternalOp.AUTO_UNDO, 
                 key = "%s:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run" % (
                     "HKLM" if isAllUsers else "HKCU" ),
-                valueName=displayName, value=exePath )
+                valueName=displayName, value='"%s"' % (exePath,) )
         elif IS_LINUX: 
             # TODO: Fill in
             util._onPlatformErr()
