@@ -5657,13 +5657,12 @@ class QtIfwExternalOp:
             raise DistBuilderError( "Missing required arguments" )
         exePath = normpath(exePath)    
         if IS_WINDOWS:
-            # TODO: IS THIS SUPPORTED IN LEGACY WINDOWS VERSIONS?
-            #     If not, just fall back to shortcuts in startup folders... 
-            # See: https://devblogs.microsoft.com/powershell/how-to-access-or-modify-startup-items-in-the-window-registry/
+            # See: https://devblogs.microsoft.com/powershell/how-to-access-or-modify-startup-items-in-the-window-registry/            
+            exePath = '\'"\' + %s + \'"\'' % (QtIfwExternalOp.psNormPath(exePath),)            
             return QtIfwExternalOp.CreateRegistryEntry( QtIfwExternalOp.AUTO_UNDO, 
                 key = "%s:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run" % (
                     "HKLM" if isAllUsers else "HKCU" ),
-                valueName=displayName, value='"%s"' % (exePath,) )
+                valueName=displayName, value=exePath, isAutoQuoteValue=False )            
         elif IS_LINUX: 
             # TODO: Fill in
             util._onPlatformErr()
@@ -5715,10 +5714,12 @@ class QtIfwExternalOp:
         @staticmethod
         def CreateRegistryEntry( event, key, valueName=None, 
                                  value="", valueType="String",
+                                 isAutoQuoteValue=True,
                                  isAutoBitContext=True ):
             return QtIfwExternalOp.__genScriptOp( event, 
                 script=QtIfwExternalOp.CreateRegistryEntryScript( 
-                    key, valueName, value, valueType, isAutoBitContext ), 
+                    key, valueName, value, valueType, isAutoQuoteValue, 
+                    isAutoBitContext ), 
                 uninstScript=QtIfwExternalOp.RemoveRegistryEntryScript( 
                     key, valueName, isAutoBitContext ), 
                 isElevated=True )
@@ -5832,6 +5833,15 @@ class QtIfwExternalOp:
     @staticmethod
     def appleScriptSelfDestructSnippet(): 
         return "" #TODO: Fill in NIX/MAC
+
+    @staticmethod #TODO: Add equivalent for other script types 
+    def psNormPath( path, isAutoQuote=True ): 
+        if( isAutoQuote and 
+            not path.startswith('$') and 
+            not path.startswith('"') and 
+            not path.startswith("'") ):
+            path = '"%s"' % (path,)             
+        return "[IO.Path]::GetFullPath( %s )" % (path,)
 
     @staticmethod
     def __scriptRootName( prefix ):
@@ -6347,15 +6357,21 @@ Start-Process $prog {wait}{hide}-ArgumentList $args
         @staticmethod
         def CreateRegistryEntryScript( key, valueName=None, 
                                        value="", valueType="String",
+                                       isAutoQuoteValue=True,
                                        isAutoBitContext=True,
                                        replacements=None ):
             valueName = "-Name '%s'" % (valueName,) if valueName else ""
             if value is None: value=""
+            if( isAutoQuoteValue and 
+                not value.startswith('$') and 
+                not value.startswith('"') and 
+                not value.startswith("'") ):                 
+                value = "'%s'" % (value,)
             return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
                 "createRegEntry" ), extension="ps1", script=([
                 QtIfwExternalOp.__psSetBitContext( isAutoBitContext ),                
                 "$key='%s'" % (key,),
-                "$value='%s'" % (value,),
+                "$value=%s" % (value,),
                 "$type='%s'" % (valueType,),
                 "Try{",
                 "    Get-ItemPropertyValue -Path $key %s -ErrorAction Stop | Out-Null"
