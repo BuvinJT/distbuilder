@@ -1,9 +1,16 @@
-from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
-    QtIfwControlScript, QtIfwPackageScript, \
-    QtIfwExternalOp, ExecutableScript, \
-    qtIfwOpDataPath, qtIfwDetachedOpDataPath, qtIfwDynamicValue, \
-    IS_WINDOWS, QT_IFW_DESKTOP_DIR, QT_IFW_HOME_DIR, QT_IFW_APPS_X86_DIR, \
-    joinPath 
+from distbuilder import( PyToBinInstallerProcess, ConfigFactory, 
+    QtIfwControlScript, QtIfwPackageScript, 
+    QtIfwExternalOp, ExecutableScript, startLogging,
+    normBinaryName, joinPath, joinPathQtIfw, 
+    qtIfwOpDataPath, qtIfwDynamicValue, qtIfwDetachedOpDataPath, 
+    IS_WINDOWS, IS_LINUX, 
+    QT_IFW_DESKTOP_DIR, QT_IFW_HOME_DIR, QT_IFW_APPS_DIR, QT_IFW_APPS_X86_DIR  
+    )
+
+# NOTE: to evaluate what this demo accomplishes: look at contents of the 
+# assorted files left on the desktop as a result of running the installer.
+    
+startLogging()
     
 ON_INSTALL = QtIfwExternalOp.ON_INSTALL
 opDataPath = QtIfwExternalOp.opDataPath
@@ -13,6 +20,8 @@ DEMO_ARG_TO_OPS_FILE_NAME = DEMO_ARG_TO_OPS_KEY
 
 if IS_WINDOWS:
     APP_FOUND_FILENAME = "AppFound"
+if IS_LINUX:
+    PKG_FOUND_FILENAME = "PkgFound"
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Cascading Scripts Example"
@@ -47,8 +56,9 @@ class BuildProcess( PyToBinInstallerProcess ):
             # installer/uninstaller.  This illustrates where other custom 
             # "operations" could fetch this information dynamically. 
             #
-            # You wish to optionally test this: 
-            #     QtIfwControlScript.writeDetachedOpDataFile
+            # Optionally, test this: 
+            #     QtIfwControlScript.writeDetachedOpDataFile 
+            #     (in place of QtIfwControlScript.writeOpDataFile)
             # With that, the temp file will persist beyond the life 
             # of the installer or uninstaller...            
             #
@@ -74,15 +84,16 @@ class BuildProcess( PyToBinInstallerProcess ):
                 )
     
         # A boolean state may be represented via a file's existence,
-        # created (or not) during an installer operation...
+        # created, or not created, during installer operations.
         # If optionally passing a variable name to CreateOpFlagFile, the 
-        # operation will pivot upon the boolean evaluation of that variable                      
+        # operation will pivot upon the boolean evaluation of that 
+        # QtScript managed value.                      
         def setBoolCascadeOp( fileName, varName=None ):
             return QtIfwExternalOp.CreateOpFlagFile( ON_INSTALL, 
                     fileName, varName )
 
         # A boolean state may be evaluated via a file's existence,
-        # during a subsequent installer operation...                      
+        # during any subsequently executed custom scripts you may add...                      
         def getBoolCascadeOp( fileName, destFilePath ):            
             createFileScript = ExecutableScript( "%sEvalFile" % (fileName,),  
                 script=([               
@@ -100,11 +111,12 @@ class BuildProcess( PyToBinInstallerProcess ):
             return QtIfwExternalOp( script=createFileScript, 
                 uninstScript=QtIfwExternalOp.RemoveFileScript( destFilePath ) )
 
-        # An installer variable may be set somewhere in the QtScript...
+        # An installer variable may be set at various stages in the QtScript.
+        # Using QtIfwPackageScript.preOpSupport is a convenient place to
+        # set values dynamically (during an installation context).
+        # That fires during the event prior to creating the operation objects.
+        # I.e. during an initialization phase of the installer. 
         def setInstallerVarInPreOp( pkgScript, varName, value ):
-            # Package Script preOpSupport may be a convenient place to
-            # set values dynamically (during installation).
-            # As demo, change the value assigned to see the results...
             pkgScript.preOpSupport = QtIfwPackageScript.setValue( 
                 varName, value )  
  
@@ -149,14 +161,19 @@ class BuildProcess( PyToBinInstallerProcess ):
             def setAppFoundFileOp( event, appName, is32BitRegistration, fileName ):
                 return QtIfwExternalOp.CreateWindowsAppFoundFlagFile( event, 
                     appName, fileName, isAutoBitContext=is32BitRegistration )                                        
+        
+        elif IS_LINUX:    
+            def setPackageFoundFileOp( event, altPkgNames, fileName ):
+                return QtIfwExternalOp.CreateExternPackageFoundFlagFile( 
+                    event, altPkgNames, fileName )
 
-            def launchAppIfFound( event, exePath, appFoundFileName ):               
-                return QtIfwExternalOp.RunProgram( event, 
-                    exePath, arguments=["Launched By Cascading Scripts"], 
-                    isHidden=False, isSynchronous=False, 
-                    runConditionFileName=appFoundFileName, 
-                    isRunConditionNegated=False )                                   
-
+        def launchAppIfFound( event, exePath, conditionalFileName ):               
+            return QtIfwExternalOp.RunProgram( event, 
+                exePath, arguments=["Launched By Cascading Scripts"], 
+                isHidden=False, isSynchronous=False, 
+                runConditionFileName=conditionalFileName, 
+                isRunConditionNegated=False )                                   
+        
         STATIC_BOOL_FILE_NAME       = "staticBoolData"
         STATIC_BOOL_EVAL_FILE_NAME  = "staticCascadingBool.txt"
         DYNAMIC_BOOL_FILE_NAME      = "dynamicBoolData"
@@ -196,19 +213,27 @@ class BuildProcess( PyToBinInstallerProcess ):
                 joinPath( QT_IFW_DESKTOP_DIR, TIME_FETCH_FILE_NAME ) ),
         ]         
 
+        APP_NAME     = "Hello Cascading Scripts Example"
+        COMPANY_NAME = "Some Company"
+        EXE_NAME     = "RunConditionsTest"            
+        EXE_PATH = joinPathQtIfw( QT_IFW_APPS_DIR, COMPANY_NAME, APP_NAME, 
+                                  normBinaryName( EXE_NAME ) )
+
+        # This demos conditionally launching an app on BOTH install and 
+        # uninstall.  Since operations are executed in REVERSE order during 
+        # uninstallation, for cascading scripts to flow into each other 
+        # correctly, we need to account for that nuance.  As such, this
+        # example shows a setAppFoundFileOp call in the list both before
+        # and after the launchAppIfFound.    
+
         if IS_WINDOWS:
-            APP_NAME     = "Hello Cascading Ops Example"
-            COMPANY_NAME = "Some Company"
-            EXE_NAME     = "RunConditionsTest.exe"            
+            # On Windows, we'll demo an easy means check for app installation 
+            # via a registry query done for you.
+            # Then, we pivot on if the app we want to launch was indicated 
+            # to be installed, from the first operation.  
             IS_32BIT_REG = False
             EXE_PATH = joinPath( QT_IFW_APPS_X86_DIR, COMPANY_NAME, APP_NAME, 
                                  EXE_NAME )
-            # This demos conditionally launching an app on BOTH install and 
-            # uninstall.  Since operations are executed in REVERSE order during 
-            # uninstallation, for cascading scripts to flow into each other 
-            # correctly, we need to account for that nuance.  As such, this
-            # example shows a setAppFoundFileOp call in the list both before
-            # and after the launchAppIfFound.    
             pkg.pkgScript.externalOps += [
                 setAppFoundFileOp( QtIfwExternalOp.ON_INSTALL,
                                    APP_NAME, IS_32BIT_REG, APP_FOUND_FILENAME ),
@@ -216,9 +241,27 @@ class BuildProcess( PyToBinInstallerProcess ):
                 setAppFoundFileOp( QtIfwExternalOp.ON_UNINSTALL,
                                    APP_NAME, IS_32BIT_REG, APP_FOUND_FILENAME ),                                
             ] 
-    
+        elif IS_LINUX:            
+            # On Linux, we'll demo an external package lookup / dependency.
+            # If the package is installed, the demo app will be launched.
+            # Otherwise, it will not. 
+            
+            REQUIRED_PKG = "screen"
+             
+            def setPackageFoundFileOp( event, altPkgNames, fileName ):
+                return QtIfwExternalOp.CreateExternPackageFoundFlagFile( 
+                    event, altPkgNames, fileName )
+
+            pkg.pkgScript.externalOps += [
+                setPackageFoundFileOp( QtIfwExternalOp.ON_INSTALL,
+                                       REQUIRED_PKG, PKG_FOUND_FILENAME ),
+                launchAppIfFound( QtIfwExternalOp.ON_BOTH, EXE_PATH, PKG_FOUND_FILENAME ),
+                setPackageFoundFileOp( QtIfwExternalOp.ON_UNINSTALL,
+                                       REQUIRED_PKG, PKG_FOUND_FILENAME ),                                
+            ] 
+                    
 p = BuildProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True
 # uncomment to leave scripts in temp directory, post any dynamic modifications 
-# p.isScriptDebugInstallTest = True   
+p.isScriptDebugInstallTest = True   
 p.run()       

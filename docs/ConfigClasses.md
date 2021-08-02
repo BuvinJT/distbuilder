@@ -441,7 +441,12 @@ Attributes:
     Name                     
     Version                  
     Publisher                
-    InstallerApplicationIcon  (icon base name, i.e. omit extension)
+
+    <Windows / Mac>        
+	    InstallerApplicationIcon  (icon root name, i.e. omit extension)
+    <Linux>
+        InstallerWindowIcon       (.png name, with extension)
+    
     Title                
     TitleColor                (HTML color code, such as "#88FF33")    
     
@@ -794,7 +799,7 @@ and [QtIfwKillOp](#qtifwexternalop) objects are used for `killOps`.
 Constructor:       
 
     QtIfwPackageScript( pkgName, pkgVersion, pkgSubDirName=None,
-                        shortcuts=[], bundledScripts=[], 
+                        shortcuts=[], bundledScripts=[], dynamicTexts={},
                         externalOps=[], installResources=[],
                         uiPages=[], widgets=[],
                         fileName="installscript.qs", 
@@ -811,12 +816,17 @@ Attributes & default values:
     
     shortcuts        = []    
     bundledScripts   = []    
+    dynamicTexts     = {} fileName:content
     externalOps      = []
     installResources = []
     killOps          = []
     preOpSupport     = None
     customOperations = None
     
+    <LINUX / MAC only>
+        externalDependencies     = []
+        areDependenciesPreserved = True
+            
     uiPages = []
     widgets = []
            
@@ -1014,6 +1024,44 @@ returned path in such.
 **isDoubleBackslash**: Optionally, use this on Windows, to escape backslashes 
 by doubling them up.
 
+#### QtIfwExternalOp.MakeDir
+    
+    MakeDir( event, dirPath,
+             owner=QT_IFW_USER, group=QT_IFW_USER, <LINUX/MAC ONLY>
+             access="755",                         <LINUX/MAC ONLY>
+             isElevated=True )
+
+#### QtIfwExternalOp.RemoveDir
+    
+    RemoveDir( event, dirPath, isElevated=True )
+
+#### QtIfwExternalOp.WriteFile
+
+    WriteFile( event, filePath, data, isOverwrite=True,
+               owner=QT_IFW_USER, group=QT_IFW_USER, <LINUX/MAC ONLY>
+               access="644",                         <LINUX/MAC ONLY>
+               isElevated=True )
+
+#### QtIfwExternalOp.RemoveFile
+
+    RemoveFile( event, filePath, isElevated=True )
+
+#### QtIfwExternalOp.CreateOpFlagFile
+
+    CreateOpFlagFile( event, fileName, dynamicVar=None, isElevated=True )
+    
+**dynamicVar**: Control the creation of this file via a dynamic installer 
+variable. Note that a "false" condition will be met when a boolean variable is
+explicitly set to `false`, or if the variable is undefined, or it contains no 
+content, or if it is set to `0`. The opposing `true` condition, required to 
+create the flag file, is simply the inverse of that. By default, this argument 
+is set to `None`, and therefore the file will be created without any logical 
+controls.       
+
+#### QtIfwExternalOp.WriteOpDataFile
+
+    WriteOpDataFile( event, fileName, data, isElevated=True )
+
 #### QtIfwExternalOp.RunProgram
 
     RunProgram( event, path, arguments=None, isAutoQuote=True,  
@@ -1041,36 +1089,42 @@ Such a file would normally be created via a prior [QtIfwExternalOp.WriteOpDataFi
 On Windows, set `isAutoBitContext=False` if you need to execute a 64 bit
 program from the installer's 32 bit context.
 
-#### QtIfwExternalOp.CreateOpFlagFile
-
-    CreateOpFlagFile( event, fileName, dynamicVar=None, isElevated=True )
-    
-**dynamicVar**: Control the creation of this file via a dynamic installer 
-variable. Note that a "false" condition will be met when a boolean variable is
-explicitly set to `false`, or if the variable is undefined, or it contains no 
-content, or if it is set to `0`. The opposing `true` condition, required to 
-create the flag file, is simply the inverse of that. By default, this argument 
-is set to `None`, and therefore the file will be created without any logical 
-controls.       
-
-#### QtIfwExternalOp.WriteOpDataFile
-
-    WriteOpDataFile( event, fileName, data, isElevated=True )
-
-#### QtIfwExternalOp.RemoveFile
-
-    RemoveFile( event, filePath, isElevated=True )
-
-#### QtIfwExternalOp.RemoveDir
-    
-    RemoveDir( event, dirPath, isElevated=True )
-
 #### QtIfwExternalOp.CreateStartupEntry
 
     CreateStartupEntry( pkg=None, exePath=None, displayName=None, 
                         isAllUsers=False )
 
 	TODO: Add Linux & macOS implementations
+
+#### QtIfwExternalOp.CreateExternPackageFoundFlagFile
+
+** MAC / LINUX **
+    
+    CreateExternPackageFoundFlagFile( event, altPkgNames, fileName )
+
+#### QtIfwExternalOp.InstallExternPackage
+
+** MAC / LINUX **
+    
+    InstallExternPackage( event, altPkgNames )
+
+**altPkgNames**: May be a single string, or a list of them.  If 
+providing a list, alternate names will be used based on what is 
+available within a given package manager on the target.  
+For example, the package "xvfb" maybe specified as `["xvfb","Xvfb"]`.  That handles the fact the "X" is capitalized 
+within some contexts (e.g. within YUM on RHEL...) but is lower case in others.
+
+#### QtIfwExternalOp.UninstallExternPackage
+
+** MAC / LINUX **
+    
+    UninstallExternPackage( event, altPkgNames )
+    
+**altPkgNames**: May be a single string, or a list of them.  If 
+providing a list, alternate names will be used based on what is 
+available within a given package manager on the target.  
+For example, the package "xvfb" maybe specified as `["xvfb","Xvfb"]`.  That handles the fact the "X" is capitalized 
+within some contexts (e.g. within YUM on RHEL...) but is lower case in others.
 
 #### QtIfwExternalOp.CreateWindowsAppFoundFlagFile
 
@@ -1176,6 +1230,59 @@ your custom scripts to serve this purpose.
 ##### QtIfwExternalOp.shellScriptSelfDestructSnippet 
 
 ##### QtIfwExternalOp.appleScriptSelfDestructSnippet 
+
+#### QtIfwExternalOp.CreateOpFlagFileScript
+
+    CreateOpFlagFile( fileName, dynamicVar=None )
+    
+**dynamicVar**: Control the creation of the flag file via a dynamic installer 
+variable. Note that a "false" condition will be met when a boolean variable is
+explicitly set to `false`, or if the variable is **undefined**, or it contains **no content**, or if it is set to `0`. The opposing `true` condition, required 
+to create the flag file, is simply the inverse of that.  So notably, the flag 
+can be raised by having a value in the dynamic variable, to then just simply 
+"true". By default, this argument is set to `None`, and therefore the file will be created without any logical 
+controls.  
+
+Note that the flag is either raised by this function or not. This function **does 
+not remove** a file that already exists.        
+
+#### QtIfwExternalOp.MakeDirScript
+
+    MakeDirScript( dirPath,
+                   owner=QT_IFW_USER, group=QT_IFW_USER, <LINUX/MAC ONLY>
+                   access="755" )                        <LINUX/MAC ONLY>
+
+**Windows Type**: Batch 
+**Mac/Linux Type**: ShellScript 
+
+#### QtIfwExternalOp.RemoveDirScript
+
+	RemoveDirScript( dirPath )
+
+**Windows Type**: Batch 
+**Mac/Linux Type**: ShellScript 
+
+#### QtIfwExternalOp.WriteFileScript
+
+    WriteFileScript( filePath, data=None, isOverwrite=True,
+                     owner=QT_IFW_USER, group=QT_IFW_USER,  <LINUX/MAC ONLY>
+                     access="644" )                         <LINUX/MAC ONLY>
+**Windows Type**: Batch 
+**Mac/Linux Type**: ShellScript 
+
+#### QtIfwExternalOp.RemoveFileScript
+
+	RemoveFileScript( filePath )
+
+**Windows Type**: Batch 
+**Mac/Linux Type**: ShellScript 
+ 
+#### QtIfwExternalOp.WriteOpDataFileScript
+
+    WriteOpDataFileScript( fileName, data=None )
+
+**Windows Type**: Batch 
+**Mac/Linux Type**: ShellScript 
         
 #### QtIfwExternalOp.RunProgramScript
 
@@ -1216,41 +1323,43 @@ program from the installer's 32 bit context.
 Note: Elevation is controlled via the operation executing the script 
 rather embedded within it.
 
-#### QtIfwExternalOp.CreateOpFlagFileScript
+#### QtIfwExternalOp.CreateExternPackageFoundFlagFileScript
 
-    CreateOpFlagFile( fileName, dynamicVar=None )
+** MAC / LINUX **
+
+**Mac/Linux Type**: ShellScript 
     
-**dynamicVar**: Control the creation of the flag file via a dynamic installer 
-variable. Note that a "false" condition will be met when a boolean variable is
-explicitly set to `false`, or if the variable is **undefined**, or it contains **no content**, or if it is set to `0`. The opposing `true` condition, required 
-to create the flag file, is simply the inverse of that.  So notably, the flag 
-can be raised by having a value in the dynamic variable, to then just simply 
-"true". By default, this argument is set to `None`, and therefore the file will be created without any logical 
-controls.  
+    CreateExternPackageFoundFlagFile( altPkgNames, fileName, 
+                                      isSelfDestruct=False  )
 
-Note that the flag is either raised by this function or not. This function **does 
-not remove** a file that already exists.        
+#### QtIfwExternalOp.InstallExternPackageScript
 
-#### QtIfwExternalOp.WriteOpDataFileScript
+** MAC / LINUX **
 
-    WriteOpDataFileScript( fileName, data=None )
-
-**Windows Type**: Batch 
 **Mac/Linux Type**: ShellScript 
+    
+    InstallExternPackage( altPkgNames, isExitOnFailure=False )
 
-#### QtIfwExternalOp.RemoveFileScript
+**altPkgNames**: May be a single string, or a list of them.  If 
+providing a list, alternate names will be used based on what is 
+available within a given package manager on the target.  
+For example, the package "xvfb" maybe specified as `["xvfb","Xvfb"]`.  That handles the fact the "X" is capitalized 
+within some contexts (e.g. within YUM on RHEL...) but is lower case in others.
 
-	RemoveFileScript( filePath )
+#### QtIfwExternalOp.UninstallExternPackageScript
 
-**Windows Type**: Batch 
+** MAC / LINUX **
+
 **Mac/Linux Type**: ShellScript 
- 
-#### QtIfwExternalOp.RemoveDirScript
+    
+    UninstallExternPackage( altPkgNames, isExitOnFailure=False )
+    
+**altPkgNames**: May be a single string, or a list of them.  If 
+providing a list, alternate names will be used based on what is 
+available within a given package manager on the target.  
+For example, the package "xvfb" maybe specified as `["xvfb","Xvfb"]`.  That handles the fact the "X" is capitalized 
+within some contexts (e.g. within YUM on RHEL...) but is lower case in others.
 
-	RemoveDirScript( dirPath )
-
-**Windows Type**: Batch 
-**Mac/Linux Type**: ShellScript 
                 
 #### QtIfwExternalOp.CreateRegistryKeyScript
 
@@ -1721,9 +1830,8 @@ page will automatically advance after a delay of that duration.  Alternatively, 
 value of 0 (or less than 0), will indicate a manual advancement will take place.  The
 "Next" button will become enabled, and the user may click such when they choose. 
 
-**onCompleted( name )**:  Returns a string to do be injected into whatever QtScript you are 
-dynamically generating.  (This not somehow literally "invoke" the function when called from 
-the Python library! )
+**onCompleted( name )**:  Returns a string to do be injected into QtScript being
+dynamically generating.
 
 #### QtIfwDynamicOperationsPage.AsyncFunc
 

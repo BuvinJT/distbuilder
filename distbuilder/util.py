@@ -3,7 +3,7 @@ from datetime import( date,
                       datetime ) # @UnusedImport
 from time import time as curTime  # @UnusedImport
 from six import( PY2, PY3, string_types, 
-    iteritems, itervalues, add_metaclass ) # @UnusedImport
+    iteritems, iterkeys, itervalues, add_metaclass ) # @UnusedImport
 from six.moves import urllib
 from sys import( argv, stdout, stderr, exit, 
     executable as PYTHON_PATH, path as sysPath,
@@ -47,6 +47,9 @@ from copy import copy, deepcopy # @UnusedImport
 from distutils.sysconfig import get_python_lib
 import xml.etree.ElementTree as ET # @UnusedImport
 from xml.dom import minidom # @UnusedImport
+try:    from configparser import RawConfigParser,ConfigParser,SafeConfigParser  # @UnusedImport
+except: from ConfigParser import RawConfigParser,ConfigParser,SafeConfigParser  # @UnusedImport @UnresolvedImport @Reimport 
+from io import StringIO # @UnusedImport
 
 from distbuilder.log import Logger, isLogging
 
@@ -73,8 +76,9 @@ SITE_PACKAGES_PATH = get_python_lib()
 
 # (client script's dir)
 THIS_DIR           = dirPath( realpath( argv[0] ) ) 
-
 __THIS_LIB_DIR     = dirPath( realpath( __file__ ) ) 
+
+__QT_IFW_DYNAMIC_SYMBOL = "@"
 
 ALL="*"
 PATH_PAIR_DELIMITER=";"
@@ -111,6 +115,11 @@ _LAUNCH_MACOS_APP_ARGS_SWITCH      = "--args"
 __LAUNCH_MACOS_APP_NEW_SWITCH      = "-n"
 __LAUNCH_MACOS_APP_BLOCK_SWITCH    = "-W"
 __INTERNAL_MACOS_APP_BINARY_TMPLT  = "%s/Contents/MacOS/%s"
+
+# config file types across the platforms
+_WINDOWS_CONFIG_EXT  = ".ini"
+_MACOS_CONFIG_EXT    = ".cfg"
+_LINUX_CONFIG_EXT    = ".cfg"
 
 # icons types across the platforms
 _WINDOWS_ICON_EXT = ".ico"
@@ -198,12 +207,14 @@ def isDebug():
         return isDebug.__CACHE
 
 def run( binPath, args=None, 
-         wrkDir=None, isElevated=False, isDebug=False ):
-    _run( binPath, args, wrkDir, isElevated, isDebug )
+         wrkDir=None, isElevated=False, isDebug=False, 
+         askpassPath=None ):
+    _run( binPath, args, wrkDir, isElevated, isDebug, askpassPath )
          
 def _run( binPath, args=None, 
          wrkDir=None, isElevated=False, 
-         isDebug=False, sharedFilePath=None ):
+         isDebug=False, 
+         askpassPath=None, sharedFilePath=None ):
     
     def __printCmd( elevate, binPath, args, wrkDir ):
         cmdList = [binPath] if elevate=="" else [elevate, binPath]
@@ -214,6 +225,8 @@ def _run( binPath, args=None,
 
     def __printRetCode( retCode ):
         print( "\nReturn code: %s\n" % (str(retCode),) )
+    
+    if IS_LINUX: _assertAskPassAvailable( askpassPath=askpassPath )
     
     if args is None: args=[]
             
@@ -246,7 +259,8 @@ def _run( binPath, args=None,
             cmdList = [elevate] + cmdList
         else: elevate = ""      
 
-        isWindowsSharedFile = fileExt( sharedFilePath ) == __WIN_SHARED_FILE_EXT
+        isWindowsSharedFile =( IS_WINDOWS and 
+            fileExt( sharedFilePath ) == __WIN_SHARED_FILE_EXT )
         if isWindowsSharedFile:                
             sharedFile = _WindowsSharedFile( isProducer=True, 
                                              filePath=sharedFilePath )
@@ -308,11 +322,12 @@ def _isPrivateRedirectAvailable():
     return( IS_WINDOWS and 
             _powerShellMajorVersion() >= _REDIRECT_PATH_ENV_VAR_PS_MIN_REQ )
     
-def runPy( pyPath, args=None, isElevated=False ):
+def runPy( pyPath, args=None, isElevated=False, askpassPath=None ):
     wrkDir, fileName = splitPath( pyPath )
     pyArgs = [fileName]
     if isinstance(args,list): pyArgs.extend( args )
-    run( PYTHON_PATH, pyArgs, wrkDir, isElevated, isDebug=False )
+    run( PYTHON_PATH, pyArgs, wrkDir, isElevated, isDebug=False, 
+         askpassPath=askpassPath )
 
 # While this coding appears a bit ugly, it does seem to work for every context  
 # Under certain conditions, some streams could not be captured via any  "clean" 
@@ -791,6 +806,16 @@ def normBinaryName( path, isPathPreserved=False, isGui=False ):
         return "%s%s" % (base, _MACOS_APP_EXT)      
     if IS_WINDOWS: return base + (".exe" if ext=="" else ext)
     return base 
+
+def normConfigName( path, isPathPreserved=False ):
+    if path is None : return None    
+    if not isPathPreserved : path = baseFileName( path )
+    base, _ = splitExt( path )
+    if IS_WINDOWS: return "%s%s" % (base, _WINDOWS_CONFIG_EXT) 
+    elif IS_MACOS: return "%s%s" % (base, _MACOS_CONFIG_EXT) 
+    elif IS_LINUX: return "%s%s" % (base, _LINUX_CONFIG_EXT) 
+    raise DistBuilderError( __NOT_SUPPORTED_MSG )
+    return base 
                             
 def normIconName( path, isPathPreserved=False ):
     if path is None : return None    
@@ -1040,13 +1065,25 @@ def __parseSrcDestPair( pathPair, destDir=None, basePath=None ):
     if destDir is None: # (i.e. PyInstaller Argument)
         if dest is None: dest = relpath( srcHead, THIS_DIR )                    
     else :
-        if dest is None: dest = srcTail         
-        if dest.startswith( PATH_DELIM ) : 
-            # must remove a leading slash from dest for joinPath to 
-            # make the dest a child of destDir
-            try: dest=dest[1:]
-            except: pass
-        dest = absPath( joinPath( destDir, dest ), relSrcDir )
+        # Ugly, but functional, kludge!
+        def _isDynamicPath( path ):
+            from distbuilder.qt_installer import _isQtIFWDynamicPath             
+            return _isQtIFWDynamicPath( path )
+        def _isDynamicExternPath( path ):
+            from distbuilder.qt_installer import (
+                _isQtIFWDynamicExternPath )             
+            return _isQtIFWDynamicExternPath( path )
+        
+        if _isDynamicExternPath( inputDest ): dest=inputDest
+        else:
+            if dest is None: dest = srcTail         
+            if dest.startswith( PATH_DELIM ) : 
+                # must remove a leading slash from dest for joinPath to 
+                # make the dest a child of destDir
+                try: dest=dest[1:]
+                except: pass        
+            dest = joinPath( destDir, dest )                
+            if not _isDynamicPath( dest ): dest=absPath( dest, relSrcDir )
 
     #print( "result: src=%s, dest=%s" % (src, dest) )
     return (inputSrc, inputDest, src, dest) 
@@ -1194,7 +1231,7 @@ def getPassword( isGuiPrompt=False ):
 class PlasticFile:
 
     def __init__( self, filePath=None, content=None ) :
-        self.filePath = filePath
+        self.filePath = absPath(filePath)
         if content: self.content = content
         elif filePath and isFile(filePath): self.read()
         self.isInjected = False
@@ -1208,9 +1245,13 @@ class PlasticFile:
     def read( self ):
         self.content = None        
         with open( self.path(), 'r' ) as f : self.content = f.read() 
+        return self.content
             
     def write( self ):
-        with open( self.path(), 'w' ) as f : f.write( str(self) )
+        fPath = self.path()
+        dPath = dirPath( self.path() )
+        if not isDir( dPath ): makeDir( dPath )
+        with open( fPath, 'w' ) as f : f.write( str(self) )
     
     def remove( self ):  
         if isFile( self.filePath ): removeFile( self.filePath )
@@ -1350,10 +1391,14 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         return ext if ext in ExecutableScript.SUPPORTED_EXTS else None
         
     @staticmethod
-    def strToLines( s ): return s.split( _NEWLINE  ) if s else []
+    def strToLines( s ): 
+        return( s.split( _NEWLINE  ) if isinstance( s, string_types ) else
+                s if isinstance( s, list ) else [] )    
     
     @staticmethod
-    def linesToStr( lines ): return _NEWLINE.join( lines )    
+    def linesToStr( lines ): 
+        return( _NEWLINE.join( lines ) if isinstance( lines, list ) else
+                 lines if isinstance( lines, string_types ) else '' )    
 
     # ExecutableScript
     def __init__( self, rootName, 
@@ -1381,33 +1426,27 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         self.isIfwVarEscapeBackslash = False
         self.isDebug = isDebug
                                                     
-    def __str__( self ) :
-        if self.script is None : return ""
-        if self.shebang is not None:
-            return( ExecutableScript.__SHEBANG_TEMPLATE % 
-                    (self.shebang, self.__formated()) )
-        else: return self.__formated() 
-        
-    def __formated( self ):
-        script = self.script     
-        for k,v in iteritems( self.replacements ):
-            script = script.replace( self.__PLACEHOLDER_TMPLT % (k,), str(v) )
-        return script    
-                
     def debug( self ): 
         if self.script: print( str(self) )
+                                                    
+    def fileName( self ):
+        return joinExt( self.rootName, self.extension )
 
     def filePath( self ):
         return( joinPath( self.scriptDirPath, self.fileName() ) 
                 if self.scriptDirPath else absPath( self.fileName() ) )
         
-    def fileName( self ):
-        return joinExt( self.rootName, self.extension )
-
     def exists( self, scriptDirPath=None ): 
         if scriptDirPath is None: scriptDirPath=self.scriptDirPath
         self.scriptDirPath = scriptDirPath if scriptDirPath else THIS_DIR  
         return isFile( self.filePath() )
+
+    def read( self, scriptDirPath=None ):
+        self.script = None
+        if scriptDirPath is None: scriptDirPath=self.scriptDirPath
+        self.scriptDirPath = scriptDirPath if scriptDirPath else THIS_DIR  
+        filePath = self.filePath()
+        with open( filePath, 'r' ) as f : self.script = f.read() 
                         
     def write( self, scriptDirPath=None ):
         if self.script is None : return
@@ -1420,13 +1459,6 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
         with open( filePath, 'w' ) as f: f.write( str(self) ) 
         if not IS_WINDOWS : chmod( filePath, 0o755 )
         
-    def read( self, scriptDirPath=None ):
-        self.script = None
-        if scriptDirPath is None: scriptDirPath=self.scriptDirPath
-        self.scriptDirPath = scriptDirPath if scriptDirPath else THIS_DIR  
-        filePath = self.filePath()
-        with open( filePath, 'r' ) as f : self.script = f.read() 
-
     def remove( self, scriptDirPath=None ):
         self.script = None
         if scriptDirPath is None: scriptDirPath=self.scriptDirPath
@@ -1436,7 +1468,26 @@ class ExecutableScript(): # Roughly mirrors PlasticFile, but would override all 
             removeFile( filePath )
             if self.isDebug:
                 print( "Removed script: %s" % (filePath,) )
-                
+
+    """ str() """
+    def __str__( self ) : return self.__asFormatedStr( isStandalone=True ) 
+        
+    def asSnippet( self ): 
+        script = self.__asFormatedStr( isStandalone=False )
+        if not script.startswith( _NEWLINE ): script = _NEWLINE + script    
+        if not script.endswith( _NEWLINE ): script += _NEWLINE
+        return script 
+
+    def __asFormatedStr( self, isStandalone=True ):
+        if self.script is None : return ""
+        script = self.script     
+        for k,v in iteritems( self.replacements ):
+            script = script.replace( self.__PLACEHOLDER_TMPLT % (k,), str(v) )
+        if isStandalone and self.shebang is not None:
+            script = ExecutableScript.__SHEBANG_TEMPLATE % (
+                        self.shebang, script )         
+        return script    
+                            
     def toLines( self ): return ExecutableScript.strToLines( self.script )
     
     def fromLines( self, lines ): 
@@ -1868,7 +1919,7 @@ if IS_LINUX:
             'A GUI "askpass" program must be manually installed '
             'to run this script within this context (e.g. inside an IDE...?). ' 
             'Common paths were searched without success. '
-            'Here is an example installation command to you might execute'
+            'Here is an example installation command to you might execute '
             'to solve this problem:\n\n'
             'sudo apt-get install ssh-askpass-gnome\n\n', 
             isFatal=True )

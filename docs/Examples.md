@@ -138,6 +138,10 @@ coding to make it work correctly in that context compared to how it did as a
 basic .py script. As such, distbuilder has included a solution for this, as 
 demonstrated here. Refer to [Testing](LowLevel.md#testing) for more details.    
 
+## Hello Dynamic Ini Example
+
+TODO: FILL IN!
+
 ## Hello Silent Example
 
 It is another demonstration of using the 
@@ -240,9 +244,15 @@ insight into the design patterns and functionality of the library.
 
 ### Generate Trust Certs w/ Installer
 
+TODO: FILL IN!
+
 ### Signed Python Executable Example
 
+TODO: FILL IN!
+
 ### Signed Installer Example
+
+TODO: FILL IN!
 
 ## Hello Wrapper Example
 
@@ -290,6 +300,10 @@ If desired, you may also wish to test running these demo programs post installat
 "debug mode". See the documentation on the [run](LowLevel.md#run) function.
 
 ## Hello Operations Examples
+
+TODO: FILL IN!
+
+### Built-in Simple Operations Example
 
 TODO: FILL IN!
 

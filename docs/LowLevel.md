@@ -19,15 +19,15 @@ program, invoke the pyScriptToExe function:
     (within the package). 
 
 **name**: The (optional) name given to both the resulting 
-	executable and package distribution directory.
-	This argument is only applied if pyInstConfig 
-	is None. If omitted, the pyInstConfig attribute 
-	for this is used.
+    executable and package distribution directory.
+    This argument is only applied if pyInstConfig 
+    is None. If omitted, the pyInstConfig attribute 
+    for this is used.
     
 **entryPointPy**: The (optional) path to the Python script 
-	where execution begins. This argument is only 
-	applied	if pyInstConfig is None. If omitted, the 
-	pyInstConfig attribute for this is used.
+    where execution begins. This argument is only 
+    applied    if pyInstConfig is None. If omitted, the 
+    pyInstConfig attribute for this is used.
         
 **pyInstConfig**: An (optional) [PyInstallerConfig](ConfigClasses.md#pyinstallerconfig) 
     object to dictate extended details for building 
@@ -36,10 +36,10 @@ program, invoke the pyScriptToExe function:
     plus other default settings will be used.
 
 **opyConfig**: An (optional) [OpyConfig](ConfigClasses.md#opyconfig) object, to 
-	dictate code obfuscation details using the Opy 
-	Library. If omitted (or explicitly specified as	None),
-	no obfuscation will be performed.
-	See [Executable Obfuscation](#executable-obfuscation).
+    dictate code obfuscation details using the Opy 
+    Library. If omitted (or explicitly specified as    None),
+    no obfuscation will be performed.
+    See [Executable Obfuscation](#executable-obfuscation).
      
 **distResources**: An (optional) list of external 
     resources to bundle into the distribution package 
@@ -118,7 +118,7 @@ Distbuilder builds executables from Python source via PyInstaller.  For convenie
 these install/uninstall functions for the tool are provided.  Note, you may install  
 a specific version if desired, in this (example) manner:  
 
-	installPyInstaller( version="3.4" )
+    installPyInstaller( version="3.4" )
 
 ### PyInstallerVersion, PyInstallerMajorVer, PyInstallerMajorMinorVer
 
@@ -135,22 +135,22 @@ To generate a PyInstaller .spec file, using the secondary
 utility "pyi-makespec" (bundled with PyInstaller), 
 invoke the makePyInstSpec function:   
 
-	makePyInstSpec( pyInstConfig, opyConfig=None )
+    makePyInstSpec( pyInstConfig, opyConfig=None )
 
 **Returns: the absolute path to the spec file created.
     Also, updates the pyInstConfig argument, supplying 
-	a [PyInstSpec](ConfigClasses.md#pyinstspec) object and effectively
-	returning it "by reference". 
+    a [PyInstSpec](ConfigClasses.md#pyinstspec) object and effectively
+    returning it "by reference". 
         
 **pyInstConfig**: An [PyInstallerConfig](ConfigClasses.md#pyinstallerconfig) 
     object used to dictate the details for generating 
     the spec file using the makespec Utility.
 
 **opyConfig**: An (optional) [OpyConfig](ConfigClasses.md#opyconfig) object, 
-	providing supplemental details regarding the spec file
-	creation.  Be sure to include this if you desire obfuscation
-	and will be subsequently invoking the pyScriptToExe function.
-      	                    
+    providing supplemental details regarding the spec file
+    creation.  Be sure to include this if you desire obfuscation
+    and will be subsequently invoking the pyScriptToExe function.
+                              
 ## Installers 
             
 Upon creating a distribution (especially a stand-alone executable), 
@@ -202,7 +202,7 @@ a default path will be used.
 This is the counterpart to the `installQtIfw()` function.  It will uninstall
 an existing installation of the QtIFW utility.
 
-	unInstallQtIfw( qtIfwDirPath=None, version=None )
+    unInstallQtIfw( qtIfwDirPath=None, version=None )
  
 **Returns**: a boolean to indicate success or failure.
 
@@ -217,7 +217,7 @@ a default version will be assumed.
  
 ### buildInstaller
 
-	buildInstaller( qtIfwConfig, isSilent )
+    buildInstaller( qtIfwConfig, isSilent )
 
 **Returns**: the absolute path to the setup executable created.  
 
@@ -480,6 +480,7 @@ and attributes for many higher level functions and objects in this library.
     QT_IFW_PUBLISHER 
     QT_IFW_URL
 
+    QT_IFW_USER 
     QT_IFW_OS 
 
 Note: use [joinPathQtIfw](#joinpathqtifw) to build paths with such constants. 
@@ -549,6 +550,7 @@ Static Constants :
     TARGET_DIR_KEY
     DEFAULT_TARGET_DIR_KEY         
     PRODUCT_NAME_KEY       
+    USER_KEY       
     
     ERR_LOG_PATH_CMD_ARG   
     ERR_LOG_DEFAULT_PATH   
@@ -584,14 +586,14 @@ Static Functions:
     andList( conditions )
     orList( conditions )
                                                    
-	quote( value )
+    quote( value )
     _autoQuote( value, isAutoQuote )
     _autoEscapeBackSlash( value, isAutoEscape )
 
-	toNull( v )         <convert Python None to QtScript null, else pass through>
-	
+    toNull( v )         <convert Python None to QtScript null, else pass through>
+    
     toBool( b )         <pass Python bool or dynamic QtScript logic as Python string> 
-    boolToString( b )	<pass Python bool or dynamic QtScript logic as Python string>
+    boolToString( b )    <pass Python bool or dynamic QtScript logic as Python string>
     stringToBool( value, isAutoQuote=True )
                       
     setValue( key, value, isAutoQuote=True )
@@ -633,10 +635,10 @@ Static Functions:
     ifPathExists( path, isNegated=False, sAutoQuote=True, isMultiLine=False )   
     
     makeDir( path, isAutoQuote=True )            <recursive, path can include native env vars> 
-    removeDir( path, isAutoQuote=True ) 		   <path can include native env vars>
-    	
+    removeDir( path, isAutoQuote=True )            <path can include native env vars>
+        
     writeFile( path, content, isAutoQuote=True ) <path can include native env vars>
-    deleteFile( path, isAutoQuote=True ) 	       <path can include native env vars>	
+    deleteFile( path, isAutoQuote=True )            <path can include native env vars>    
 
     writeOpDataFile( fileName, content="", isAutoQuote=True )                  
     deleteOpDataFile( fileName )
@@ -651,8 +653,8 @@ Static Functions:
     isPingable( uri, pings=3, totalMaxSecs=12, isAutoQuote=True )                  
     ifPingable( uri, pings=3, totalMaxSecs=12, isAutoQuote=True,
                 isNegated=False, isMultiLine=False )
-                        	        
-	killAll( exeName, isAutoQuote=True )    
+                                    
+    killAll( exeName, isAutoQuote=True )    
         
     targetDir()
     productName() 
@@ -660,13 +662,13 @@ Static Functions:
     resolveDynamicVars( s, varNames=QT_IFW_DYNAMIC_VARS, <None==QT_IFW_DYNAMIC_VARS> 
                         isAutoQuote=True ) <returns string>
                 
-    getComponent( name, isAutoQuote=True )	   
+    getComponent( name, isAutoQuote=True )       
     getPageOwner( pageName, isAutoQuote=True ) <returns Component>
-		
-		<the following are NOT functional in an uninstaller!
-		package parameters here can be passed as QtIfwPackage, 
-		or the name of such as a raw string ...>
-	isComponentInstalled( package )
+        
+        <the following are NOT functional in an uninstaller!
+        package parameters here can be passed as QtIfwPackage, 
+        or the name of such as a raw string ...>
+    isComponentInstalled( package )
     ifComponentInstalled( package, isNegated=False, 
                           isAutoQuote=True, isMultiLine=False )   
     isComponentSelected( package )
@@ -688,13 +690,13 @@ Static Functions:
                  isMultiLine=False )
 
     quit( msg, isError=True, isSilent=False, isAutoQuote=True )
-		<It is not possible to re-enable the user prompt after using these!>
-    disableQuit()		<negate with disableQuitPrompt>         
+        <It is not possible to re-enable the user prompt after using these!>
+    disableQuit()        <negate with disableQuitPrompt>         
     disableQuitPrompt()         
-	
+    
     log( msg, isAutoQuote=True )            
 
-	<Windows Only>   
+    <Windows Only>   
         
         registryEntryValue( key, valueName, isAutoBitContext=True,
                             isAutoQuote=True )                           
@@ -750,9 +752,9 @@ Static Constants :
     RUN_PROGRAM_CHECKBOX     
     FINISHED_MESSAGE_LABEL
     
-    	< Applicable / functional on Component Selection Page ONLY!
-    	  package parameters here can be passed as QtIfwPackage, 
-		  or the name of such as a raw string ... >    	
+        < Applicable / functional on Component Selection Page ONLY!
+          package parameters here can be passed as QtIfwPackage, 
+          or the name of such as a raw string ... >        
     selectComponent( package, isSelect=True, isAutoQuote=True )
     selectAllComponents( isSelect=True )
     selectDefaultComponents()
@@ -775,7 +777,7 @@ Static Functions:
     
     clickButton( buttonName, delayMillis=None )                
     
-    enable( controlName, isEnable=True )	
+    enable( controlName, isEnable=True )    
     isEnabled( controlName )
     ifEnabled( controlName, isNegated=False, isMultiLine=False )   
 
@@ -785,10 +787,10 @@ Static Functions:
     
     getText( controlName )
     setText( controlName, text, varNames=None, isAutoQuote=True )
-    	(Note: varNames=None==QT_IFW_DYNAMIC_VARS, 
-    	       varNames=False==No variable resolution )
+        (Note: varNames=None==QT_IFW_DYNAMIC_VARS, 
+               varNames=False==No variable resolution )
     
-    	(Note: check box controls also work on radio buttons)    
+        (Note: check box controls also work on radio buttons)    
     isChecked( checkboxName )
     ifChecked( checkboxName, isNegated=False, isMultiLine=False )   
     setChecked( checkboxName, isCheck=True ): <pass Python bool or dynamic QtScript logic>    
@@ -796,31 +798,31 @@ Static Functions:
     insertCustomWidget( widgetName, pageName, position=None )
     removeCustomWidget( widgetName )
     
-	<CUSTOM ("DYNAMIC") PAGES ONLY>	
-	    enableNextButton( isEnable=True ) <can't do on standard wizard pages!>				
-	    
-	    insertCustomPage( pageName, position )
-	    removeCustomPage( pageName )
-	    
-	    setCustomPageTitle( title, isAutoQuote=True, pageVar="page" )     	               
-		setCustomPageText( title, description, isAutoQuote=True, pageVar="page" )
+    <CUSTOM ("DYNAMIC") PAGES ONLY>    
+        enableNextButton( isEnable=True ) <can't do on standard wizard pages!>                
+        
+        insertCustomPage( pageName, position )
+        removeCustomPage( pageName )
+        
+        setCustomPageTitle( title, isAutoQuote=True, pageVar="page" )                        
+        setCustomPageText( title, description, isAutoQuote=True, pageVar="page" )
 
-	    enableCustom( controlName, isEnable=True, pageVar="page" )
-	    isCustomEnabled( controlName, pageVar="page" )
-	    ifCustomEnabled( controlName, pageVar="page", isNegated=False, 
-	    	             isMultiLine=False )   
+        enableCustom( controlName, isEnable=True, pageVar="page" )
+        isCustomEnabled( controlName, pageVar="page" )
+        ifCustomEnabled( controlName, pageVar="page", isNegated=False, 
+                         isMultiLine=False )   
 
-	    setCustomVisible( controlName, isVisible=True, pageVar="page" )
-	    isCustomVisible( controlName, pageVar="page" )
-	    ifCustomVisible( controlName, pageVar="page", isNegated=False, 
-	    	             isMultiLine=False )   
+        setCustomVisible( controlName, isVisible=True, pageVar="page" )
+        isCustomVisible( controlName, pageVar="page" )
+        ifCustomVisible( controlName, pageVar="page", isNegated=False, 
+                         isMultiLine=False )   
 
-	    setCustomText( controlName, text, isAutoQuote=True, pageVar="page" )                
-	    getCustomText( controlName, pageVar="page" )
+        setCustomText( controlName, text, isAutoQuote=True, pageVar="page" )                
+        getCustomText( controlName, pageVar="page" )
 
         isCustomChecked( checkboxName, pageVar="page" )
-	    setCustomCheckBox( checkboxName, isCheck=True, pageVar="page" )
-	    ifCustomChecked( checkboxName, pageVar="page", isNegated=False, 
+        setCustomCheckBox( checkboxName, isCheck=True, pageVar="page" )
+        ifCustomChecked( checkboxName, pageVar="page", isNegated=False, 
                          isMultiLine=False )
 
 See [QtIfwUiPage](ConfigClasses.md#qtifwuipage)
@@ -837,126 +839,127 @@ following add-on **QT SCRIPT** functions:
     isElevated()
 
     isMaintenanceTool()
-	
-	targetExists()
+    
+    targetExists()
     removeTarget()
-	
-	maintenanceToolExists( dir )
-	toMaintenanceToolPath( dir )	
+    
+    maintenanceToolExists( dir )
+    toMaintenanceToolPath( dir )    
     
     Dir.temp()
     Dir.toNativeSparator( path ) 
     Dir.fromNativeSparator( path )
 
-    resolveQtIfwPath( path )		
-    resolveNativePath( path )
+    resolveQtIfwPath( path )        
+    resolveNativePath( path, isSpaceEscaped ) <isSpaceEscaped NA on Windows>
     
     getEnv( varName )
     
     parentDir( path ) <null if no parent, e.g. path is root>    
     fileName( filePath )
     rootFileName( filePath )
-	
-	dirList( path, isSortedByTime ) <path can include native env vars, and wild cards>
-		
+    
+    dirList( path, isSortByModTimeAsc ) <path can include native env vars, and wild cards>
+        
     makeDir( path ) <recursive>
     removeDir( path )
-    	
+        
     writeFile( path, content ) <path can include native env vars>
-    deleteFile( path ) 	       <path can include native env vars>	
-	
-	assertInternetConnected( isRefresh[=false], errMsg[=null] )
-	isInternetConnected( isRefresh[=false] )
-	isPingable( uri, pings[=3], totalMaxSecs[=12] )
-	
-	resolveDynamicVars( s, varNames )  <returns string>
+    deleteFile( path )            <path can include native env vars>    
+    
+    assertInternetConnected( isRefresh[=false], errMsg[=null] )
+    isInternetConnected( isRefresh[=false] )
+    isPingable( uri, pings[=3], totalMaxSecs[=12] )
+    
+    resolveDynamicVars( s, varNames )  <returns string>
     replaceDynamicVarsInFile( path, varNames, isDoubleBackslash )
-	
-	clearErrorLog()
-	writeErrorLog( msg )
+    
+    clearErrorLog()
+    writeErrorLog( msg )
 
-	sleep( seconds )
+    sleep( seconds )
 
     killAll( progName )
 
-	quit( msg, isError, isSilent )
-	abort( msg )
-	silentAbort( msg )
-	
+    quit( msg, isError, isSilent )
+    abort( msg )
+    silentAbort( msg )
+    
     execute( binPath, args )
     executeDetached( binPath, args ) 
     executeShellCmdDetached( cmd )
-	executeHidden( binPath, args, isElevated )
-	
-	<Windows Only>   
-		maintenanceToolPaths()	<resolves via registry lookups>
-		isOsRegisteredProgram()	
+    executeHidden( binPath, args, isElevated )
+    
+    <Windows Only>   
+        maintenanceToolPaths()    <resolves via registry lookups>
+        isOsRegisteredProgram()    
 
-		registryKeyExists( key, isAutoBitContext )
+        registryKeyExists( key, isAutoBitContext )
         registryKeyExistsLike( parentKey, childKeyNameContains, 
                                isAutoBitContext, isCaseSensitive, isRecursive )             
 
         registryEntryValue( key, valueName, isAutoBitContext )
-        registryEntryExists( key, valueName, isAutoBitContext )				
-		
-		registryEntryExistsLike( key, valueNameContains, 
-		                         isAutoBitContext, isCaseSensitive, isRecursive )
-		
-		executeBatchDetached( scriptPath, bat, args )
-		executeVbScript( vbs )
-		executeVbScriptDetached( scriptPath, vbs )
-		executePowerShell( ps ) 
-		executePowerShellDetached( scriptPath, ps ) 
-			
-		<Package Context Only>
-			addVbsOperation( component, isElevated, vbs )
-			setShortcutWindowStyleVbs( shortcutPath, styleCode )
+        registryEntryExists( key, valueName, isAutoBitContext )                
+        
+        registryEntryExistsLike( key, valueNameContains, 
+                                 isAutoBitContext, isCaseSensitive, isRecursive )
+        
+        executeBatchDetached( scriptPath, bat, args )
+        executeVbScript( vbs )
+        executeVbScriptDetached( scriptPath, vbs )
+        executePowerShell( ps ) 
+        executePowerShellDetached( scriptPath, ps ) 
+            
+        <Package Context Only>
+            addVbsOperation( component, isElevated, vbs )
+            setShortcutWindowStyleVbs( shortcutPath, styleCode )
 
-    <Linux Only>        
-	    isPackageInstalled( pkg )
-	    installPackage( pkg ) 
-	    unInstallPackage( pkg ) 
+    <Mac / Linux Only>        
+        executeShellScript( script ) 
+        isPackageInstalled( pkg )
+        installPackage( pkg ) 
+        unInstallPackage( pkg ) 
 
-	    isPackageManagerInstalled( prog )
-	    isAptInstalled() 
-	    isDpkgInstalled()
-	    isYumInstalled()
-	    isRpmInstalled()
-	    
-		<the following are NOT functional in an uninstaller!>	    
+        isPackageManagerInstalled( prog )
+        isAptInstalled() 
+        isDpkgInstalled()
+        isYumInstalled()
+        isRpmInstalled()
+        
+        <the following are NOT functional in an uninstaller!>        
     getComponent( name ) <throws on invalid name, or in any uninstall context>
-	isComponentInstalled( name ) 
+    isComponentInstalled( name ) 
     isComponentSelected( name ) 
-	isComponentEnabled( name )
+    isComponentEnabled( name )
     enableComponent( name, enable[=true] )
 
     getPageOwner( pageName ) <throws on invalid name>
 
-	insertCustomWidget( widgetName, pageId, position )
+    insertCustomWidget( widgetName, pageId, position )
     removeCustomWidget( widgetName )
 
     insertCustomPage( pageName, position ) 
     removeCustomPage( pageName )     
-	setCustomPageText( page, title, description )
+    setCustomPageText( page, title, description )
 
 ### QtIfwPackage list manipulation
 
 These functions are useful within an overridden version of
 `onPyToBinPkgsBuilt` in a [RobustInstallerProcess](HighLevel.md#robustinstallerprocess), 
 object
-	
-	findQtIfwPackage( pkgs, pkgId )
-	
+    
+    findQtIfwPackage( pkgs, pkgId )
+    
 **Returns**: [QtIfwPackage](ConfigClasses.md#qtifwpackage) object 
 within the *pkgs* argument with the id supplied by *pkgId*.   
-	
-	removeQtIfwPackage( pkgs, pkgId )
+    
+    removeQtIfwPackage( pkgs, pkgId )
 
 Removes the [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
 within the *pkgs* argument with the id supplied by *pkgId*.   
-	
-	mergeQtIfwPackages( pkgs, srcId, destId )
-	
+    
+    mergeQtIfwPackages( pkgs, srcId, destId )
+    
 Merges the [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
 objects within the *pkgs* argument with the ids supplied by 
 *srcId* and *destId*.  
@@ -979,7 +982,7 @@ use case, if the desired effect fails.
 Note that if the source package has a `subDirName` attribute, that detail will be preserved.  I.e. the merge will retain the sub directory encapsulation.   
 
 This function ultimately consolidates the package items in the list and returns
-the destination object.	
+the destination object.    
 
     nestQtIfwPackage( pkgs, childId, parentId, subDirName=None )
     
@@ -1001,7 +1004,7 @@ has a  `subDirName` attribute, that detail will be overridden by this nesting.  
 this will *NOT* nest the content two levels deep.   
 
 This function ultimately consolidates the package items in the list and returns
-the destination object.	
+the destination object.    
 
 ## Code Obfuscation
 
@@ -1094,7 +1097,7 @@ obfuscatePyLib:
     script within the prepared package  
 
 **opyConfig**: An [OpyConfig](ConfigClasses.md#opyconfig) object, to 
-	dictate code obfuscation details using the Opy Library. 
+    dictate code obfuscation details using the Opy Library. 
     
 **isExposingPackageImports**: Option to NOT obfuscate 
     any of the imports defined in the package 
@@ -1250,13 +1253,13 @@ multiple libraries in a single call.
 
 ### installLibraries
 
-	installLibraries( *libs )
+    installLibraries( *libs )
 
 This function is a convenience wrapper over installLibrary (singular) function.
 One of the primary uses for this function is to ensure that the product to be
 created by a build script is being run in an environment which has all of its
 dependencies. 
-	    
+        
 **Returns: None**
 
 ***libs**: This function is extremely flexible in terms of how 
@@ -1268,25 +1271,25 @@ dependencies.
    treated as the argument list to installLibrary().
    
 Simple example:
- 	
-	installLibraries( 'six', 'abc' )
+     
+    installLibraries( 'six', 'abc' )
 
 Simple example with a version detail:
 
-	installLibraries( 'six', 'abc', 'setuptools==40.6.3' )
+    installLibraries( 'six', 'abc', 'setuptools==40.6.3' )
 
 Complex example:
- 	
- 	opyCfg = OpyConfig()
- 	... 	
- 	pipCfg = PipConfig()
- 	... 	
- 	myLib = {'name':'MyLib', 'opyConfig':opyCfg, 'pipConfig':pipCfg } 	
- 	installLibraries( 'six', myLib )
+     
+     opyCfg = OpyConfig()
+     ...     
+     pipCfg = PipConfig()
+     ...     
+     myLib = {'name':'MyLib', 'opyConfig':opyCfg, 'pipConfig':pipCfg }     
+     installLibraries( 'six', myLib )
             
 ### uninstallLibrary
-	
-	uninstallLibrary( name )
+    
+    uninstallLibrary( name )
 
 **Returns: None**
 
@@ -1310,7 +1313,8 @@ Upon creating a binary with PyInstaller, use the
 following to test the success of the operation:  
     
     run( binPath, args=[], 
-         wrkDir=None, isElevated=False, isDebug=False )      
+         wrkDir=None, isElevated=False, isDebug=False,
+         askpassPath=None )      
 
 **binPath**: The path to the binary to be executed. 
 Note that the path is returned by `pyScriptToExe`, 
@@ -1351,7 +1355,7 @@ require this in order to allow this mode to work correctly.
 You may wish to include your own custom logic within your
 program to pivot on this environmental condition as well.
 
-While distbuilder provides convenience constants/methods to determine if you 
+While distbuilder provides convenience constants/methods to determine if you are 
 running in this context, to avoid any "tight coupling" to the build system within 
 your program's source (which may cause build failures in addition to being a 
 questionable design choice), you may wish to employ the following code: 
@@ -1359,7 +1363,7 @@ questionable design choice), you may wish to employ the following code:
     def isDebug(): 
         try: return isDebug.__CACHE
         except:
-        	from os import environ
+            from os import environ
             isDebug.__CACHE = environ.get("DEBUG_MODE")=="1"
             return isDebug.__CACHE
             
@@ -1371,10 +1375,19 @@ as an admin. On macOS, this will occur whenever using a "wrapper script"
 (see [QtIfwExeWrapper](ConfigClasses.md#qtifwexewrapper)) over the binary.
 
 Note: some IDE / platform combinations may render this feature 
-inoperable due to a conflict with output stream handling 
-(e.g. Eclipse/PyDev on Windows), in which case 
+inoperable due to a conflict with output stream handling, in which case 
 simply execute the build script, or the `run` function, from a terminal
 outside of the IDE when employing `isDebug`.  
+
+**askpassPath**: This argument is only applicable on **LINUX**.  If you
+needed to invoke this function from a non-tty **gui** context, e.g. via your IDE,
+while `isElevated` is enabled, an "ask password" utility e.g. "OpenSSH Askpass" 
+will be required in order for you to input your password to gain sudo rights.  
+If this is required for given task under the hood within the library, but your system
+is not yet configured for this, this function will fail with a fatal error, and 
+output instructions to your console or log file for how to proceed.  
+In the event you wish to employ a *specific* / custom "ask pass" program, when invoking
+this run function directly, you may specify the path to it via this argument.
 
 ### runPy   
 
@@ -1382,7 +1395,8 @@ Perhaps most notable, upon creating a Python obfuscation, you may wish the
 to test the success of that operation. The following
 was provided with that in mind specifically:    
 
-    runPy( pyPath, args=[], isElevated=False )
+    runPy( pyPath, args=[], isElevated=False,
+           askpassPath=None )
 
 **pyPath**: The path to the script to be executed. 
 Note that the path is returned by `obfuscatePy`, which allows 
@@ -1393,6 +1407,9 @@ the results of that to flow directly into this function.
 
 **isElevated**: Boolean (option) to run the binary with 
 elevated privileges.
+
+**askpassPath**: This argument is only applicable on **LINUX**. See the 
+description for this in the [run](#run) function documentation.
    
 The working directory will be automatically set to 
 the directory of the python script.  
@@ -1488,11 +1505,11 @@ for a given platform.
 
 Constructor:       
 
-	ExecutableScript( rootName, 
-				  	  extension=True, shebang=True,                   
-                  	  script=None, 
-                  	  scriptPath=None, scriptDirPath=None,
-                  	  replacements={}, isDebug=True )
+    ExecutableScript( rootName, 
+                        extension=True, shebang=True,                   
+                        script=None, 
+                        scriptPath=None, scriptDirPath=None,
+                        replacements={}, isDebug=True )
                   
 Attributes & default values:    
 
@@ -1506,15 +1523,18 @@ Attributes & default values:
     isDebug=True
     
 Functions:   
-	
-	filePath()
+    
     fileName()
+    filePath()
 
     exists( scriptDirPath=None )        
     read( scriptDirPath=None )
     write( scriptDirPath=None )
     remove( scriptDirPath=None )
     
+    __str__  		<i.e. built-in to string supported>
+    asSnippet()
+        
     toLines()        
     fromLines( lines )
     injectLine( injection, lineNo )               
@@ -1526,7 +1546,7 @@ Functions:
 
 Static Functions:
 
-	typeOf( path )
+    typeOf( path )
     strToLines( s )
     linesToStr( lines )    
 
@@ -1573,6 +1593,9 @@ the script.  Place holders must defined in the script with the surrounding brack
 i.e in the form "{placeholder}". The keys in replacements dictionary should not, however,
 include the brackets.  This is similar to the built-in string format function, of course,
 but works better in scripts which use brackets for other purposes. 
+
+**asSnippet()**: Use this function when "pasting" scripts 
+together.
 
 **isIfwVarEscapeBackslash**: If employing this class within a 
 [QtIfwExternalOp](ConfigClasses.md#qtifwexternalop), enabling this
@@ -1686,12 +1709,12 @@ of dependencies.
 
 ### importFromPath
 
-	importFromPath( path, memberName=None )
-	
+    importFromPath( path, memberName=None )
+    
 Imports a module, or a select member from it, via the 
 explicit path to that script, and returns the reference.
 Example:
-	
+    
     myFunc = importFromPath( "/path/to/myscript.py", "myFunc" )
     myFunc( someArg )
 
@@ -1749,8 +1772,8 @@ without an uncaught exception being encountered.
 
 ### log
 
-	log( msg )
-	 
+    log( msg )
+     
 Log a message with the primary/singleton logger, **if it is in use**.
 
 ### isLogging
@@ -1770,8 +1793,8 @@ Constructor:
     
 Attributes:
    
-	name = <client supplied, or auto defined>
-	isUniqueFile = False
+    name = <client supplied, or auto defined>
+    isUniqueFile = False
 
 Object Methods:
 
@@ -1789,14 +1812,14 @@ Object Methods:
     toStdoutLn( msg )
     toStderrLn( msg )
 
-	isOpen()
-	isPaused()
+    isOpen()
+    isPaused()
     filePath() 
-	
+    
 Static Methods:
 
-	singleton( name=None, isUniqueFile=False )
-	isSingletonOpen()
+    singleton( name=None, isUniqueFile=False )
+    isSingletonOpen()
 
 ## Utility Functions
 
@@ -1848,7 +1871,7 @@ containing *any* content, which the installer knows how to resolve.
 
 ### qtIfwOpDataPath
 
-	qtIfwOpDataPath( rootFileName )
+    qtIfwOpDataPath( rootFileName )
     qtIfwDetachedOpDataPath( rootFileName )
 
 Use these functions, within QtScript building contexts, to resolve 
@@ -1858,7 +1881,7 @@ Only use `qtIfwDetachedOpDataPath` if you need the temp file to exist
 after the installer/uninstaller has terminated, i.e. for "detached" 
 operations.  Note that such a temp path becomes the responsibility of the 
 client operation to purge.
-	
+    
 ### isParentDir 
 
     isParentDir( parent, child, basePath=None ):
@@ -1898,7 +1921,7 @@ Convenience wrapper functions which directly imply the destination.
 
 ### removeFromDir 
     
-	removeFromDir( subPaths, parentDirPath )
+    removeFromDir( subPaths, parentDirPath )
 
 Removes files OR directories from a given directory.
 The argument subPaths may be a singular path (i.e. a string)
@@ -1909,7 +1932,7 @@ they are resolved via [absPath](#abspath).
 
 ### renameInDir 
 
-	renameInDir( namePairs, parentDirPath )
+    renameInDir( namePairs, parentDirPath )
 
 Renames files OR directories with a given directory.
 The argument namePairs may be a singular tuple (oldName, newName)
@@ -1919,8 +1942,8 @@ they are resolved via [absPath](#abspath).
 
 ### collectDirs 
 
-	collectDirs( srcDirPaths, destDirPath ) 
-	
+    collectDirs( srcDirPaths, destDirPath ) 
+    
 Moves a list of directories into a common parent directory.
 That parent directory will be created is it does not exist.
 When relative paths are specified or `parentDirPath`, 
@@ -1928,8 +1951,8 @@ they are resolved via [absPath](#abspath).
 
 ### mergeDirs
 
-	mergeDirs( srcDirPaths, destDirPath, isRecursive=True )
-	
+    mergeDirs( srcDirPaths, destDirPath, isRecursive=True )
+    
 Move the contents of a source directory into a target directory, 
 over writing the target contents where applicable.
 If performed recursively, the destination contents contained 
@@ -1940,8 +1963,8 @@ they are resolved via [absPath](#abspath).
         
 ### normBinaryName
     
-	normBinaryName( path, isPathPreserved=False, isGui=False )
-	
+    normBinaryName( path, isPathPreserved=False, isGui=False )
+    
 The "normalized" name of a binary, resolving such for
 cross platform contexts.  On Windows, binaries normally end 
 in a ".exe" extension, but on other platforms they normally have
@@ -1954,8 +1977,8 @@ is stripped down to the base name.
 
 ### normIconName
     
-	normIconName( path, isPathPreserved=False )
-	
+    normIconName( path, isPathPreserved=False )
+    
 The "normalized" name of an icon, resolving such for
 cross platform contexts.  On Windows, icons end 
 in a ".ico" extension, on macOS ".icns" files are used. In Linux, 
@@ -1982,11 +2005,11 @@ is stripped down to the base name.
 
 The following functions provide pattern strings, containing wild cards. 
 
-	allPathPattern( basePath )
+    allPathPattern( basePath )
     extPathPattern( ext, basePath=None ) 
     startsWithPathPattern( match, basePath=None )
     endsWithPathPattern( match, basePath=None )
-    containsPathPattern( match, basePath=None )	
+    containsPathPattern( match, basePath=None )    
 
 Note: If the primary (first) argument supplied to any of these is a list, 
 the return value is a corresponding list.  Otherwise, a single string 
@@ -1994,9 +2017,9 @@ is returned.
 
 ### getEnv, setEnv, delEnv
 
-	getEnv( varName, default=None )
-	setEnv( varName, value )
-	delEnv( varName )
+    getEnv( varName, default=None )
+    setEnv( varName, value )
+    delEnv( varName )
 
 Use these functions to retrieve or manipulate environmental variables.
 
@@ -2021,9 +2044,9 @@ a file extension, you must include the "." explicitly.
     
 ### versionTuple, versionStr
 
-	versionTuple( ver, parts=4 )    
-	versionStr( ver, parts=4 )
-	
+    versionTuple( ver, parts=4 )    
+    versionStr( ver, parts=4 )
+    
 These functions return "version representations" as either tuples
 of integers, or as strings delimited by periods respectively (e.g. "1.0.0.0").
 Based upon context, either format is commonly used by this library, and
@@ -2039,8 +2062,8 @@ i.e. "Major.Minor.Micro.Build".
 
 ### versionNo, assertMinVer, assertBuilderVer
 
-	versionNo( ver, parts=4, partLen=3 )
-	assertMinVer( ver, minVer, parts=4, partLen=3, descr=None )
+    versionNo( ver, parts=4, partLen=3 )
+    assertMinVer( ver, minVer, parts=4, partLen=3, descr=None )
     assertBuilderVer( ver )
     
 Like `versionTuple` and `versionStr`, `versionNo` takes "any" representation 
@@ -2058,8 +2081,8 @@ For convenience, `assertBuilderVer` is provided to confirm the minimum version
 of **this library**.  It may be useful to start some build scripts in a manner 
 resembling the following: 
 
-	from distbuilder assertBuilderVer
-	assertBuilderVer( "0.7.8.0" )
+    from distbuilder assertBuilderVer
+    assertBuilderVer( "0.7.8.0" )
   
 ### embedExeVerInfo
 
@@ -2173,13 +2196,13 @@ enforce via a manifest.
 **exePath**:  Absolute or relative path to the executable file.
 
 ### halt
-	
-	halt()
-	
+    
+    halt()
+    
 Immediately stops execution of the script.
 This can be useful for debugging, since it is typical
 to the use library for auto generating and purging files
-which you might want to inspect along the way. 	 
+which you might want to inspect along the way.      
 
 ### printErr, printExc
 
@@ -2199,8 +2222,8 @@ Note: use printErr( e ) to print just an exception
 
 ### download
 
-	download( url, saveToPath=None, preserveName=True )
-	
+    download( url, saveToPath=None, preserveName=True )
+    
 **Returns**: the local path to the completed download.
 
 **url**: The url to the file that is to be downloaded.
@@ -2213,7 +2236,7 @@ within a temp directory.
 whether the original name of the file should be used when saving the file locally.
 If set to `False`, the name will be auto assigned to one which does not conflict
 with any that already exist. If set to `True`, and the path already exists, the
-new download will overwrite the prior file.       	
+new download will overwrite the prior file.           
 
 ### getPassword
 
@@ -2238,13 +2261,13 @@ If not enabled, the password input prompt will work via a terminal interface.
         move                   shutil.move
         rename                 os.rename
         tempDirPath            tempfile.gettempdir()    
-        rootFileName		   <custom> head of os.path.splitext of os.path.basename 
+        rootFileName           <custom> head of os.path.splitext of os.path.basename 
         baseFileName           os.path.basename         
         dirPath                os.path.dirname
         joinPath               os.path.join
         splitPath              os.path.split
         splitExt               os.path.splitext 
-        joinExt 			   <custom> inverse of splitExt
+        joinExt                <custom> inverse of splitExt
         fileExt                <note returns None, rather than "", when there is no extension>  
         
 ## General Purpose Constants
@@ -2265,7 +2288,7 @@ If not enabled, the password input prompt will work via a terminal interface.
     
     THIS_DIR 
 
-	ALL <wildcard *>
+    ALL <* wild card>
 
     CURRENT_USER
     ALL_USERS

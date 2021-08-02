@@ -1,8 +1,10 @@
 from distbuilder import( RobustInstallerProcess, ConfigFactory,
     QtIfwOnFinishedCheckbox, QtIfwOnFinishedDetachedExec, 
     QtIfwControlScript, QtIfwExternalOp, ExecutableScript, 
-    findQtIfwPackage, joinPathQtIfw, joinPath, 
+    startLogging, findQtIfwPackage, joinPathQtIfw, joinPath, 
     IS_WINDOWS, IS_MACOS, QT_IFW_TARGET_DIR, QT_IFW_DESKTOP_DIR )
+
+startLogging()
   
 f = masterConfigFactory = ConfigFactory()
 f.productName      = "Hello Dynamic Finish Example"

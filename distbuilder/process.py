@@ -41,7 +41,7 @@ from distbuilder.qt_installer import(
     , _SILENT_FORCED_ARGS 
     , _LOUD_FORCED_ARGS 
 )
-   
+
 # -----------------------------------------------------------------------------       
 class ConfigFactory:
     
@@ -119,13 +119,16 @@ class ConfigFactory:
         self.ifwPkgScriptPath = None        
         self.ifwPkgScriptName = DEFAULT_QT_IFW_SCRIPT_NAME
         
-        self.pkgType            = None
-        self.pkgSubDirName      = None
-        self.pkgSrcDirPath      = None
-        self.pkgSrcExePath      = None
-        self.pkgExeWrapper      = None 
-        self.pkgCodeSignTargets = None
-
+        self.pkgType                 = None
+        self.pkgSubDirName           = None
+        self.pkgSrcDirPath           = None
+        self.pkgSrcExePath           = None
+        self.pkgCodeSignTargets      = None        
+        
+        self.pkgExeWrapper           = None 
+        self.pkgExternalDependencies = None # LINUX / MAC only
+        self.pkgConfigs              = None
+    
         self.startOnBoot   = False
        
         # code signing
@@ -254,12 +257,15 @@ class ConfigFactory:
         self.__pkgIExpressConfig = iExpressConfig
         pkgType=self.__ifwPkgType()
 
-        if IS_WINDOWS and self.startOnBoot in [True, CURRENT_USER, ALL_USERS]:
-            if self.pkgExeWrapper and not self.pkgExeWrapper.isExe:
-                self.pkgExeWrapper.isExe = True
-                self.pkgExeWrapper.refresh()
-            else: self.pkgExeWrapper = self.qtIfwExeWrapper( isExe=True )        
-                
+        if self.startOnBoot in [True, CURRENT_USER, ALL_USERS]:
+            if IS_WINDOWS: 
+                if self.pkgExeWrapper and not self.pkgExeWrapper.isExe:
+                    self.pkgExeWrapper.isExe = True
+                    self.pkgExeWrapper.refresh()
+                else: self.pkgExeWrapper = self.qtIfwExeWrapper( isExe=True )        
+            else: # TODO: ADD SUPPORT FOR OTHER PLATFORMS!
+                util._onPlatformErr()
+                    
         pkg = QtIfwPackage(
                 pkgId=self.__ifwPkgId(),
                 pkgType=pkgType, 
@@ -329,7 +335,7 @@ class ConfigFactory:
                           (exeName,), 
                           isFatal=False)
             pkg.codeSignTargets = self.pkgCodeSignTargets
-                                                       
+                                                                                                              
         pkg.qtCppConfig = self.qtCppConfig        
         return pkg
 
@@ -395,18 +401,35 @@ class ConfigFactory:
         bundledScripts=[]
         if self.pkgExeWrapper and self.pkgExeWrapper.wrapperScript:
             bundledScripts.append( self.pkgExeWrapper.wrapperScript )
-                    
+
+        dynamicTexts={}
+        if self.pkgConfigs:
+            for pathPair, content in iteritems( self.pkgConfigs ):
+                if isinstance( content, RawConfigParser ):                     
+                    with StringIO() as buffer:
+                        content.write( buffer )
+                        buffer.seek( 0 ) 
+                        dynamicTexts[ pathPair ] = buffer.read()
+                else:
+                    srcPath, _ = util._toSrcDestPair( pathPair )                                                                              
+                    dynamicTexts[ pathPair ] =( content if content else                                                 
+                        PlasticFile( filePath=srcPath ).read() )
+                       
         script = QtIfwPackageScript( 
                     self.__ifwPkgName(), self.__versionStr(),
                     pkgSubDirName=self.pkgSubDirName,
                     shortcuts=[ defShortcut ],
                     bundledScripts=bundledScripts,
+                    dynamicTexts=dynamicTexts,
                     fileName=self.ifwPkgScriptName,
                     script=self.ifwPkgScriptText, 
                     scriptPath=self.ifwPkgScriptPath )
         
         if IS_LINUX and self.pkgExeWrapper:
             script.isAskPassProgRequired = self.pkgExeWrapper.isElevated
+
+        if IS_LINUX or IS_MACOS:
+            script.externalDependencies = self.pkgExternalDependencies
             
         return script
 
@@ -648,7 +671,10 @@ class IExpressPackageProcess( _BuildPackageProcess ):
     def __init__( self, configFactory,                  
                   name="Windows Script to Binary Package Process",
                   isZipped=False, isDesktopTarget=False, isHomeDirTarget=False ) :
+        
+        # NOT APPLICABLE OUTSIDE OF _WINDOWS!   
         if not IS_WINDOWS: util._onPlatformErr()
+        
         _BuildPackageProcess.__init__( self, configFactory, name,
             isZipped, isDesktopTarget, isHomeDirTarget )        
 
@@ -888,8 +914,8 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
             self.onPyPackageProcess( key, prc )    
             pyBinPrcs.append( prc )        
 
+        iExpressBinPrcs = []
         if IS_WINDOWS:
-            iExpressBinPrcs = []
             for key, factory in iteritems( iExpressPkgConfigFactoryDict ) :        
                 if factory is None :
                     factory = ConfigFactory.copy( masterConfigFactory )
@@ -898,7 +924,11 @@ class RobustInstallerProcess( _BuildInstallerProcess ):
                 prc = CallbackIExpressToBinPackageProcess( self, key, factory )
                 self.onIExpressPackageProcess( key, prc )    
                 iExpressBinPrcs.append( prc )        
-        
+        elif( iExpressPkgConfigFactoryDict and 
+             len(iExpressPkgConfigFactoryDict) > 0 ) :
+            printErr( "WARNING: IEXPRESS PACKAGES CANNOT BE BUILT OUTSIDE OF "
+                      "WINDOWS! DROPPING ALL SUCH PACKAGE CONFIGURATIONS..." )
+            
         _BuildInstallerProcess.__init__( self, 
             masterConfigFactory, name,
             ifwPackages=ifwPackages,

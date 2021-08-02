@@ -49,8 +49,9 @@ from distbuilder.qt_installer import(
     , QtIfwExeWrapper 
     , QtIfwExternalResource 
     , QtIfwUiPage 
-    , QtIfwTargetDirPage 
+    , QtIfwDynamicOperationsPage
     , QtIfwSimpleTextPage 
+    , QtIfwTargetDirPage     
     , QtIfwWidget 
     , QtIfwOnFinishedDetachedExec 
     , QtIfwOnFinishedCheckbox 
@@ -83,7 +84,8 @@ from distbuilder.qt_installer import(
     , QT_IFW_INSTALLER_TEMP_DIR 
     , QT_IFW_MAINTENANCE_TEMP_DIR 
     , QT_IFW_INSTALLER_DIR 
-    , QT_IFW_INTALLER_PATH 
+    , QT_IFW_INTALLER_PATH
+    , QT_IFW_USER 
     , QT_IFW_PRODUCT_NAME 
     , QT_IFW_PRODUCT_VERSION 
     , QT_IFW_TITLE 
@@ -136,8 +138,9 @@ from distbuilder.code_sign import(
     , signExe 
 )
             
-from distbuilder.util import( 
-      ExecutableScript
+from distbuilder.util import(
+      RawConfigParser, ConfigParser, SafeConfigParser
+    , ExecutableScript    
     , WindowsExeVersionInfo        
     , IS_WINDOWS 
     , IS_LINUX 
@@ -180,6 +183,7 @@ from distbuilder.util import(
     , normBinaryName 
     , normIconName 
     , normLibName
+    , normConfigName
     , allPathPattern
     , extPathPattern 
     , startsWithPathPattern

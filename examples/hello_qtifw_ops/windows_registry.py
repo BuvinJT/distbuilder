@@ -1,6 +1,8 @@
-from distbuilder import PyToBinInstallerProcess, ConfigFactory, \
-        QtIfwControlScript, QtIfwPackageScript, QtIfwExternalOp as ExOp, \
-        joinPath, qtIfwDynamicValue
+from distbuilder import( PyToBinInstallerProcess, ConfigFactory, 
+        QtIfwControlScript, QtIfwPackageScript, QtIfwExternalOp as ExOp, 
+        startLogging, joinPath, qtIfwDynamicValue )
+
+startLogging()
 
 f = configFactory  = ConfigFactory()
 f.productName      = "Hello Registry Example"

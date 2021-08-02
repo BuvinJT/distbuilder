@@ -32,14 +32,6 @@ p.isInstallTest = True
 #p.run()       
 
 #------------------------------------------------------------------------------
-f.productName   = "Hello Elevated Example"
-f.setupName     = "HelloElevatedSetup"
-f.pkgExeWrapper = f.qtIfwExeWrapper( isElevated=True )  
-p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
-p.isInstallTest = True
-#p.run()       
-
-#------------------------------------------------------------------------------
 f.productName   = "Hello EnvVars Example"
 f.setupName     = "HelloEnvVarsSetup"
 f.pkgExeWrapper = f.qtIfwExeWrapper( envVars={ "TEST_ENV_VAR": "test" } )  
@@ -51,6 +43,14 @@ p.isInstallTest = True
 f.productName   = "Hello Args Example"
 f.setupName     = "HelloArgsSetup"
 f.pkgExeWrapper = f.qtIfwExeWrapper( args=["arg1", "arg 2 w spaces", "arg3"] )  
+p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
+p.isInstallTest = True
+#p.run()       
+
+#------------------------------------------------------------------------------
+f.productName   = "Hello Elevated Example"
+f.setupName     = "HelloElevatedSetup"
+f.pkgExeWrapper = f.qtIfwExeWrapper( isElevated=True )  
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True
 #p.run()       
@@ -99,8 +99,11 @@ else
 fi   
 """)
 elif IS_LINUX :
-    # Note this is not a "perfect" cross Linux distro / environment example,
-    # as this depends upon `gedit` and `screen` being present...
+    # Note this is not a "perfect" cross Linux distro example!
+    # This depends upon "gedit" (i.e. a GNOME based desktop is assumed),
+    # And this depends upon `screen` being available 
+    # (note on rhel: screen is not available without epel))...
+    f.pkgExternalDependencies = [ "screen" ]
     textViewer = "gedit"
     launchScript = (
 """
@@ -132,7 +135,7 @@ f.pkgExeWrapper = f.qtIfwExeWrapper( wrapperScript=launchScript )
 #)
 p = PyToBinInstallerProcess( configFactory, isDesktopTarget=True )
 p.isInstallTest = True
-#p.run()       
+p.run()       
 
 #------------------------------------------------------------------------------
 if IS_WINDOWS :    
