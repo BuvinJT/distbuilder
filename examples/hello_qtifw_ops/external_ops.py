@@ -31,6 +31,8 @@ class BuildProcess( PyToBinInstallerProcess ):
         def addKillOps( pkg ):
             pkg.pkgScript.killOps += [ QtIfwKillOp( pkg ) ]
 
+        # Demo creating a data directory within the user's home directory,
+        # and allowing an "auto undo", which removes it during uninstallation
         def addMakeDataDirOp( pkg ):
             dirPath  = joinPathQtIfw( QT_IFW_HOME_DIR, "distbuilder-example" )
             filePath = joinPathQtIfw( dirPath, "distbuilder-example.txt" )
@@ -42,6 +44,25 @@ class BuildProcess( PyToBinInstallerProcess ):
                     QtIfwExternalOp.AUTO_UNDO,
                     filePath, "Here is some sample data for y'all!",
                     isOverwrite=False )                  
+            ]
+
+        # Demo removing a data directory within the user's home directory,
+        # during installation.  To run this test, you should manually create
+        # the directory / contents prior to running this.
+        # Note, it is not required that you delete the directory content first.
+        # That is only included here for demo/testing purposes.
+        def addRemoveDataDirOp( pkg ):
+            dirPath  = joinPathQtIfw( QT_IFW_HOME_DIR, "distbuilder-example" )
+            filePath = joinPathQtIfw( dirPath, "distbuilder-example.txt" )
+            pkg.pkgScript.externalOps += [
+                QtIfwExternalOp.RemoveFile(
+                    QtIfwExternalOp.ON_INSTALL, filePath
+                    #, isErrOnNotFound=True 
+                )                  
+              , QtIfwExternalOp.RemoveDir(
+                    QtIfwExternalOp.ON_INSTALL, dirPath 
+                    #, isErrOnNotFound=True 
+                )
             ]
                     
         def addRunProgramOp( pkg ):
@@ -119,6 +140,7 @@ class BuildProcess( PyToBinInstallerProcess ):
         pkg = cfg.packages[0]
         customizeFinishedPage( cfg )
         addKillOps( pkg ) 
+        #addRemoveDataDirOp( pkg ) # optional test
         addMakeDataDirOp( pkg )
         addRunProgramOp( pkg )
 

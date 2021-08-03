@@ -5937,17 +5937,23 @@ class QtIfwExternalOp:
     
     # TODO: Test on MAC            
     @staticmethod
-    def RemoveFile( event, filePath, isElevated=True ):             
+    def RemoveFile( event, filePath, isErrOnNotFound=False,
+                    runConditionFileName=None, isRunConditionNegated=False, 
+                    isElevated=True ):             
         return QtIfwExternalOp.__genScriptOp( event, 
-            script=QtIfwExternalOp.RemoveFileScript( filePath ),
+            script=QtIfwExternalOp.RemoveFileScript( filePath, 
+                isErrOnNotFound, runConditionFileName, isRunConditionNegated ),            
             isReversible=False, 
             isElevated=isElevated )
     
     # TODO: Test on MAC
     @staticmethod
-    def RemoveDir( event, dirPath, isElevated=True ):            
+    def RemoveDir( event, dirPath, isErrOnNotFound=False,
+                   runConditionFileName=None, isRunConditionNegated=False,
+                   isElevated=True ):            
         return QtIfwExternalOp.__genScriptOp( event, 
-            script=QtIfwExternalOp.RemoveDirScript( dirPath ),
+            script=QtIfwExternalOp.RemoveDirScript( dirPath,
+                isErrOnNotFound, runConditionFileName, isRunConditionNegated ),
             isReversible=False, 
             isElevated=isElevated )
 
@@ -6423,20 +6429,58 @@ class QtIfwExternalOp:
             , "access"  : access
         })
                     
-    # TODO: Test on MAC                                    
+    # TODO: Test on MAC
+    # TODO: Test on LINUX (re-test w/ new extended options)                                    
     @staticmethod
-    def RemoveFileScript( filePath ):             
+    def RemoveFileScript( filePath, isErrOnNotFound=False,
+                          runConditionFileName=None, 
+                          isRunConditionNegated=False ):
+        filePath = toNativePath(normpath(filePath))             
+        runConditionExitSnippet =(
+            QtIfwExternalOp.__batExitIfOpFileMissing(
+                runConditionFileName, isRunConditionNegated )
+            if IS_WINDOWS else
+            QtIfwExternalOp.__shExitIfOpFileMissing(
+                runConditionFileName, isRunConditionNegated )                
+        )                                             
+        notFoundExitSnippet = (             
+            QtIfwExternalOp.__batExitIfFileMissing(
+                filePath, errorCode=(1 if isErrOnNotFound else 0) )
+            if IS_WINDOWS else
+            QtIfwExternalOp.__shExitIfFileMissing(
+                filePath, errorCode=(1 if isErrOnNotFound else 0) )
+        )
+        rmCmd = 'del /q /f "{filePath}"' if IS_WINDOWS else 'rm -f "{filePath}"'
         return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-            "removeFile" ), script=(
-            'del /q /f "{filePath}"' if IS_WINDOWS else 'rm "{filePath}"' ), 
+            "removeFile" ), script=[
+                runConditionExitSnippet, notFoundExitSnippet, rmCmd], 
             replacements={ "filePath": filePath } )
     
     # TODO: Test on MAC
+    # TODO: Test on LINUX (re-test w/ new extended options)                                        
     @staticmethod
-    def RemoveDirScript( dirPath ):            
+    def RemoveDirScript( dirPath, isErrOnNotFound=False,
+                         runConditionFileName=None, 
+                         isRunConditionNegated=False ):    
+        dirPath = toNativePath(normpath(dirPath))         
+        runConditionExitSnippet =(
+            QtIfwExternalOp.__batExitIfOpFileMissing(
+                runConditionFileName, isRunConditionNegated )
+            if IS_WINDOWS else
+            QtIfwExternalOp.__shExitIfOpFileMissing(
+                runConditionFileName, isRunConditionNegated )                
+        )                                             
+        notFoundExitSnippet = (             
+            QtIfwExternalOp.__batExitIfDirMissing(
+                dirPath, errorCode=(1 if isErrOnNotFound else 0) )
+            if IS_WINDOWS else
+            QtIfwExternalOp.__shExitIfDirMissing(
+                dirPath, errorCode=(1 if isErrOnNotFound else 0) )
+        )            
+        rmCmd = 'rd /q /s "{dirPath}"' if IS_WINDOWS else 'rm -rf "{dirPath}"'
         return ExecutableScript( QtIfwExternalOp.__scriptRootName( 
-            "removeDir" ), script=(
-            'rd /q /s "{dirPath}"' if IS_WINDOWS else 'rm -r "{dirPath}"'  ), 
+            "removeDir" ), script=[
+                runConditionExitSnippet, notFoundExitSnippet, rmCmd],             
             replacements={ "dirPath": dirPath } )
 
     # TODO: Test on MAC       
@@ -6570,13 +6614,30 @@ class QtIfwExternalOp:
             }).asSnippet()
 
         @staticmethod
-        def __batExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):
-            if fileName is None: return ""            
+        def __batExitIfOpFileMissing( fileName, isNegated=False, errorCode=0 ):
+            if fileName is None: return ""
+            return QtIfwExternalOp.__batExitIfFileMissing( 
+                QtIfwExternalOp.opDataPath( fileName ), isNegated, errorCode )
+
+        @staticmethod
+        def __batExitIfFileMissing( filePath, isNegated=False, errorCode=0 ):
+            if filePath is None: return ""                        
             return ExecutableScript( "", script=([                               
                 'if {negate}exist "{filePath}" exit /b {errorCode}'   
             ]), replacements={
                   'negate' : ('' if isNegated else 'not ')  
-                , 'filePath' : QtIfwExternalOp.opDataPath( fileName )
+                , 'filePath' : filePath
+                , 'errorCode': errorCode
+            }).asSnippet()
+
+        @staticmethod
+        def __batExitIfDirMissing( dirPath, isNegated=False, errorCode=0 ):
+            if dirPath is None: return ""            
+            return ExecutableScript( "", script=([                               
+                'if {negate}exist "{dirPath}" exit /b {errorCode}'   
+            ]), replacements={
+                  'negate' : ('' if isNegated else 'not ')  
+                , 'dirPath' : dirPath
                 , 'errorCode': errorCode
             }).asSnippet()
 
@@ -6600,15 +6661,35 @@ class QtIfwExternalOp:
             }).asSnippet()
 
         @staticmethod
-        def __psExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):
+        def __psExitIfOpFileMissing( fileName, isNegated=False, errorCode=0 ):
             if fileName is None: return ""            
+            return QtIfwExternalOp.__psExitIfFileMissing(
+                QtIfwExternalOp.opDataPath( fileName ), isNegated, errorCode )
+
+        @staticmethod
+        def __psExitIfFileMissing( filePath, isNegated=False, errorCode=0 ):
+            if filePath is None: return ""            
             return ExecutableScript( "", script=([               
                   'if( {negate}(Test-Path "{filePath}" -PathType Leaf) ) {'
                 , '    [Environment]::Exit( {errorCode} )'
                 , '}'   
             ]), replacements={
                   'negate' : ('' if isNegated else '! ')  
-                , 'filePath' : QtIfwExternalOp.opDataPath( fileName )
+                , 'filePath' : filePath 
+                , 'errorCode': errorCode
+            }).asSnippet()
+
+        # TODO: Test
+        @staticmethod
+        def __psExitIfFileMissing( dirPath, isNegated=False, errorCode=0 ):
+            if dirPath is None: return ""            
+            return ExecutableScript( "", script=([               
+                  'if( {negate}(Test-Path "{filePath}") ) {'
+                , '    [Environment]::Exit( {errorCode} )'
+                , '}'   
+            ]), replacements={
+                  'negate' : ('' if isNegated else '! ')  
+                , 'dirPath' : dirPath 
                 , 'errorCode': errorCode
             }).asSnippet()
         
@@ -7103,13 +7184,32 @@ if %PROCESSOR_ARCHITECTURE%==x86 ( "%windir%\sysnative\cmd" /c "%REFRESH_ICONS%"
     
         # TODO: TEST         
         @staticmethod
-        def __shExitIfFileMissing( fileName, isNegated=False, errorCode=0 ):
+        def __shExitIfOpFileMissing( fileName, isNegated=False, errorCode=0 ):
             if not fileName: return ""            
+            return QtIfwExternalOp.__shExitIfFileMissing( 
+                QtIfwExternalOp.opDataPath( fileName ), isNegated, errorCode ) 
+
+        # TODO: TEST         
+        @staticmethod
+        def __shExitIfFileMissing( filePath, isNegated=False, errorCode=0 ):
+            if not filePath: return ""            
             return ExecutableScript( "", script=([               
                 '[ {negate}-f "{filePath}" ] && exit {errorCode}'   
             ]), replacements={
                   'negate' : ('' if isNegated else '! ')  
-                , 'filePath' : QtIfwExternalOp.opDataPath( fileName )
+                , 'filePath' : filePath
+                , 'errorCode': errorCode
+            }).asSnippet()
+
+        # TODO: TEST         
+        @staticmethod
+        def __shExitIfDirMissing( dirPath, isNegated=False, errorCode=0 ):
+            if not dirPath: return ""            
+            return ExecutableScript( "", script=([               
+                '[ {negate}-d "{dirPath}" ] && exit {errorCode}'   
+            ]), replacements={
+                  'negate' : ('' if isNegated else '! ')  
+                , 'dirPath' : dirPath
                 , 'errorCode': errorCode
             }).asSnippet()
 
