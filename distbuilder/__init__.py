@@ -72,6 +72,7 @@ from distbuilder.qt_installer import(
     , QT_IFW_DEFAULT_TARGET_DIR 
     , QT_IFW_HOME_DIR 
     , QT_IFW_DESKTOP_DIR  
+    , QT_IFW_ALLUSERS_DESKTOP_DIR
     , QT_IFW_APPS_DIR 
     , QT_IFW_APPS_X86_DIR 
     , QT_IFW_APPS_X64_DIR 

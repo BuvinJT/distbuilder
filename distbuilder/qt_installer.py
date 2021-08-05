@@ -76,6 +76,7 @@ QT_IFW_INTALLER_PATH      = "@InstallerFilePath@"
 
 _QT_IFW_USER                 = "User"               # CUSTOM!
 _QT_IFW_HOME_DIR             = "HomeDir"            
+_QT_IFW_ALLUSERS_DESKTOP_DIR = "AllUsersDesktopDir" # CUSTOM!
 _QT_IFW_DEFAULT_TARGET_DIR   = "DefaultTargetDir"   # CUSTOM!
 _QT_IFW_TEMP_DIR             = "TempDir"            # CUSTOM!
 _QT_IFW_SCRIPTS_DIR          = "ScriptsDir"         # CUSTOM!
@@ -85,6 +86,7 @@ _QT_IFW_MAINTENANCE_TEMP_DIR = "MaintenanceTempDir" # CUSTOM!
 _QT_IFW_VAR_TMPLT = "@%s@"
 
 QT_IFW_USER                 = _QT_IFW_VAR_TMPLT % (_QT_IFW_USER,)                 # CUSTOM!
+QT_IFW_ALLUSERS_DESKTOP_DIR = _QT_IFW_VAR_TMPLT % (_QT_IFW_ALLUSERS_DESKTOP_DIR,)   # CUSTOM!
 QT_IFW_DEFAULT_TARGET_DIR   = _QT_IFW_VAR_TMPLT % (_QT_IFW_DEFAULT_TARGET_DIR,)   # CUSTOM!
 QT_IFW_TEMP_DIR             = _QT_IFW_VAR_TMPLT % (_QT_IFW_TEMP_DIR,)             # CUSTOM!
 QT_IFW_SCRIPTS_DIR          = _QT_IFW_VAR_TMPLT % (_QT_IFW_SCRIPTS_DIR,)          # CUSTOM! 
@@ -158,6 +160,7 @@ QT_IFW_DYNAMIC_PATH_VARS = [
     , "RootDir" 
     , "HomeDir"  
     , "DesktopDir" 
+    , "AllUsersDesktopDir"
     , "ApplicationsDir" 
     , "StartMenuDir" 
     , "UserStartMenuProgramsPath" 
@@ -2175,6 +2178,15 @@ class _QtIfwScript:
             ) +
             TAB + 'return installer.environmentVariable( varName )' + END +
             EBLK + NEW +
+            # TODO: Test on Mac   
+            # Does Mac have all users desktop? Do any Linux distros / gui layers?
+            # TODO: Handle alternate language versions OSes    
+            'function __allUsersDesktopPath() ' + SBLK +            
+            ( (TAB + 'var path = resolveNativePath( "%PUBLIC%\Public Desktop" )' + END) if IS_WINDOWS else
+              (TAB + 'var path = installer.value( "HomeDir" ) + "/Desktop"' + END)               
+            ) +            
+            TAB + 'return path;' + END +
+            EBLK + NEW +            
             'function parentDir( path ) ' + SBLK +
             TAB + 'var pathParts = Dir.fromNativeSeparator( path ).split("/")' + END +
             TAB + 'if( pathParts.length <= 1 ) return null' + END +
@@ -4084,6 +4096,9 @@ Controller.prototype.Dynamic%sCallback = function() {
             TAB + '__installerTempPath()' + END +
             TAB + '__maintenanceTempPath()' + END +            
             TAB + 'makeDir( Dir.temp() )' + END +
+            TAB + 'installer.setValue( ' + 
+                ('"%s"' % (_QT_IFW_ALLUSERS_DESKTOP_DIR,)) + ', ' +
+                 '__allUsersDesktopPath() )' + END +            
             TAB + 'installer.setValue( ' + 
                 ('"%s"' % (_QT_IFW_SCRIPTS_DIR,)) + ', Dir.temp() )' + END +
             TAB + 'installer.setValue( ' + 
