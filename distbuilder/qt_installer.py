@@ -1206,8 +1206,8 @@ class _QtIfwScript:
                 if isOp:
                     return QtIfwPackageScript._addReplaceVarsInFileOperation( 
                         scriptPath, dynamicVarNames, 
-                        _QtIfwScript.toBool(isDoubleBackslash), 
-                        isElevated=True ) 
+                        _QtIfwScript.toBool(isDoubleBackslash),
+                        isElevated=True, isAutoQuote=False ) 
                 else:
                     return _QtIfwScript.__REPLACE_VARS_FILE_TMPL % ( 
                         scriptPath, dynamicVarNames,
@@ -4630,13 +4630,14 @@ Component.prototype.%s = function(){
 
     @staticmethod
     def _addReplaceVarsInFileOperation( path, varNames, isDoubleBackslash, 
-                                        isElevated ):
+                                        isElevated, isAutoQuote=True ):
+        path = _QtIfwScript._autoQuote(path, isAutoQuote)         
         if IS_WINDOWS:
-            vbs = '__replaceDynamicVarsInFileScript( "%s", %s, %s, true )' % (
+            vbs = '__replaceDynamicVarsInFileScript( %s, %s, %s, true )' % (
                 path, varNames, _QtIfwScript.toBool( isDoubleBackslash ) )
             return QtIfwPackageScript._addVbsOperation( vbs, isElevated )                   
         else:
-            sh = '__replaceDynamicVarsInFileScript( "%s", %s, false, true )' % (
+            sh = '__replaceDynamicVarsInFileScript( %s, %s, false, true )' % (
                 path, varNames )
             return QtIfwPackageScript._addShOperation( sh, isElevated )                   
         
