@@ -2182,7 +2182,7 @@ class _QtIfwScript:
             # Does Mac have all users desktop? Do any Linux distros / gui layers?
             # TODO: Handle alternate language versions OSes    
             'function __allUsersDesktopPath() ' + SBLK +            
-            ( (TAB + 'var path = resolveNativePath( "%PUBLIC%\Public Desktop" )' + END) if IS_WINDOWS else
+            ( (TAB + 'var path = resolveNativePath( "%PUBLIC%/Desktop" )' + END) if IS_WINDOWS else
               (TAB + 'var path = installer.value( "HomeDir" ) + "/Desktop"' + END)               
             ) +            
             TAB + 'return path;' + END +
