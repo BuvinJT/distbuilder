@@ -9506,6 +9506,8 @@ WORK_DIR         = "{1}"
 EXE_NAME         = "{0}"
 EXE_PATH         = os.path.join( WORK_DIR, EXE_NAME )
 
+REDIRECT_PATH = os.getenv( "{10}" )
+
 ARGS = ["-v","--script", "{2}" {9}]
 IS_VERBOSE = True
 
@@ -9541,6 +9543,7 @@ sys.exit( main() )
     , cleanUp                               #{8}
     , ( (', "target=%s"' % (util._normEscapePath(targetDir),))  #{9} 
         if isQtIfwInstaller else "" )
+    , util._REDIRECT_PATH_ENV_VAR_NAME     # {10}
 )
     else:
         return (
