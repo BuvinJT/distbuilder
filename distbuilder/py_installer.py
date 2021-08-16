@@ -218,6 +218,10 @@ class PyInstSpec( util.PlasticFile ):
     def path( self ):
         return ( PyInstSpec.cfgToPath( self.pyInstConfig )
                  if self.pyInstConfig else absPath(self.filePath) )
+    
+    def setRecursionDepth( self, depth=5000 ):        
+        self.injectLine( "import sys",                          1 )
+        self.injectLine( "sys.setrecursionlimit( %d )" % (depth,), 2 )
 
     def injectInterpreterOptions( self ):       
         if not self.content: return 
