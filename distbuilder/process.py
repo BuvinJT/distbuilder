@@ -617,6 +617,8 @@ class PyToBinPackageProcess( _BuildPackageProcess ):
         self.isWarningSuppression   = True
         self.isUnBufferedStdIo      = False                
         self.isPyInstDupDataPatched = None
+        
+        self.recursionDepth = 5000
                         
         self._pyInstConfig = None
                 
@@ -647,7 +649,9 @@ class PyToBinPackageProcess( _BuildPackageProcess ):
         if self.isWarningSuppression or self.isUnBufferedStdIo:                
             spec.injectInterpreterOptions()
         if self.isPyInstDupDataPatched and self._pyInstConfig.isOneFile:                    
-            spec.injectDuplicateDataPatch()
+            spec.injectDuplicateDataPatch()        
+        if self.recursionDepth:
+            spec.setRecursionDepth( self.recursionDepth )                    
         if spec.isInjected: spec.write()            
         self.onMakeSpec( spec )
         spec.debug()
