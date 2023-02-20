@@ -73,9 +73,11 @@
 ### *obj*.**writeLn**`#!py3 (self, msg)` { #writeLn data-toc-label=writeLn }
 
 
-### *obj*.**name** *undefined* { #name data-toc-label=name }
+### *obj*.**name** *class 'str'* default: *"pymkdocs"* { #name data-toc-label=name }
 
-### *obj*.**isUniqueFile** *undefined* { #isUniqueFile data-toc-label=isUniqueFile }
+
+### *obj*.**isUniqueFile** *class 'NoneType'* default: *None* { #isUniqueFile data-toc-label=isUniqueFile }
+
 
 
 ______

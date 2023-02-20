@@ -18,25 +18,35 @@
  - [`otherSignToolArgs`](#otherSignToolArgs)
  - [`isDebugMode`](#isDebugMode)
 
-### *CodeSignConfig*.**DEFAULT_DIGEST** *class 'str'* { #DEFAULT_DIGEST data-toc-label=DEFAULT_DIGEST }
+### *CodeSignConfig*.**DEFAULT_DIGEST** *class 'str'* default: *"sha256"* { #DEFAULT_DIGEST data-toc-label=DEFAULT_DIGEST }
 
-### *CodeSignConfig*.**DEFAULT_TIMESTAMP_SERVER** *class 'str'* { #DEFAULT_TIMESTAMP_SERVER data-toc-label=DEFAULT_TIMESTAMP_SERVER }
 
-### *obj*.**keyFilePath** *undefined* { #keyFilePath data-toc-label=keyFilePath }
+### *CodeSignConfig*.**DEFAULT_TIMESTAMP_SERVER** *class 'str'* default: *"http://timestamp.digicert.com"* { #DEFAULT_TIMESTAMP_SERVER data-toc-label=DEFAULT_TIMESTAMP_SERVER }
 
-### *obj*.**keyPassword** *undefined* { #keyPassword data-toc-label=keyPassword }
 
-### *obj*.**signToolPath** *undefined* { #signToolPath data-toc-label=signToolPath }
+### *obj*.**keyFilePath** *class 'NoneType'* default: *None* { #keyFilePath data-toc-label=keyFilePath }
 
-### *obj*.**fileDigest** *undefined* { #fileDigest data-toc-label=fileDigest }
 
-### *obj*.**timeStampDigest** *undefined* { #timeStampDigest data-toc-label=timeStampDigest }
+### *obj*.**keyPassword** *class 'NoneType'* default: *None* { #keyPassword data-toc-label=keyPassword }
 
-### *obj*.**timeStampServerUrl** *undefined* { #timeStampServerUrl data-toc-label=timeStampServerUrl }
 
-### *obj*.**otherSignToolArgs** *undefined* { #otherSignToolArgs data-toc-label=otherSignToolArgs }
+### *obj*.**signToolPath** *class 'NoneType'* default: *None* { #signToolPath data-toc-label=signToolPath }
 
-### *obj*.**isDebugMode** *undefined* { #isDebugMode data-toc-label=isDebugMode }
+
+### *obj*.**fileDigest** *class 'str'* default: *"sha256"* { #fileDigest data-toc-label=fileDigest }
+
+
+### *obj*.**timeStampDigest** *class 'str'* default: *"sha256"* { #timeStampDigest data-toc-label=timeStampDigest }
+
+
+### *obj*.**timeStampServerUrl** *class 'str'* default: *"http://timestamp.digicert.com"* { #timeStampServerUrl data-toc-label=timeStampServerUrl }
+
+
+### *obj*.**otherSignToolArgs** *class 'str'* default: *"&lt;empty string&gt;"* { #otherSignToolArgs data-toc-label=otherSignToolArgs }
+
+
+### *obj*.**isDebugMode** *class 'bool'* default: *True* { #isDebugMode data-toc-label=isDebugMode }
+
 
 
 ______
@@ -62,27 +72,38 @@ ______
  - [`otherArgs`](#otherArgs)
  - [`isDebugMode`](#isDebugMode)
 
-### *SelfSignedCertConfig*.**DEFAULT_END_DATE** *class 'str'* { #DEFAULT_END_DATE data-toc-label=DEFAULT_END_DATE }
+### *SelfSignedCertConfig*.**DEFAULT_END_DATE** *class 'str'* default: *None* { #DEFAULT_END_DATE data-toc-label=DEFAULT_END_DATE }
 
-### *SelfSignedCertConfig*.**LIFETIME_SIGNING_EKU** *class 'str'* { #LIFETIME_SIGNING_EKU data-toc-label=LIFETIME_SIGNING_EKU }
 
-### *SelfSignedCertConfig*.**NO_MAX_CHILDREN** *class 'int'* { #NO_MAX_CHILDREN data-toc-label=NO_MAX_CHILDREN }
+### *SelfSignedCertConfig*.**LIFETIME_SIGNING_EKU** *class 'str'* default: *None* { #LIFETIME_SIGNING_EKU data-toc-label=LIFETIME_SIGNING_EKU }
 
-### *obj*.**commonName** *undefined* { #commonName data-toc-label=commonName }
 
-### *obj*.**endDate** *undefined* { #endDate data-toc-label=endDate }
+### *SelfSignedCertConfig*.**NO_MAX_CHILDREN** *class 'int'* default: *None* { #NO_MAX_CHILDREN data-toc-label=NO_MAX_CHILDREN }
 
-### *obj*.**destDirPath** *undefined* { #destDirPath data-toc-label=destDirPath }
 
-### *obj*.**caCertPath** *undefined* { #caCertPath data-toc-label=caCertPath }
+### *obj*.**commonName** *class 'NoneType'* default: *None* { #commonName data-toc-label=commonName }
 
-### *obj*.**privateKeyPath** *undefined* { #privateKeyPath data-toc-label=privateKeyPath }
 
-### *obj*.**makeCertPath** *undefined* { #makeCertPath data-toc-label=makeCertPath }
+### *obj*.**endDate** *class 'NoneType'* default: *None* { #endDate data-toc-label=endDate }
 
-### *obj*.**otherArgs** *undefined* { #otherArgs data-toc-label=otherArgs }
 
-### *obj*.**isDebugMode** *undefined* { #isDebugMode data-toc-label=isDebugMode }
+### *obj*.**destDirPath** *class 'NoneType'* default: *None* { #destDirPath data-toc-label=destDirPath }
+
+
+### *obj*.**caCertPath** *class 'NoneType'* default: *None* { #caCertPath data-toc-label=caCertPath }
+
+
+### *obj*.**privateKeyPath** *class 'NoneType'* default: *None* { #privateKeyPath data-toc-label=privateKeyPath }
+
+
+### *obj*.**makeCertPath** *class 'NoneType'* default: *None* { #makeCertPath data-toc-label=makeCertPath }
+
+
+### *obj*.**otherArgs** *class 'NoneType'* default: *None* { #otherArgs data-toc-label=otherArgs }
+
+
+### *obj*.**isDebugMode** *class 'NoneType'* default: *None* { #isDebugMode data-toc-label=isDebugMode }
+
 
 
 ______
@@ -104,7 +125,8 @@ ______
  - [`onPyInstConfig`](#onPyInstConfig)
  - [`run`](#run)
 
-### *TrustInstallerBuilderProcess*.**DIVIDER** *class 'str'* { #DIVIDER data-toc-label=DIVIDER }
+### *TrustInstallerBuilderProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+
 
 ### *obj*.**onFinalize**`#!py3 (self)` { #onFinalize data-toc-label=onFinalize }
 
@@ -149,17 +171,20 @@ ______
 
 ## **Constants and Globals** { #Constants-and-Globals data-toc-label="Constants and Globals" }
 
-### **MAKECERT_PATH_ENV_VAR** *class 'str'* { #MAKECERT_PATH_ENV_VAR data-toc-label=MAKECERT_PATH_ENV_VAR }
+### **MAKECERT_PATH_ENV_VAR** *class 'str'* default: *"MAKECERT_PATH"* { #MAKECERT_PATH_ENV_VAR data-toc-label=MAKECERT_PATH_ENV_VAR }
 
-
-______
-
-### **PVK2PFX_PATH_ENV_VAR** *class 'str'* { #PVK2PFX_PATH_ENV_VAR data-toc-label=PVK2PFX_PATH_ENV_VAR }
 
 
 ______
 
-### **SIGNTOOL_PATH_ENV_VAR** *class 'str'* { #SIGNTOOL_PATH_ENV_VAR data-toc-label=SIGNTOOL_PATH_ENV_VAR }
+### **PVK2PFX_PATH_ENV_VAR** *class 'str'* default: *"PVK2PFX_PATH"* { #PVK2PFX_PATH_ENV_VAR data-toc-label=PVK2PFX_PATH_ENV_VAR }
+
+
+
+______
+
+### **SIGNTOOL_PATH_ENV_VAR** *class 'str'* default: *"SIGNTOOL_PATH"* { #SIGNTOOL_PATH_ENV_VAR data-toc-label=SIGNTOOL_PATH_ENV_VAR }
+
 
 
 ______

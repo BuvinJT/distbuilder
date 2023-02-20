@@ -19,27 +19,38 @@ Important Note: source maybe a:
  - [`isUpgrade`](#isUpgrade)
  - [`otherPipArgs`](#otherPipArgs)
 
-### *obj*.**pipCmdBase** *undefined* { #pipCmdBase data-toc-label=pipCmdBase }
+### *obj*.**pipCmdBase** *class 'str'* default: *""c:\python37\python3.exe" -m pip"* { #pipCmdBase data-toc-label=pipCmdBase }
 
-### *obj*.**source** *undefined* { #source data-toc-label=source }
 
-### *obj*.**version** *undefined* { #version data-toc-label=version }
+### *obj*.**source** *class 'NoneType'* default: *None* { #source data-toc-label=source }
 
-### *obj*.**verEquality** *undefined* { #verEquality data-toc-label=verEquality }
 
-### *obj*.**destPath** *undefined* { #destPath data-toc-label=destPath }
+### *obj*.**version** *class 'NoneType'* default: *None* { #version data-toc-label=version }
 
-### *obj*.**asSource** *undefined* { #asSource data-toc-label=asSource }
 
-### *obj*.**incDependencies** *undefined* { #incDependencies data-toc-label=incDependencies }
+### *obj*.**verEquality** *class 'NoneType'* default: *None* { #verEquality data-toc-label=verEquality }
 
-### *obj*.**isForced** *undefined* { #isForced data-toc-label=isForced }
 
-### *obj*.**isCacheUsed** *undefined* { #isCacheUsed data-toc-label=isCacheUsed }
+### *obj*.**destPath** *class 'NoneType'* default: *None* { #destPath data-toc-label=destPath }
 
-### *obj*.**isUpgrade** *undefined* { #isUpgrade data-toc-label=isUpgrade }
 
-### *obj*.**otherPipArgs** *undefined* { #otherPipArgs data-toc-label=otherPipArgs }
+### *obj*.**asSource** *class 'NoneType'* default: *None* { #asSource data-toc-label=asSource }
+
+
+### *obj*.**incDependencies** *class 'NoneType'* default: *None* { #incDependencies data-toc-label=incDependencies }
+
+
+### *obj*.**isForced** *class 'NoneType'* default: *None* { #isForced data-toc-label=isForced }
+
+
+### *obj*.**isCacheUsed** *class 'NoneType'* default: *None* { #isCacheUsed data-toc-label=isCacheUsed }
+
+
+### *obj*.**isUpgrade** *class 'NoneType'* default: *None* { #isUpgrade data-toc-label=isUpgrade }
+
+
+### *obj*.**otherPipArgs** *class 'NoneType'* default: *None* { #otherPipArgs data-toc-label=otherPipArgs }
+
 
 
 ______

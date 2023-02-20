@@ -45,17 +45,23 @@ ConfigParser implementing interpolation.
  - [`values`](#values)
  - [`write`](#write)
 
-### *ConfigParser*.**BOOLEAN_STATES** *class 'dict'* { #BOOLEAN_STATES data-toc-label=BOOLEAN_STATES }
+### *ConfigParser*.**BOOLEAN_STATES** *class 'dict'* default: *None* { #BOOLEAN_STATES data-toc-label=BOOLEAN_STATES }
 
-### *ConfigParser*.**NONSPACECRE** *class 're.Pattern'* { #NONSPACECRE data-toc-label=NONSPACECRE }
 
-### *ConfigParser*.**OPTCRE** *class 're.Pattern'* { #OPTCRE data-toc-label=OPTCRE }
+### *ConfigParser*.**NONSPACECRE** *class 're.Pattern'* default: *None* { #NONSPACECRE data-toc-label=NONSPACECRE }
 
-### *ConfigParser*.**OPTCRE_NV** *class 're.Pattern'* { #OPTCRE_NV data-toc-label=OPTCRE_NV }
 
-### *ConfigParser*.**SECTCRE** *class 're.Pattern'* { #SECTCRE data-toc-label=SECTCRE }
+### *ConfigParser*.**OPTCRE** *class 're.Pattern'* default: *None* { #OPTCRE data-toc-label=OPTCRE }
 
-### *ConfigParser*.**converters** *class 'property'* { #converters data-toc-label=converters }
+
+### *ConfigParser*.**OPTCRE_NV** *class 're.Pattern'* default: *None* { #OPTCRE_NV data-toc-label=OPTCRE_NV }
+
+
+### *ConfigParser*.**SECTCRE** *class 're.Pattern'* default: *None* { #SECTCRE data-toc-label=SECTCRE }
+
+
+### *ConfigParser*.**converters** *class 'property'* default: *None* { #converters data-toc-label=converters }
+
 
 ### *ConfigParser*.**update**`#!py3 (*args, **kwds)` { #update data-toc-label=update }
 
@@ -74,7 +80,7 @@ D.clear() -> None.  Remove all items from D.
 ### *obj*.**defaults**`#!py3 (self)` { #defaults data-toc-label=defaults }
 
 
-### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>)` { #get data-toc-label=get }
+### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>)` { #get data-toc-label=get }
 
 Get an option value for a given section.
 
@@ -89,13 +95,13 @@ all interpolations are expanded in the return values.
 Arguments `raw', `vars', and `fallback' are keyword only.
 
 The section DEFAULT is special.
-### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getboolean data-toc-label=getboolean }
+### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getboolean data-toc-label=getboolean }
 
 
-### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getfloat data-toc-label=getfloat }
+### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getfloat data-toc-label=getfloat }
 
 
-### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getint data-toc-label=getint }
+### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getint data-toc-label=getint }
 
 
 ### *obj*.**has_option**`#!py3 (self, section, option)` { #has_option data-toc-label=has_option }
@@ -108,7 +114,7 @@ assumed. If the specified `section' does not exist, returns False.
 Indicate whether the named section is present in the configuration.
 
 The DEFAULT section is not acknowledged.
-### *obj*.**items**`#!py3 (self, section=<object object at 0x01E44900>, raw=False, vars=None)` { #items data-toc-label=items }
+### *obj*.**items**`#!py3 (self, section=<object object at 0x01D84928>, raw=False, vars=None)` { #items data-toc-label=items }
 
 Return a list of (name, value) tuples for each option in a section.
 
@@ -128,7 +134,7 @@ Return a list of option names for the given section name.
 ### *obj*.**optionxform**`#!py3 (self, optionstr)` { #optionxform data-toc-label=optionxform }
 
 
-### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01E44098>)` { #pop data-toc-label=pop }
+### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01D84098>)` { #pop data-toc-label=pop }
 
 D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
 If key is not found, d is returned if given, otherwise KeyError is raised.
@@ -250,19 +256,26 @@ ______
  - [`isIfwVarEscapeBackslash`](#isIfwVarEscapeBackslash)
  - [`isDebug`](#isDebug)
 
-### *ExecutableScript*.**APPLESCRIPT_EXT** *class 'str'* { #APPLESCRIPT_EXT data-toc-label=APPLESCRIPT_EXT }
+### *ExecutableScript*.**APPLESCRIPT_EXT** *class 'str'* default: *"scpt"* { #APPLESCRIPT_EXT data-toc-label=APPLESCRIPT_EXT }
 
-### *ExecutableScript*.**BATCH_EXT** *class 'str'* { #BATCH_EXT data-toc-label=BATCH_EXT }
 
-### *ExecutableScript*.**JSCRIPT_EXT** *class 'str'* { #JSCRIPT_EXT data-toc-label=JSCRIPT_EXT }
+### *ExecutableScript*.**BATCH_EXT** *class 'str'* default: *"bat"* { #BATCH_EXT data-toc-label=BATCH_EXT }
 
-### *ExecutableScript*.**POWERSHELL_EXT** *class 'str'* { #POWERSHELL_EXT data-toc-label=POWERSHELL_EXT }
 
-### *ExecutableScript*.**SHELL_EXT** *class 'str'* { #SHELL_EXT data-toc-label=SHELL_EXT }
+### *ExecutableScript*.**JSCRIPT_EXT** *class 'str'* default: *"js"* { #JSCRIPT_EXT data-toc-label=JSCRIPT_EXT }
 
-### *ExecutableScript*.**SUPPORTED_EXTS** *class 'list'* { #SUPPORTED_EXTS data-toc-label=SUPPORTED_EXTS }
 
-### *ExecutableScript*.**VBSCRIPT_EXT** *class 'str'* { #VBSCRIPT_EXT data-toc-label=VBSCRIPT_EXT }
+### *ExecutableScript*.**POWERSHELL_EXT** *class 'str'* default: *"ps1"* { #POWERSHELL_EXT data-toc-label=POWERSHELL_EXT }
+
+
+### *ExecutableScript*.**SHELL_EXT** *class 'str'* default: *"sh"* { #SHELL_EXT data-toc-label=SHELL_EXT }
+
+
+### *ExecutableScript*.**SUPPORTED_EXTS** *class 'list'* default: *['sh', 'bat', 'vbs', 'js', 'ps1', 'scpt']* { #SUPPORTED_EXTS data-toc-label=SUPPORTED_EXTS }
+
+
+### *ExecutableScript*.**VBSCRIPT_EXT** *class 'str'* default: *"vbs"* { #VBSCRIPT_EXT data-toc-label=VBSCRIPT_EXT }
+
 
 ### *ExecutableScript*.**linesToStr**`#!py3 (lines)` { #linesToStr data-toc-label=linesToStr }
 
@@ -312,15 +325,20 @@ ______
 ### *obj*.**write**`#!py3 (self, scriptDirPath=None)` { #write data-toc-label=write }
 
 
-### *obj*.**rootName** *undefined* { #rootName data-toc-label=rootName }
+### *obj*.**rootName** *class 'NoneType'* default: *None* { #rootName data-toc-label=rootName }
 
-### *obj*.**scriptDirPath** *undefined* { #scriptDirPath data-toc-label=scriptDirPath }
 
-### *obj*.**replacements** *undefined* { #replacements data-toc-label=replacements }
+### *obj*.**scriptDirPath** *class 'NoneType'* default: *None* { #scriptDirPath data-toc-label=scriptDirPath }
 
-### *obj*.**isIfwVarEscapeBackslash** *undefined* { #isIfwVarEscapeBackslash data-toc-label=isIfwVarEscapeBackslash }
 
-### *obj*.**isDebug** *undefined* { #isDebug data-toc-label=isDebug }
+### *obj*.**replacements** *class 'dict'* default: *{}* { #replacements data-toc-label=replacements }
+
+
+### *obj*.**isIfwVarEscapeBackslash** *class 'bool'* default: *False* { #isIfwVarEscapeBackslash data-toc-label=isIfwVarEscapeBackslash }
+
+
+### *obj*.**isDebug** *class 'NoneType'* default: *None* { #isDebug data-toc-label=isDebug }
+
 
 
 ______
@@ -376,17 +394,23 @@ ConfigParser that does not do interpolation.
 
  - [`default_section`](#default_section)
 
-### *RawConfigParser*.**BOOLEAN_STATES** *class 'dict'* { #BOOLEAN_STATES data-toc-label=BOOLEAN_STATES }
+### *RawConfigParser*.**BOOLEAN_STATES** *class 'dict'* default: *None* { #BOOLEAN_STATES data-toc-label=BOOLEAN_STATES }
 
-### *RawConfigParser*.**NONSPACECRE** *class 're.Pattern'* { #NONSPACECRE data-toc-label=NONSPACECRE }
 
-### *RawConfigParser*.**OPTCRE** *class 're.Pattern'* { #OPTCRE data-toc-label=OPTCRE }
+### *RawConfigParser*.**NONSPACECRE** *class 're.Pattern'* default: *None* { #NONSPACECRE data-toc-label=NONSPACECRE }
 
-### *RawConfigParser*.**OPTCRE_NV** *class 're.Pattern'* { #OPTCRE_NV data-toc-label=OPTCRE_NV }
 
-### *RawConfigParser*.**SECTCRE** *class 're.Pattern'* { #SECTCRE data-toc-label=SECTCRE }
+### *RawConfigParser*.**OPTCRE** *class 're.Pattern'* default: *None* { #OPTCRE data-toc-label=OPTCRE }
 
-### *RawConfigParser*.**converters** *class 'property'* { #converters data-toc-label=converters }
+
+### *RawConfigParser*.**OPTCRE_NV** *class 're.Pattern'* default: *None* { #OPTCRE_NV data-toc-label=OPTCRE_NV }
+
+
+### *RawConfigParser*.**SECTCRE** *class 're.Pattern'* default: *None* { #SECTCRE data-toc-label=SECTCRE }
+
+
+### *RawConfigParser*.**converters** *class 'property'* default: *None* { #converters data-toc-label=converters }
+
 
 ### *RawConfigParser*.**update**`#!py3 (*args, **kwds)` { #update data-toc-label=update }
 
@@ -406,7 +430,7 @@ D.clear() -> None.  Remove all items from D.
 ### *obj*.**defaults**`#!py3 (self)` { #defaults data-toc-label=defaults }
 
 
-### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>)` { #get data-toc-label=get }
+### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>)` { #get data-toc-label=get }
 
 Get an option value for a given section.
 
@@ -421,13 +445,13 @@ all interpolations are expanded in the return values.
 Arguments `raw', `vars', and `fallback' are keyword only.
 
 The section DEFAULT is special.
-### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getboolean data-toc-label=getboolean }
+### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getboolean data-toc-label=getboolean }
 
 
-### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getfloat data-toc-label=getfloat }
+### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getfloat data-toc-label=getfloat }
 
 
-### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getint data-toc-label=getint }
+### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getint data-toc-label=getint }
 
 
 ### *obj*.**has_option**`#!py3 (self, section, option)` { #has_option data-toc-label=has_option }
@@ -440,7 +464,7 @@ assumed. If the specified `section' does not exist, returns False.
 Indicate whether the named section is present in the configuration.
 
 The DEFAULT section is not acknowledged.
-### *obj*.**items**`#!py3 (self, section=<object object at 0x01E44900>, raw=False, vars=None)` { #items data-toc-label=items }
+### *obj*.**items**`#!py3 (self, section=<object object at 0x01D84928>, raw=False, vars=None)` { #items data-toc-label=items }
 
 Return a list of (name, value) tuples for each option in a section.
 
@@ -460,7 +484,7 @@ Return a list of option names for the given section name.
 ### *obj*.**optionxform**`#!py3 (self, optionstr)` { #optionxform data-toc-label=optionxform }
 
 
-### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01E44098>)` { #pop data-toc-label=pop }
+### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01D84098>)` { #pop data-toc-label=pop }
 
 D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
 If key is not found, d is returned if given, otherwise KeyError is raised.
@@ -534,7 +558,8 @@ Write an .ini-format representation of the configuration state.
 
 If `space_around_delimiters' is True (the default), delimiters
 between keys and values are surrounded by spaces.
-### *obj*.**default_section** *undefined* { #default_section data-toc-label=default_section }
+### *obj*.**default_section** *class 'NoneType'* default: *None* { #default_section data-toc-label=default_section }
+
 
 
 ______
@@ -586,17 +611,23 @@ ConfigParser alias for backwards compatibility purposes.
  - [`values`](#values)
  - [`write`](#write)
 
-### *SafeConfigParser*.**BOOLEAN_STATES** *class 'dict'* { #BOOLEAN_STATES data-toc-label=BOOLEAN_STATES }
+### *SafeConfigParser*.**BOOLEAN_STATES** *class 'dict'* default: *{'1': True, 'yes': True, 'true': True, 'on': True, '0': False, 'no': False, 'false': False, 'off': False}* { #BOOLEAN_STATES data-toc-label=BOOLEAN_STATES }
 
-### *SafeConfigParser*.**NONSPACECRE** *class 're.Pattern'* { #NONSPACECRE data-toc-label=NONSPACECRE }
 
-### *SafeConfigParser*.**OPTCRE** *class 're.Pattern'* { #OPTCRE data-toc-label=OPTCRE }
+### *SafeConfigParser*.**NONSPACECRE** *class 're.Pattern'* default: *re.compile('\\S')* { #NONSPACECRE data-toc-label=NONSPACECRE }
 
-### *SafeConfigParser*.**OPTCRE_NV** *class 're.Pattern'* { #OPTCRE_NV data-toc-label=OPTCRE_NV }
 
-### *SafeConfigParser*.**SECTCRE** *class 're.Pattern'* { #SECTCRE data-toc-label=SECTCRE }
+### *SafeConfigParser*.**OPTCRE** *class 're.Pattern'* default: *re.compile('\n        (?Poption.*?)                    # very permissive!\n        \\s*(?Pvi=|:)\\s*              # any number of space/tab,\n                                           # followed by any of t, re.VERBOSE)* { #OPTCRE data-toc-label=OPTCRE }
 
-### *SafeConfigParser*.**converters** *class 'property'* { #converters data-toc-label=converters }
+
+### *SafeConfigParser*.**OPTCRE_NV** *class 're.Pattern'* default: *re.compile('\n        (?Poption.*?)                    # very permissive!\n        \\s*(?:                             # any number of space/tab,\n        (?Pvi=|:)\\s*                 # optionally followed , re.VERBOSE)* { #OPTCRE_NV data-toc-label=OPTCRE_NV }
+
+
+### *SafeConfigParser*.**SECTCRE** *class 're.Pattern'* default: *re.compile('\n        \\[                                 # [\n        (?Pheader[^]]+)                  # very permissive!\n        \\]                                 # ]\n        ', re.VERBOSE)* { #SECTCRE data-toc-label=SECTCRE }
+
+
+### *SafeConfigParser*.**converters** *class 'property'* default: *configparser.ConverterMapping object at 0x04A73F70* { #converters data-toc-label=converters }
+
 
 ### *SafeConfigParser*.**update**`#!py3 (*args, **kwds)` { #update data-toc-label=update }
 
@@ -615,7 +646,7 @@ D.clear() -> None.  Remove all items from D.
 ### *obj*.**defaults**`#!py3 (self)` { #defaults data-toc-label=defaults }
 
 
-### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>)` { #get data-toc-label=get }
+### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>)` { #get data-toc-label=get }
 
 Get an option value for a given section.
 
@@ -630,13 +661,13 @@ all interpolations are expanded in the return values.
 Arguments `raw', `vars', and `fallback' are keyword only.
 
 The section DEFAULT is special.
-### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getboolean data-toc-label=getboolean }
+### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getboolean data-toc-label=getboolean }
 
 
-### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getfloat data-toc-label=getfloat }
+### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getfloat data-toc-label=getfloat }
 
 
-### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01E44900>, **kwargs)` { #getint data-toc-label=getint }
+### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getint data-toc-label=getint }
 
 
 ### *obj*.**has_option**`#!py3 (self, section, option)` { #has_option data-toc-label=has_option }
@@ -649,7 +680,7 @@ assumed. If the specified `section' does not exist, returns False.
 Indicate whether the named section is present in the configuration.
 
 The DEFAULT section is not acknowledged.
-### *obj*.**items**`#!py3 (self, section=<object object at 0x01E44900>, raw=False, vars=None)` { #items data-toc-label=items }
+### *obj*.**items**`#!py3 (self, section=<object object at 0x01D84928>, raw=False, vars=None)` { #items data-toc-label=items }
 
 Return a list of (name, value) tuples for each option in a section.
 
@@ -669,7 +700,7 @@ Return a list of option names for the given section name.
 ### *obj*.**optionxform**`#!py3 (self, optionstr)` { #optionxform data-toc-label=optionxform }
 
 
-### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01E44098>)` { #pop data-toc-label=pop }
+### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01D84098>)` { #pop data-toc-label=pop }
 
 D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
 If key is not found, d is returned if given, otherwise KeyError is raised.
@@ -816,21 +847,29 @@ ______
 ### *obj*.**write**`#!py3 (self)` { #write data-toc-label=write }
 
 
-### *obj*.**major** *undefined* { #major data-toc-label=major }
+### *obj*.**major** *class 'int'* default: *0* { #major data-toc-label=major }
 
-### *obj*.**minor** *undefined* { #minor data-toc-label=minor }
 
-### *obj*.**micro** *undefined* { #micro data-toc-label=micro }
+### *obj*.**minor** *class 'int'* default: *0* { #minor data-toc-label=minor }
 
-### *obj*.**build** *undefined* { #build data-toc-label=build }
 
-### *obj*.**companyName** *undefined* { #companyName data-toc-label=companyName }
+### *obj*.**micro** *class 'int'* default: *0* { #micro data-toc-label=micro }
 
-### *obj*.**productName** *undefined* { #productName data-toc-label=productName }
 
-### *obj*.**description** *undefined* { #description data-toc-label=description }
+### *obj*.**build** *class 'int'* default: *0* { #build data-toc-label=build }
 
-### *obj*.**exeName** *undefined* { #exeName data-toc-label=exeName }
+
+### *obj*.**companyName** *class 'str'* default: *"&lt;empty string&gt;"* { #companyName data-toc-label=companyName }
+
+
+### *obj*.**productName** *class 'str'* default: *"&lt;empty string&gt;"* { #productName data-toc-label=productName }
+
+
+### *obj*.**description** *class 'str'* default: *"&lt;empty string&gt;"* { #description data-toc-label=description }
+
+
+### *obj*.**exeName** *class 'str'* default: *"&lt;empty string&gt;"* { #exeName data-toc-label=exeName }
+
 
 
 ______

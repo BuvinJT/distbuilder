@@ -114,115 +114,170 @@
 ### *obj*.**qtIfwPackageXml**`#!py3 (self)` { #qtIfwPackageXml data-toc-label=qtIfwPackageXml }
 
 
-### *obj*.**cfgId** *undefined* { #cfgId data-toc-label=cfgId }
+### *obj*.**cfgId** *class 'NoneType'* default: *None* { #cfgId data-toc-label=cfgId }
 
-### *obj*.**productName** *undefined* { #productName data-toc-label=productName }
 
-### *obj*.**description** *undefined* { #description data-toc-label=description }
+### *obj*.**productName** *class 'NoneType'* default: *None* { #productName data-toc-label=productName }
 
-### *obj*.**companyTradeName** *undefined* { #companyTradeName data-toc-label=companyTradeName }
 
-### *obj*.**companyLegalName** *undefined* { #companyLegalName data-toc-label=companyLegalName }
+### *obj*.**description** *class 'NoneType'* default: *None* { #description data-toc-label=description }
 
-### *obj*.**version** *undefined* { #version data-toc-label=version }
 
-### *obj*.**isGui** *undefined* { #isGui data-toc-label=isGui }
+### *obj*.**companyTradeName** *class 'NoneType'* default: *None* { #companyTradeName data-toc-label=companyTradeName }
 
-### *obj*.**binaryName** *undefined* { #binaryName data-toc-label=binaryName }
 
-### *obj*.**sourceDir** *undefined* { #sourceDir data-toc-label=sourceDir }
+### *obj*.**companyLegalName** *class 'NoneType'* default: *None* { #companyLegalName data-toc-label=companyLegalName }
 
-### *obj*.**iconFilePath** *undefined* { #iconFilePath data-toc-label=iconFilePath }
 
-### *obj*.**entryPointPy** *undefined* { #entryPointPy data-toc-label=entryPointPy }
+### *obj*.**version** *class 'tuple'* default: *(0, 0, 0, 0)* { #version data-toc-label=version }
 
-### *obj*.**specFilePath** *undefined* { #specFilePath data-toc-label=specFilePath }
 
-### *obj*.**isOneFile** *undefined* { #isOneFile data-toc-label=isOneFile }
+### *obj*.**isGui** *class 'bool'* default: *False* { #isGui data-toc-label=isGui }
 
-### *obj*.**entryPointScript** *undefined* { #entryPointScript data-toc-label=entryPointScript }
 
-### *obj*.**distResources** *undefined* { #distResources data-toc-label=distResources }
+### *obj*.**binaryName** *class 'NoneType'* default: *None* { #binaryName data-toc-label=binaryName }
 
-### *obj*.**isObfuscating** *undefined* { #isObfuscating data-toc-label=isObfuscating }
 
-### *obj*.**opyBundleLibs** *undefined* { #opyBundleLibs data-toc-label=opyBundleLibs }
+### *obj*.**sourceDir** *class 'NoneType'* default: *None* { #sourceDir data-toc-label=sourceDir }
 
-### *obj*.**opyPatches** *undefined* { #opyPatches data-toc-label=opyPatches }
 
-### *obj*.**isSilentSetup** *undefined* { #isSilentSetup data-toc-label=isSilentSetup }
+### *obj*.**iconFilePath** *class 'NoneType'* default: *None* { #iconFilePath data-toc-label=iconFilePath }
 
-### *obj*.**setupName** *undefined* { #setupName data-toc-label=setupName }
 
-### *obj*.**ifwDefDirPath** *undefined* { #ifwDefDirPath data-toc-label=ifwDefDirPath }
+### *obj*.**entryPointPy** *class 'NoneType'* default: *None* { #entryPointPy data-toc-label=entryPointPy }
 
-### *obj*.**ifwPackages** *undefined* { #ifwPackages data-toc-label=ifwPackages }
 
-### *obj*.**isLimitedMaintenance** *undefined* { #isLimitedMaintenance data-toc-label=isLimitedMaintenance }
+### *obj*.**specFilePath** *class 'NoneType'* default: *None* { #specFilePath data-toc-label=specFilePath }
 
-### *obj*.**replaceTarget** *undefined* { #replaceTarget data-toc-label=replaceTarget }
 
-### *obj*.**ifwWizardStyle** *undefined* { #ifwWizardStyle data-toc-label=ifwWizardStyle }
+### *obj*.**isOneFile** *class 'bool'* default: *True* { #isOneFile data-toc-label=isOneFile }
 
-### *obj*.**ifwLogoFilePath** *undefined* { #ifwLogoFilePath data-toc-label=ifwLogoFilePath }
 
-### *obj*.**ifwBannerFilePath** *undefined* { #ifwBannerFilePath data-toc-label=ifwBannerFilePath }
+### *obj*.**entryPointScript** *class 'NoneType'* default: *None* { #entryPointScript data-toc-label=entryPointScript }
 
-### *obj*.**licensePath** *undefined* { #licensePath data-toc-label=licensePath }
 
-### *obj*.**ifwUiPages** *undefined* { #ifwUiPages data-toc-label=ifwUiPages }
+### *obj*.**distResources** *class 'list'* default: *[]* { #distResources data-toc-label=distResources }
 
-### *obj*.**ifwWidgets** *undefined* { #ifwWidgets data-toc-label=ifwWidgets }
 
-### *obj*.**ifwCntrlScript** *undefined* { #ifwCntrlScript data-toc-label=ifwCntrlScript }
+### *obj*.**isObfuscating** *class 'bool'* default: *False* { #isObfuscating data-toc-label=isObfuscating }
 
-### *obj*.**ifwCntrlScriptText** *undefined* { #ifwCntrlScriptText data-toc-label=ifwCntrlScriptText }
 
-### *obj*.**ifwCntrlScriptPath** *undefined* { #ifwCntrlScriptPath data-toc-label=ifwCntrlScriptPath }
+### *obj*.**opyBundleLibs** *class 'NoneType'* default: *None* { #opyBundleLibs data-toc-label=opyBundleLibs }
 
-### *obj*.**ifwCntrlScriptName** *undefined* { #ifwCntrlScriptName data-toc-label=ifwCntrlScriptName }
 
-### *obj*.**ifwPkgId** *undefined* { #ifwPkgId data-toc-label=ifwPkgId }
+### *obj*.**opyPatches** *class 'NoneType'* default: *None* { #opyPatches data-toc-label=opyPatches }
 
-### *obj*.**ifwPkgName** *undefined* { #ifwPkgName data-toc-label=ifwPkgName }
 
-### *obj*.**ifwPkgNamePrefix** *undefined* { #ifwPkgNamePrefix data-toc-label=ifwPkgNamePrefix }
+### *obj*.**isSilentSetup** *class 'bool'* default: *False* { #isSilentSetup data-toc-label=isSilentSetup }
 
-### *obj*.**ifwPkgIsDefault** *undefined* { #ifwPkgIsDefault data-toc-label=ifwPkgIsDefault }
 
-### *obj*.**ifwPkgIsRequired** *undefined* { #ifwPkgIsRequired data-toc-label=ifwPkgIsRequired }
+### *obj*.**setupName** *class 'str'* default: *"setup.exe"* { #setupName data-toc-label=setupName }
 
-### *obj*.**ifwPkgIsHidden** *undefined* { #ifwPkgIsHidden data-toc-label=ifwPkgIsHidden }
 
-### *obj*.**ifwPkgScript** *undefined* { #ifwPkgScript data-toc-label=ifwPkgScript }
+### *obj*.**ifwDefDirPath** *class 'NoneType'* default: *None* { #ifwDefDirPath data-toc-label=ifwDefDirPath }
 
-### *obj*.**ifwPkgScriptText** *undefined* { #ifwPkgScriptText data-toc-label=ifwPkgScriptText }
 
-### *obj*.**ifwPkgScriptPath** *undefined* { #ifwPkgScriptPath data-toc-label=ifwPkgScriptPath }
+### *obj*.**ifwPackages** *class 'NoneType'* default: *None* { #ifwPackages data-toc-label=ifwPackages }
 
-### *obj*.**ifwPkgScriptName** *undefined* { #ifwPkgScriptName data-toc-label=ifwPkgScriptName }
 
-### *obj*.**pkgType** *undefined* { #pkgType data-toc-label=pkgType }
+### *obj*.**isLimitedMaintenance** *class 'bool'* default: *True* { #isLimitedMaintenance data-toc-label=isLimitedMaintenance }
 
-### *obj*.**pkgSubDirName** *undefined* { #pkgSubDirName data-toc-label=pkgSubDirName }
 
-### *obj*.**pkgSrcDirPath** *undefined* { #pkgSrcDirPath data-toc-label=pkgSrcDirPath }
+### *obj*.**replaceTarget** *class 'bool'* default: *False* { #replaceTarget data-toc-label=replaceTarget }
 
-### *obj*.**pkgSrcExePath** *undefined* { #pkgSrcExePath data-toc-label=pkgSrcExePath }
 
-### *obj*.**pkgCodeSignTargets** *undefined* { #pkgCodeSignTargets data-toc-label=pkgCodeSignTargets }
+### *obj*.**ifwWizardStyle** *class 'NoneType'* default: *None* { #ifwWizardStyle data-toc-label=ifwWizardStyle }
 
-### *obj*.**pkgExeWrapper** *undefined* { #pkgExeWrapper data-toc-label=pkgExeWrapper }
 
-### *obj*.**pkgExternalDependencies** *undefined* { #pkgExternalDependencies data-toc-label=pkgExternalDependencies }
+### *obj*.**ifwLogoFilePath** *class 'NoneType'* default: *None* { #ifwLogoFilePath data-toc-label=ifwLogoFilePath }
 
-### *obj*.**pkgConfigs** *undefined* { #pkgConfigs data-toc-label=pkgConfigs }
 
-### *obj*.**startOnBoot** *undefined* { #startOnBoot data-toc-label=startOnBoot }
+### *obj*.**ifwBannerFilePath** *class 'NoneType'* default: *None* { #ifwBannerFilePath data-toc-label=ifwBannerFilePath }
 
-### *obj*.**codeSignConfig** *undefined* { #codeSignConfig data-toc-label=codeSignConfig }
 
-### *obj*.**qtCppConfig** *undefined* { #qtCppConfig data-toc-label=qtCppConfig }
+### *obj*.**licensePath** *class 'NoneType'* default: *None* { #licensePath data-toc-label=licensePath }
+
+
+### *obj*.**ifwUiPages** *class 'NoneType'* default: *None* { #ifwUiPages data-toc-label=ifwUiPages }
+
+
+### *obj*.**ifwWidgets** *class 'NoneType'* default: *None* { #ifwWidgets data-toc-label=ifwWidgets }
+
+
+### *obj*.**ifwCntrlScript** *class 'NoneType'* default: *None* { #ifwCntrlScript data-toc-label=ifwCntrlScript }
+
+
+### *obj*.**ifwCntrlScriptText** *class 'NoneType'* default: *None* { #ifwCntrlScriptText data-toc-label=ifwCntrlScriptText }
+
+
+### *obj*.**ifwCntrlScriptPath** *class 'NoneType'* default: *None* { #ifwCntrlScriptPath data-toc-label=ifwCntrlScriptPath }
+
+
+### *obj*.**ifwCntrlScriptName** *class 'str'* default: *"installscript.qs"* { #ifwCntrlScriptName data-toc-label=ifwCntrlScriptName }
+
+
+### *obj*.**ifwPkgId** *class 'NoneType'* default: *None* { #ifwPkgId data-toc-label=ifwPkgId }
+
+
+### *obj*.**ifwPkgName** *class 'NoneType'* default: *None* { #ifwPkgName data-toc-label=ifwPkgName }
+
+
+### *obj*.**ifwPkgNamePrefix** *class 'str'* default: *"com"* { #ifwPkgNamePrefix data-toc-label=ifwPkgNamePrefix }
+
+
+### *obj*.**ifwPkgIsDefault** *class 'bool'* default: *True* { #ifwPkgIsDefault data-toc-label=ifwPkgIsDefault }
+
+
+### *obj*.**ifwPkgIsRequired** *class 'bool'* default: *False* { #ifwPkgIsRequired data-toc-label=ifwPkgIsRequired }
+
+
+### *obj*.**ifwPkgIsHidden** *class 'bool'* default: *False* { #ifwPkgIsHidden data-toc-label=ifwPkgIsHidden }
+
+
+### *obj*.**ifwPkgScript** *class 'NoneType'* default: *None* { #ifwPkgScript data-toc-label=ifwPkgScript }
+
+
+### *obj*.**ifwPkgScriptText** *class 'NoneType'* default: *None* { #ifwPkgScriptText data-toc-label=ifwPkgScriptText }
+
+
+### *obj*.**ifwPkgScriptPath** *class 'NoneType'* default: *None* { #ifwPkgScriptPath data-toc-label=ifwPkgScriptPath }
+
+
+### *obj*.**ifwPkgScriptName** *class 'str'* default: *"installscript.qs"* { #ifwPkgScriptName data-toc-label=ifwPkgScriptName }
+
+
+### *obj*.**pkgType** *class 'NoneType'* default: *None* { #pkgType data-toc-label=pkgType }
+
+
+### *obj*.**pkgSubDirName** *class 'NoneType'* default: *None* { #pkgSubDirName data-toc-label=pkgSubDirName }
+
+
+### *obj*.**pkgSrcDirPath** *class 'NoneType'* default: *None* { #pkgSrcDirPath data-toc-label=pkgSrcDirPath }
+
+
+### *obj*.**pkgSrcExePath** *class 'NoneType'* default: *None* { #pkgSrcExePath data-toc-label=pkgSrcExePath }
+
+
+### *obj*.**pkgCodeSignTargets** *class 'NoneType'* default: *None* { #pkgCodeSignTargets data-toc-label=pkgCodeSignTargets }
+
+
+### *obj*.**pkgExeWrapper** *class 'NoneType'* default: *None* { #pkgExeWrapper data-toc-label=pkgExeWrapper }
+
+
+### *obj*.**pkgExternalDependencies** *class 'NoneType'* default: *None* { #pkgExternalDependencies data-toc-label=pkgExternalDependencies }
+
+
+### *obj*.**pkgConfigs** *class 'NoneType'* default: *None* { #pkgConfigs data-toc-label=pkgConfigs }
+
+
+### *obj*.**startOnBoot** *class 'bool'* default: *False* { #startOnBoot data-toc-label=startOnBoot }
+
+
+### *obj*.**codeSignConfig** *class 'NoneType'* default: *None* { #codeSignConfig data-toc-label=codeSignConfig }
+
+
+### *obj*.**qtCppConfig** *class 'NoneType'* default: *None* { #qtCppConfig data-toc-label=qtCppConfig }
+
 
 
 ______

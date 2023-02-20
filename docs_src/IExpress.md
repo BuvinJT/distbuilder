@@ -39,35 +39,50 @@
 ### *obj*.**scriptType**`#!py3 (self)` { #scriptType data-toc-label=scriptType }
 
 
-### *obj*.**name** *undefined* { #name data-toc-label=name }
+### *obj*.**name** *class 'NoneType'* default: *None* { #name data-toc-label=name }
 
-### *obj*.**sourceDir** *undefined* { #sourceDir data-toc-label=sourceDir }
 
-### *obj*.**entryPointScript** *undefined* { #entryPointScript data-toc-label=entryPointScript }
+### *obj*.**sourceDir** *class 'NoneType'* default: *None* { #sourceDir data-toc-label=sourceDir }
 
-### *obj*.**scriptHeader** *undefined* { #scriptHeader data-toc-label=scriptHeader }
 
-### *obj*.**isScriptDebug** *undefined* { #isScriptDebug data-toc-label=isScriptDebug }
+### *obj*.**entryPointScript** *class 'NoneType'* default: *None* { #entryPointScript data-toc-label=entryPointScript }
 
-### *obj*.**versionInfo** *undefined* { #versionInfo data-toc-label=versionInfo }
 
-### *obj*.**iconFilePath** *undefined* { #iconFilePath data-toc-label=iconFilePath }
+### *obj*.**scriptHeader** *class 'NoneType'* default: *None* { #scriptHeader data-toc-label=scriptHeader }
 
-### *obj*.**isAutoElevated** *undefined* { #isAutoElevated data-toc-label=isAutoElevated }
 
-### *obj*.**scriptImports** *undefined* { #scriptImports data-toc-label=scriptImports }
+### *obj*.**isScriptDebug** *class 'bool'* default: *False* { #isScriptDebug data-toc-label=isScriptDebug }
 
-### *obj*.**embeddedResources** *undefined* { #embeddedResources data-toc-label=embeddedResources }
 
-### *obj*.**distResources** *undefined* { #distResources data-toc-label=distResources }
+### *obj*.**versionInfo** *class 'NoneType'* default: *None* { #versionInfo data-toc-label=versionInfo }
 
-### *obj*.**distDirs** *undefined* { #distDirs data-toc-label=distDirs }
 
-### *obj*.**codeSignConfig** *undefined* { #codeSignConfig data-toc-label=codeSignConfig }
+### *obj*.**iconFilePath** *class 'NoneType'* default: *None* { #iconFilePath data-toc-label=iconFilePath }
 
-### *obj*.**codeSignTargets** *undefined* { #codeSignTargets data-toc-label=codeSignTargets }
 
-### *obj*.**destDirPath** *undefined* { #destDirPath data-toc-label=destDirPath }
+### *obj*.**isAutoElevated** *class 'bool'* default: *False* { #isAutoElevated data-toc-label=isAutoElevated }
+
+
+### *obj*.**scriptImports** *class 'list'* default: *[]* { #scriptImports data-toc-label=scriptImports }
+
+
+### *obj*.**embeddedResources** *class 'list'* default: *[]* { #embeddedResources data-toc-label=embeddedResources }
+
+
+### *obj*.**distResources** *class 'list'* default: *[]* { #distResources data-toc-label=distResources }
+
+
+### *obj*.**distDirs** *class 'list'* default: *[]* { #distDirs data-toc-label=distDirs }
+
+
+### *obj*.**codeSignConfig** *class 'list'* default: *[]* { #codeSignConfig data-toc-label=codeSignConfig }
+
+
+### *obj*.**codeSignTargets** *class 'list'* default: *[]* { #codeSignTargets data-toc-label=codeSignTargets }
+
+
+### *obj*.**destDirPath** *class 'NoneType'* default: *None* { #destDirPath data-toc-label=destDirPath }
+
 
 
 ______
@@ -92,7 +107,8 @@ ______
  - [`onQtIfwConfig`](#onQtIfwConfig)
  - [`run`](#run)
 
-### *IExpressInstallerProcess*.**DIVIDER** *class 'str'* { #DIVIDER data-toc-label=DIVIDER }
+### *IExpressInstallerProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+
 
 ### *obj*.**onFinalize**`#!py3 (self)` { #onFinalize data-toc-label=onFinalize }
 
@@ -139,7 +155,8 @@ ______
  - [`onInitialize`](#onInitialize)
  - [`run`](#run)
 
-### *IExpressPackageProcess*.**DIVIDER** *class 'str'* { #DIVIDER data-toc-label=DIVIDER }
+### *IExpressPackageProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+
 
 ### *obj*.**onFinalize**`#!py3 (self)` { #onFinalize data-toc-label=onFinalize }
 

@@ -9,13 +9,17 @@
  - [`pipConfig`](#pipConfig)
  - [`isObfuscated`](#isObfuscated)
 
-### *obj*.**name** *undefined* { #name data-toc-label=name }
+### *obj*.**name** *class 'NoneType'* default: *None* { #name data-toc-label=name }
 
-### *obj*.**localDirPath** *undefined* { #localDirPath data-toc-label=localDirPath }
 
-### *obj*.**pipConfig** *undefined* { #pipConfig data-toc-label=pipConfig }
+### *obj*.**localDirPath** *class 'NoneType'* default: *None* { #localDirPath data-toc-label=localDirPath }
 
-### *obj*.**isObfuscated** *undefined* { #isObfuscated data-toc-label=isObfuscated }
+
+### *obj*.**pipConfig** *class 'NoneType'* default: *None* { #pipConfig data-toc-label=pipConfig }
+
+
+### *obj*.**isObfuscated** *class 'NoneType'* default: *None* { #isObfuscated data-toc-label=isObfuscated }
+
 
 
 ______
@@ -53,43 +57,62 @@ See opy_config.txt for details on these settings.
 ### *obj*.**toVirtualFile**`#!py3 (self)` { #toVirtualFile data-toc-label=toVirtualFile }
 
 
-### *obj*.**obfuscate_strings** *undefined* { #obfuscate_strings data-toc-label=obfuscate_strings }
+### *obj*.**obfuscate_strings** *class 'bool'* default: *True* { #obfuscate_strings data-toc-label=obfuscate_strings }
 
-### *obj*.**obfuscated_name_tail** *undefined* { #obfuscated_name_tail data-toc-label=obfuscated_name_tail }
 
-### *obj*.**plain_marker** *undefined* { #plain_marker data-toc-label=plain_marker }
+### *obj*.**obfuscated_name_tail** *class 'str'* default: *"_opy_"* { #obfuscated_name_tail data-toc-label=obfuscated_name_tail }
 
-### *obj*.**pep8_comments** *undefined* { #pep8_comments data-toc-label=pep8_comments }
 
-### *obj*.**source_extensions** *undefined* { #source_extensions data-toc-label=source_extensions }
+### *obj*.**plain_marker** *class 'str'* default: *"_opy_"* { #plain_marker data-toc-label=plain_marker }
 
-### *obj*.**skip_extensions** *undefined* { #skip_extensions data-toc-label=skip_extensions }
 
-### *obj*.**skip_path_fragments** *undefined* { #skip_path_fragments data-toc-label=skip_path_fragments }
+### *obj*.**pep8_comments** *class 'bool'* default: *False* { #pep8_comments data-toc-label=pep8_comments }
 
-### *obj*.**apply_standard_exclusions** *undefined* { #apply_standard_exclusions data-toc-label=apply_standard_exclusions }
 
-### *obj*.**preserve_unresolved_imports** *undefined* { #preserve_unresolved_imports data-toc-label=preserve_unresolved_imports }
+### *obj*.**source_extensions** *class 'list'* default: *['py', 'pyx']* { #source_extensions data-toc-label=source_extensions }
 
-### *obj*.**error_on_unresolved_imports** *undefined* { #error_on_unresolved_imports data-toc-label=error_on_unresolved_imports }
 
-### *obj*.**external_modules** *undefined* { #external_modules data-toc-label=external_modules }
+### *obj*.**skip_extensions** *class 'list'* default: *['pyc', 'txt', 'project', 'pydevproject', 'settings']* { #skip_extensions data-toc-label=skip_extensions }
 
-### *obj*.**replacement_modules** *undefined* { #replacement_modules data-toc-label=replacement_modules }
 
-### *obj*.**plain_files** *undefined* { #plain_files data-toc-label=plain_files }
+### *obj*.**skip_path_fragments** *class 'list'* default: *['opy_config.txt', 'opy_config.py', 'standard_exclusions.txt']* { #skip_path_fragments data-toc-label=skip_path_fragments }
 
-### *obj*.**plain_names** *undefined* { #plain_names data-toc-label=plain_names }
 
-### *obj*.**mask_external_modules** *undefined* { #mask_external_modules data-toc-label=mask_external_modules }
+### *obj*.**apply_standard_exclusions** *class 'bool'* default: *True* { #apply_standard_exclusions data-toc-label=apply_standard_exclusions }
 
-### *obj*.**skip_public** *undefined* { #skip_public data-toc-label=skip_public }
 
-### *obj*.**subset_files** *undefined* { #subset_files data-toc-label=subset_files }
+### *obj*.**preserve_unresolved_imports** *class 'bool'* default: *True* { #preserve_unresolved_imports data-toc-label=preserve_unresolved_imports }
 
-### *obj*.**dry_run** *undefined* { #dry_run data-toc-label=dry_run }
 
-### *obj*.**prepped_only** *undefined* { #prepped_only data-toc-label=prepped_only }
+### *obj*.**error_on_unresolved_imports** *class 'bool'* default: *True* { #error_on_unresolved_imports data-toc-label=error_on_unresolved_imports }
+
+
+### *obj*.**external_modules** *class 'list'* default: *[]* { #external_modules data-toc-label=external_modules }
+
+
+### *obj*.**replacement_modules** *class 'dict'* default: *{}* { #replacement_modules data-toc-label=replacement_modules }
+
+
+### *obj*.**plain_files** *class 'list'* default: *[]* { #plain_files data-toc-label=plain_files }
+
+
+### *obj*.**plain_names** *class 'list'* default: *[]* { #plain_names data-toc-label=plain_names }
+
+
+### *obj*.**mask_external_modules** *class 'bool'* default: *True* { #mask_external_modules data-toc-label=mask_external_modules }
+
+
+### *obj*.**skip_public** *class 'bool'* default: *False* { #skip_public data-toc-label=skip_public }
+
+
+### *obj*.**subset_files** *class 'list'* default: *[]* { #subset_files data-toc-label=subset_files }
+
+
+### *obj*.**dry_run** *class 'bool'* default: *False* { #dry_run data-toc-label=dry_run }
+
+
+### *obj*.**prepped_only** *class 'bool'* default: *False* { #prepped_only data-toc-label=prepped_only }
+
 
 
 ______
@@ -115,11 +138,14 @@ ______
 ### *obj*.**obfuscatePath**`#!py3 (self, opyResults)` { #obfuscatePath data-toc-label=obfuscatePath }
 
 
-### *obj*.**relPath** *undefined* { #relPath data-toc-label=relPath }
+### *obj*.**relPath** *class 'NoneType'* default: *None* { #relPath data-toc-label=relPath }
 
-### *obj*.**path** *undefined* { #path data-toc-label=path }
 
-### *obj*.**patches** *undefined* { #patches data-toc-label=patches }
+### *obj*.**path** *class 'NoneType'* default: *None* { #path data-toc-label=path }
+
+
+### *obj*.**patches** *class 'NoneType'* default: *None* { #patches data-toc-label=patches }
+
 
 
 ______
