@@ -8,4 +8,4 @@ PIP, and more.
 
 ## Online documentation
 
-https://distribution-builder.readthedocs.io/en/latest/
+https://buvinjt.github.io/distbuilder/
