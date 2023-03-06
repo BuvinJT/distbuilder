@@ -2,18 +2,10 @@
 
 ConfigParser implementing interpolation.
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`BOOLEAN_STATES`](#BOOLEAN_STATES)
- - [`NONSPACECRE`](#NONSPACECRE)
- - [`OPTCRE`](#OPTCRE)
- - [`OPTCRE_NV`](#OPTCRE_NV)
- - [`SECTCRE`](#SECTCRE)
- - [`converters`](#converters)
+Container, Iterable, Sized, Collection, Mapping, MutableMapping, RawConfigParser
 
-**Class/Static Methods:** 
-
- - [`update`](#update)
 
 **Instance Methods:** 
 
@@ -45,30 +37,19 @@ ConfigParser implementing interpolation.
  - [`values`](#values)
  - [`write`](#write)
 
-### *ConfigParser*.**BOOLEAN_STATES** *class 'dict'* default: *None* { #BOOLEAN_STATES data-toc-label=BOOLEAN_STATES }
+**Class/Static Methods:** 
 
+ - [`update`](#update)
 
-### *ConfigParser*.**NONSPACECRE** *class 're.Pattern'* default: *None* { #NONSPACECRE data-toc-label=NONSPACECRE }
+**Class/Static Attributes:** 
 
+ - [`BOOLEAN_STATES`](#BOOLEAN_STATES)
+ - [`NONSPACECRE`](#NONSPACECRE)
+ - [`OPTCRE`](#OPTCRE)
+ - [`OPTCRE_NV`](#OPTCRE_NV)
+ - [`SECTCRE`](#SECTCRE)
+ - [`converters`](#converters)
 
-### *ConfigParser*.**OPTCRE** *class 're.Pattern'* default: *None* { #OPTCRE data-toc-label=OPTCRE }
-
-
-### *ConfigParser*.**OPTCRE_NV** *class 're.Pattern'* default: *None* { #OPTCRE_NV data-toc-label=OPTCRE_NV }
-
-
-### *ConfigParser*.**SECTCRE** *class 're.Pattern'* default: *None* { #SECTCRE data-toc-label=SECTCRE }
-
-
-### *ConfigParser*.**converters** *class 'property'* default: *None* { #converters data-toc-label=converters }
-
-
-### *ConfigParser*.**update**`#!py3 (*args, **kwds)` { #update data-toc-label=update }
-
-D.update([E, ]**F) -> None.  Update D from mapping/iterable E and F.
-If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
-If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
-In either case, this is followed by: for k, v in F.items(): D[k] = v
 ### *obj*.**add_section**`#!py3 (self, section)` { #add_section data-toc-label=add_section }
 
 Create a new section in the configuration.  Extends
@@ -80,7 +61,7 @@ D.clear() -> None.  Remove all items from D.
 ### *obj*.**defaults**`#!py3 (self)` { #defaults data-toc-label=defaults }
 
 
-### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>)` { #get data-toc-label=get }
+### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01674920>)` { #get data-toc-label=get }
 
 Get an option value for a given section.
 
@@ -95,13 +76,13 @@ all interpolations are expanded in the return values.
 Arguments `raw', `vars', and `fallback' are keyword only.
 
 The section DEFAULT is special.
-### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getboolean data-toc-label=getboolean }
+### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01674920>, **kwargs)` { #getboolean data-toc-label=getboolean }
 
 
-### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getfloat data-toc-label=getfloat }
+### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01674920>, **kwargs)` { #getfloat data-toc-label=getfloat }
 
 
-### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getint data-toc-label=getint }
+### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01674920>, **kwargs)` { #getint data-toc-label=getint }
 
 
 ### *obj*.**has_option**`#!py3 (self, section, option)` { #has_option data-toc-label=has_option }
@@ -114,7 +95,7 @@ assumed. If the specified `section' does not exist, returns False.
 Indicate whether the named section is present in the configuration.
 
 The DEFAULT section is not acknowledged.
-### *obj*.**items**`#!py3 (self, section=<object object at 0x01D84928>, raw=False, vars=None)` { #items data-toc-label=items }
+### *obj*.**items**`#!py3 (self, section=<object object at 0x01674920>, raw=False, vars=None)` { #items data-toc-label=items }
 
 Return a list of (name, value) tuples for each option in a section.
 
@@ -134,7 +115,7 @@ Return a list of option names for the given section name.
 ### *obj*.**optionxform**`#!py3 (self, optionstr)` { #optionxform data-toc-label=optionxform }
 
 
-### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01D84098>)` { #pop data-toc-label=pop }
+### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01674098>)` { #pop data-toc-label=pop }
 
 D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
 If key is not found, d is returned if given, otherwise KeyError is raised.
@@ -209,6 +190,30 @@ Write an .ini-format representation of the configuration state.
 
 If `space_around_delimiters' is True (the default), delimiters
 between keys and values are surrounded by spaces.
+### *ConfigParser*.**update**`#!py3 (*args, **kwds)` { #update data-toc-label=update }
+
+D.update([E, ]**F) -> None.  Update D from mapping/iterable E and F.
+If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
+If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
+In either case, this is followed by: for k, v in F.items(): D[k] = v
+### *ConfigParser*.**BOOLEAN_STATES** *class 'dict'* default: *None* { #BOOLEAN_STATES data-toc-label=BOOLEAN_STATES }
+
+
+### *ConfigParser*.**NONSPACECRE** *class 're.Pattern'* default: *None* { #NONSPACECRE data-toc-label=NONSPACECRE }
+
+
+### *ConfigParser*.**OPTCRE** *class 're.Pattern'* default: *None* { #OPTCRE data-toc-label=OPTCRE }
+
+
+### *ConfigParser*.**OPTCRE_NV** *class 're.Pattern'* default: *None* { #OPTCRE_NV data-toc-label=OPTCRE_NV }
+
+
+### *ConfigParser*.**SECTCRE** *class 're.Pattern'* default: *None* { #SECTCRE data-toc-label=SECTCRE }
+
+
+### *ConfigParser*.**converters** *class 'property'* default: *None* { #converters data-toc-label=converters }
+
+
 
 ______
 
@@ -216,21 +221,9 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Magic Methods:**
 
- - [`APPLESCRIPT_EXT`](#APPLESCRIPT_EXT)
- - [`BATCH_EXT`](#BATCH_EXT)
- - [`JSCRIPT_EXT`](#JSCRIPT_EXT)
- - [`POWERSHELL_EXT`](#POWERSHELL_EXT)
- - [`SHELL_EXT`](#SHELL_EXT)
- - [`SUPPORTED_EXTS`](#SUPPORTED_EXTS)
- - [`VBSCRIPT_EXT`](#VBSCRIPT_EXT)
-
-**Class/Static Methods:** 
-
- - [`linesToStr`](#linesToStr)
- - [`strToLines`](#strToLines)
- - [`typeOf`](#typeOf)
+ - [`__init__`](#ExecutableScript-init)
 
 **Instance Methods:** 
 
@@ -256,36 +249,25 @@ ______
  - [`isIfwVarEscapeBackslash`](#isIfwVarEscapeBackslash)
  - [`isDebug`](#isDebug)
 
-### *ExecutableScript*.**APPLESCRIPT_EXT** *class 'str'* default: *"scpt"* { #APPLESCRIPT_EXT data-toc-label=APPLESCRIPT_EXT }
+**Class/Static Methods:** 
 
+ - [`linesToStr`](#linesToStr)
+ - [`strToLines`](#strToLines)
+ - [`typeOf`](#typeOf)
 
-### *ExecutableScript*.**BATCH_EXT** *class 'str'* default: *"bat"* { #BATCH_EXT data-toc-label=BATCH_EXT }
+**Class/Static Attributes:** 
 
+ - [`APPLESCRIPT_EXT`](#APPLESCRIPT_EXT)
+ - [`BATCH_EXT`](#BATCH_EXT)
+ - [`JSCRIPT_EXT`](#JSCRIPT_EXT)
+ - [`POWERSHELL_EXT`](#POWERSHELL_EXT)
+ - [`SHELL_EXT`](#SHELL_EXT)
+ - [`SUPPORTED_EXTS`](#SUPPORTED_EXTS)
+ - [`VBSCRIPT_EXT`](#VBSCRIPT_EXT)
 
-### *ExecutableScript*.**JSCRIPT_EXT** *class 'str'* default: *"js"* { #JSCRIPT_EXT data-toc-label=JSCRIPT_EXT }
+### **ExecutableScript**`#!py3 (rootName, extension=True, shebang=True, script=None, scriptPath=None, scriptDirPath=None, replacements=None, isDebug=True)` { #ExecutableScript-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
-
-### *ExecutableScript*.**POWERSHELL_EXT** *class 'str'* default: *"ps1"* { #POWERSHELL_EXT data-toc-label=POWERSHELL_EXT }
-
-
-### *ExecutableScript*.**SHELL_EXT** *class 'str'* default: *"sh"* { #SHELL_EXT data-toc-label=SHELL_EXT }
-
-
-### *ExecutableScript*.**SUPPORTED_EXTS** *class 'list'* default: *['sh', 'bat', 'vbs', 'js', 'ps1', 'scpt']* { #SUPPORTED_EXTS data-toc-label=SUPPORTED_EXTS }
-
-
-### *ExecutableScript*.**VBSCRIPT_EXT** *class 'str'* default: *"vbs"* { #VBSCRIPT_EXT data-toc-label=VBSCRIPT_EXT }
-
-
-### *ExecutableScript*.**linesToStr**`#!py3 (lines)` { #linesToStr data-toc-label=linesToStr }
-
-
-### *ExecutableScript*.**strToLines**`#!py3 (s)` { #strToLines data-toc-label=strToLines }
-
-
-### *ExecutableScript*.**typeOf**`#!py3 (path)` { #typeOf data-toc-label=typeOf }
-
-
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**asSnippet**`#!py3 (self)` { #asSnippet data-toc-label=asSnippet }
 
 
@@ -340,6 +322,36 @@ ______
 ### *obj*.**isDebug** *class 'NoneType'* default: *None* { #isDebug data-toc-label=isDebug }
 
 
+### *ExecutableScript*.**linesToStr**`#!py3 (lines)` { #linesToStr data-toc-label=linesToStr }
+
+
+### *ExecutableScript*.**strToLines**`#!py3 (s)` { #strToLines data-toc-label=strToLines }
+
+
+### *ExecutableScript*.**typeOf**`#!py3 (path)` { #typeOf data-toc-label=typeOf }
+
+
+### *ExecutableScript*.**APPLESCRIPT_EXT** *class 'str'* default: *"scpt"* { #APPLESCRIPT_EXT data-toc-label=APPLESCRIPT_EXT }
+
+
+### *ExecutableScript*.**BATCH_EXT** *class 'str'* default: *"bat"* { #BATCH_EXT data-toc-label=BATCH_EXT }
+
+
+### *ExecutableScript*.**JSCRIPT_EXT** *class 'str'* default: *"js"* { #JSCRIPT_EXT data-toc-label=JSCRIPT_EXT }
+
+
+### *ExecutableScript*.**POWERSHELL_EXT** *class 'str'* default: *"ps1"* { #POWERSHELL_EXT data-toc-label=POWERSHELL_EXT }
+
+
+### *ExecutableScript*.**SHELL_EXT** *class 'str'* default: *"sh"* { #SHELL_EXT data-toc-label=SHELL_EXT }
+
+
+### *ExecutableScript*.**SUPPORTED_EXTS** *class 'list'* default: *['sh', 'bat', 'vbs', 'js', 'ps1', 'scpt']* { #SUPPORTED_EXTS data-toc-label=SUPPORTED_EXTS }
+
+
+### *ExecutableScript*.**VBSCRIPT_EXT** *class 'str'* default: *"vbs"* { #VBSCRIPT_EXT data-toc-label=VBSCRIPT_EXT }
+
+
 
 ______
 
@@ -347,18 +359,14 @@ ______
 
 ConfigParser that does not do interpolation.
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`BOOLEAN_STATES`](#BOOLEAN_STATES)
- - [`NONSPACECRE`](#NONSPACECRE)
- - [`OPTCRE`](#OPTCRE)
- - [`OPTCRE_NV`](#OPTCRE_NV)
- - [`SECTCRE`](#SECTCRE)
- - [`converters`](#converters)
+Container, Iterable, Sized, Collection, Mapping, MutableMapping
 
-**Class/Static Methods:** 
 
- - [`update`](#update)
+**Magic Methods:**
+
+ - [`__init__`](#RawConfigParser-init)
 
 **Instance Methods:** 
 
@@ -394,30 +402,22 @@ ConfigParser that does not do interpolation.
 
  - [`default_section`](#default_section)
 
-### *RawConfigParser*.**BOOLEAN_STATES** *class 'dict'* default: *None* { #BOOLEAN_STATES data-toc-label=BOOLEAN_STATES }
+**Class/Static Methods:** 
 
+ - [`update`](#update)
 
-### *RawConfigParser*.**NONSPACECRE** *class 're.Pattern'* default: *None* { #NONSPACECRE data-toc-label=NONSPACECRE }
+**Class/Static Attributes:** 
 
+ - [`BOOLEAN_STATES`](#BOOLEAN_STATES)
+ - [`NONSPACECRE`](#NONSPACECRE)
+ - [`OPTCRE`](#OPTCRE)
+ - [`OPTCRE_NV`](#OPTCRE_NV)
+ - [`SECTCRE`](#SECTCRE)
+ - [`converters`](#converters)
 
-### *RawConfigParser*.**OPTCRE** *class 're.Pattern'* default: *None* { #OPTCRE data-toc-label=OPTCRE }
+### **RawConfigParser**`#!py3 (defaults=None, dict_type=<class 'collections.OrderedDict'>, allow_no_value=False, *, delimiters=('=', ':'), comment_prefixes=('#', ';'), inline_comment_prefixes=None, strict=True, empty_lines_in_values=True, default_section='DEFAULT', interpolation=<object object at 0x01674920>, converters=<object object at 0x01674920>)` { #RawConfigParser-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
-
-### *RawConfigParser*.**OPTCRE_NV** *class 're.Pattern'* default: *None* { #OPTCRE_NV data-toc-label=OPTCRE_NV }
-
-
-### *RawConfigParser*.**SECTCRE** *class 're.Pattern'* default: *None* { #SECTCRE data-toc-label=SECTCRE }
-
-
-### *RawConfigParser*.**converters** *class 'property'* default: *None* { #converters data-toc-label=converters }
-
-
-### *RawConfigParser*.**update**`#!py3 (*args, **kwds)` { #update data-toc-label=update }
-
-D.update([E, ]**F) -> None.  Update D from mapping/iterable E and F.
-If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
-If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
-In either case, this is followed by: for k, v in F.items(): D[k] = v
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**add_section**`#!py3 (self, section)` { #add_section data-toc-label=add_section }
 
 Create a new section in the configuration.
@@ -430,7 +430,7 @@ D.clear() -> None.  Remove all items from D.
 ### *obj*.**defaults**`#!py3 (self)` { #defaults data-toc-label=defaults }
 
 
-### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>)` { #get data-toc-label=get }
+### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01674920>)` { #get data-toc-label=get }
 
 Get an option value for a given section.
 
@@ -445,13 +445,13 @@ all interpolations are expanded in the return values.
 Arguments `raw', `vars', and `fallback' are keyword only.
 
 The section DEFAULT is special.
-### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getboolean data-toc-label=getboolean }
+### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01674920>, **kwargs)` { #getboolean data-toc-label=getboolean }
 
 
-### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getfloat data-toc-label=getfloat }
+### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01674920>, **kwargs)` { #getfloat data-toc-label=getfloat }
 
 
-### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getint data-toc-label=getint }
+### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01674920>, **kwargs)` { #getint data-toc-label=getint }
 
 
 ### *obj*.**has_option**`#!py3 (self, section, option)` { #has_option data-toc-label=has_option }
@@ -464,7 +464,7 @@ assumed. If the specified `section' does not exist, returns False.
 Indicate whether the named section is present in the configuration.
 
 The DEFAULT section is not acknowledged.
-### *obj*.**items**`#!py3 (self, section=<object object at 0x01D84928>, raw=False, vars=None)` { #items data-toc-label=items }
+### *obj*.**items**`#!py3 (self, section=<object object at 0x01674920>, raw=False, vars=None)` { #items data-toc-label=items }
 
 Return a list of (name, value) tuples for each option in a section.
 
@@ -484,7 +484,7 @@ Return a list of option names for the given section name.
 ### *obj*.**optionxform**`#!py3 (self, optionstr)` { #optionxform data-toc-label=optionxform }
 
 
-### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01D84098>)` { #pop data-toc-label=pop }
+### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01674098>)` { #pop data-toc-label=pop }
 
 D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
 If key is not found, d is returned if given, otherwise KeyError is raised.
@@ -561,6 +561,30 @@ between keys and values are surrounded by spaces.
 ### *obj*.**default_section** *class 'NoneType'* default: *None* { #default_section data-toc-label=default_section }
 
 
+### *RawConfigParser*.**update**`#!py3 (*args, **kwds)` { #update data-toc-label=update }
+
+D.update([E, ]**F) -> None.  Update D from mapping/iterable E and F.
+If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
+If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
+In either case, this is followed by: for k, v in F.items(): D[k] = v
+### *RawConfigParser*.**BOOLEAN_STATES** *class 'dict'* default: *None* { #BOOLEAN_STATES data-toc-label=BOOLEAN_STATES }
+
+
+### *RawConfigParser*.**NONSPACECRE** *class 're.Pattern'* default: *None* { #NONSPACECRE data-toc-label=NONSPACECRE }
+
+
+### *RawConfigParser*.**OPTCRE** *class 're.Pattern'* default: *None* { #OPTCRE data-toc-label=OPTCRE }
+
+
+### *RawConfigParser*.**OPTCRE_NV** *class 're.Pattern'* default: *None* { #OPTCRE_NV data-toc-label=OPTCRE_NV }
+
+
+### *RawConfigParser*.**SECTCRE** *class 're.Pattern'* default: *None* { #SECTCRE data-toc-label=SECTCRE }
+
+
+### *RawConfigParser*.**converters** *class 'property'* default: *None* { #converters data-toc-label=converters }
+
+
 
 ______
 
@@ -568,18 +592,14 @@ ______
 
 ConfigParser alias for backwards compatibility purposes.
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`BOOLEAN_STATES`](#BOOLEAN_STATES)
- - [`NONSPACECRE`](#NONSPACECRE)
- - [`OPTCRE`](#OPTCRE)
- - [`OPTCRE_NV`](#OPTCRE_NV)
- - [`SECTCRE`](#SECTCRE)
- - [`converters`](#converters)
+Container, Iterable, Sized, Collection, Mapping, MutableMapping, RawConfigParser, ConfigParser
 
-**Class/Static Methods:** 
 
- - [`update`](#update)
+**Magic Methods:**
+
+ - [`__init__`](#SafeConfigParser-init)
 
 **Instance Methods:** 
 
@@ -611,30 +631,22 @@ ConfigParser alias for backwards compatibility purposes.
  - [`values`](#values)
  - [`write`](#write)
 
-### *SafeConfigParser*.**BOOLEAN_STATES** *class 'dict'* default: *{'1': True, 'yes': True, 'true': True, 'on': True, '0': False, 'no': False, 'false': False, 'off': False}* { #BOOLEAN_STATES data-toc-label=BOOLEAN_STATES }
+**Class/Static Methods:** 
 
+ - [`update`](#update)
 
-### *SafeConfigParser*.**NONSPACECRE** *class 're.Pattern'* default: *re.compile('\\S')* { #NONSPACECRE data-toc-label=NONSPACECRE }
+**Class/Static Attributes:** 
 
+ - [`BOOLEAN_STATES`](#BOOLEAN_STATES)
+ - [`NONSPACECRE`](#NONSPACECRE)
+ - [`OPTCRE`](#OPTCRE)
+ - [`OPTCRE_NV`](#OPTCRE_NV)
+ - [`SECTCRE`](#SECTCRE)
+ - [`converters`](#converters)
 
-### *SafeConfigParser*.**OPTCRE** *class 're.Pattern'* default: *re.compile('\n        (?Poption.*?)                    # very permissive!\n        \\s*(?Pvi=|:)\\s*              # any number of space/tab,\n                                           # followed by any of t, re.VERBOSE)* { #OPTCRE data-toc-label=OPTCRE }
+### **SafeConfigParser**`#!py3 (*args, **kwargs)` { #SafeConfigParser-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
-
-### *SafeConfigParser*.**OPTCRE_NV** *class 're.Pattern'* default: *re.compile('\n        (?Poption.*?)                    # very permissive!\n        \\s*(?:                             # any number of space/tab,\n        (?Pvi=|:)\\s*                 # optionally followed , re.VERBOSE)* { #OPTCRE_NV data-toc-label=OPTCRE_NV }
-
-
-### *SafeConfigParser*.**SECTCRE** *class 're.Pattern'* default: *re.compile('\n        \\[                                 # [\n        (?Pheader[^]]+)                  # very permissive!\n        \\]                                 # ]\n        ', re.VERBOSE)* { #SECTCRE data-toc-label=SECTCRE }
-
-
-### *SafeConfigParser*.**converters** *class 'property'* default: *configparser.ConverterMapping object at 0x04A73F70* { #converters data-toc-label=converters }
-
-
-### *SafeConfigParser*.**update**`#!py3 (*args, **kwds)` { #update data-toc-label=update }
-
-D.update([E, ]**F) -> None.  Update D from mapping/iterable E and F.
-If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
-If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
-In either case, this is followed by: for k, v in F.items(): D[k] = v
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**add_section**`#!py3 (self, section)` { #add_section data-toc-label=add_section }
 
 Create a new section in the configuration.  Extends
@@ -646,7 +658,7 @@ D.clear() -> None.  Remove all items from D.
 ### *obj*.**defaults**`#!py3 (self)` { #defaults data-toc-label=defaults }
 
 
-### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>)` { #get data-toc-label=get }
+### *obj*.**get**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01674920>)` { #get data-toc-label=get }
 
 Get an option value for a given section.
 
@@ -661,13 +673,13 @@ all interpolations are expanded in the return values.
 Arguments `raw', `vars', and `fallback' are keyword only.
 
 The section DEFAULT is special.
-### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getboolean data-toc-label=getboolean }
+### *obj*.**getboolean**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01674920>, **kwargs)` { #getboolean data-toc-label=getboolean }
 
 
-### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getfloat data-toc-label=getfloat }
+### *obj*.**getfloat**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01674920>, **kwargs)` { #getfloat data-toc-label=getfloat }
 
 
-### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01D84928>, **kwargs)` { #getint data-toc-label=getint }
+### *obj*.**getint**`#!py3 (self, section, option, *, raw=False, vars=None, fallback=<object object at 0x01674920>, **kwargs)` { #getint data-toc-label=getint }
 
 
 ### *obj*.**has_option**`#!py3 (self, section, option)` { #has_option data-toc-label=has_option }
@@ -680,7 +692,7 @@ assumed. If the specified `section' does not exist, returns False.
 Indicate whether the named section is present in the configuration.
 
 The DEFAULT section is not acknowledged.
-### *obj*.**items**`#!py3 (self, section=<object object at 0x01D84928>, raw=False, vars=None)` { #items data-toc-label=items }
+### *obj*.**items**`#!py3 (self, section=<object object at 0x01674920>, raw=False, vars=None)` { #items data-toc-label=items }
 
 Return a list of (name, value) tuples for each option in a section.
 
@@ -700,7 +712,7 @@ Return a list of option names for the given section name.
 ### *obj*.**optionxform**`#!py3 (self, optionstr)` { #optionxform data-toc-label=optionxform }
 
 
-### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01D84098>)` { #pop data-toc-label=pop }
+### *obj*.**pop**`#!py3 (self, key, default=<object object at 0x01674098>)` { #pop data-toc-label=pop }
 
 D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
 If key is not found, d is returned if given, otherwise KeyError is raised.
@@ -775,6 +787,30 @@ Write an .ini-format representation of the configuration state.
 
 If `space_around_delimiters' is True (the default), delimiters
 between keys and values are surrounded by spaces.
+### *SafeConfigParser*.**update**`#!py3 (*args, **kwds)` { #update data-toc-label=update }
+
+D.update([E, ]**F) -> None.  Update D from mapping/iterable E and F.
+If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
+If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
+In either case, this is followed by: for k, v in F.items(): D[k] = v
+### *SafeConfigParser*.**BOOLEAN_STATES** *class 'dict'* default: *{'1': True, 'yes': True, 'true': True, 'on': True, '0': False, 'no': False, 'false': False, 'off': False}* { #BOOLEAN_STATES data-toc-label=BOOLEAN_STATES }
+
+
+### *SafeConfigParser*.**NONSPACECRE** *class 're.Pattern'* default: *re.compile('\\S')* { #NONSPACECRE data-toc-label=NONSPACECRE }
+
+
+### *SafeConfigParser*.**OPTCRE** *class 're.Pattern'* default: *re.compile('\n        (?Poption.*?)                    # very permissive!\n        \\s*(?Pvi=|:)\\s*              # any number of space/tab,\n                                           # followed by any of t, re.VERBOSE)* { #OPTCRE data-toc-label=OPTCRE }
+
+
+### *SafeConfigParser*.**OPTCRE_NV** *class 're.Pattern'* default: *re.compile('\n        (?Poption.*?)                    # very permissive!\n        \\s*(?:                             # any number of space/tab,\n        (?Pvi=|:)\\s*                 # optionally followed , re.VERBOSE)* { #OPTCRE_NV data-toc-label=OPTCRE_NV }
+
+
+### *SafeConfigParser*.**SECTCRE** *class 're.Pattern'* default: *re.compile('\n        \\[                                 # [\n        (?Pheader[^]]+)                  # very permissive!\n        \\]                                 # ]\n        ', re.VERBOSE)* { #SECTCRE data-toc-label=SECTCRE }
+
+
+### *SafeConfigParser*.**converters** *class 'property'* default: *configparser.ConverterMapping object at 0x046F7110* { #converters data-toc-label=converters }
+
+
 
 ______
 
@@ -782,9 +818,14 @@ ______
 
 
 
-**Class/Static Methods:** 
+**Base Classes:**
 
- - [`defaultPath`](#defaultPath)
+PlasticFile
+
+
+**Magic Methods:**
+
+ - [`__init__`](#WindowsExeVersionInfo-init)
 
 **Instance Methods:** 
 
@@ -811,9 +852,13 @@ ______
  - [`description`](#description)
  - [`exeName`](#exeName)
 
-### *WindowsExeVersionInfo*.**defaultPath**`#!py3 ()` { #defaultPath data-toc-label=defaultPath }
+**Class/Static Methods:** 
 
+ - [`defaultPath`](#defaultPath)
 
+### **WindowsExeVersionInfo**`#!py3 ()` { #WindowsExeVersionInfo-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**copyright**`#!py3 (self)` { #copyright data-toc-label=copyright }
 
 
@@ -869,6 +914,9 @@ ______
 
 
 ### *obj*.**exeName** *class 'str'* default: *"&lt;empty string&gt;"* { #exeName data-toc-label=exeName }
+
+
+### *WindowsExeVersionInfo*.**defaultPath**`#!py3 ()` { #defaultPath data-toc-label=defaultPath }
 
 
 

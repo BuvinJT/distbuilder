@@ -2,22 +2,14 @@
 
 
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`APPLESCRIPT_EXT`](#APPLESCRIPT_EXT)
- - [`BATCH_EXT`](#BATCH_EXT)
- - [`FILE_NAME_PREFIX`](#FILE_NAME_PREFIX)
- - [`JSCRIPT_EXT`](#JSCRIPT_EXT)
- - [`POWERSHELL_EXT`](#POWERSHELL_EXT)
- - [`SHELL_EXT`](#SHELL_EXT)
- - [`SUPPORTED_EXTS`](#SUPPORTED_EXTS)
- - [`VBSCRIPT_EXT`](#VBSCRIPT_EXT)
+ExecutableScript
 
-**Class/Static Methods:** 
 
- - [`linesToStr`](#linesToStr)
- - [`strToLines`](#strToLines)
- - [`typeOf`](#typeOf)
+**Magic Methods:**
+
+ - [`__init__`](#PyInstHook-init)
 
 **Instance Methods:** 
 
@@ -41,39 +33,26 @@
  - [`isRunTimeHook`](#isRunTimeHook)
  - [`hooksDirPath`](#hooksDirPath)
 
-### *PyInstHook*.**APPLESCRIPT_EXT** *class 'str'* default: *"scpt"* { #APPLESCRIPT_EXT data-toc-label=APPLESCRIPT_EXT }
+**Class/Static Methods:** 
 
+ - [`linesToStr`](#linesToStr)
+ - [`strToLines`](#strToLines)
+ - [`typeOf`](#typeOf)
 
-### *PyInstHook*.**BATCH_EXT** *class 'str'* default: *"bat"* { #BATCH_EXT data-toc-label=BATCH_EXT }
+**Class/Static Attributes:** 
 
+ - [`APPLESCRIPT_EXT`](#APPLESCRIPT_EXT)
+ - [`BATCH_EXT`](#BATCH_EXT)
+ - [`FILE_NAME_PREFIX`](#FILE_NAME_PREFIX)
+ - [`JSCRIPT_EXT`](#JSCRIPT_EXT)
+ - [`POWERSHELL_EXT`](#POWERSHELL_EXT)
+ - [`SHELL_EXT`](#SHELL_EXT)
+ - [`SUPPORTED_EXTS`](#SUPPORTED_EXTS)
+ - [`VBSCRIPT_EXT`](#VBSCRIPT_EXT)
 
-### *PyInstHook*.**FILE_NAME_PREFIX** *class 'str'* default: *"hook-"* { #FILE_NAME_PREFIX data-toc-label=FILE_NAME_PREFIX }
+### **PyInstHook**`#!py3 (name, script=None, isContribHook=True, isRunTimeHook=False)` { #PyInstHook-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
-
-### *PyInstHook*.**JSCRIPT_EXT** *class 'str'* default: *"js"* { #JSCRIPT_EXT data-toc-label=JSCRIPT_EXT }
-
-
-### *PyInstHook*.**POWERSHELL_EXT** *class 'str'* default: *"ps1"* { #POWERSHELL_EXT data-toc-label=POWERSHELL_EXT }
-
-
-### *PyInstHook*.**SHELL_EXT** *class 'str'* default: *"sh"* { #SHELL_EXT data-toc-label=SHELL_EXT }
-
-
-### *PyInstHook*.**SUPPORTED_EXTS** *class 'list'* default: *['sh', 'bat', 'vbs', 'js', 'ps1', 'scpt']* { #SUPPORTED_EXTS data-toc-label=SUPPORTED_EXTS }
-
-
-### *PyInstHook*.**VBSCRIPT_EXT** *class 'str'* default: *"vbs"* { #VBSCRIPT_EXT data-toc-label=VBSCRIPT_EXT }
-
-
-### *PyInstHook*.**linesToStr**`#!py3 (lines)` { #linesToStr data-toc-label=linesToStr }
-
-
-### *PyInstHook*.**strToLines**`#!py3 (s)` { #strToLines data-toc-label=strToLines }
-
-
-### *PyInstHook*.**typeOf**`#!py3 (path)` { #typeOf data-toc-label=typeOf }
-
-
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**asSnippet**`#!py3 (self)` { #asSnippet data-toc-label=asSnippet }
 
 
@@ -122,6 +101,39 @@
 ### *obj*.**hooksDirPath** *class 'NoneType'* default: *None* { #hooksDirPath data-toc-label=hooksDirPath }
 
 
+### *PyInstHook*.**linesToStr**`#!py3 (lines)` { #linesToStr data-toc-label=linesToStr }
+
+
+### *PyInstHook*.**strToLines**`#!py3 (s)` { #strToLines data-toc-label=strToLines }
+
+
+### *PyInstHook*.**typeOf**`#!py3 (path)` { #typeOf data-toc-label=typeOf }
+
+
+### *PyInstHook*.**APPLESCRIPT_EXT** *class 'str'* default: *"scpt"* { #APPLESCRIPT_EXT data-toc-label=APPLESCRIPT_EXT }
+
+
+### *PyInstHook*.**BATCH_EXT** *class 'str'* default: *"bat"* { #BATCH_EXT data-toc-label=BATCH_EXT }
+
+
+### *PyInstHook*.**FILE_NAME_PREFIX** *class 'str'* default: *"hook-"* { #FILE_NAME_PREFIX data-toc-label=FILE_NAME_PREFIX }
+
+
+### *PyInstHook*.**JSCRIPT_EXT** *class 'str'* default: *"js"* { #JSCRIPT_EXT data-toc-label=JSCRIPT_EXT }
+
+
+### *PyInstHook*.**POWERSHELL_EXT** *class 'str'* default: *"ps1"* { #POWERSHELL_EXT data-toc-label=POWERSHELL_EXT }
+
+
+### *PyInstHook*.**SHELL_EXT** *class 'str'* default: *"sh"* { #SHELL_EXT data-toc-label=SHELL_EXT }
+
+
+### *PyInstHook*.**SUPPORTED_EXTS** *class 'list'* default: *['sh', 'bat', 'vbs', 'js', 'ps1', 'scpt']* { #SUPPORTED_EXTS data-toc-label=SUPPORTED_EXTS }
+
+
+### *PyInstHook*.**VBSCRIPT_EXT** *class 'str'* default: *"vbs"* { #VBSCRIPT_EXT data-toc-label=VBSCRIPT_EXT }
+
+
 
 ______
 
@@ -129,15 +141,14 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`WARN_ERROR`](#WARN_ERROR)
- - [`WARN_IGNORE`](#WARN_IGNORE)
- - [`WARN_ONCE`](#WARN_ONCE)
+PlasticFile
 
-**Class/Static Methods:** 
 
- - [`cfgToPath`](#cfgToPath)
+**Magic Methods:**
+
+ - [`__init__`](#PyInstSpec-init)
 
 **Instance Methods:** 
 
@@ -160,18 +171,19 @@ ______
  - [`isUnBufferedStdIo`](#isUnBufferedStdIo)
  - [`isModInitDebug`](#isModInitDebug)
 
-### *PyInstSpec*.**WARN_ERROR** *class 'int'* default: *2* { #WARN_ERROR data-toc-label=WARN_ERROR }
+**Class/Static Methods:** 
 
+ - [`cfgToPath`](#cfgToPath)
 
-### *PyInstSpec*.**WARN_IGNORE** *class 'int'* default: *0* { #WARN_IGNORE data-toc-label=WARN_IGNORE }
+**Class/Static Attributes:** 
 
+ - [`WARN_ERROR`](#WARN_ERROR)
+ - [`WARN_IGNORE`](#WARN_IGNORE)
+ - [`WARN_ONCE`](#WARN_ONCE)
 
-### *PyInstSpec*.**WARN_ONCE** *class 'int'* default: *1* { #WARN_ONCE data-toc-label=WARN_ONCE }
+### **PyInstSpec**`#!py3 (filePath=None, pyInstConfig=None, content=None)` { #PyInstSpec-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
-
-### *PyInstSpec*.**cfgToPath**`#!py3 (pyInstConfig)` { #cfgToPath data-toc-label=cfgToPath }
-
-
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**debug**`#!py3 (self)` { #debug data-toc-label=debug }
 
 
@@ -222,12 +234,28 @@ binary produced.
 ### *obj*.**isModInitDebug** *class 'bool'* default: *False* { #isModInitDebug data-toc-label=isModInitDebug }
 
 
+### *PyInstSpec*.**cfgToPath**`#!py3 (pyInstConfig)` { #cfgToPath data-toc-label=cfgToPath }
+
+
+### *PyInstSpec*.**WARN_ERROR** *class 'int'* default: *2* { #WARN_ERROR data-toc-label=WARN_ERROR }
+
+
+### *PyInstSpec*.**WARN_IGNORE** *class 'int'* default: *0* { #WARN_IGNORE data-toc-label=WARN_IGNORE }
+
+
+### *PyInstSpec*.**WARN_ONCE** *class 'int'* default: *1* { #WARN_ONCE data-toc-label=WARN_ONCE }
+
+
 
 ______
 
 ## **PyInstallerConfig**`#!py3 class` { #PyInstallerConfig data-toc-label=PyInstallerConfig }
 
 See PyInstaller docs for details on these settings.
+
+**Magic Methods:**
+
+ - [`__init__`](#PyInstallerConfig-init)
 
 **Instance Methods:** 
 
@@ -257,6 +285,9 @@ See PyInstaller docs for details on these settings.
  - [`otherPyInstArgs`](#otherPyInstArgs)
  - [`isSpecFileRemoved`](#isSpecFileRemoved)
 
+### **PyInstallerConfig**`#!py3 ()` { #PyInstallerConfig-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**toArgs**`#!py3 (self, isMakeSpec=False)` { #toArgs data-toc-label=toArgs }
 
 
@@ -330,9 +361,14 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`DIVIDER`](#DIVIDER)
+_DistBuildProcessBase, _BuildInstallerProcess
+
+
+**Magic Methods:**
+
+ - [`__init__`](#PyToBinInstallerProcess-init)
 
 **Instance Methods:** 
 
@@ -348,9 +384,13 @@ ______
  - [`onQtIfwConfig`](#onQtIfwConfig)
  - [`run`](#run)
 
-### *PyToBinInstallerProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+**Class/Static Attributes:** 
 
+ - [`DIVIDER`](#DIVIDER)
 
+### **PyToBinInstallerProcess**`#!py3 (configFactory, name='Python to Binary Installer Process', isDesktopTarget=False, isHomeDirTarget=False)` { #PyToBinInstallerProcess-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**onFinalize**`#!py3 (self)` { #onFinalize data-toc-label=onFinalize }
 
 VIRTUAL
@@ -384,6 +424,9 @@ VIRTUAL
 ### *obj*.**run**`#!py3 (self)` { #run data-toc-label=run }
 
 
+### *PyToBinInstallerProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+
+
 
 ______
 
@@ -391,9 +434,14 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`DIVIDER`](#DIVIDER)
+_DistBuildProcessBase, _BuildPackageProcess
+
+
+**Magic Methods:**
+
+ - [`__init__`](#PyToBinPackageProcess-init)
 
 **Instance Methods:** 
 
@@ -411,9 +459,13 @@ ______
  - [`isUnBufferedStdIo`](#isUnBufferedStdIo)
  - [`isPyInstDupDataPatched`](#isPyInstDupDataPatched)
 
-### *PyToBinPackageProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+**Class/Static Attributes:** 
 
+ - [`DIVIDER`](#DIVIDER)
 
+### **PyToBinPackageProcess**`#!py3 (configFactory, name='Python to Binary Package Process', isZipped=False, isDesktopTarget=False, isHomeDirTarget=False)` { #PyToBinPackageProcess-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**onFinalize**`#!py3 (self)` { #onFinalize data-toc-label=onFinalize }
 
 VIRTUAL
@@ -442,6 +494,9 @@ VIRTUAL
 
 
 ### *obj*.**isPyInstDupDataPatched** *class 'NoneType'* default: *None* { #isPyInstDupDataPatched data-toc-label=isPyInstDupDataPatched }
+
+
+### *PyToBinPackageProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
 
 
 
@@ -479,7 +534,7 @@ ______
 
 ______
 
-### **pyScriptToExe**`#!py3 (name=None, entryPointPy=None, pyInstConfig=<py_installer.PyInstallerConfig object at 0x045D2250>, opyConfig=None, distResources=None, distDirs=None)` { #pyScriptToExe data-toc-label=pyScriptToExe }
+### **pyScriptToExe**`#!py3 (name=None, entryPointPy=None, pyInstConfig=<py_installer.PyInstallerConfig object at 0x04B27850>, opyConfig=None, distResources=None, distDirs=None)` { #pyScriptToExe data-toc-label=pyScriptToExe }
 
 returns: (binDir, binPath) 
 

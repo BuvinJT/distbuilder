@@ -2,6 +2,10 @@
 
 
 
+**Magic Methods:**
+
+ - [`__init__`](#IExpressConfig-init)
+
 **Instance Methods:** 
 
  - [`iExpEmbResPath`](#iExpEmbResPath)
@@ -27,6 +31,9 @@
  - [`codeSignTargets`](#codeSignTargets)
  - [`destDirPath`](#destDirPath)
 
+### **IExpressConfig**`#!py3 ()` { #IExpressConfig-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**iExpEmbResPath**`#!py3 (self, path)` { #iExpEmbResPath data-toc-label=iExpEmbResPath }
 
 
@@ -91,9 +98,14 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`DIVIDER`](#DIVIDER)
+_DistBuildProcessBase, _BuildInstallerProcess
+
+
+**Magic Methods:**
+
+ - [`__init__`](#IExpressInstallerProcess-init)
 
 **Instance Methods:** 
 
@@ -107,9 +119,13 @@ ______
  - [`onQtIfwConfig`](#onQtIfwConfig)
  - [`run`](#run)
 
-### *IExpressInstallerProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+**Class/Static Attributes:** 
 
+ - [`DIVIDER`](#DIVIDER)
 
+### **IExpressInstallerProcess**`#!py3 (configFactory, name='Windows Script to Binary Installer Process', isDesktopTarget=False, isHomeDirTarget=False)` { #IExpressInstallerProcess-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**onFinalize**`#!py3 (self)` { #onFinalize data-toc-label=onFinalize }
 
 VIRTUAL
@@ -137,6 +153,9 @@ VIRTUAL
 ### *obj*.**run**`#!py3 (self)` { #run data-toc-label=run }
 
 
+### *IExpressInstallerProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+
+
 
 ______
 
@@ -144,9 +163,14 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`DIVIDER`](#DIVIDER)
+_DistBuildProcessBase, _BuildPackageProcess
+
+
+**Magic Methods:**
+
+ - [`__init__`](#IExpressPackageProcess-init)
 
 **Instance Methods:** 
 
@@ -155,9 +179,13 @@ ______
  - [`onInitialize`](#onInitialize)
  - [`run`](#run)
 
-### *IExpressPackageProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+**Class/Static Attributes:** 
 
+ - [`DIVIDER`](#DIVIDER)
 
+### **IExpressPackageProcess**`#!py3 (configFactory, name='Windows Script to Binary Package Process', isZipped=False, isDesktopTarget=False, isHomeDirTarget=False)` { #IExpressPackageProcess-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**onFinalize**`#!py3 (self)` { #onFinalize data-toc-label=onFinalize }
 
 VIRTUAL
@@ -168,6 +196,9 @@ VIRTUAL
 
 VIRTUAL
 ### *obj*.**run**`#!py3 (self)` { #run data-toc-label=run }
+
+
+### *IExpressPackageProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
 
 
 

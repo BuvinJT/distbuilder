@@ -56,8 +56,20 @@ from distbuilder.log import Logger, isLogging
 # -----------------------------------------------------------------------------   
 __plat = platform.system()
 IS_WINDOWS = __plat == "Windows"
+""" Determine if build process is being run on Windows.
+    docs : virtual_value=Platform dependent
+    docs : conditional_value
+"""
 IS_LINUX   = __plat == "Linux"
+""" Determine if build process is being run on Linux. 
+    docs : virtual_value=Platform dependent
+    docs : conditional_value
+"""
 IS_MACOS   = __plat == "Darwin"
+""" Determine if build process is being run on macOS.
+    docs : virtual_value=Platform dependent
+    docs : conditional_value
+"""
 
 # over simplified - see https://stackoverflow.com/questions/45125516/possible-values-for-uname-m
 __arch = platform.machine()

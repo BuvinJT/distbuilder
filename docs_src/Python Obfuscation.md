@@ -2,6 +2,13 @@
 
 
 
+**Magic Methods:**
+
+ - [`__init__`](#LibToBundle-init)
+
+**Instance Methods:** 
+
+
 **Instance Attributes:** 
 
  - [`name`](#name)
@@ -9,6 +16,9 @@
  - [`pipConfig`](#pipConfig)
  - [`isObfuscated`](#isObfuscated)
 
+### **LibToBundle**`#!py3 (name, localDirPath=None, pipConfig=None, isObfuscated=False)` { #LibToBundle-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**name** *class 'NoneType'* default: *None* { #name data-toc-label=name }
 
 
@@ -27,6 +37,10 @@ ______
 ## **OpyConfig**`#!py3 class` { #OpyConfig data-toc-label=OpyConfig }
 
 See opy_config.txt for details on these settings.
+
+**Magic Methods:**
+
+ - [`__init__`](#OpyConfig-init)
 
 **Instance Methods:** 
 
@@ -54,6 +68,9 @@ See opy_config.txt for details on these settings.
  - [`dry_run`](#dry_run)
  - [`prepped_only`](#prepped_only)
 
+### **OpyConfig**`#!py3 ()` { #OpyConfig-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**toVirtualFile**`#!py3 (self)` { #toVirtualFile data-toc-label=toVirtualFile }
 
 
@@ -121,6 +138,10 @@ ______
 
 
 
+**Magic Methods:**
+
+ - [`__init__`](#OpyPatch-init)
+
 **Instance Methods:** 
 
  - [`apply`](#apply)
@@ -132,6 +153,9 @@ ______
  - [`path`](#path)
  - [`patches`](#patches)
 
+### **OpyPatch**`#!py3 (relPath, patches, parentDir='C:\\Python37\\Scripts\\obfuscated')` { #OpyPatch-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**apply**`#!py3 (self, opyResults)` { #apply data-toc-label=apply }
 
 

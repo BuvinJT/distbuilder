@@ -5,6 +5,13 @@ See Pip docs for details on these settings.
 Important Note: source maybe a: 
     package name, git repo url, or local path
 
+**Magic Methods:**
+
+ - [`__init__`](#PipConfig-init)
+
+**Instance Methods:** 
+
+
 **Instance Attributes:** 
 
  - [`pipCmdBase`](#pipCmdBase)
@@ -19,6 +26,9 @@ Important Note: source maybe a:
  - [`isUpgrade`](#isUpgrade)
  - [`otherPipArgs`](#otherPipArgs)
 
+### **PipConfig**`#!py3 (source=None, version=None, verEquality='==', destPath=None, asSource=False, incDependencies=True, isForced=False, isCacheUsed=True, isUpgrade=False, otherPipArgs='')` { #PipConfig-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**pipCmdBase** *class 'str'* default: *""c:\python37\python3.exe" -m pip"* { #pipCmdBase data-toc-label=pipCmdBase }
 
 

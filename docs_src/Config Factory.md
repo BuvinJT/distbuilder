@@ -2,9 +2,9 @@
 
 
 
-**Class/Static Methods:** 
+**Magic Methods:**
 
- - [`copy`](#copy)
+ - [`__init__`](#ConfigFactory-init)
 
 **Instance Methods:** 
 
@@ -78,9 +78,13 @@
  - [`codeSignConfig`](#codeSignConfig)
  - [`qtCppConfig`](#qtCppConfig)
 
-### *ConfigFactory*.**copy**`#!py3 (instance)` { #copy data-toc-label=copy }
+**Class/Static Methods:** 
 
+ - [`copy`](#copy)
 
+### **ConfigFactory**`#!py3 (cfgId=None)` { #ConfigFactory-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**exeVersionInfo**`#!py3 (self, ifwConfig=None)` { #exeVersionInfo data-toc-label=exeVersionInfo }
 
 
@@ -277,6 +281,9 @@
 
 
 ### *obj*.**qtCppConfig** *class 'NoneType'* default: *None* { #qtCppConfig data-toc-label=qtCppConfig }
+
+
+### *ConfigFactory*.**copy**`#!py3 (instance)` { #copy data-toc-label=copy }
 
 
 

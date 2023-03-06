@@ -450,15 +450,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#isSingletonOpen" class="md-nav__link">
-    isSingletonOpen
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#singleton" class="md-nav__link">
-    singleton
+  <a href="#Logger-init" class="md-nav__link">
+    &lowbar;&lowbar;init&lowbar;&lowbar;
   </a>
   
 </li>
@@ -564,6 +557,20 @@
           <li class="md-nav__item">
   <a href="#isUniqueFile" class="md-nav__link">
     isUniqueFile
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isSingletonOpen" class="md-nav__link">
+    isSingletonOpen
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#singleton" class="md-nav__link">
+    singleton
   </a>
   
 </li>
@@ -741,15 +748,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#isSingletonOpen" class="md-nav__link">
-    isSingletonOpen
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#singleton" class="md-nav__link">
-    singleton
+  <a href="#Logger-init" class="md-nav__link">
+    &lowbar;&lowbar;init&lowbar;&lowbar;
   </a>
   
 </li>
@@ -859,6 +859,20 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#isSingletonOpen" class="md-nav__link">
+    isSingletonOpen
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#singleton" class="md-nav__link">
+    singleton
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -921,10 +935,9 @@
                   <h1>Logging</h1>
                 
                 <h2 id="Logger"><strong>Logger</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#Logger" title="Permanent link">&para;</a></h2>
-<p><strong>Class/Static Methods:</strong> </p>
+<p><strong>Magic Methods:</strong></p>
 <ul>
-<li><a href="#isSingletonOpen"><code>isSingletonOpen</code></a></li>
-<li><a href="#singleton"><code>singleton</code></a></li>
+<li><a href="#Logger-init"><code>__init__</code></a></li>
 </ul>
 <p><strong>Instance Methods:</strong> </p>
 <ul>
@@ -947,8 +960,13 @@
 <li><a href="#name"><code>name</code></a></li>
 <li><a href="#isUniqueFile"><code>isUniqueFile</code></a></li>
 </ul>
-<h3 id="isSingletonOpen"><em>Logger</em>.<strong>isSingletonOpen</strong><code class="highlight"><span class="p">()</span></code><a class="headerlink" href="#isSingletonOpen" title="Permanent link">&para;</a></h3>
-<h3 id="singleton"><em>Logger</em>.<strong>singleton</strong><code class="highlight"><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">isUniqueFile</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code><a class="headerlink" href="#singleton" title="Permanent link">&para;</a></h3>
+<p><strong>Class/Static Methods:</strong> </p>
+<ul>
+<li><a href="#isSingletonOpen"><code>isSingletonOpen</code></a></li>
+<li><a href="#singleton"><code>singleton</code></a></li>
+</ul>
+<h3 id="Logger-init"><strong>Logger</strong><code class="highlight"><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">isUniqueFile</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code><a class="headerlink" href="#Logger-init" title="Permanent link">&para;</a></h3>
+<p>Initialize self.  See help(type(self)) for accurate signature.</p>
 <h3 id="close"><em>obj</em>.<strong>close</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#close" title="Permanent link">&para;</a></h3>
 <h3 id="filePath"><em>obj</em>.<strong>filePath</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#filePath" title="Permanent link">&para;</a></h3>
 <h3 id="isOpen"><em>obj</em>.<strong>isOpen</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#isOpen" title="Permanent link">&para;</a></h3>
@@ -964,6 +982,8 @@
 <h3 id="writeLn"><em>obj</em>.<strong>writeLn</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span></code><a class="headerlink" href="#writeLn" title="Permanent link">&para;</a></h3>
 <h3 id="name"><em>obj</em>.<strong>name</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;pymkdocs&rdquo;</em><a class="headerlink" href="#name" title="Permanent link">&para;</a></h3>
 <h3 id="isUniqueFile"><em>obj</em>.<strong>isUniqueFile</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#isUniqueFile" title="Permanent link">&para;</a></h3>
+<h3 id="isSingletonOpen"><em>Logger</em>.<strong>isSingletonOpen</strong><code class="highlight"><span class="p">()</span></code><a class="headerlink" href="#isSingletonOpen" title="Permanent link">&para;</a></h3>
+<h3 id="singleton"><em>Logger</em>.<strong>singleton</strong><code class="highlight"><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">isUniqueFile</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code><a class="headerlink" href="#singleton" title="Permanent link">&para;</a></h3>
 <hr />
 <h2 id="Functions"><strong>Functions</strong><a class="headerlink" href="#Functions" title="Permanent link">&para;</a></h2>
 <h3 id="isLogging"><strong>isLogging</strong><code class="highlight"><span class="p">()</span></code><a class="headerlink" href="#isLogging" title="Permanent link">&para;</a></h3>

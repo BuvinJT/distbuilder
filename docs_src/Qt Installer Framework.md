@@ -2,6 +2,10 @@
 
 
 
+**Magic Methods:**
+
+ - [`__init__`](#QtIfwConfig-init)
+
 **Instance Methods:** 
 
  - [`addLicense`](#addLicense)
@@ -18,6 +22,9 @@
  - [`isDebugMode`](#isDebugMode)
  - [`otherQtIfwArgs`](#otherQtIfwArgs)
 
+### **QtIfwConfig**`#!py3 (installerDefDirPath=None, packages=None, configXml=None, controlScript=None, setupExeName='setup.exe')` { #QtIfwConfig-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**addLicense**`#!py3 (self, licensePath, name='End User License Agreement')` { #addLicense data-toc-label=addLicense }
 
 
@@ -55,10 +62,14 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`DEFAULT_WIZARD_STYLE`](#DEFAULT_WIZARD_STYLE)
- - [`WizardStyle`](#WizardStyle)
+_QtIfwXml
+
+
+**Magic Methods:**
+
+ - [`__init__`](#QtIfwConfigXml-init)
 
 **Instance Methods:** 
 
@@ -100,12 +111,14 @@ ______
  - [`Banner`](#Banner)
  - [`ProductUrl`](#ProductUrl)
 
-### *QtIfwConfigXml*.**DEFAULT_WIZARD_STYLE** *class 'int'* default: *None* { #DEFAULT_WIZARD_STYLE data-toc-label=DEFAULT_WIZARD_STYLE }
+**Class/Static Attributes:** 
 
+ - [`DEFAULT_WIZARD_STYLE`](#DEFAULT_WIZARD_STYLE)
+ - [`WizardStyle`](#WizardStyle)
 
-### *QtIfwConfigXml*.**WizardStyle** *class 'type'* default: *None* { #WizardStyle data-toc-label=WizardStyle }
+### **QtIfwConfigXml**`#!py3 (name, version, publisher, iconFilePath=None, controlScriptName=None, primaryContentExe=None, isPrimaryExeGui=True, primaryExeWrapper=None, companyTradeName=None, wizardStyle=None, logoFilePath=None, bannerFilePath=None)` { #QtIfwConfigXml-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
-
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**addCustomTags**`#!py3 (self, root)` { #addCustomTags data-toc-label=addCustomTags }
 
 VIRTUAL
@@ -208,6 +221,35 @@ PURE VIRTUAL
 ### *obj*.**ProductUrl** *class 'NoneType'* default: *None* { #ProductUrl data-toc-label=ProductUrl }
 
 
+### *QtIfwConfigXml*.**DEFAULT_WIZARD_STYLE** *class 'int'* default: *None* { #DEFAULT_WIZARD_STYLE data-toc-label=DEFAULT_WIZARD_STYLE }
+
+
+### *QtIfwConfigXml*.**WizardStyle** *class 'type'* default: *None* { #WizardStyle data-toc-label=WizardStyle }
+
+
+## **QtIfwConfigXml.WizardStyle**`#!py3 class` { #QtIfwConfigXml.WizardStyle data-toc-label=QtIfwConfigXml.WizardStyle }
+
+
+
+**Class/Static Attributes:** 
+
+ - [`AERO`](#AERO)
+ - [`CLASSIC`](#CLASSIC)
+ - [`MAC`](#MAC)
+ - [`MODERN`](#MODERN)
+
+### *QtIfwConfigXml.WizardStyle*.**AERO** *class 'int'* default: *0* { #AERO data-toc-label=AERO }
+
+
+### *QtIfwConfigXml.WizardStyle*.**CLASSIC** *class 'int'* default: *3* { #CLASSIC data-toc-label=CLASSIC }
+
+
+### *QtIfwConfigXml.WizardStyle*.**MAC** *class 'int'* default: *2* { #MAC data-toc-label=MAC }
+
+
+### *QtIfwConfigXml.WizardStyle*.**MODERN** *class 'int'* default: *1* { #MODERN data-toc-label=MODERN }
+
+
 
 ______
 
@@ -215,84 +257,88 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`ABORT`](#ABORT)
- - [`ACCEPT_EULA_CMD_ARG`](#ACCEPT_EULA_CMD_ARG)
- - [`ACCEPT_EULA_RADIO_BUTTON`](#ACCEPT_EULA_RADIO_BUTTON)
- - [`AND`](#AND)
- - [`ASSIGN`](#ASSIGN)
- - [`AUTH_ERROR_MSGBOX_ID`](#AUTH_ERROR_MSGBOX_ID)
- - [`AUTO_PILOT_CMD_ARG`](#AUTO_PILOT_CMD_ARG)
- - [`BACK_BUTTON`](#BACK_BUTTON)
- - [`CANCEL`](#CANCEL)
- - [`CANCEL_BUTTON`](#CANCEL_BUTTON)
- - [`CATCH`](#CATCH)
- - [`COMMIT_BUTTON`](#COMMIT_BUTTON)
- - [`CONCAT`](#CONCAT)
- - [`CUSTOM_BUTTON_1`](#CUSTOM_BUTTON_1)
- - [`CUSTOM_BUTTON_2`](#CUSTOM_BUTTON_2)
- - [`CUSTOM_BUTTON_3`](#CUSTOM_BUTTON_3)
- - [`DEFAULT_FINISHED_MESSAGE`](#DEFAULT_FINISHED_MESSAGE)
- - [`DEFAULT_TARGET_DIR_KEY`](#DEFAULT_TARGET_DIR_KEY)
- - [`DRYRUN_CMD_ARG`](#DRYRUN_CMD_ARG)
- - [`ELSE`](#ELSE)
- - [`END_BLOCK`](#END_BLOCK)
- - [`END_LINE`](#END_LINE)
- - [`EQUAL_TO`](#EQUAL_TO)
- - [`ERR_LOG_DEFAULT_PATH`](#ERR_LOG_DEFAULT_PATH)
- - [`ERR_LOG_PATH_CMD_ARG`](#ERR_LOG_PATH_CMD_ARG)
- - [`EXCLUDE_LIST_CMD_ARG`](#EXCLUDE_LIST_CMD_ARG)
- - [`EXIT_FUNCTION`](#EXIT_FUNCTION)
- - [`FALSE`](#FALSE)
- - [`FINISHED_MESSAGE_LABEL`](#FINISHED_MESSAGE_LABEL)
- - [`FINISH_BUTTON`](#FINISH_BUTTON)
- - [`HELP_BUTTON`](#HELP_BUTTON)
- - [`IF`](#IF)
- - [`INCLUDE_LIST_CMD_ARG`](#INCLUDE_LIST_CMD_ARG)
- - [`INSTALL_LIST_CMD_ARG`](#INSTALL_LIST_CMD_ARG)
- - [`INTERUPTED_KEY`](#INTERUPTED_KEY)
- - [`IS_NET_CONNECTED_KEY`](#IS_NET_CONNECTED_KEY)
- - [`MAINTAIN_MODE_CMD_ARG`](#MAINTAIN_MODE_CMD_ARG)
- - [`MAINTAIN_MODE_OPT_ADD_REMOVE`](#MAINTAIN_MODE_OPT_ADD_REMOVE)
- - [`MAINTAIN_MODE_OPT_REMOVE_ALL`](#MAINTAIN_MODE_OPT_REMOVE_ALL)
- - [`MAINTAIN_MODE_OPT_UPDATE`](#MAINTAIN_MODE_OPT_UPDATE)
- - [`MAINTAIN_PASSTHRU_CMD_ARG`](#MAINTAIN_PASSTHRU_CMD_ARG)
- - [`MAINTENANCE_TOOL_NAME`](#MAINTENANCE_TOOL_NAME)
- - [`NEW_LINE`](#NEW_LINE)
- - [`NEXT_BUTTON`](#NEXT_BUTTON)
- - [`NO`](#NO)
- - [`NOT`](#NOT)
- - [`NOT_EQUAL_TO`](#NOT_EQUAL_TO)
- - [`NULL`](#NULL)
- - [`OK`](#OK)
- - [`OR`](#OR)
- - [`OUT_LOG_DEFAULT_PATH`](#OUT_LOG_DEFAULT_PATH)
- - [`OUT_LOG_PATH_CMD_ARG`](#OUT_LOG_PATH_CMD_ARG)
- - [`PATH_SEP`](#PATH_SEP)
- - [`PRODUCT_NAME_KEY`](#PRODUCT_NAME_KEY)
- - [`QUIT_MSGBOX_ID`](#QUIT_MSGBOX_ID)
- - [`REBOOT_CMD_ARG`](#REBOOT_CMD_ARG)
- - [`RESTORE_MSGBOX_DEFAULT`](#RESTORE_MSGBOX_DEFAULT)
- - [`RUN_PROGRAM_CHECKBOX`](#RUN_PROGRAM_CHECKBOX)
- - [`RUN_PROGRAM_CMD_ARG`](#RUN_PROGRAM_CMD_ARG)
- - [`STARTMENU_DIR_KEY`](#STARTMENU_DIR_KEY)
- - [`START_BLOCK`](#START_BLOCK)
- - [`START_MENU_DIR_CMD_ARG`](#START_MENU_DIR_CMD_ARG)
- - [`START_MENU_DIR_EDITBOX`](#START_MENU_DIR_EDITBOX)
- - [`TAB`](#TAB)
- - [`TARGET_DIR_CMD_ARG`](#TARGET_DIR_CMD_ARG)
- - [`TARGET_DIR_EDITBOX`](#TARGET_DIR_EDITBOX)
- - [`TARGET_DIR_KEY`](#TARGET_DIR_KEY)
- - [`TARGET_EXISTS_OPT_CMD_ARG`](#TARGET_EXISTS_OPT_CMD_ARG)
- - [`TARGET_EXISTS_OPT_FAIL`](#TARGET_EXISTS_OPT_FAIL)
- - [`TARGET_EXISTS_OPT_PROMPT`](#TARGET_EXISTS_OPT_PROMPT)
- - [`TARGET_EXISTS_OPT_REMOVE`](#TARGET_EXISTS_OPT_REMOVE)
- - [`TRUE`](#TRUE)
- - [`TRY`](#TRY)
- - [`USER_KEY`](#USER_KEY)
- - [`VERBOSE_CMD_SWITCH_ARG`](#VERBOSE_CMD_SWITCH_ARG)
- - [`YES`](#YES)
+_QtIfwScript
+
+
+**Magic Methods:**
+
+ - [`__init__`](#QtIfwControlScript-init)
+
+**Instance Methods:** 
+
+ - [`debug`](#debug)
+ - [`dirPath`](#dirPath)
+ - [`exists`](#exists)
+ - [`path`](#path)
+ - [`registerAutoPilotEventHandler`](#registerAutoPilotEventHandler)
+ - [`registerGuiEventHandler`](#registerGuiEventHandler)
+ - [`registerStandardEventHandler`](#registerStandardEventHandler)
+ - [`registerWidgetEventHandler`](#registerWidgetEventHandler)
+ - [`write`](#write)
+
+**Instance Attributes:** 
+
+ - [`isLimitedMaintenance`](#isLimitedMaintenance)
+ - [`virtualArgs`](#virtualArgs)
+ - [`uiPages`](#uiPages)
+ - [`widgets`](#widgets)
+ - [`controllerGlobals`](#controllerGlobals)
+ - [`isAutoGlobals`](#isAutoGlobals)
+ - [`controllerConstructorBody`](#controllerConstructorBody)
+ - [`controllerConstructorInjection`](#controllerConstructorInjection)
+ - [`isAutoControllerConstructor`](#isAutoControllerConstructor)
+ - [`onValueChangeCallbackBody`](#onValueChangeCallbackBody)
+ - [`onValueChangeCallbackInjection`](#onValueChangeCallbackInjection)
+ - [`isAutoValueChangeCallBack`](#isAutoValueChangeCallBack)
+ - [`onPageChangeCallbackBody`](#onPageChangeCallbackBody)
+ - [`onPageChangeCallbackInjection`](#onPageChangeCallbackInjection)
+ - [`isAutoPageChangeCallBack`](#isAutoPageChangeCallBack)
+ - [`onPageInsertRequestCallbackBody`](#onPageInsertRequestCallbackBody)
+ - [`isAutoPageInsertRequestCallBack`](#isAutoPageInsertRequestCallBack)
+ - [`onPageRemoveRequestCallbackBody`](#onPageRemoveRequestCallbackBody)
+ - [`isAutoPageRemoveRequestCallBack`](#isAutoPageRemoveRequestCallBack)
+ - [`onPageVisibilityRequestCallbackBody`](#onPageVisibilityRequestCallbackBody)
+ - [`isAutoPageVisibilityRequestCallBack`](#isAutoPageVisibilityRequestCallBack)
+ - [`onFinishedClickedCallbackBody`](#onFinishedClickedCallbackBody)
+ - [`onFinishedClickedCallbackInjection`](#onFinishedClickedCallbackInjection)
+ - [`onFinishedDetachedExecutions`](#onFinishedDetachedExecutions)
+ - [`isAutoFinishedClickedCallbackBody`](#isAutoFinishedClickedCallbackBody)
+ - [`isIntroductionPageVisible`](#isIntroductionPageVisible)
+ - [`introductionPageCallbackBody`](#introductionPageCallbackBody)
+ - [`introductionPageOnInstall`](#introductionPageOnInstall)
+ - [`introductionPageOnMaintain`](#introductionPageOnMaintain)
+ - [`isAutoIntroductionPageCallback`](#isAutoIntroductionPageCallback)
+ - [`isTargetDirectoryPageVisible`](#isTargetDirectoryPageVisible)
+ - [`targetDirectoryPageCallbackBody`](#targetDirectoryPageCallbackBody)
+ - [`isAutoTargetDirectoryPageCallback`](#isAutoTargetDirectoryPageCallback)
+ - [`isComponentSelectionPageVisible`](#isComponentSelectionPageVisible)
+ - [`componentSelectionPageCallbackBody`](#componentSelectionPageCallbackBody)
+ - [`componentSelectionPageInjection`](#componentSelectionPageInjection)
+ - [`isAutoComponentSelectionPageCallback`](#isAutoComponentSelectionPageCallback)
+ - [`isLicenseAgreementPageVisible`](#isLicenseAgreementPageVisible)
+ - [`licenseAgreementPageCallbackBody`](#licenseAgreementPageCallbackBody)
+ - [`isAutoLicenseAgreementPageCallback`](#isAutoLicenseAgreementPageCallback)
+ - [`isStartMenuDirectoryPageVisible`](#isStartMenuDirectoryPageVisible)
+ - [`startMenuDirectoryPageCallbackBody`](#startMenuDirectoryPageCallbackBody)
+ - [`isAutoStartMenuDirectoryPageCallback`](#isAutoStartMenuDirectoryPageCallback)
+ - [`isReadyForInstallationPageVisible`](#isReadyForInstallationPageVisible)
+ - [`readyForInstallationPageCallbackBody`](#readyForInstallationPageCallbackBody)
+ - [`readyForInstallationPageOnInstall`](#readyForInstallationPageOnInstall)
+ - [`readyForInstallationPageOnMaintain`](#readyForInstallationPageOnMaintain)
+ - [`isAutoReadyForInstallationPageCallback`](#isAutoReadyForInstallationPageCallback)
+ - [`isPerformInstallationPageVisible`](#isPerformInstallationPageVisible)
+ - [`performInstallationPageCallbackBody`](#performInstallationPageCallbackBody)
+ - [`isAutoPerformInstallationPageCallback`](#isAutoPerformInstallationPageCallback)
+ - [`isFinishedPageVisible`](#isFinishedPageVisible)
+ - [`finishedPageCallbackBody`](#finishedPageCallbackBody)
+ - [`finishedPageOnInstall`](#finishedPageOnInstall)
+ - [`finishedPageOnMaintain`](#finishedPageOnMaintain)
+ - [`isAutoFinishedPageCallback`](#isAutoFinishedPageCallback)
+ - [`isRunProgVisible`](#isRunProgVisible)
+ - [`isRunProgEnabled`](#isRunProgEnabled)
+ - [`isRunProgChecked`](#isRunProgChecked)
 
 **Class/Static Methods:** 
 
@@ -432,312 +478,290 @@ ______
  - [`yesNoCancelPopup`](#yesNoCancelPopup)
  - [`yesNoPopup`](#yesNoPopup)
 
-**Instance Methods:** 
-
- - [`debug`](#debug)
- - [`dirPath`](#dirPath)
- - [`exists`](#exists)
- - [`path`](#path)
- - [`registerAutoPilotEventHandler`](#registerAutoPilotEventHandler)
- - [`registerGuiEventHandler`](#registerGuiEventHandler)
- - [`registerStandardEventHandler`](#registerStandardEventHandler)
- - [`registerWidgetEventHandler`](#registerWidgetEventHandler)
- - [`write`](#write)
+**Class/Static Attributes:** 
+
+ - [`ABORT`](#ABORT)
+ - [`ACCEPT_EULA_CMD_ARG`](#ACCEPT_EULA_CMD_ARG)
+ - [`ACCEPT_EULA_RADIO_BUTTON`](#ACCEPT_EULA_RADIO_BUTTON)
+ - [`AND`](#AND)
+ - [`ASSIGN`](#ASSIGN)
+ - [`AUTH_ERROR_MSGBOX_ID`](#AUTH_ERROR_MSGBOX_ID)
+ - [`AUTO_PILOT_CMD_ARG`](#AUTO_PILOT_CMD_ARG)
+ - [`BACK_BUTTON`](#BACK_BUTTON)
+ - [`CANCEL`](#CANCEL)
+ - [`CANCEL_BUTTON`](#CANCEL_BUTTON)
+ - [`CATCH`](#CATCH)
+ - [`COMMIT_BUTTON`](#COMMIT_BUTTON)
+ - [`CONCAT`](#CONCAT)
+ - [`CUSTOM_BUTTON_1`](#CUSTOM_BUTTON_1)
+ - [`CUSTOM_BUTTON_2`](#CUSTOM_BUTTON_2)
+ - [`CUSTOM_BUTTON_3`](#CUSTOM_BUTTON_3)
+ - [`DEFAULT_FINISHED_MESSAGE`](#DEFAULT_FINISHED_MESSAGE)
+ - [`DEFAULT_TARGET_DIR_KEY`](#DEFAULT_TARGET_DIR_KEY)
+ - [`DRYRUN_CMD_ARG`](#DRYRUN_CMD_ARG)
+ - [`ELSE`](#ELSE)
+ - [`END_BLOCK`](#END_BLOCK)
+ - [`END_LINE`](#END_LINE)
+ - [`EQUAL_TO`](#EQUAL_TO)
+ - [`ERR_LOG_DEFAULT_PATH`](#ERR_LOG_DEFAULT_PATH)
+ - [`ERR_LOG_PATH_CMD_ARG`](#ERR_LOG_PATH_CMD_ARG)
+ - [`EXCLUDE_LIST_CMD_ARG`](#EXCLUDE_LIST_CMD_ARG)
+ - [`EXIT_FUNCTION`](#EXIT_FUNCTION)
+ - [`FALSE`](#FALSE)
+ - [`FINISHED_MESSAGE_LABEL`](#FINISHED_MESSAGE_LABEL)
+ - [`FINISH_BUTTON`](#FINISH_BUTTON)
+ - [`HELP_BUTTON`](#HELP_BUTTON)
+ - [`IF`](#IF)
+ - [`INCLUDE_LIST_CMD_ARG`](#INCLUDE_LIST_CMD_ARG)
+ - [`INSTALL_LIST_CMD_ARG`](#INSTALL_LIST_CMD_ARG)
+ - [`INTERUPTED_KEY`](#INTERUPTED_KEY)
+ - [`IS_NET_CONNECTED_KEY`](#IS_NET_CONNECTED_KEY)
+ - [`MAINTAIN_MODE_CMD_ARG`](#MAINTAIN_MODE_CMD_ARG)
+ - [`MAINTAIN_MODE_OPT_ADD_REMOVE`](#MAINTAIN_MODE_OPT_ADD_REMOVE)
+ - [`MAINTAIN_MODE_OPT_REMOVE_ALL`](#MAINTAIN_MODE_OPT_REMOVE_ALL)
+ - [`MAINTAIN_MODE_OPT_UPDATE`](#MAINTAIN_MODE_OPT_UPDATE)
+ - [`MAINTAIN_PASSTHRU_CMD_ARG`](#MAINTAIN_PASSTHRU_CMD_ARG)
+ - [`MAINTENANCE_TOOL_NAME`](#MAINTENANCE_TOOL_NAME)
+ - [`NEW_LINE`](#NEW_LINE)
+ - [`NEXT_BUTTON`](#NEXT_BUTTON)
+ - [`NO`](#NO)
+ - [`NOT`](#NOT)
+ - [`NOT_EQUAL_TO`](#NOT_EQUAL_TO)
+ - [`NULL`](#NULL)
+ - [`OK`](#OK)
+ - [`OR`](#OR)
+ - [`OUT_LOG_DEFAULT_PATH`](#OUT_LOG_DEFAULT_PATH)
+ - [`OUT_LOG_PATH_CMD_ARG`](#OUT_LOG_PATH_CMD_ARG)
+ - [`PATH_SEP`](#PATH_SEP)
+ - [`PRODUCT_NAME_KEY`](#PRODUCT_NAME_KEY)
+ - [`QUIT_MSGBOX_ID`](#QUIT_MSGBOX_ID)
+ - [`REBOOT_CMD_ARG`](#REBOOT_CMD_ARG)
+ - [`RESTORE_MSGBOX_DEFAULT`](#RESTORE_MSGBOX_DEFAULT)
+ - [`RUN_PROGRAM_CHECKBOX`](#RUN_PROGRAM_CHECKBOX)
+ - [`RUN_PROGRAM_CMD_ARG`](#RUN_PROGRAM_CMD_ARG)
+ - [`STARTMENU_DIR_KEY`](#STARTMENU_DIR_KEY)
+ - [`START_BLOCK`](#START_BLOCK)
+ - [`START_MENU_DIR_CMD_ARG`](#START_MENU_DIR_CMD_ARG)
+ - [`START_MENU_DIR_EDITBOX`](#START_MENU_DIR_EDITBOX)
+ - [`TAB`](#TAB)
+ - [`TARGET_DIR_CMD_ARG`](#TARGET_DIR_CMD_ARG)
+ - [`TARGET_DIR_EDITBOX`](#TARGET_DIR_EDITBOX)
+ - [`TARGET_DIR_KEY`](#TARGET_DIR_KEY)
+ - [`TARGET_EXISTS_OPT_CMD_ARG`](#TARGET_EXISTS_OPT_CMD_ARG)
+ - [`TARGET_EXISTS_OPT_FAIL`](#TARGET_EXISTS_OPT_FAIL)
+ - [`TARGET_EXISTS_OPT_PROMPT`](#TARGET_EXISTS_OPT_PROMPT)
+ - [`TARGET_EXISTS_OPT_REMOVE`](#TARGET_EXISTS_OPT_REMOVE)
+ - [`TRUE`](#TRUE)
+ - [`TRY`](#TRY)
+ - [`USER_KEY`](#USER_KEY)
+ - [`VERBOSE_CMD_SWITCH_ARG`](#VERBOSE_CMD_SWITCH_ARG)
+ - [`YES`](#YES)
 
-**Instance Attributes:** 
+### **QtIfwControlScript**`#!py3 (fileName='installscript.qs', script=None, scriptPath=None)` { #QtIfwControlScript-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
- - [`isLimitedMaintenance`](#isLimitedMaintenance)
- - [`virtualArgs`](#virtualArgs)
- - [`uiPages`](#uiPages)
- - [`widgets`](#widgets)
- - [`controllerGlobals`](#controllerGlobals)
- - [`isAutoGlobals`](#isAutoGlobals)
- - [`controllerConstructorBody`](#controllerConstructorBody)
- - [`controllerConstructorInjection`](#controllerConstructorInjection)
- - [`isAutoControllerConstructor`](#isAutoControllerConstructor)
- - [`onValueChangeCallbackBody`](#onValueChangeCallbackBody)
- - [`onValueChangeCallbackInjection`](#onValueChangeCallbackInjection)
- - [`isAutoValueChangeCallBack`](#isAutoValueChangeCallBack)
- - [`onPageChangeCallbackBody`](#onPageChangeCallbackBody)
- - [`onPageChangeCallbackInjection`](#onPageChangeCallbackInjection)
- - [`isAutoPageChangeCallBack`](#isAutoPageChangeCallBack)
- - [`onPageInsertRequestCallbackBody`](#onPageInsertRequestCallbackBody)
- - [`isAutoPageInsertRequestCallBack`](#isAutoPageInsertRequestCallBack)
- - [`onPageRemoveRequestCallbackBody`](#onPageRemoveRequestCallbackBody)
- - [`isAutoPageRemoveRequestCallBack`](#isAutoPageRemoveRequestCallBack)
- - [`onPageVisibilityRequestCallbackBody`](#onPageVisibilityRequestCallbackBody)
- - [`isAutoPageVisibilityRequestCallBack`](#isAutoPageVisibilityRequestCallBack)
- - [`onFinishedClickedCallbackBody`](#onFinishedClickedCallbackBody)
- - [`onFinishedClickedCallbackInjection`](#onFinishedClickedCallbackInjection)
- - [`onFinishedDetachedExecutions`](#onFinishedDetachedExecutions)
- - [`isAutoFinishedClickedCallbackBody`](#isAutoFinishedClickedCallbackBody)
- - [`isIntroductionPageVisible`](#isIntroductionPageVisible)
- - [`introductionPageCallbackBody`](#introductionPageCallbackBody)
- - [`introductionPageOnInstall`](#introductionPageOnInstall)
- - [`introductionPageOnMaintain`](#introductionPageOnMaintain)
- - [`isAutoIntroductionPageCallback`](#isAutoIntroductionPageCallback)
- - [`isTargetDirectoryPageVisible`](#isTargetDirectoryPageVisible)
- - [`targetDirectoryPageCallbackBody`](#targetDirectoryPageCallbackBody)
- - [`isAutoTargetDirectoryPageCallback`](#isAutoTargetDirectoryPageCallback)
- - [`isComponentSelectionPageVisible`](#isComponentSelectionPageVisible)
- - [`componentSelectionPageCallbackBody`](#componentSelectionPageCallbackBody)
- - [`componentSelectionPageInjection`](#componentSelectionPageInjection)
- - [`isAutoComponentSelectionPageCallback`](#isAutoComponentSelectionPageCallback)
- - [`isLicenseAgreementPageVisible`](#isLicenseAgreementPageVisible)
- - [`licenseAgreementPageCallbackBody`](#licenseAgreementPageCallbackBody)
- - [`isAutoLicenseAgreementPageCallback`](#isAutoLicenseAgreementPageCallback)
- - [`isStartMenuDirectoryPageVisible`](#isStartMenuDirectoryPageVisible)
- - [`startMenuDirectoryPageCallbackBody`](#startMenuDirectoryPageCallbackBody)
- - [`isAutoStartMenuDirectoryPageCallback`](#isAutoStartMenuDirectoryPageCallback)
- - [`isReadyForInstallationPageVisible`](#isReadyForInstallationPageVisible)
- - [`readyForInstallationPageCallbackBody`](#readyForInstallationPageCallbackBody)
- - [`readyForInstallationPageOnInstall`](#readyForInstallationPageOnInstall)
- - [`readyForInstallationPageOnMaintain`](#readyForInstallationPageOnMaintain)
- - [`isAutoReadyForInstallationPageCallback`](#isAutoReadyForInstallationPageCallback)
- - [`isPerformInstallationPageVisible`](#isPerformInstallationPageVisible)
- - [`performInstallationPageCallbackBody`](#performInstallationPageCallbackBody)
- - [`isAutoPerformInstallationPageCallback`](#isAutoPerformInstallationPageCallback)
- - [`isFinishedPageVisible`](#isFinishedPageVisible)
- - [`finishedPageCallbackBody`](#finishedPageCallbackBody)
- - [`finishedPageOnInstall`](#finishedPageOnInstall)
- - [`finishedPageOnMaintain`](#finishedPageOnMaintain)
- - [`isAutoFinishedPageCallback`](#isAutoFinishedPageCallback)
- - [`isRunProgVisible`](#isRunProgVisible)
- - [`isRunProgEnabled`](#isRunProgEnabled)
- - [`isRunProgChecked`](#isRunProgChecked)
+Initialize self.  See help(type(self)) for accurate signature.
+### *obj*.**debug**`#!py3 (self)` { #debug data-toc-label=debug }
 
-### *QtIfwControlScript*.**ABORT** *class 'str'* default: *"QMessageBox.Abort"* { #ABORT data-toc-label=ABORT }
 
+### *obj*.**dirPath**`#!py3 (self)` { #dirPath data-toc-label=dirPath }
 
-### *QtIfwControlScript*.**ACCEPT_EULA_CMD_ARG** *class 'str'* default: *"accept"* { #ACCEPT_EULA_CMD_ARG data-toc-label=ACCEPT_EULA_CMD_ARG }
+PURE VIRTUAL
+### *obj*.**exists**`#!py3 (self)` { #exists data-toc-label=exists }
 
 
-### *QtIfwControlScript*.**ACCEPT_EULA_RADIO_BUTTON** *class 'str'* default: *"AcceptLicenseRadioButton"* { #ACCEPT_EULA_RADIO_BUTTON data-toc-label=ACCEPT_EULA_RADIO_BUTTON }
+### *obj*.**path**`#!py3 (self)` { #path data-toc-label=path }
 
+PURE VIRTUAL
+### *obj*.**registerAutoPilotEventHandler**`#!py3 (self, signalName, slotName, slotBody)` { #registerAutoPilotEventHandler data-toc-label=registerAutoPilotEventHandler }
 
-### *QtIfwControlScript*.**AND** *class 'str'* default: *" && "* { #AND data-toc-label=AND }
 
+### *obj*.**registerGuiEventHandler**`#!py3 (self, signalName, slotName, slotBody)` { #registerGuiEventHandler data-toc-label=registerGuiEventHandler }
 
-### *QtIfwControlScript*.**ASSIGN** *class 'str'* default: *"="* { #ASSIGN data-toc-label=ASSIGN }
 
+### *obj*.**registerStandardEventHandler**`#!py3 (self, signalName, slotName, slotBody)` { #registerStandardEventHandler data-toc-label=registerStandardEventHandler }
 
-### *QtIfwControlScript*.**AUTH_ERROR_MSGBOX_ID** *class 'str'* default: *"AuthorizationError"* { #AUTH_ERROR_MSGBOX_ID data-toc-label=AUTH_ERROR_MSGBOX_ID }
 
+### *obj*.**registerWidgetEventHandler**`#!py3 (self, pageId, controlName, signalName, slotName, slotBody)` { #registerWidgetEventHandler data-toc-label=registerWidgetEventHandler }
 
-### *QtIfwControlScript*.**AUTO_PILOT_CMD_ARG** *class 'str'* default: *"auto"* { #AUTO_PILOT_CMD_ARG data-toc-label=AUTO_PILOT_CMD_ARG }
 
+### *obj*.**write**`#!py3 (self)` { #write data-toc-label=write }
 
-### *QtIfwControlScript*.**BACK_BUTTON** *class 'str'* default: *"buttons.BackButton"* { #BACK_BUTTON data-toc-label=BACK_BUTTON }
 
+### *obj*.**isLimitedMaintenance** *class 'bool'* default: *True* { #isLimitedMaintenance data-toc-label=isLimitedMaintenance }
 
-### *QtIfwControlScript*.**CANCEL** *class 'str'* default: *"QMessageBox.Cancel"* { #CANCEL data-toc-label=CANCEL }
 
+### *obj*.**virtualArgs** *class 'NoneType'* default: *None* { #virtualArgs data-toc-label=virtualArgs }
 
-### *QtIfwControlScript*.**CANCEL_BUTTON** *class 'str'* default: *"buttons.CancelButton"* { #CANCEL_BUTTON data-toc-label=CANCEL_BUTTON }
 
+### *obj*.**uiPages** *class 'list'* default: *[]* { #uiPages data-toc-label=uiPages }
 
-### *QtIfwControlScript*.**CATCH** *class 'str'* default: *"catch(e) { "* { #CATCH data-toc-label=CATCH }
 
+### *obj*.**widgets** *class 'list'* default: *[]* { #widgets data-toc-label=widgets }
 
-### *QtIfwControlScript*.**COMMIT_BUTTON** *class 'str'* default: *"buttons.CommitButton"* { #COMMIT_BUTTON data-toc-label=COMMIT_BUTTON }
 
+### *obj*.**controllerGlobals** *class 'NoneType'* default: *None* { #controllerGlobals data-toc-label=controllerGlobals }
 
-### *QtIfwControlScript*.**CONCAT** *class 'str'* default: *" + "* { #CONCAT data-toc-label=CONCAT }
 
+### *obj*.**isAutoGlobals** *class 'bool'* default: *True* { #isAutoGlobals data-toc-label=isAutoGlobals }
 
-### *QtIfwControlScript*.**CUSTOM_BUTTON_1** *class 'str'* default: *"buttons.CustomButton1"* { #CUSTOM_BUTTON_1 data-toc-label=CUSTOM_BUTTON_1 }
 
+### *obj*.**controllerConstructorBody** *class 'NoneType'* default: *None* { #controllerConstructorBody data-toc-label=controllerConstructorBody }
 
-### *QtIfwControlScript*.**CUSTOM_BUTTON_2** *class 'str'* default: *"buttons.CustomButton2"* { #CUSTOM_BUTTON_2 data-toc-label=CUSTOM_BUTTON_2 }
 
+### *obj*.**controllerConstructorInjection** *class 'NoneType'* default: *None* { #controllerConstructorInjection data-toc-label=controllerConstructorInjection }
 
-### *QtIfwControlScript*.**CUSTOM_BUTTON_3** *class 'str'* default: *"buttons.CustomButton3"* { #CUSTOM_BUTTON_3 data-toc-label=CUSTOM_BUTTON_3 }
 
+### *obj*.**isAutoControllerConstructor** *class 'bool'* default: *True* { #isAutoControllerConstructor data-toc-label=isAutoControllerConstructor }
 
-### *QtIfwControlScript*.**DEFAULT_FINISHED_MESSAGE** *class 'str'* default: *"Click finish to exit the @ProductName@ Wizard."* { #DEFAULT_FINISHED_MESSAGE data-toc-label=DEFAULT_FINISHED_MESSAGE }
 
+### *obj*.**onValueChangeCallbackBody** *class 'NoneType'* default: *None* { #onValueChangeCallbackBody data-toc-label=onValueChangeCallbackBody }
 
-### *QtIfwControlScript*.**DEFAULT_TARGET_DIR_KEY** *class 'str'* default: *"DefaultTargetDir"* { #DEFAULT_TARGET_DIR_KEY data-toc-label=DEFAULT_TARGET_DIR_KEY }
 
+### *obj*.**onValueChangeCallbackInjection** *class 'NoneType'* default: *None* { #onValueChangeCallbackInjection data-toc-label=onValueChangeCallbackInjection }
 
-### *QtIfwControlScript*.**DRYRUN_CMD_ARG** *class 'str'* default: *"dryrun"* { #DRYRUN_CMD_ARG data-toc-label=DRYRUN_CMD_ARG }
 
+### *obj*.**isAutoValueChangeCallBack** *class 'bool'* default: *True* { #isAutoValueChangeCallBack data-toc-label=isAutoValueChangeCallBack }
 
-### *QtIfwControlScript*.**ELSE** *class 'str'* default: *"else "* { #ELSE data-toc-label=ELSE }
 
+### *obj*.**onPageChangeCallbackBody** *class 'NoneType'* default: *None* { #onPageChangeCallbackBody data-toc-label=onPageChangeCallbackBody }
 
-### *QtIfwControlScript*.**END_BLOCK** *class 'str'* default: *"}
-"* { #END_BLOCK data-toc-label=END_BLOCK }
 
+### *obj*.**onPageChangeCallbackInjection** *class 'NoneType'* default: *None* { #onPageChangeCallbackInjection data-toc-label=onPageChangeCallbackInjection }
 
-### *QtIfwControlScript*.**END_LINE** *class 'str'* default: *";
-"* { #END_LINE data-toc-label=END_LINE }
 
+### *obj*.**isAutoPageChangeCallBack** *class 'bool'* default: *True* { #isAutoPageChangeCallBack data-toc-label=isAutoPageChangeCallBack }
 
-### *QtIfwControlScript*.**EQUAL_TO** *class 'str'* default: *" == "* { #EQUAL_TO data-toc-label=EQUAL_TO }
 
+### *obj*.**onPageInsertRequestCallbackBody** *class 'NoneType'* default: *None* { #onPageInsertRequestCallbackBody data-toc-label=onPageInsertRequestCallbackBody }
 
-### *QtIfwControlScript*.**ERR_LOG_DEFAULT_PATH** *class 'str'* default: *"%temp%\\installer.err"* { #ERR_LOG_DEFAULT_PATH data-toc-label=ERR_LOG_DEFAULT_PATH }
 
+### *obj*.**isAutoPageInsertRequestCallBack** *class 'bool'* default: *True* { #isAutoPageInsertRequestCallBack data-toc-label=isAutoPageInsertRequestCallBack }
 
-### *QtIfwControlScript*.**ERR_LOG_PATH_CMD_ARG** *class 'str'* default: *"errlog"* { #ERR_LOG_PATH_CMD_ARG data-toc-label=ERR_LOG_PATH_CMD_ARG }
 
+### *obj*.**onPageRemoveRequestCallbackBody** *class 'NoneType'* default: *None* { #onPageRemoveRequestCallbackBody data-toc-label=onPageRemoveRequestCallbackBody }
 
-### *QtIfwControlScript*.**EXCLUDE_LIST_CMD_ARG** *class 'str'* default: *"exclude"* { #EXCLUDE_LIST_CMD_ARG data-toc-label=EXCLUDE_LIST_CMD_ARG }
 
+### *obj*.**isAutoPageRemoveRequestCallBack** *class 'bool'* default: *True* { #isAutoPageRemoveRequestCallBack data-toc-label=isAutoPageRemoveRequestCallBack }
 
-### *QtIfwControlScript*.**EXIT_FUNCTION** *class 'str'* default: *"
-    return;
-"* { #EXIT_FUNCTION data-toc-label=EXIT_FUNCTION }
 
+### *obj*.**onPageVisibilityRequestCallbackBody** *class 'NoneType'* default: *None* { #onPageVisibilityRequestCallbackBody data-toc-label=onPageVisibilityRequestCallbackBody }
 
-### *QtIfwControlScript*.**FALSE** *class 'str'* default: *"false"* { #FALSE data-toc-label=FALSE }
 
+### *obj*.**isAutoPageVisibilityRequestCallBack** *class 'bool'* default: *True* { #isAutoPageVisibilityRequestCallBack data-toc-label=isAutoPageVisibilityRequestCallBack }
 
-### *QtIfwControlScript*.**FINISHED_MESSAGE_LABEL** *class 'str'* default: *"MessageLabel"* { #FINISHED_MESSAGE_LABEL data-toc-label=FINISHED_MESSAGE_LABEL }
 
+### *obj*.**onFinishedClickedCallbackBody** *class 'NoneType'* default: *None* { #onFinishedClickedCallbackBody data-toc-label=onFinishedClickedCallbackBody }
 
-### *QtIfwControlScript*.**FINISH_BUTTON** *class 'str'* default: *"buttons.FinishButton"* { #FINISH_BUTTON data-toc-label=FINISH_BUTTON }
 
+### *obj*.**onFinishedClickedCallbackInjection** *class 'NoneType'* default: *None* { #onFinishedClickedCallbackInjection data-toc-label=onFinishedClickedCallbackInjection }
 
-### *QtIfwControlScript*.**HELP_BUTTON** *class 'str'* default: *"buttons.HelpButton"* { #HELP_BUTTON data-toc-label=HELP_BUTTON }
 
+### *obj*.**onFinishedDetachedExecutions** *class 'list'* default: *[]* { #onFinishedDetachedExecutions data-toc-label=onFinishedDetachedExecutions }
 
-### *QtIfwControlScript*.**IF** *class 'str'* default: *"if "* { #IF data-toc-label=IF }
 
+### *obj*.**isAutoFinishedClickedCallbackBody** *class 'bool'* default: *True* { #isAutoFinishedClickedCallbackBody data-toc-label=isAutoFinishedClickedCallbackBody }
 
-### *QtIfwControlScript*.**INCLUDE_LIST_CMD_ARG** *class 'str'* default: *"include"* { #INCLUDE_LIST_CMD_ARG data-toc-label=INCLUDE_LIST_CMD_ARG }
 
+### *obj*.**isIntroductionPageVisible** *class 'bool'* default: *True* { #isIntroductionPageVisible data-toc-label=isIntroductionPageVisible }
 
-### *QtIfwControlScript*.**INSTALL_LIST_CMD_ARG** *class 'str'* default: *"install"* { #INSTALL_LIST_CMD_ARG data-toc-label=INSTALL_LIST_CMD_ARG }
 
+### *obj*.**introductionPageCallbackBody** *class 'NoneType'* default: *None* { #introductionPageCallbackBody data-toc-label=introductionPageCallbackBody }
 
-### *QtIfwControlScript*.**INTERUPTED_KEY** *class 'str'* default: *"isInterupted"* { #INTERUPTED_KEY data-toc-label=INTERUPTED_KEY }
 
+### *obj*.**introductionPageOnInstall** *class 'NoneType'* default: *None* { #introductionPageOnInstall data-toc-label=introductionPageOnInstall }
 
-### *QtIfwControlScript*.**IS_NET_CONNECTED_KEY** *class 'str'* default: *"isNetConnected"* { #IS_NET_CONNECTED_KEY data-toc-label=IS_NET_CONNECTED_KEY }
 
+### *obj*.**introductionPageOnMaintain** *class 'NoneType'* default: *None* { #introductionPageOnMaintain data-toc-label=introductionPageOnMaintain }
 
-### *QtIfwControlScript*.**MAINTAIN_MODE_CMD_ARG** *class 'str'* default: *"mode"* { #MAINTAIN_MODE_CMD_ARG data-toc-label=MAINTAIN_MODE_CMD_ARG }
 
+### *obj*.**isAutoIntroductionPageCallback** *class 'bool'* default: *True* { #isAutoIntroductionPageCallback data-toc-label=isAutoIntroductionPageCallback }
 
-### *QtIfwControlScript*.**MAINTAIN_MODE_OPT_ADD_REMOVE** *class 'str'* default: *"addremove"* { #MAINTAIN_MODE_OPT_ADD_REMOVE data-toc-label=MAINTAIN_MODE_OPT_ADD_REMOVE }
 
+### *obj*.**isTargetDirectoryPageVisible** *class 'bool'* default: *True* { #isTargetDirectoryPageVisible data-toc-label=isTargetDirectoryPageVisible }
 
-### *QtIfwControlScript*.**MAINTAIN_MODE_OPT_REMOVE_ALL** *class 'str'* default: *"removeall"* { #MAINTAIN_MODE_OPT_REMOVE_ALL data-toc-label=MAINTAIN_MODE_OPT_REMOVE_ALL }
 
+### *obj*.**targetDirectoryPageCallbackBody** *class 'NoneType'* default: *None* { #targetDirectoryPageCallbackBody data-toc-label=targetDirectoryPageCallbackBody }
 
-### *QtIfwControlScript*.**MAINTAIN_MODE_OPT_UPDATE** *class 'str'* default: *"update"* { #MAINTAIN_MODE_OPT_UPDATE data-toc-label=MAINTAIN_MODE_OPT_UPDATE }
 
+### *obj*.**isAutoTargetDirectoryPageCallback** *class 'bool'* default: *True* { #isAutoTargetDirectoryPageCallback data-toc-label=isAutoTargetDirectoryPageCallback }
 
-### *QtIfwControlScript*.**MAINTAIN_PASSTHRU_CMD_ARG** *class 'str'* default: *"maintpassthru"* { #MAINTAIN_PASSTHRU_CMD_ARG data-toc-label=MAINTAIN_PASSTHRU_CMD_ARG }
 
+### *obj*.**isComponentSelectionPageVisible** *class 'bool'* default: *True* { #isComponentSelectionPageVisible data-toc-label=isComponentSelectionPageVisible }
 
-### *QtIfwControlScript*.**MAINTENANCE_TOOL_NAME** *class 'str'* default: *"maintenancetool.exe"* { #MAINTENANCE_TOOL_NAME data-toc-label=MAINTENANCE_TOOL_NAME }
 
+### *obj*.**componentSelectionPageCallbackBody** *class 'NoneType'* default: *None* { #componentSelectionPageCallbackBody data-toc-label=componentSelectionPageCallbackBody }
 
-### *QtIfwControlScript*.**NEW_LINE** *class 'str'* default: *"
-"* { #NEW_LINE data-toc-label=NEW_LINE }
 
+### *obj*.**componentSelectionPageInjection** *class 'NoneType'* default: *None* { #componentSelectionPageInjection data-toc-label=componentSelectionPageInjection }
 
-### *QtIfwControlScript*.**NEXT_BUTTON** *class 'str'* default: *"buttons.NextButton"* { #NEXT_BUTTON data-toc-label=NEXT_BUTTON }
 
+### *obj*.**isAutoComponentSelectionPageCallback** *class 'bool'* default: *True* { #isAutoComponentSelectionPageCallback data-toc-label=isAutoComponentSelectionPageCallback }
 
-### *QtIfwControlScript*.**NO** *class 'str'* default: *"QMessageBox.No"* { #NO data-toc-label=NO }
 
+### *obj*.**isLicenseAgreementPageVisible** *class 'bool'* default: *True* { #isLicenseAgreementPageVisible data-toc-label=isLicenseAgreementPageVisible }
 
-### *QtIfwControlScript*.**NOT** *class 'str'* default: *"! "* { #NOT data-toc-label=NOT }
 
+### *obj*.**licenseAgreementPageCallbackBody** *class 'NoneType'* default: *None* { #licenseAgreementPageCallbackBody data-toc-label=licenseAgreementPageCallbackBody }
 
-### *QtIfwControlScript*.**NOT_EQUAL_TO** *class 'str'* default: *" != "* { #NOT_EQUAL_TO data-toc-label=NOT_EQUAL_TO }
 
+### *obj*.**isAutoLicenseAgreementPageCallback** *class 'bool'* default: *True* { #isAutoLicenseAgreementPageCallback data-toc-label=isAutoLicenseAgreementPageCallback }
 
-### *QtIfwControlScript*.**NULL** *class 'str'* default: *"null"* { #NULL data-toc-label=NULL }
 
+### *obj*.**isStartMenuDirectoryPageVisible** *class 'bool'* default: *True* { #isStartMenuDirectoryPageVisible data-toc-label=isStartMenuDirectoryPageVisible }
 
-### *QtIfwControlScript*.**OK** *class 'str'* default: *"QMessageBox.Yes"* { #OK data-toc-label=OK }
 
+### *obj*.**startMenuDirectoryPageCallbackBody** *class 'NoneType'* default: *None* { #startMenuDirectoryPageCallbackBody data-toc-label=startMenuDirectoryPageCallbackBody }
 
-### *QtIfwControlScript*.**OR** *class 'str'* default: *" || "* { #OR data-toc-label=OR }
 
+### *obj*.**isAutoStartMenuDirectoryPageCallback** *class 'bool'* default: *True* { #isAutoStartMenuDirectoryPageCallback data-toc-label=isAutoStartMenuDirectoryPageCallback }
 
-### *QtIfwControlScript*.**OUT_LOG_DEFAULT_PATH** *class 'str'* default: *"%temp%\\installer.out"* { #OUT_LOG_DEFAULT_PATH data-toc-label=OUT_LOG_DEFAULT_PATH }
 
+### *obj*.**isReadyForInstallationPageVisible** *class 'bool'* default: *True* { #isReadyForInstallationPageVisible data-toc-label=isReadyForInstallationPageVisible }
 
-### *QtIfwControlScript*.**OUT_LOG_PATH_CMD_ARG** *class 'str'* default: *"outlog"* { #OUT_LOG_PATH_CMD_ARG data-toc-label=OUT_LOG_PATH_CMD_ARG }
 
+### *obj*.**readyForInstallationPageCallbackBody** *class 'NoneType'* default: *None* { #readyForInstallationPageCallbackBody data-toc-label=readyForInstallationPageCallbackBody }
 
-### *QtIfwControlScript*.**PATH_SEP** *class 'str'* default: *""\\""* { #PATH_SEP data-toc-label=PATH_SEP }
 
+### *obj*.**readyForInstallationPageOnInstall** *class 'NoneType'* default: *None* { #readyForInstallationPageOnInstall data-toc-label=readyForInstallationPageOnInstall }
 
-### *QtIfwControlScript*.**PRODUCT_NAME_KEY** *class 'str'* default: *"ProductName"* { #PRODUCT_NAME_KEY data-toc-label=PRODUCT_NAME_KEY }
 
+### *obj*.**readyForInstallationPageOnMaintain** *class 'NoneType'* default: *None* { #readyForInstallationPageOnMaintain data-toc-label=readyForInstallationPageOnMaintain }
 
-### *QtIfwControlScript*.**QUIT_MSGBOX_ID** *class 'str'* default: *"cancelInstallation"* { #QUIT_MSGBOX_ID data-toc-label=QUIT_MSGBOX_ID }
 
+### *obj*.**isAutoReadyForInstallationPageCallback** *class 'bool'* default: *True* { #isAutoReadyForInstallationPageCallback data-toc-label=isAutoReadyForInstallationPageCallback }
 
-### *QtIfwControlScript*.**REBOOT_CMD_ARG** *class 'str'* default: *"reboot"* { #REBOOT_CMD_ARG data-toc-label=REBOOT_CMD_ARG }
 
+### *obj*.**isPerformInstallationPageVisible** *class 'bool'* default: *True* { #isPerformInstallationPageVisible data-toc-label=isPerformInstallationPageVisible }
 
-### *QtIfwControlScript*.**RESTORE_MSGBOX_DEFAULT** *class 'str'* default: *"QMessageBox.RestoreDefaults"* { #RESTORE_MSGBOX_DEFAULT data-toc-label=RESTORE_MSGBOX_DEFAULT }
 
+### *obj*.**performInstallationPageCallbackBody** *class 'NoneType'* default: *None* { #performInstallationPageCallbackBody data-toc-label=performInstallationPageCallbackBody }
 
-### *QtIfwControlScript*.**RUN_PROGRAM_CHECKBOX** *class 'str'* default: *"RunItCheckBox"* { #RUN_PROGRAM_CHECKBOX data-toc-label=RUN_PROGRAM_CHECKBOX }
 
+### *obj*.**isAutoPerformInstallationPageCallback** *class 'bool'* default: *True* { #isAutoPerformInstallationPageCallback data-toc-label=isAutoPerformInstallationPageCallback }
 
-### *QtIfwControlScript*.**RUN_PROGRAM_CMD_ARG** *class 'str'* default: *"run"* { #RUN_PROGRAM_CMD_ARG data-toc-label=RUN_PROGRAM_CMD_ARG }
 
+### *obj*.**isFinishedPageVisible** *class 'bool'* default: *True* { #isFinishedPageVisible data-toc-label=isFinishedPageVisible }
 
-### *QtIfwControlScript*.**STARTMENU_DIR_KEY** *class 'str'* default: *"StartMenuDir"* { #STARTMENU_DIR_KEY data-toc-label=STARTMENU_DIR_KEY }
 
+### *obj*.**finishedPageCallbackBody** *class 'NoneType'* default: *None* { #finishedPageCallbackBody data-toc-label=finishedPageCallbackBody }
 
-### *QtIfwControlScript*.**START_BLOCK** *class 'str'* default: *"{
-"* { #START_BLOCK data-toc-label=START_BLOCK }
 
+### *obj*.**finishedPageOnInstall** *class 'NoneType'* default: *None* { #finishedPageOnInstall data-toc-label=finishedPageOnInstall }
 
-### *QtIfwControlScript*.**START_MENU_DIR_CMD_ARG** *class 'str'* default: *"startmenu"* { #START_MENU_DIR_CMD_ARG data-toc-label=START_MENU_DIR_CMD_ARG }
 
+### *obj*.**finishedPageOnMaintain** *class 'NoneType'* default: *None* { #finishedPageOnMaintain data-toc-label=finishedPageOnMaintain }
 
-### *QtIfwControlScript*.**START_MENU_DIR_EDITBOX** *class 'str'* default: *"StartMenuPathLineEdit"* { #START_MENU_DIR_EDITBOX data-toc-label=START_MENU_DIR_EDITBOX }
 
+### *obj*.**isAutoFinishedPageCallback** *class 'bool'* default: *True* { #isAutoFinishedPageCallback data-toc-label=isAutoFinishedPageCallback }
 
-### *QtIfwControlScript*.**TAB** *class 'str'* default: *"    "* { #TAB data-toc-label=TAB }
 
+### *obj*.**isRunProgVisible** *class 'bool'* default: *True* { #isRunProgVisible data-toc-label=isRunProgVisible }
 
-### *QtIfwControlScript*.**TARGET_DIR_CMD_ARG** *class 'str'* default: *"target"* { #TARGET_DIR_CMD_ARG data-toc-label=TARGET_DIR_CMD_ARG }
 
+### *obj*.**isRunProgEnabled** *class 'bool'* default: *True* { #isRunProgEnabled data-toc-label=isRunProgEnabled }
 
-### *QtIfwControlScript*.**TARGET_DIR_EDITBOX** *class 'str'* default: *"TargetDirectoryLineEdit"* { #TARGET_DIR_EDITBOX data-toc-label=TARGET_DIR_EDITBOX }
 
-
-### *QtIfwControlScript*.**TARGET_DIR_KEY** *class 'str'* default: *"TargetDir"* { #TARGET_DIR_KEY data-toc-label=TARGET_DIR_KEY }
-
-
-### *QtIfwControlScript*.**TARGET_EXISTS_OPT_CMD_ARG** *class 'str'* default: *"onexist"* { #TARGET_EXISTS_OPT_CMD_ARG data-toc-label=TARGET_EXISTS_OPT_CMD_ARG }
-
-
-### *QtIfwControlScript*.**TARGET_EXISTS_OPT_FAIL** *class 'str'* default: *"fail"* { #TARGET_EXISTS_OPT_FAIL data-toc-label=TARGET_EXISTS_OPT_FAIL }
-
-
-### *QtIfwControlScript*.**TARGET_EXISTS_OPT_PROMPT** *class 'str'* default: *"prompt"* { #TARGET_EXISTS_OPT_PROMPT data-toc-label=TARGET_EXISTS_OPT_PROMPT }
-
-
-### *QtIfwControlScript*.**TARGET_EXISTS_OPT_REMOVE** *class 'str'* default: *"remove"* { #TARGET_EXISTS_OPT_REMOVE data-toc-label=TARGET_EXISTS_OPT_REMOVE }
-
-
-### *QtIfwControlScript*.**TRUE** *class 'str'* default: *"true"* { #TRUE data-toc-label=TRUE }
-
-
-### *QtIfwControlScript*.**TRY** *class 'str'* default: *"try { "* { #TRY data-toc-label=TRY }
-
-
-### *QtIfwControlScript*.**USER_KEY** *class 'str'* default: *"User"* { #USER_KEY data-toc-label=USER_KEY }
-
-
-### *QtIfwControlScript*.**VERBOSE_CMD_SWITCH_ARG** *class 'str'* default: *"-v"* { #VERBOSE_CMD_SWITCH_ARG data-toc-label=VERBOSE_CMD_SWITCH_ARG }
-
-
-### *QtIfwControlScript*.**YES** *class 'str'* default: *"QMessageBox.Yes"* { #YES data-toc-label=YES }
+### *obj*.**isRunProgChecked** *class 'bool'* default: *True* { #isRunProgChecked data-toc-label=isRunProgChecked }
 
 
 ### *QtIfwControlScript*.**andList**`#!py3 (conditions)` { #andList data-toc-label=andList }
@@ -1145,208 +1169,238 @@ DOES NOT WORK FOR WIZARD BUTTONS!!!
 ### *QtIfwControlScript*.**yesNoPopup**`#!py3 (msg, title='Question', resultVar='result')` { #yesNoPopup data-toc-label=yesNoPopup }
 
 
-### *obj*.**debug**`#!py3 (self)` { #debug data-toc-label=debug }
+### *QtIfwControlScript*.**ABORT** *class 'str'* default: *"QMessageBox.Abort"* { #ABORT data-toc-label=ABORT }
 
 
-### *obj*.**dirPath**`#!py3 (self)` { #dirPath data-toc-label=dirPath }
+### *QtIfwControlScript*.**ACCEPT_EULA_CMD_ARG** *class 'str'* default: *"accept"* { #ACCEPT_EULA_CMD_ARG data-toc-label=ACCEPT_EULA_CMD_ARG }
 
-PURE VIRTUAL
-### *obj*.**exists**`#!py3 (self)` { #exists data-toc-label=exists }
 
+### *QtIfwControlScript*.**ACCEPT_EULA_RADIO_BUTTON** *class 'str'* default: *"AcceptLicenseRadioButton"* { #ACCEPT_EULA_RADIO_BUTTON data-toc-label=ACCEPT_EULA_RADIO_BUTTON }
 
-### *obj*.**path**`#!py3 (self)` { #path data-toc-label=path }
 
-PURE VIRTUAL
-### *obj*.**registerAutoPilotEventHandler**`#!py3 (self, signalName, slotName, slotBody)` { #registerAutoPilotEventHandler data-toc-label=registerAutoPilotEventHandler }
+### *QtIfwControlScript*.**AND** *class 'str'* default: *" && "* { #AND data-toc-label=AND }
 
 
-### *obj*.**registerGuiEventHandler**`#!py3 (self, signalName, slotName, slotBody)` { #registerGuiEventHandler data-toc-label=registerGuiEventHandler }
+### *QtIfwControlScript*.**ASSIGN** *class 'str'* default: *"="* { #ASSIGN data-toc-label=ASSIGN }
 
 
-### *obj*.**registerStandardEventHandler**`#!py3 (self, signalName, slotName, slotBody)` { #registerStandardEventHandler data-toc-label=registerStandardEventHandler }
+### *QtIfwControlScript*.**AUTH_ERROR_MSGBOX_ID** *class 'str'* default: *"AuthorizationError"* { #AUTH_ERROR_MSGBOX_ID data-toc-label=AUTH_ERROR_MSGBOX_ID }
 
 
-### *obj*.**registerWidgetEventHandler**`#!py3 (self, pageId, controlName, signalName, slotName, slotBody)` { #registerWidgetEventHandler data-toc-label=registerWidgetEventHandler }
+### *QtIfwControlScript*.**AUTO_PILOT_CMD_ARG** *class 'str'* default: *"auto"* { #AUTO_PILOT_CMD_ARG data-toc-label=AUTO_PILOT_CMD_ARG }
 
 
-### *obj*.**write**`#!py3 (self)` { #write data-toc-label=write }
+### *QtIfwControlScript*.**BACK_BUTTON** *class 'str'* default: *"buttons.BackButton"* { #BACK_BUTTON data-toc-label=BACK_BUTTON }
 
 
-### *obj*.**isLimitedMaintenance** *class 'bool'* default: *True* { #isLimitedMaintenance data-toc-label=isLimitedMaintenance }
+### *QtIfwControlScript*.**CANCEL** *class 'str'* default: *"QMessageBox.Cancel"* { #CANCEL data-toc-label=CANCEL }
 
 
-### *obj*.**virtualArgs** *class 'NoneType'* default: *None* { #virtualArgs data-toc-label=virtualArgs }
+### *QtIfwControlScript*.**CANCEL_BUTTON** *class 'str'* default: *"buttons.CancelButton"* { #CANCEL_BUTTON data-toc-label=CANCEL_BUTTON }
 
 
-### *obj*.**uiPages** *class 'list'* default: *[]* { #uiPages data-toc-label=uiPages }
+### *QtIfwControlScript*.**CATCH** *class 'str'* default: *"catch(e) { "* { #CATCH data-toc-label=CATCH }
 
 
-### *obj*.**widgets** *class 'list'* default: *[]* { #widgets data-toc-label=widgets }
+### *QtIfwControlScript*.**COMMIT_BUTTON** *class 'str'* default: *"buttons.CommitButton"* { #COMMIT_BUTTON data-toc-label=COMMIT_BUTTON }
 
 
-### *obj*.**controllerGlobals** *class 'NoneType'* default: *None* { #controllerGlobals data-toc-label=controllerGlobals }
+### *QtIfwControlScript*.**CONCAT** *class 'str'* default: *" + "* { #CONCAT data-toc-label=CONCAT }
 
 
-### *obj*.**isAutoGlobals** *class 'bool'* default: *True* { #isAutoGlobals data-toc-label=isAutoGlobals }
+### *QtIfwControlScript*.**CUSTOM_BUTTON_1** *class 'str'* default: *"buttons.CustomButton1"* { #CUSTOM_BUTTON_1 data-toc-label=CUSTOM_BUTTON_1 }
 
 
-### *obj*.**controllerConstructorBody** *class 'NoneType'* default: *None* { #controllerConstructorBody data-toc-label=controllerConstructorBody }
+### *QtIfwControlScript*.**CUSTOM_BUTTON_2** *class 'str'* default: *"buttons.CustomButton2"* { #CUSTOM_BUTTON_2 data-toc-label=CUSTOM_BUTTON_2 }
 
 
-### *obj*.**controllerConstructorInjection** *class 'NoneType'* default: *None* { #controllerConstructorInjection data-toc-label=controllerConstructorInjection }
+### *QtIfwControlScript*.**CUSTOM_BUTTON_3** *class 'str'* default: *"buttons.CustomButton3"* { #CUSTOM_BUTTON_3 data-toc-label=CUSTOM_BUTTON_3 }
 
 
-### *obj*.**isAutoControllerConstructor** *class 'bool'* default: *True* { #isAutoControllerConstructor data-toc-label=isAutoControllerConstructor }
+### *QtIfwControlScript*.**DEFAULT_FINISHED_MESSAGE** *class 'str'* default: *"Click finish to exit the @ProductName@ Wizard."* { #DEFAULT_FINISHED_MESSAGE data-toc-label=DEFAULT_FINISHED_MESSAGE }
 
 
-### *obj*.**onValueChangeCallbackBody** *class 'NoneType'* default: *None* { #onValueChangeCallbackBody data-toc-label=onValueChangeCallbackBody }
+### *QtIfwControlScript*.**DEFAULT_TARGET_DIR_KEY** *class 'str'* default: *"DefaultTargetDir"* { #DEFAULT_TARGET_DIR_KEY data-toc-label=DEFAULT_TARGET_DIR_KEY }
 
 
-### *obj*.**onValueChangeCallbackInjection** *class 'NoneType'* default: *None* { #onValueChangeCallbackInjection data-toc-label=onValueChangeCallbackInjection }
+### *QtIfwControlScript*.**DRYRUN_CMD_ARG** *class 'str'* default: *"dryrun"* { #DRYRUN_CMD_ARG data-toc-label=DRYRUN_CMD_ARG }
 
 
-### *obj*.**isAutoValueChangeCallBack** *class 'bool'* default: *True* { #isAutoValueChangeCallBack data-toc-label=isAutoValueChangeCallBack }
+### *QtIfwControlScript*.**ELSE** *class 'str'* default: *"else "* { #ELSE data-toc-label=ELSE }
 
 
-### *obj*.**onPageChangeCallbackBody** *class 'NoneType'* default: *None* { #onPageChangeCallbackBody data-toc-label=onPageChangeCallbackBody }
+### *QtIfwControlScript*.**END_BLOCK** *class 'str'* default: *"}
+"* { #END_BLOCK data-toc-label=END_BLOCK }
 
 
-### *obj*.**onPageChangeCallbackInjection** *class 'NoneType'* default: *None* { #onPageChangeCallbackInjection data-toc-label=onPageChangeCallbackInjection }
+### *QtIfwControlScript*.**END_LINE** *class 'str'* default: *";
+"* { #END_LINE data-toc-label=END_LINE }
 
 
-### *obj*.**isAutoPageChangeCallBack** *class 'bool'* default: *True* { #isAutoPageChangeCallBack data-toc-label=isAutoPageChangeCallBack }
+### *QtIfwControlScript*.**EQUAL_TO** *class 'str'* default: *" == "* { #EQUAL_TO data-toc-label=EQUAL_TO }
 
 
-### *obj*.**onPageInsertRequestCallbackBody** *class 'NoneType'* default: *None* { #onPageInsertRequestCallbackBody data-toc-label=onPageInsertRequestCallbackBody }
+### *QtIfwControlScript*.**ERR_LOG_DEFAULT_PATH** *class 'str'* default: *"%temp%\\installer.err"* { #ERR_LOG_DEFAULT_PATH data-toc-label=ERR_LOG_DEFAULT_PATH }
 
 
-### *obj*.**isAutoPageInsertRequestCallBack** *class 'bool'* default: *True* { #isAutoPageInsertRequestCallBack data-toc-label=isAutoPageInsertRequestCallBack }
+### *QtIfwControlScript*.**ERR_LOG_PATH_CMD_ARG** *class 'str'* default: *"errlog"* { #ERR_LOG_PATH_CMD_ARG data-toc-label=ERR_LOG_PATH_CMD_ARG }
 
 
-### *obj*.**onPageRemoveRequestCallbackBody** *class 'NoneType'* default: *None* { #onPageRemoveRequestCallbackBody data-toc-label=onPageRemoveRequestCallbackBody }
+### *QtIfwControlScript*.**EXCLUDE_LIST_CMD_ARG** *class 'str'* default: *"exclude"* { #EXCLUDE_LIST_CMD_ARG data-toc-label=EXCLUDE_LIST_CMD_ARG }
 
 
-### *obj*.**isAutoPageRemoveRequestCallBack** *class 'bool'* default: *True* { #isAutoPageRemoveRequestCallBack data-toc-label=isAutoPageRemoveRequestCallBack }
+### *QtIfwControlScript*.**EXIT_FUNCTION** *class 'str'* default: *"
+    return;
+"* { #EXIT_FUNCTION data-toc-label=EXIT_FUNCTION }
 
 
-### *obj*.**onPageVisibilityRequestCallbackBody** *class 'NoneType'* default: *None* { #onPageVisibilityRequestCallbackBody data-toc-label=onPageVisibilityRequestCallbackBody }
+### *QtIfwControlScript*.**FALSE** *class 'str'* default: *"false"* { #FALSE data-toc-label=FALSE }
 
 
-### *obj*.**isAutoPageVisibilityRequestCallBack** *class 'bool'* default: *True* { #isAutoPageVisibilityRequestCallBack data-toc-label=isAutoPageVisibilityRequestCallBack }
+### *QtIfwControlScript*.**FINISHED_MESSAGE_LABEL** *class 'str'* default: *"MessageLabel"* { #FINISHED_MESSAGE_LABEL data-toc-label=FINISHED_MESSAGE_LABEL }
 
 
-### *obj*.**onFinishedClickedCallbackBody** *class 'NoneType'* default: *None* { #onFinishedClickedCallbackBody data-toc-label=onFinishedClickedCallbackBody }
+### *QtIfwControlScript*.**FINISH_BUTTON** *class 'str'* default: *"buttons.FinishButton"* { #FINISH_BUTTON data-toc-label=FINISH_BUTTON }
 
 
-### *obj*.**onFinishedClickedCallbackInjection** *class 'NoneType'* default: *None* { #onFinishedClickedCallbackInjection data-toc-label=onFinishedClickedCallbackInjection }
+### *QtIfwControlScript*.**HELP_BUTTON** *class 'str'* default: *"buttons.HelpButton"* { #HELP_BUTTON data-toc-label=HELP_BUTTON }
 
 
-### *obj*.**onFinishedDetachedExecutions** *class 'list'* default: *[]* { #onFinishedDetachedExecutions data-toc-label=onFinishedDetachedExecutions }
+### *QtIfwControlScript*.**IF** *class 'str'* default: *"if "* { #IF data-toc-label=IF }
 
 
-### *obj*.**isAutoFinishedClickedCallbackBody** *class 'bool'* default: *True* { #isAutoFinishedClickedCallbackBody data-toc-label=isAutoFinishedClickedCallbackBody }
+### *QtIfwControlScript*.**INCLUDE_LIST_CMD_ARG** *class 'str'* default: *"include"* { #INCLUDE_LIST_CMD_ARG data-toc-label=INCLUDE_LIST_CMD_ARG }
 
 
-### *obj*.**isIntroductionPageVisible** *class 'bool'* default: *True* { #isIntroductionPageVisible data-toc-label=isIntroductionPageVisible }
+### *QtIfwControlScript*.**INSTALL_LIST_CMD_ARG** *class 'str'* default: *"install"* { #INSTALL_LIST_CMD_ARG data-toc-label=INSTALL_LIST_CMD_ARG }
 
 
-### *obj*.**introductionPageCallbackBody** *class 'NoneType'* default: *None* { #introductionPageCallbackBody data-toc-label=introductionPageCallbackBody }
+### *QtIfwControlScript*.**INTERUPTED_KEY** *class 'str'* default: *"isInterupted"* { #INTERUPTED_KEY data-toc-label=INTERUPTED_KEY }
 
 
-### *obj*.**introductionPageOnInstall** *class 'NoneType'* default: *None* { #introductionPageOnInstall data-toc-label=introductionPageOnInstall }
+### *QtIfwControlScript*.**IS_NET_CONNECTED_KEY** *class 'str'* default: *"isNetConnected"* { #IS_NET_CONNECTED_KEY data-toc-label=IS_NET_CONNECTED_KEY }
 
 
-### *obj*.**introductionPageOnMaintain** *class 'NoneType'* default: *None* { #introductionPageOnMaintain data-toc-label=introductionPageOnMaintain }
+### *QtIfwControlScript*.**MAINTAIN_MODE_CMD_ARG** *class 'str'* default: *"mode"* { #MAINTAIN_MODE_CMD_ARG data-toc-label=MAINTAIN_MODE_CMD_ARG }
 
 
-### *obj*.**isAutoIntroductionPageCallback** *class 'bool'* default: *True* { #isAutoIntroductionPageCallback data-toc-label=isAutoIntroductionPageCallback }
+### *QtIfwControlScript*.**MAINTAIN_MODE_OPT_ADD_REMOVE** *class 'str'* default: *"addremove"* { #MAINTAIN_MODE_OPT_ADD_REMOVE data-toc-label=MAINTAIN_MODE_OPT_ADD_REMOVE }
 
 
-### *obj*.**isTargetDirectoryPageVisible** *class 'bool'* default: *True* { #isTargetDirectoryPageVisible data-toc-label=isTargetDirectoryPageVisible }
+### *QtIfwControlScript*.**MAINTAIN_MODE_OPT_REMOVE_ALL** *class 'str'* default: *"removeall"* { #MAINTAIN_MODE_OPT_REMOVE_ALL data-toc-label=MAINTAIN_MODE_OPT_REMOVE_ALL }
 
 
-### *obj*.**targetDirectoryPageCallbackBody** *class 'NoneType'* default: *None* { #targetDirectoryPageCallbackBody data-toc-label=targetDirectoryPageCallbackBody }
+### *QtIfwControlScript*.**MAINTAIN_MODE_OPT_UPDATE** *class 'str'* default: *"update"* { #MAINTAIN_MODE_OPT_UPDATE data-toc-label=MAINTAIN_MODE_OPT_UPDATE }
 
 
-### *obj*.**isAutoTargetDirectoryPageCallback** *class 'bool'* default: *True* { #isAutoTargetDirectoryPageCallback data-toc-label=isAutoTargetDirectoryPageCallback }
+### *QtIfwControlScript*.**MAINTAIN_PASSTHRU_CMD_ARG** *class 'str'* default: *"maintpassthru"* { #MAINTAIN_PASSTHRU_CMD_ARG data-toc-label=MAINTAIN_PASSTHRU_CMD_ARG }
 
 
-### *obj*.**isComponentSelectionPageVisible** *class 'bool'* default: *True* { #isComponentSelectionPageVisible data-toc-label=isComponentSelectionPageVisible }
+### *QtIfwControlScript*.**MAINTENANCE_TOOL_NAME** *class 'str'* default: *"maintenancetool.exe"* { #MAINTENANCE_TOOL_NAME data-toc-label=MAINTENANCE_TOOL_NAME }
 
 
-### *obj*.**componentSelectionPageCallbackBody** *class 'NoneType'* default: *None* { #componentSelectionPageCallbackBody data-toc-label=componentSelectionPageCallbackBody }
+### *QtIfwControlScript*.**NEW_LINE** *class 'str'* default: *"
+"* { #NEW_LINE data-toc-label=NEW_LINE }
 
 
-### *obj*.**componentSelectionPageInjection** *class 'NoneType'* default: *None* { #componentSelectionPageInjection data-toc-label=componentSelectionPageInjection }
+### *QtIfwControlScript*.**NEXT_BUTTON** *class 'str'* default: *"buttons.NextButton"* { #NEXT_BUTTON data-toc-label=NEXT_BUTTON }
 
 
-### *obj*.**isAutoComponentSelectionPageCallback** *class 'bool'* default: *True* { #isAutoComponentSelectionPageCallback data-toc-label=isAutoComponentSelectionPageCallback }
+### *QtIfwControlScript*.**NO** *class 'str'* default: *"QMessageBox.No"* { #NO data-toc-label=NO }
 
 
-### *obj*.**isLicenseAgreementPageVisible** *class 'bool'* default: *True* { #isLicenseAgreementPageVisible data-toc-label=isLicenseAgreementPageVisible }
+### *QtIfwControlScript*.**NOT** *class 'str'* default: *"! "* { #NOT data-toc-label=NOT }
 
 
-### *obj*.**licenseAgreementPageCallbackBody** *class 'NoneType'* default: *None* { #licenseAgreementPageCallbackBody data-toc-label=licenseAgreementPageCallbackBody }
+### *QtIfwControlScript*.**NOT_EQUAL_TO** *class 'str'* default: *" != "* { #NOT_EQUAL_TO data-toc-label=NOT_EQUAL_TO }
 
 
-### *obj*.**isAutoLicenseAgreementPageCallback** *class 'bool'* default: *True* { #isAutoLicenseAgreementPageCallback data-toc-label=isAutoLicenseAgreementPageCallback }
+### *QtIfwControlScript*.**NULL** *class 'str'* default: *"null"* { #NULL data-toc-label=NULL }
 
 
-### *obj*.**isStartMenuDirectoryPageVisible** *class 'bool'* default: *True* { #isStartMenuDirectoryPageVisible data-toc-label=isStartMenuDirectoryPageVisible }
+### *QtIfwControlScript*.**OK** *class 'str'* default: *"QMessageBox.Yes"* { #OK data-toc-label=OK }
 
 
-### *obj*.**startMenuDirectoryPageCallbackBody** *class 'NoneType'* default: *None* { #startMenuDirectoryPageCallbackBody data-toc-label=startMenuDirectoryPageCallbackBody }
+### *QtIfwControlScript*.**OR** *class 'str'* default: *" || "* { #OR data-toc-label=OR }
 
 
-### *obj*.**isAutoStartMenuDirectoryPageCallback** *class 'bool'* default: *True* { #isAutoStartMenuDirectoryPageCallback data-toc-label=isAutoStartMenuDirectoryPageCallback }
+### *QtIfwControlScript*.**OUT_LOG_DEFAULT_PATH** *class 'str'* default: *"%temp%\\installer.out"* { #OUT_LOG_DEFAULT_PATH data-toc-label=OUT_LOG_DEFAULT_PATH }
 
 
-### *obj*.**isReadyForInstallationPageVisible** *class 'bool'* default: *True* { #isReadyForInstallationPageVisible data-toc-label=isReadyForInstallationPageVisible }
+### *QtIfwControlScript*.**OUT_LOG_PATH_CMD_ARG** *class 'str'* default: *"outlog"* { #OUT_LOG_PATH_CMD_ARG data-toc-label=OUT_LOG_PATH_CMD_ARG }
 
 
-### *obj*.**readyForInstallationPageCallbackBody** *class 'NoneType'* default: *None* { #readyForInstallationPageCallbackBody data-toc-label=readyForInstallationPageCallbackBody }
+### *QtIfwControlScript*.**PATH_SEP** *class 'str'* default: *""\\""* { #PATH_SEP data-toc-label=PATH_SEP }
 
 
-### *obj*.**readyForInstallationPageOnInstall** *class 'NoneType'* default: *None* { #readyForInstallationPageOnInstall data-toc-label=readyForInstallationPageOnInstall }
+### *QtIfwControlScript*.**PRODUCT_NAME_KEY** *class 'str'* default: *"ProductName"* { #PRODUCT_NAME_KEY data-toc-label=PRODUCT_NAME_KEY }
 
 
-### *obj*.**readyForInstallationPageOnMaintain** *class 'NoneType'* default: *None* { #readyForInstallationPageOnMaintain data-toc-label=readyForInstallationPageOnMaintain }
+### *QtIfwControlScript*.**QUIT_MSGBOX_ID** *class 'str'* default: *"cancelInstallation"* { #QUIT_MSGBOX_ID data-toc-label=QUIT_MSGBOX_ID }
 
 
-### *obj*.**isAutoReadyForInstallationPageCallback** *class 'bool'* default: *True* { #isAutoReadyForInstallationPageCallback data-toc-label=isAutoReadyForInstallationPageCallback }
+### *QtIfwControlScript*.**REBOOT_CMD_ARG** *class 'str'* default: *"reboot"* { #REBOOT_CMD_ARG data-toc-label=REBOOT_CMD_ARG }
 
 
-### *obj*.**isPerformInstallationPageVisible** *class 'bool'* default: *True* { #isPerformInstallationPageVisible data-toc-label=isPerformInstallationPageVisible }
+### *QtIfwControlScript*.**RESTORE_MSGBOX_DEFAULT** *class 'str'* default: *"QMessageBox.RestoreDefaults"* { #RESTORE_MSGBOX_DEFAULT data-toc-label=RESTORE_MSGBOX_DEFAULT }
 
 
-### *obj*.**performInstallationPageCallbackBody** *class 'NoneType'* default: *None* { #performInstallationPageCallbackBody data-toc-label=performInstallationPageCallbackBody }
+### *QtIfwControlScript*.**RUN_PROGRAM_CHECKBOX** *class 'str'* default: *"RunItCheckBox"* { #RUN_PROGRAM_CHECKBOX data-toc-label=RUN_PROGRAM_CHECKBOX }
 
 
-### *obj*.**isAutoPerformInstallationPageCallback** *class 'bool'* default: *True* { #isAutoPerformInstallationPageCallback data-toc-label=isAutoPerformInstallationPageCallback }
+### *QtIfwControlScript*.**RUN_PROGRAM_CMD_ARG** *class 'str'* default: *"run"* { #RUN_PROGRAM_CMD_ARG data-toc-label=RUN_PROGRAM_CMD_ARG }
 
 
-### *obj*.**isFinishedPageVisible** *class 'bool'* default: *True* { #isFinishedPageVisible data-toc-label=isFinishedPageVisible }
+### *QtIfwControlScript*.**STARTMENU_DIR_KEY** *class 'str'* default: *"StartMenuDir"* { #STARTMENU_DIR_KEY data-toc-label=STARTMENU_DIR_KEY }
 
 
-### *obj*.**finishedPageCallbackBody** *class 'NoneType'* default: *None* { #finishedPageCallbackBody data-toc-label=finishedPageCallbackBody }
+### *QtIfwControlScript*.**START_BLOCK** *class 'str'* default: *"{
+"* { #START_BLOCK data-toc-label=START_BLOCK }
 
 
-### *obj*.**finishedPageOnInstall** *class 'NoneType'* default: *None* { #finishedPageOnInstall data-toc-label=finishedPageOnInstall }
+### *QtIfwControlScript*.**START_MENU_DIR_CMD_ARG** *class 'str'* default: *"startmenu"* { #START_MENU_DIR_CMD_ARG data-toc-label=START_MENU_DIR_CMD_ARG }
 
 
-### *obj*.**finishedPageOnMaintain** *class 'NoneType'* default: *None* { #finishedPageOnMaintain data-toc-label=finishedPageOnMaintain }
+### *QtIfwControlScript*.**START_MENU_DIR_EDITBOX** *class 'str'* default: *"StartMenuPathLineEdit"* { #START_MENU_DIR_EDITBOX data-toc-label=START_MENU_DIR_EDITBOX }
 
 
-### *obj*.**isAutoFinishedPageCallback** *class 'bool'* default: *True* { #isAutoFinishedPageCallback data-toc-label=isAutoFinishedPageCallback }
+### *QtIfwControlScript*.**TAB** *class 'str'* default: *"    "* { #TAB data-toc-label=TAB }
 
 
-### *obj*.**isRunProgVisible** *class 'bool'* default: *True* { #isRunProgVisible data-toc-label=isRunProgVisible }
+### *QtIfwControlScript*.**TARGET_DIR_CMD_ARG** *class 'str'* default: *"target"* { #TARGET_DIR_CMD_ARG data-toc-label=TARGET_DIR_CMD_ARG }
 
 
-### *obj*.**isRunProgEnabled** *class 'bool'* default: *True* { #isRunProgEnabled data-toc-label=isRunProgEnabled }
+### *QtIfwControlScript*.**TARGET_DIR_EDITBOX** *class 'str'* default: *"TargetDirectoryLineEdit"* { #TARGET_DIR_EDITBOX data-toc-label=TARGET_DIR_EDITBOX }
 
 
-### *obj*.**isRunProgChecked** *class 'bool'* default: *True* { #isRunProgChecked data-toc-label=isRunProgChecked }
+### *QtIfwControlScript*.**TARGET_DIR_KEY** *class 'str'* default: *"TargetDir"* { #TARGET_DIR_KEY data-toc-label=TARGET_DIR_KEY }
+
+
+### *QtIfwControlScript*.**TARGET_EXISTS_OPT_CMD_ARG** *class 'str'* default: *"onexist"* { #TARGET_EXISTS_OPT_CMD_ARG data-toc-label=TARGET_EXISTS_OPT_CMD_ARG }
+
+
+### *QtIfwControlScript*.**TARGET_EXISTS_OPT_FAIL** *class 'str'* default: *"fail"* { #TARGET_EXISTS_OPT_FAIL data-toc-label=TARGET_EXISTS_OPT_FAIL }
+
+
+### *QtIfwControlScript*.**TARGET_EXISTS_OPT_PROMPT** *class 'str'* default: *"prompt"* { #TARGET_EXISTS_OPT_PROMPT data-toc-label=TARGET_EXISTS_OPT_PROMPT }
+
+
+### *QtIfwControlScript*.**TARGET_EXISTS_OPT_REMOVE** *class 'str'* default: *"remove"* { #TARGET_EXISTS_OPT_REMOVE data-toc-label=TARGET_EXISTS_OPT_REMOVE }
+
+
+### *QtIfwControlScript*.**TRUE** *class 'str'* default: *"true"* { #TRUE data-toc-label=TRUE }
+
+
+### *QtIfwControlScript*.**TRY** *class 'str'* default: *"try { "* { #TRY data-toc-label=TRY }
+
+
+### *QtIfwControlScript*.**USER_KEY** *class 'str'* default: *"User"* { #USER_KEY data-toc-label=USER_KEY }
+
+
+### *QtIfwControlScript*.**VERBOSE_CMD_SWITCH_ARG** *class 'str'* default: *"-v"* { #VERBOSE_CMD_SWITCH_ARG data-toc-label=VERBOSE_CMD_SWITCH_ARG }
+
+
+### *QtIfwControlScript*.**YES** *class 'str'* default: *"QMessageBox.Yes"* { #YES data-toc-label=YES }
 
 
 
@@ -1356,15 +1410,14 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`AsyncFunc`](#AsyncFunc)
- - [`BASE_ON_ENTER_TMPT`](#BASE_ON_ENTER_TMPT)
- - [`BASE_ON_LOAD_TMPT`](#BASE_ON_LOAD_TMPT)
+_QtIfwInterface, QtIfwUiPage
 
-**Class/Static Methods:** 
 
- - [`onCompleted`](#onCompleted)
+**Magic Methods:**
+
+ - [`__init__`](#QtIfwDynamicOperationsPage-init)
 
 **Instance Methods:** 
 
@@ -1382,18 +1435,19 @@ ______
  - [`standardPageId`](#standardPageId)
  - [`customPageName`](#customPageName)
 
-### *QtIfwDynamicOperationsPage*.**AsyncFunc** *class 'type'* default: *None* { #AsyncFunc data-toc-label=AsyncFunc }
+**Class/Static Methods:** 
 
+ - [`onCompleted`](#onCompleted)
 
-### *QtIfwDynamicOperationsPage*.**BASE_ON_ENTER_TMPT** *class 'str'* default: *None* { #BASE_ON_ENTER_TMPT data-toc-label=BASE_ON_ENTER_TMPT }
+**Class/Static Attributes:** 
 
+ - [`AsyncFunc`](#AsyncFunc)
+ - [`BASE_ON_ENTER_TMPT`](#BASE_ON_ENTER_TMPT)
+ - [`BASE_ON_LOAD_TMPT`](#BASE_ON_LOAD_TMPT)
 
-### *QtIfwDynamicOperationsPage*.**BASE_ON_LOAD_TMPT** *class 'str'* default: *None* { #BASE_ON_LOAD_TMPT data-toc-label=BASE_ON_LOAD_TMPT }
+### **QtIfwDynamicOperationsPage**`#!py3 (name, operation='', asyncFuncs=None, order=0, onCompletedDelayMillis=None)` { #QtIfwDynamicOperationsPage-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
-
-### *QtIfwDynamicOperationsPage*.**onCompleted**`#!py3 (name)` { #onCompleted data-toc-label=onCompleted }
-
-
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**fileName**`#!py3 (self)` { #fileName data-toc-label=fileName }
 
 
@@ -1424,12 +1478,39 @@ ______
 ### *obj*.**customPageName** *class 'NoneType'* default: *None* { #customPageName data-toc-label=customPageName }
 
 
+### *QtIfwDynamicOperationsPage*.**onCompleted**`#!py3 (name)` { #onCompleted data-toc-label=onCompleted }
+
+
+### *QtIfwDynamicOperationsPage*.**AsyncFunc** *class 'type'* default: *None* { #AsyncFunc data-toc-label=AsyncFunc }
+
+
+### *QtIfwDynamicOperationsPage*.**BASE_ON_ENTER_TMPT** *class 'str'* default: *None* { #BASE_ON_ENTER_TMPT data-toc-label=BASE_ON_ENTER_TMPT }
+
+
+### *QtIfwDynamicOperationsPage*.**BASE_ON_LOAD_TMPT** *class 'str'* default: *None* { #BASE_ON_LOAD_TMPT data-toc-label=BASE_ON_LOAD_TMPT }
+
+
+## **QtIfwDynamicOperationsPage.AsyncFunc**`#!py3 class` { #QtIfwDynamicOperationsPage.AsyncFunc data-toc-label=QtIfwDynamicOperationsPage.AsyncFunc }
+
+
+
+**Instance Methods:** 
+
+ - [`invoke`](#invoke)
+
+### *obj*.**invoke**`#!py3 (self, args=None, isAutoQuote=True)` { #invoke data-toc-label=invoke }
+
+
 
 ______
 
 ## **QtIfwExeWrapper**`#!py3 class` { #QtIfwExeWrapper data-toc-label=QtIfwExeWrapper }
 
 
+
+**Magic Methods:**
+
+ - [`__init__`](#QtIfwExeWrapper-init)
 
 **Instance Methods:** 
 
@@ -1449,6 +1530,9 @@ ______
  - [`wrapperExeName`](#wrapperExeName)
  - [`wrapperIconName`](#wrapperIconName)
 
+### **QtIfwExeWrapper**`#!py3 (exeName, isGui=False, wrapperScript=None, exeDir='@TargetDir@', workingDir=None, args=None, envVars=None, isElevated=False, isExe=False)` { #QtIfwExeWrapper-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**refresh**`#!py3 (self)` { #refresh data-toc-label=refresh }
 
 
@@ -1492,12 +1576,29 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Magic Methods:**
 
- - [`AUTO_UNDO`](#AUTO_UNDO)
- - [`ON_BOTH`](#ON_BOTH)
- - [`ON_INSTALL`](#ON_INSTALL)
- - [`ON_UNINSTALL`](#ON_UNINSTALL)
+ - [`__init__`](#QtIfwExternalOp-init)
+
+**Instance Methods:** 
+
+
+**Instance Attributes:** 
+
+ - [`script`](#script)
+ - [`exePath`](#exePath)
+ - [`args`](#args)
+ - [`successRetCodes`](#successRetCodes)
+ - [`uninstScript`](#uninstScript)
+ - [`uninstExePath`](#uninstExePath)
+ - [`uninstArgs`](#uninstArgs)
+ - [`uninstRetCodes`](#uninstRetCodes)
+ - [`isElevated`](#isElevated)
+ - [`workingDir`](#workingDir)
+ - [`onErrorMessage`](#onErrorMessage)
+ - [`resourceScripts`](#resourceScripts)
+ - [`uninstResourceScripts`](#uninstResourceScripts)
+ - [`externalRes`](#externalRes)
 
 **Class/Static Methods:** 
 
@@ -1548,33 +1649,56 @@ ______
  - [`shellScriptSelfDestructSnippet`](#shellScriptSelfDestructSnippet)
  - [`vbScriptSelfDestructSnippet`](#vbScriptSelfDestructSnippet)
 
-**Instance Attributes:** 
+**Class/Static Attributes:** 
 
- - [`script`](#script)
- - [`exePath`](#exePath)
- - [`args`](#args)
- - [`successRetCodes`](#successRetCodes)
- - [`uninstScript`](#uninstScript)
- - [`uninstExePath`](#uninstExePath)
- - [`uninstArgs`](#uninstArgs)
- - [`uninstRetCodes`](#uninstRetCodes)
- - [`isElevated`](#isElevated)
- - [`workingDir`](#workingDir)
- - [`onErrorMessage`](#onErrorMessage)
- - [`resourceScripts`](#resourceScripts)
- - [`uninstResourceScripts`](#uninstResourceScripts)
- - [`externalRes`](#externalRes)
+ - [`AUTO_UNDO`](#AUTO_UNDO)
+ - [`ON_BOTH`](#ON_BOTH)
+ - [`ON_INSTALL`](#ON_INSTALL)
+ - [`ON_UNINSTALL`](#ON_UNINSTALL)
 
-### *QtIfwExternalOp*.**AUTO_UNDO** *class 'int'* default: *3* { #AUTO_UNDO data-toc-label=AUTO_UNDO }
+### **QtIfwExternalOp**`#!py3 (script=None, exePath=None, args=None, successRetCodes=None, uninstScript=None, uninstExePath=None, uninstArgs=None, uninstRetCodes=None, isElevated=False, workingDir='@TargetDir@', onErrorMessage=None, resourceScripts=None, uninstResourceScripts=None, externalRes=None)` { #QtIfwExternalOp-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
+### *obj*.**script** *class 'NoneType'* default: *None* { #script data-toc-label=script }
 
 
-### *QtIfwExternalOp*.**ON_BOTH** *class 'int'* default: *2* { #ON_BOTH data-toc-label=ON_BOTH }
+### *obj*.**exePath** *class 'NoneType'* default: *None* { #exePath data-toc-label=exePath }
 
 
-### *QtIfwExternalOp*.**ON_INSTALL** *class 'int'* default: *0* { #ON_INSTALL data-toc-label=ON_INSTALL }
+### *obj*.**args** *class 'list'* default: *[]* { #args data-toc-label=args }
 
 
-### *QtIfwExternalOp*.**ON_UNINSTALL** *class 'int'* default: *1* { #ON_UNINSTALL data-toc-label=ON_UNINSTALL }
+### *obj*.**successRetCodes** *class 'list'* default: *[0]* { #successRetCodes data-toc-label=successRetCodes }
+
+
+### *obj*.**uninstScript** *class 'NoneType'* default: *None* { #uninstScript data-toc-label=uninstScript }
+
+
+### *obj*.**uninstExePath** *class 'NoneType'* default: *None* { #uninstExePath data-toc-label=uninstExePath }
+
+
+### *obj*.**uninstArgs** *class 'list'* default: *[]* { #uninstArgs data-toc-label=uninstArgs }
+
+
+### *obj*.**uninstRetCodes** *class 'list'* default: *[0]* { #uninstRetCodes data-toc-label=uninstRetCodes }
+
+
+### *obj*.**isElevated** *class 'NoneType'* default: *None* { #isElevated data-toc-label=isElevated }
+
+
+### *obj*.**workingDir** *class 'NoneType'* default: *None* { #workingDir data-toc-label=workingDir }
+
+
+### *obj*.**onErrorMessage** *class 'NoneType'* default: *None* { #onErrorMessage data-toc-label=onErrorMessage }
+
+
+### *obj*.**resourceScripts** *class 'list'* default: *[]* { #resourceScripts data-toc-label=resourceScripts }
+
+
+### *obj*.**uninstResourceScripts** *class 'list'* default: *[]* { #uninstResourceScripts data-toc-label=uninstResourceScripts }
+
+
+### *obj*.**externalRes** *class 'list'* default: *[]* { #externalRes data-toc-label=externalRes }
 
 
 ### *QtIfwExternalOp*.**CopyExeVerInfoScript**`#!py3 (srcExePath, destExePath)` { #CopyExeVerInfoScript data-toc-label=CopyExeVerInfoScript }
@@ -1721,46 +1845,16 @@ to the file you know for a fact is found there)!
 ### *QtIfwExternalOp*.**vbScriptSelfDestructSnippet**`#!py3 ()` { #vbScriptSelfDestructSnippet data-toc-label=vbScriptSelfDestructSnippet }
 
 
-### *obj*.**script** *class 'NoneType'* default: *None* { #script data-toc-label=script }
+### *QtIfwExternalOp*.**AUTO_UNDO** *class 'int'* default: *3* { #AUTO_UNDO data-toc-label=AUTO_UNDO }
 
 
-### *obj*.**exePath** *class 'NoneType'* default: *None* { #exePath data-toc-label=exePath }
+### *QtIfwExternalOp*.**ON_BOTH** *class 'int'* default: *2* { #ON_BOTH data-toc-label=ON_BOTH }
 
 
-### *obj*.**args** *class 'list'* default: *[]* { #args data-toc-label=args }
+### *QtIfwExternalOp*.**ON_INSTALL** *class 'int'* default: *0* { #ON_INSTALL data-toc-label=ON_INSTALL }
 
 
-### *obj*.**successRetCodes** *class 'list'* default: *[0]* { #successRetCodes data-toc-label=successRetCodes }
-
-
-### *obj*.**uninstScript** *class 'NoneType'* default: *None* { #uninstScript data-toc-label=uninstScript }
-
-
-### *obj*.**uninstExePath** *class 'NoneType'* default: *None* { #uninstExePath data-toc-label=uninstExePath }
-
-
-### *obj*.**uninstArgs** *class 'list'* default: *[]* { #uninstArgs data-toc-label=uninstArgs }
-
-
-### *obj*.**uninstRetCodes** *class 'list'* default: *[0]* { #uninstRetCodes data-toc-label=uninstRetCodes }
-
-
-### *obj*.**isElevated** *class 'NoneType'* default: *None* { #isElevated data-toc-label=isElevated }
-
-
-### *obj*.**workingDir** *class 'NoneType'* default: *None* { #workingDir data-toc-label=workingDir }
-
-
-### *obj*.**onErrorMessage** *class 'NoneType'* default: *None* { #onErrorMessage data-toc-label=onErrorMessage }
-
-
-### *obj*.**resourceScripts** *class 'list'* default: *[]* { #resourceScripts data-toc-label=resourceScripts }
-
-
-### *obj*.**uninstResourceScripts** *class 'list'* default: *[]* { #uninstResourceScripts data-toc-label=uninstResourceScripts }
-
-
-### *obj*.**externalRes** *class 'list'* default: *[]* { #externalRes data-toc-label=externalRes }
+### *QtIfwExternalOp*.**ON_UNINSTALL** *class 'int'* default: *1* { #ON_UNINSTALL data-toc-label=ON_UNINSTALL }
 
 
 
@@ -1770,13 +1864,9 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Magic Methods:**
 
- - [`RESOURCE_HACKER`](#RESOURCE_HACKER)
-
-**Class/Static Methods:** 
-
- - [`BuiltIn`](#BuiltIn)
+ - [`__init__`](#QtIfwExternalResource-init)
 
 **Instance Methods:** 
 
@@ -1793,12 +1883,17 @@ ______
  - [`isMaintenanceNeed`](#isMaintenanceNeed)
  - [`contentKeys`](#contentKeys)
 
-### *QtIfwExternalResource*.**RESOURCE_HACKER** *class 'str'* default: *None* { #RESOURCE_HACKER data-toc-label=RESOURCE_HACKER }
+**Class/Static Methods:** 
 
+ - [`BuiltIn`](#BuiltIn)
 
-### *QtIfwExternalResource*.**BuiltIn**`#!py3 (name, isMaintenanceNeed=False)` { #BuiltIn data-toc-label=BuiltIn }
+**Class/Static Attributes:** 
 
+ - [`RESOURCE_HACKER`](#RESOURCE_HACKER)
 
+### **QtIfwExternalResource**`#!py3 (name, srcPath, srcBasePath=None, destPath=None, isMaintenanceNeed=False, contentKeys=None)` { #QtIfwExternalResource-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**targetDirPath**`#!py3 (self)` { #targetDirPath data-toc-label=targetDirPath }
 
 
@@ -1826,11 +1921,24 @@ ______
 ### *obj*.**contentKeys** *class 'NoneType'* default: *None* { #contentKeys data-toc-label=contentKeys }
 
 
+### *QtIfwExternalResource*.**BuiltIn**`#!py3 (name, isMaintenanceNeed=False)` { #BuiltIn data-toc-label=BuiltIn }
+
+
+### *QtIfwExternalResource*.**RESOURCE_HACKER** *class 'str'* default: *None* { #RESOURCE_HACKER data-toc-label=RESOURCE_HACKER }
+
+
 
 ______
 
 ## **QtIfwKillOp**`#!py3 class` { #QtIfwKillOp data-toc-label=QtIfwKillOp }
 
+
+
+**Magic Methods:**
+
+ - [`__init__`](#QtIfwKillOp-init)
+
+**Instance Methods:** 
 
 
 **Instance Attributes:** 
@@ -1840,6 +1948,9 @@ ______
  - [`onUninstall`](#onUninstall)
  - [`isElevated`](#isElevated)
 
+### **QtIfwKillOp**`#!py3 (processName, onInstall=True, onUninstall=True)` { #QtIfwKillOp-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**processName** *class 'NoneType'* default: *None* { #processName data-toc-label=processName }
 
 
@@ -1859,12 +1970,14 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`BASE_ON_LOAD_TMPT`](#BASE_ON_LOAD_TMPT)
- - [`ON_BOTH`](#ON_BOTH)
- - [`ON_INSTALL`](#ON_INSTALL)
- - [`ON_UNINSTALL`](#ON_UNINSTALL)
+QtIfwOnFinishedDetachedExec, _QtIfwInterface, QtIfwWidget
+
+
+**Magic Methods:**
+
+ - [`__init__`](#QtIfwOnFinishedCheckbox-init)
 
 **Instance Methods:** 
 
@@ -1881,18 +1994,16 @@ ______
  - [`checkboxName`](#checkboxName)
  - [`text`](#text)
 
-### *QtIfwOnFinishedCheckbox*.**BASE_ON_LOAD_TMPT** *class 'str'* default: *None* { #BASE_ON_LOAD_TMPT data-toc-label=BASE_ON_LOAD_TMPT }
+**Class/Static Attributes:** 
 
+ - [`BASE_ON_LOAD_TMPT`](#BASE_ON_LOAD_TMPT)
+ - [`ON_BOTH`](#ON_BOTH)
+ - [`ON_INSTALL`](#ON_INSTALL)
+ - [`ON_UNINSTALL`](#ON_UNINSTALL)
 
-### *QtIfwOnFinishedCheckbox*.**ON_BOTH** *class 'int'* default: *None* { #ON_BOTH data-toc-label=ON_BOTH }
+### **QtIfwOnFinishedCheckbox**`#!py3 (name, text=None, position=None, ifwPackage=None, runProgram=None, argList=None, shellCmd=None, script=None, openViaOsPath=None, isReboot=False, rebootDelaySecs=2, isVisible=True, isEnabled=True, isChecked=True)` { #QtIfwOnFinishedCheckbox-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
-
-### *QtIfwOnFinishedCheckbox*.**ON_INSTALL** *class 'int'* default: *None* { #ON_INSTALL data-toc-label=ON_INSTALL }
-
-
-### *QtIfwOnFinishedCheckbox*.**ON_UNINSTALL** *class 'int'* default: *None* { #ON_UNINSTALL data-toc-label=ON_UNINSTALL }
-
-
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**enable**`#!py3 (self, isEnable=True)` { #enable data-toc-label=enable }
 
 
@@ -1920,6 +2031,18 @@ ______
 ### *obj*.**text** *class 'NoneType'* default: *None* { #text data-toc-label=text }
 
 
+### *QtIfwOnFinishedCheckbox*.**BASE_ON_LOAD_TMPT** *class 'str'* default: *None* { #BASE_ON_LOAD_TMPT data-toc-label=BASE_ON_LOAD_TMPT }
+
+
+### *QtIfwOnFinishedCheckbox*.**ON_BOTH** *class 'int'* default: *None* { #ON_BOTH data-toc-label=ON_BOTH }
+
+
+### *QtIfwOnFinishedCheckbox*.**ON_INSTALL** *class 'int'* default: *None* { #ON_INSTALL data-toc-label=ON_INSTALL }
+
+
+### *QtIfwOnFinishedCheckbox*.**ON_UNINSTALL** *class 'int'* default: *None* { #ON_UNINSTALL data-toc-label=ON_UNINSTALL }
+
+
 
 ______
 
@@ -1927,11 +2050,12 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Magic Methods:**
 
- - [`ON_BOTH`](#ON_BOTH)
- - [`ON_INSTALL`](#ON_INSTALL)
- - [`ON_UNINSTALL`](#ON_UNINSTALL)
+ - [`__init__`](#QtIfwOnFinishedDetachedExec-init)
+
+**Instance Methods:** 
+
 
 **Instance Attributes:** 
 
@@ -1943,15 +2067,15 @@ ______
  - [`isReboot`](#isReboot)
  - [`ifCondition`](#ifCondition)
 
-### *QtIfwOnFinishedDetachedExec*.**ON_BOTH** *class 'int'* default: *2* { #ON_BOTH data-toc-label=ON_BOTH }
+**Class/Static Attributes:** 
 
+ - [`ON_BOTH`](#ON_BOTH)
+ - [`ON_INSTALL`](#ON_INSTALL)
+ - [`ON_UNINSTALL`](#ON_UNINSTALL)
 
-### *QtIfwOnFinishedDetachedExec*.**ON_INSTALL** *class 'int'* default: *0* { #ON_INSTALL data-toc-label=ON_INSTALL }
+### **QtIfwOnFinishedDetachedExec**`#!py3 (name, event=None, ifwPackage=None, runProgram=None, argList=None, shellCmd=None, script=None, openViaOsPath=None, isReboot=False, rebootDelaySecs=2, ifCondition=None)` { #QtIfwOnFinishedDetachedExec-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
-
-### *QtIfwOnFinishedDetachedExec*.**ON_UNINSTALL** *class 'int'* default: *1* { #ON_UNINSTALL data-toc-label=ON_UNINSTALL }
-
-
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**name** *class 'NoneType'* default: *None* { #name data-toc-label=name }
 
 
@@ -1973,6 +2097,15 @@ ______
 ### *obj*.**ifCondition** *class 'NoneType'* default: *None* { #ifCondition data-toc-label=ifCondition }
 
 
+### *QtIfwOnFinishedDetachedExec*.**ON_BOTH** *class 'int'* default: *2* { #ON_BOTH data-toc-label=ON_BOTH }
+
+
+### *QtIfwOnFinishedDetachedExec*.**ON_INSTALL** *class 'int'* default: *0* { #ON_INSTALL data-toc-label=ON_INSTALL }
+
+
+### *QtIfwOnFinishedDetachedExec*.**ON_UNINSTALL** *class 'int'* default: *1* { #ON_UNINSTALL data-toc-label=ON_UNINSTALL }
+
+
 
 ______
 
@@ -1980,13 +2113,9 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Magic Methods:**
 
- - [`Type`](#Type)
-
-**Class/Static Methods:** 
-
- - [`topDirPath`](#topDirPath)
+ - [`__init__`](#QtIfwPackage-init)
 
 **Instance Methods:** 
 
@@ -2018,12 +2147,17 @@ ______
  - [`codeSignTargets`](#codeSignTargets)
  - [`qtCppConfig`](#qtCppConfig)
 
-### *QtIfwPackage*.**Type** *class 'type'* default: *class 'qt_installer.QtIfwPackage.Type'* { #Type data-toc-label=Type }
+**Class/Static Methods:** 
 
+ - [`topDirPath`](#topDirPath)
 
-### *QtIfwPackage*.**topDirPath**`#!py3 ()` { #topDirPath data-toc-label=topDirPath }
+**Class/Static Attributes:** 
 
+ - [`Type`](#Type)
 
+### **QtIfwPackage**`#!py3 (pkgId=None, pkgType=None, name=None, subDirName=None, srcDirPath=None, srcExePath=None, resBasePath=None, isTempSrc=False, pkgXml=None, pkgScript=None, licenses=None, uiPages=None, widgets=None)` { #QtIfwPackage-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**contentDirPath**`#!py3 (self)` { #contentDirPath data-toc-label=contentDirPath }
 
 
@@ -2096,6 +2230,43 @@ ______
 ### *obj*.**qtCppConfig** *class 'NoneType'* default: *None* { #qtCppConfig data-toc-label=qtCppConfig }
 
 
+### *QtIfwPackage*.**topDirPath**`#!py3 ()` { #topDirPath data-toc-label=topDirPath }
+
+
+### *QtIfwPackage*.**Type** *class 'type'* default: *class 'qt_installer.QtIfwPackage.Type'* { #Type data-toc-label=Type }
+
+
+## **QtIfwPackage.Type**`#!py3 class` { #QtIfwPackage.Type data-toc-label=QtIfwPackage.Type }
+
+
+
+**Class/Static Attributes:** 
+
+ - [`DATA`](#DATA)
+ - [`IEXPRESS`](#IEXPRESS)
+ - [`PY_INSTALLER`](#PY_INSTALLER)
+ - [`QT_CPP`](#QT_CPP)
+ - [`RAW`](#RAW)
+ - [`RESOURCE`](#RESOURCE)
+
+### *QtIfwPackage.Type*.**DATA** *class 'int'* default: *1* { #DATA data-toc-label=DATA }
+
+
+### *QtIfwPackage.Type*.**IEXPRESS** *class 'int'* default: *4* { #IEXPRESS data-toc-label=IEXPRESS }
+
+
+### *QtIfwPackage.Type*.**PY_INSTALLER** *class 'int'* default: *3* { #PY_INSTALLER data-toc-label=PY_INSTALLER }
+
+
+### *QtIfwPackage.Type*.**QT_CPP** *class 'int'* default: *5* { #QT_CPP data-toc-label=QT_CPP }
+
+
+### *QtIfwPackage.Type*.**RAW** *class 'int'* default: *0* { #RAW data-toc-label=RAW }
+
+
+### *QtIfwPackage.Type*.**RESOURCE** *class 'int'* default: *2* { #RESOURCE data-toc-label=RESOURCE }
+
+
 
 ______
 
@@ -2103,69 +2274,53 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`ABORT`](#ABORT)
- - [`ACCEPT_EULA_CMD_ARG`](#ACCEPT_EULA_CMD_ARG)
- - [`AND`](#AND)
- - [`ASSIGN`](#ASSIGN)
- - [`AUTH_ERROR_MSGBOX_ID`](#AUTH_ERROR_MSGBOX_ID)
- - [`AUTO_PILOT_CMD_ARG`](#AUTO_PILOT_CMD_ARG)
- - [`CANCEL`](#CANCEL)
- - [`CATCH`](#CATCH)
- - [`CONCAT`](#CONCAT)
- - [`DEFAULT_TARGET_DIR_KEY`](#DEFAULT_TARGET_DIR_KEY)
- - [`DRYRUN_CMD_ARG`](#DRYRUN_CMD_ARG)
- - [`ELSE`](#ELSE)
- - [`END_BLOCK`](#END_BLOCK)
- - [`END_LINE`](#END_LINE)
- - [`EQUAL_TO`](#EQUAL_TO)
- - [`ERR_LOG_DEFAULT_PATH`](#ERR_LOG_DEFAULT_PATH)
- - [`ERR_LOG_PATH_CMD_ARG`](#ERR_LOG_PATH_CMD_ARG)
- - [`EXCLUDE_LIST_CMD_ARG`](#EXCLUDE_LIST_CMD_ARG)
- - [`EXIT_FUNCTION`](#EXIT_FUNCTION)
- - [`FALSE`](#FALSE)
- - [`IF`](#IF)
- - [`INCLUDE_LIST_CMD_ARG`](#INCLUDE_LIST_CMD_ARG)
- - [`INSTALL_LIST_CMD_ARG`](#INSTALL_LIST_CMD_ARG)
- - [`INTERUPTED_KEY`](#INTERUPTED_KEY)
- - [`IS_NET_CONNECTED_KEY`](#IS_NET_CONNECTED_KEY)
- - [`MAINTAIN_MODE_CMD_ARG`](#MAINTAIN_MODE_CMD_ARG)
- - [`MAINTAIN_MODE_OPT_ADD_REMOVE`](#MAINTAIN_MODE_OPT_ADD_REMOVE)
- - [`MAINTAIN_MODE_OPT_REMOVE_ALL`](#MAINTAIN_MODE_OPT_REMOVE_ALL)
- - [`MAINTAIN_MODE_OPT_UPDATE`](#MAINTAIN_MODE_OPT_UPDATE)
- - [`MAINTAIN_PASSTHRU_CMD_ARG`](#MAINTAIN_PASSTHRU_CMD_ARG)
- - [`MAINTENANCE_TOOL_NAME`](#MAINTENANCE_TOOL_NAME)
- - [`NEW_LINE`](#NEW_LINE)
- - [`NO`](#NO)
- - [`NOT`](#NOT)
- - [`NOT_EQUAL_TO`](#NOT_EQUAL_TO)
- - [`NULL`](#NULL)
- - [`OK`](#OK)
- - [`OR`](#OR)
- - [`OUT_LOG_DEFAULT_PATH`](#OUT_LOG_DEFAULT_PATH)
- - [`OUT_LOG_PATH_CMD_ARG`](#OUT_LOG_PATH_CMD_ARG)
- - [`PATH_SEP`](#PATH_SEP)
- - [`PRODUCT_NAME_KEY`](#PRODUCT_NAME_KEY)
- - [`QUIT_MSGBOX_ID`](#QUIT_MSGBOX_ID)
- - [`REBOOT_CMD_ARG`](#REBOOT_CMD_ARG)
- - [`RESTORE_MSGBOX_DEFAULT`](#RESTORE_MSGBOX_DEFAULT)
- - [`RUN_PROGRAM_CMD_ARG`](#RUN_PROGRAM_CMD_ARG)
- - [`STARTMENU_DIR_KEY`](#STARTMENU_DIR_KEY)
- - [`START_BLOCK`](#START_BLOCK)
- - [`START_MENU_DIR_CMD_ARG`](#START_MENU_DIR_CMD_ARG)
- - [`TAB`](#TAB)
- - [`TARGET_DIR_CMD_ARG`](#TARGET_DIR_CMD_ARG)
- - [`TARGET_DIR_KEY`](#TARGET_DIR_KEY)
- - [`TARGET_EXISTS_OPT_CMD_ARG`](#TARGET_EXISTS_OPT_CMD_ARG)
- - [`TARGET_EXISTS_OPT_FAIL`](#TARGET_EXISTS_OPT_FAIL)
- - [`TARGET_EXISTS_OPT_PROMPT`](#TARGET_EXISTS_OPT_PROMPT)
- - [`TARGET_EXISTS_OPT_REMOVE`](#TARGET_EXISTS_OPT_REMOVE)
- - [`TRUE`](#TRUE)
- - [`TRY`](#TRY)
- - [`USER_KEY`](#USER_KEY)
- - [`VERBOSE_CMD_SWITCH_ARG`](#VERBOSE_CMD_SWITCH_ARG)
- - [`YES`](#YES)
+_QtIfwScript
+
+
+**Magic Methods:**
+
+ - [`__init__`](#QtIfwPackageScript-init)
+
+**Instance Methods:** 
+
+ - [`addSimpleOperation`](#addSimpleOperation)
+ - [`debug`](#debug)
+ - [`dirPath`](#dirPath)
+ - [`exists`](#exists)
+ - [`path`](#path)
+ - [`write`](#write)
+
+**Instance Attributes:** 
+
+ - [`pkgName`](#pkgName)
+ - [`pkgVersion`](#pkgVersion)
+ - [`pkgSubDirName`](#pkgSubDirName)
+ - [`shortcuts`](#shortcuts)
+ - [`externalOps`](#externalOps)
+ - [`killOps`](#killOps)
+ - [`preOpSupport`](#preOpSupport)
+ - [`customOperations`](#customOperations)
+ - [`bundledScripts`](#bundledScripts)
+ - [`dynamicTexts`](#dynamicTexts)
+ - [`installResources`](#installResources)
+ - [`externalDependencies`](#externalDependencies)
+ - [`areDependenciesPreserved`](#areDependenciesPreserved)
+ - [`uiPages`](#uiPages)
+ - [`widgets`](#widgets)
+ - [`packageGlobals`](#packageGlobals)
+ - [`isAutoGlobals`](#isAutoGlobals)
+ - [`componentConstructorBody`](#componentConstructorBody)
+ - [`isAutoComponentConstructor`](#isAutoComponentConstructor)
+ - [`componentLoadedCallbackBody`](#componentLoadedCallbackBody)
+ - [`isAutoComponentLoadedCallback`](#isAutoComponentLoadedCallback)
+ - [`componentEnteredCallbackBody`](#componentEnteredCallbackBody)
+ - [`isAutoComponentEnteredCallback`](#isAutoComponentEnteredCallback)
+ - [`componentCreateOperationsBody`](#componentCreateOperationsBody)
+ - [`isAutoComponentCreateOperations`](#isAutoComponentCreateOperations)
+ - [`componentCreateOperationsForArchiveBody`](#componentCreateOperationsForArchiveBody)
+ - [`isAutoComponentCreateOperationsForArchive`](#isAutoComponentCreateOperationsForArchive)
 
 **Class/Static Methods:** 
 
@@ -2261,232 +2416,170 @@ ______
  - [`yesNoCancelPopup`](#yesNoCancelPopup)
  - [`yesNoPopup`](#yesNoPopup)
 
-**Instance Methods:** 
+**Class/Static Attributes:** 
+
+ - [`ABORT`](#ABORT)
+ - [`ACCEPT_EULA_CMD_ARG`](#ACCEPT_EULA_CMD_ARG)
+ - [`AND`](#AND)
+ - [`ASSIGN`](#ASSIGN)
+ - [`AUTH_ERROR_MSGBOX_ID`](#AUTH_ERROR_MSGBOX_ID)
+ - [`AUTO_PILOT_CMD_ARG`](#AUTO_PILOT_CMD_ARG)
+ - [`CANCEL`](#CANCEL)
+ - [`CATCH`](#CATCH)
+ - [`CONCAT`](#CONCAT)
+ - [`DEFAULT_TARGET_DIR_KEY`](#DEFAULT_TARGET_DIR_KEY)
+ - [`DRYRUN_CMD_ARG`](#DRYRUN_CMD_ARG)
+ - [`ELSE`](#ELSE)
+ - [`END_BLOCK`](#END_BLOCK)
+ - [`END_LINE`](#END_LINE)
+ - [`EQUAL_TO`](#EQUAL_TO)
+ - [`ERR_LOG_DEFAULT_PATH`](#ERR_LOG_DEFAULT_PATH)
+ - [`ERR_LOG_PATH_CMD_ARG`](#ERR_LOG_PATH_CMD_ARG)
+ - [`EXCLUDE_LIST_CMD_ARG`](#EXCLUDE_LIST_CMD_ARG)
+ - [`EXIT_FUNCTION`](#EXIT_FUNCTION)
+ - [`FALSE`](#FALSE)
+ - [`IF`](#IF)
+ - [`INCLUDE_LIST_CMD_ARG`](#INCLUDE_LIST_CMD_ARG)
+ - [`INSTALL_LIST_CMD_ARG`](#INSTALL_LIST_CMD_ARG)
+ - [`INTERUPTED_KEY`](#INTERUPTED_KEY)
+ - [`IS_NET_CONNECTED_KEY`](#IS_NET_CONNECTED_KEY)
+ - [`MAINTAIN_MODE_CMD_ARG`](#MAINTAIN_MODE_CMD_ARG)
+ - [`MAINTAIN_MODE_OPT_ADD_REMOVE`](#MAINTAIN_MODE_OPT_ADD_REMOVE)
+ - [`MAINTAIN_MODE_OPT_REMOVE_ALL`](#MAINTAIN_MODE_OPT_REMOVE_ALL)
+ - [`MAINTAIN_MODE_OPT_UPDATE`](#MAINTAIN_MODE_OPT_UPDATE)
+ - [`MAINTAIN_PASSTHRU_CMD_ARG`](#MAINTAIN_PASSTHRU_CMD_ARG)
+ - [`MAINTENANCE_TOOL_NAME`](#MAINTENANCE_TOOL_NAME)
+ - [`NEW_LINE`](#NEW_LINE)
+ - [`NO`](#NO)
+ - [`NOT`](#NOT)
+ - [`NOT_EQUAL_TO`](#NOT_EQUAL_TO)
+ - [`NULL`](#NULL)
+ - [`OK`](#OK)
+ - [`OR`](#OR)
+ - [`OUT_LOG_DEFAULT_PATH`](#OUT_LOG_DEFAULT_PATH)
+ - [`OUT_LOG_PATH_CMD_ARG`](#OUT_LOG_PATH_CMD_ARG)
+ - [`PATH_SEP`](#PATH_SEP)
+ - [`PRODUCT_NAME_KEY`](#PRODUCT_NAME_KEY)
+ - [`QUIT_MSGBOX_ID`](#QUIT_MSGBOX_ID)
+ - [`REBOOT_CMD_ARG`](#REBOOT_CMD_ARG)
+ - [`RESTORE_MSGBOX_DEFAULT`](#RESTORE_MSGBOX_DEFAULT)
+ - [`RUN_PROGRAM_CMD_ARG`](#RUN_PROGRAM_CMD_ARG)
+ - [`STARTMENU_DIR_KEY`](#STARTMENU_DIR_KEY)
+ - [`START_BLOCK`](#START_BLOCK)
+ - [`START_MENU_DIR_CMD_ARG`](#START_MENU_DIR_CMD_ARG)
+ - [`TAB`](#TAB)
+ - [`TARGET_DIR_CMD_ARG`](#TARGET_DIR_CMD_ARG)
+ - [`TARGET_DIR_KEY`](#TARGET_DIR_KEY)
+ - [`TARGET_EXISTS_OPT_CMD_ARG`](#TARGET_EXISTS_OPT_CMD_ARG)
+ - [`TARGET_EXISTS_OPT_FAIL`](#TARGET_EXISTS_OPT_FAIL)
+ - [`TARGET_EXISTS_OPT_PROMPT`](#TARGET_EXISTS_OPT_PROMPT)
+ - [`TARGET_EXISTS_OPT_REMOVE`](#TARGET_EXISTS_OPT_REMOVE)
+ - [`TRUE`](#TRUE)
+ - [`TRY`](#TRY)
+ - [`USER_KEY`](#USER_KEY)
+ - [`VERBOSE_CMD_SWITCH_ARG`](#VERBOSE_CMD_SWITCH_ARG)
+ - [`YES`](#YES)
 
- - [`addSimpleOperation`](#addSimpleOperation)
- - [`debug`](#debug)
- - [`dirPath`](#dirPath)
- - [`exists`](#exists)
- - [`path`](#path)
- - [`write`](#write)
+### **QtIfwPackageScript**`#!py3 (pkgName, pkgVersion, pkgSubDirName=None, shortcuts=None, bundledScripts=None, dynamicTexts=None, externalOps=None, installResources=None, uiPages=None, widgets=None, fileName='installscript.qs', script=None, scriptPath=None)` { #QtIfwPackageScript-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
-**Instance Attributes:** 
+Initialize self.  See help(type(self)) for accurate signature.
+### *obj*.**addSimpleOperation**`#!py3 (self, name, parms=None, isElevated=False, isAutoQuote=True)` { #addSimpleOperation data-toc-label=addSimpleOperation }
 
- - [`pkgName`](#pkgName)
- - [`pkgVersion`](#pkgVersion)
- - [`pkgSubDirName`](#pkgSubDirName)
- - [`shortcuts`](#shortcuts)
- - [`externalOps`](#externalOps)
- - [`killOps`](#killOps)
- - [`preOpSupport`](#preOpSupport)
- - [`customOperations`](#customOperations)
- - [`bundledScripts`](#bundledScripts)
- - [`dynamicTexts`](#dynamicTexts)
- - [`installResources`](#installResources)
- - [`externalDependencies`](#externalDependencies)
- - [`areDependenciesPreserved`](#areDependenciesPreserved)
- - [`uiPages`](#uiPages)
- - [`widgets`](#widgets)
- - [`packageGlobals`](#packageGlobals)
- - [`isAutoGlobals`](#isAutoGlobals)
- - [`componentConstructorBody`](#componentConstructorBody)
- - [`isAutoComponentConstructor`](#isAutoComponentConstructor)
- - [`componentLoadedCallbackBody`](#componentLoadedCallbackBody)
- - [`isAutoComponentLoadedCallback`](#isAutoComponentLoadedCallback)
- - [`componentEnteredCallbackBody`](#componentEnteredCallbackBody)
- - [`isAutoComponentEnteredCallback`](#isAutoComponentEnteredCallback)
- - [`componentCreateOperationsBody`](#componentCreateOperationsBody)
- - [`isAutoComponentCreateOperations`](#isAutoComponentCreateOperations)
- - [`componentCreateOperationsForArchiveBody`](#componentCreateOperationsForArchiveBody)
- - [`isAutoComponentCreateOperationsForArchive`](#isAutoComponentCreateOperationsForArchive)
 
-### *QtIfwPackageScript*.**ABORT** *class 'str'* default: *"QMessageBox.Abort"* { #ABORT data-toc-label=ABORT }
+### *obj*.**debug**`#!py3 (self)` { #debug data-toc-label=debug }
 
 
-### *QtIfwPackageScript*.**ACCEPT_EULA_CMD_ARG** *class 'str'* default: *"accept"* { #ACCEPT_EULA_CMD_ARG data-toc-label=ACCEPT_EULA_CMD_ARG }
+### *obj*.**dirPath**`#!py3 (self)` { #dirPath data-toc-label=dirPath }
 
+PURE VIRTUAL
+### *obj*.**exists**`#!py3 (self)` { #exists data-toc-label=exists }
 
-### *QtIfwPackageScript*.**AND** *class 'str'* default: *" && "* { #AND data-toc-label=AND }
 
+### *obj*.**path**`#!py3 (self)` { #path data-toc-label=path }
 
-### *QtIfwPackageScript*.**ASSIGN** *class 'str'* default: *"="* { #ASSIGN data-toc-label=ASSIGN }
+PURE VIRTUAL
+### *obj*.**write**`#!py3 (self)` { #write data-toc-label=write }
 
 
-### *QtIfwPackageScript*.**AUTH_ERROR_MSGBOX_ID** *class 'str'* default: *"AuthorizationError"* { #AUTH_ERROR_MSGBOX_ID data-toc-label=AUTH_ERROR_MSGBOX_ID }
+### *obj*.**pkgName** *class 'NoneType'* default: *None* { #pkgName data-toc-label=pkgName }
 
 
-### *QtIfwPackageScript*.**AUTO_PILOT_CMD_ARG** *class 'str'* default: *"auto"* { #AUTO_PILOT_CMD_ARG data-toc-label=AUTO_PILOT_CMD_ARG }
+### *obj*.**pkgVersion** *class 'NoneType'* default: *None* { #pkgVersion data-toc-label=pkgVersion }
 
 
-### *QtIfwPackageScript*.**CANCEL** *class 'str'* default: *"QMessageBox.Cancel"* { #CANCEL data-toc-label=CANCEL }
+### *obj*.**pkgSubDirName** *class 'NoneType'* default: *None* { #pkgSubDirName data-toc-label=pkgSubDirName }
 
 
-### *QtIfwPackageScript*.**CATCH** *class 'str'* default: *"catch(e) { "* { #CATCH data-toc-label=CATCH }
+### *obj*.**shortcuts** *class 'list'* default: *[]* { #shortcuts data-toc-label=shortcuts }
 
 
-### *QtIfwPackageScript*.**CONCAT** *class 'str'* default: *" + "* { #CONCAT data-toc-label=CONCAT }
+### *obj*.**externalOps** *class 'list'* default: *[]* { #externalOps data-toc-label=externalOps }
 
 
-### *QtIfwPackageScript*.**DEFAULT_TARGET_DIR_KEY** *class 'str'* default: *"DefaultTargetDir"* { #DEFAULT_TARGET_DIR_KEY data-toc-label=DEFAULT_TARGET_DIR_KEY }
+### *obj*.**killOps** *class 'list'* default: *[]* { #killOps data-toc-label=killOps }
 
 
-### *QtIfwPackageScript*.**DRYRUN_CMD_ARG** *class 'str'* default: *"dryrun"* { #DRYRUN_CMD_ARG data-toc-label=DRYRUN_CMD_ARG }
+### *obj*.**preOpSupport** *class 'NoneType'* default: *None* { #preOpSupport data-toc-label=preOpSupport }
 
 
-### *QtIfwPackageScript*.**ELSE** *class 'str'* default: *"else "* { #ELSE data-toc-label=ELSE }
+### *obj*.**customOperations** *class 'NoneType'* default: *None* { #customOperations data-toc-label=customOperations }
 
 
-### *QtIfwPackageScript*.**END_BLOCK** *class 'str'* default: *"}
-"* { #END_BLOCK data-toc-label=END_BLOCK }
+### *obj*.**bundledScripts** *class 'list'* default: *[]* { #bundledScripts data-toc-label=bundledScripts }
 
 
-### *QtIfwPackageScript*.**END_LINE** *class 'str'* default: *";
-"* { #END_LINE data-toc-label=END_LINE }
+### *obj*.**dynamicTexts** *class 'dict'* default: *{}* { #dynamicTexts data-toc-label=dynamicTexts }
 
 
-### *QtIfwPackageScript*.**EQUAL_TO** *class 'str'* default: *" == "* { #EQUAL_TO data-toc-label=EQUAL_TO }
+### *obj*.**installResources** *class 'list'* default: *[]* { #installResources data-toc-label=installResources }
 
 
-### *QtIfwPackageScript*.**ERR_LOG_DEFAULT_PATH** *class 'str'* default: *"%temp%\\installer.err"* { #ERR_LOG_DEFAULT_PATH data-toc-label=ERR_LOG_DEFAULT_PATH }
+### *obj*.**externalDependencies** *class 'list'* default: *[]* { #externalDependencies data-toc-label=externalDependencies }
 
 
-### *QtIfwPackageScript*.**ERR_LOG_PATH_CMD_ARG** *class 'str'* default: *"errlog"* { #ERR_LOG_PATH_CMD_ARG data-toc-label=ERR_LOG_PATH_CMD_ARG }
+### *obj*.**areDependenciesPreserved** *class 'bool'* default: *True* { #areDependenciesPreserved data-toc-label=areDependenciesPreserved }
 
 
-### *QtIfwPackageScript*.**EXCLUDE_LIST_CMD_ARG** *class 'str'* default: *"exclude"* { #EXCLUDE_LIST_CMD_ARG data-toc-label=EXCLUDE_LIST_CMD_ARG }
+### *obj*.**uiPages** *class 'list'* default: *[]* { #uiPages data-toc-label=uiPages }
 
 
-### *QtIfwPackageScript*.**EXIT_FUNCTION** *class 'str'* default: *"
-    return;
-"* { #EXIT_FUNCTION data-toc-label=EXIT_FUNCTION }
+### *obj*.**widgets** *class 'list'* default: *[]* { #widgets data-toc-label=widgets }
 
 
-### *QtIfwPackageScript*.**FALSE** *class 'str'* default: *"false"* { #FALSE data-toc-label=FALSE }
+### *obj*.**packageGlobals** *class 'NoneType'* default: *None* { #packageGlobals data-toc-label=packageGlobals }
 
 
-### *QtIfwPackageScript*.**IF** *class 'str'* default: *"if "* { #IF data-toc-label=IF }
+### *obj*.**isAutoGlobals** *class 'bool'* default: *True* { #isAutoGlobals data-toc-label=isAutoGlobals }
 
 
-### *QtIfwPackageScript*.**INCLUDE_LIST_CMD_ARG** *class 'str'* default: *"include"* { #INCLUDE_LIST_CMD_ARG data-toc-label=INCLUDE_LIST_CMD_ARG }
+### *obj*.**componentConstructorBody** *class 'NoneType'* default: *None* { #componentConstructorBody data-toc-label=componentConstructorBody }
 
 
-### *QtIfwPackageScript*.**INSTALL_LIST_CMD_ARG** *class 'str'* default: *"install"* { #INSTALL_LIST_CMD_ARG data-toc-label=INSTALL_LIST_CMD_ARG }
+### *obj*.**isAutoComponentConstructor** *class 'bool'* default: *True* { #isAutoComponentConstructor data-toc-label=isAutoComponentConstructor }
 
 
-### *QtIfwPackageScript*.**INTERUPTED_KEY** *class 'str'* default: *"isInterupted"* { #INTERUPTED_KEY data-toc-label=INTERUPTED_KEY }
+### *obj*.**componentLoadedCallbackBody** *class 'NoneType'* default: *None* { #componentLoadedCallbackBody data-toc-label=componentLoadedCallbackBody }
 
 
-### *QtIfwPackageScript*.**IS_NET_CONNECTED_KEY** *class 'str'* default: *"isNetConnected"* { #IS_NET_CONNECTED_KEY data-toc-label=IS_NET_CONNECTED_KEY }
+### *obj*.**isAutoComponentLoadedCallback** *class 'bool'* default: *True* { #isAutoComponentLoadedCallback data-toc-label=isAutoComponentLoadedCallback }
 
 
-### *QtIfwPackageScript*.**MAINTAIN_MODE_CMD_ARG** *class 'str'* default: *"mode"* { #MAINTAIN_MODE_CMD_ARG data-toc-label=MAINTAIN_MODE_CMD_ARG }
+### *obj*.**componentEnteredCallbackBody** *class 'NoneType'* default: *None* { #componentEnteredCallbackBody data-toc-label=componentEnteredCallbackBody }
 
 
-### *QtIfwPackageScript*.**MAINTAIN_MODE_OPT_ADD_REMOVE** *class 'str'* default: *"addremove"* { #MAINTAIN_MODE_OPT_ADD_REMOVE data-toc-label=MAINTAIN_MODE_OPT_ADD_REMOVE }
+### *obj*.**isAutoComponentEnteredCallback** *class 'bool'* default: *True* { #isAutoComponentEnteredCallback data-toc-label=isAutoComponentEnteredCallback }
 
 
-### *QtIfwPackageScript*.**MAINTAIN_MODE_OPT_REMOVE_ALL** *class 'str'* default: *"removeall"* { #MAINTAIN_MODE_OPT_REMOVE_ALL data-toc-label=MAINTAIN_MODE_OPT_REMOVE_ALL }
+### *obj*.**componentCreateOperationsBody** *class 'NoneType'* default: *None* { #componentCreateOperationsBody data-toc-label=componentCreateOperationsBody }
 
 
-### *QtIfwPackageScript*.**MAINTAIN_MODE_OPT_UPDATE** *class 'str'* default: *"update"* { #MAINTAIN_MODE_OPT_UPDATE data-toc-label=MAINTAIN_MODE_OPT_UPDATE }
+### *obj*.**isAutoComponentCreateOperations** *class 'bool'* default: *True* { #isAutoComponentCreateOperations data-toc-label=isAutoComponentCreateOperations }
 
 
-### *QtIfwPackageScript*.**MAINTAIN_PASSTHRU_CMD_ARG** *class 'str'* default: *"maintpassthru"* { #MAINTAIN_PASSTHRU_CMD_ARG data-toc-label=MAINTAIN_PASSTHRU_CMD_ARG }
+### *obj*.**componentCreateOperationsForArchiveBody** *class 'NoneType'* default: *None* { #componentCreateOperationsForArchiveBody data-toc-label=componentCreateOperationsForArchiveBody }
 
 
-### *QtIfwPackageScript*.**MAINTENANCE_TOOL_NAME** *class 'str'* default: *"maintenancetool.exe"* { #MAINTENANCE_TOOL_NAME data-toc-label=MAINTENANCE_TOOL_NAME }
-
-
-### *QtIfwPackageScript*.**NEW_LINE** *class 'str'* default: *"
-"* { #NEW_LINE data-toc-label=NEW_LINE }
-
-
-### *QtIfwPackageScript*.**NO** *class 'str'* default: *"QMessageBox.No"* { #NO data-toc-label=NO }
-
-
-### *QtIfwPackageScript*.**NOT** *class 'str'* default: *"! "* { #NOT data-toc-label=NOT }
-
-
-### *QtIfwPackageScript*.**NOT_EQUAL_TO** *class 'str'* default: *" != "* { #NOT_EQUAL_TO data-toc-label=NOT_EQUAL_TO }
-
-
-### *QtIfwPackageScript*.**NULL** *class 'str'* default: *"null"* { #NULL data-toc-label=NULL }
-
-
-### *QtIfwPackageScript*.**OK** *class 'str'* default: *"QMessageBox.Yes"* { #OK data-toc-label=OK }
-
-
-### *QtIfwPackageScript*.**OR** *class 'str'* default: *" || "* { #OR data-toc-label=OR }
-
-
-### *QtIfwPackageScript*.**OUT_LOG_DEFAULT_PATH** *class 'str'* default: *"%temp%\\installer.out"* { #OUT_LOG_DEFAULT_PATH data-toc-label=OUT_LOG_DEFAULT_PATH }
-
-
-### *QtIfwPackageScript*.**OUT_LOG_PATH_CMD_ARG** *class 'str'* default: *"outlog"* { #OUT_LOG_PATH_CMD_ARG data-toc-label=OUT_LOG_PATH_CMD_ARG }
-
-
-### *QtIfwPackageScript*.**PATH_SEP** *class 'str'* default: *""\\""* { #PATH_SEP data-toc-label=PATH_SEP }
-
-
-### *QtIfwPackageScript*.**PRODUCT_NAME_KEY** *class 'str'* default: *"ProductName"* { #PRODUCT_NAME_KEY data-toc-label=PRODUCT_NAME_KEY }
-
-
-### *QtIfwPackageScript*.**QUIT_MSGBOX_ID** *class 'str'* default: *"cancelInstallation"* { #QUIT_MSGBOX_ID data-toc-label=QUIT_MSGBOX_ID }
-
-
-### *QtIfwPackageScript*.**REBOOT_CMD_ARG** *class 'str'* default: *"reboot"* { #REBOOT_CMD_ARG data-toc-label=REBOOT_CMD_ARG }
-
-
-### *QtIfwPackageScript*.**RESTORE_MSGBOX_DEFAULT** *class 'str'* default: *"QMessageBox.RestoreDefaults"* { #RESTORE_MSGBOX_DEFAULT data-toc-label=RESTORE_MSGBOX_DEFAULT }
-
-
-### *QtIfwPackageScript*.**RUN_PROGRAM_CMD_ARG** *class 'str'* default: *"run"* { #RUN_PROGRAM_CMD_ARG data-toc-label=RUN_PROGRAM_CMD_ARG }
-
-
-### *QtIfwPackageScript*.**STARTMENU_DIR_KEY** *class 'str'* default: *"StartMenuDir"* { #STARTMENU_DIR_KEY data-toc-label=STARTMENU_DIR_KEY }
-
-
-### *QtIfwPackageScript*.**START_BLOCK** *class 'str'* default: *"{
-"* { #START_BLOCK data-toc-label=START_BLOCK }
-
-
-### *QtIfwPackageScript*.**START_MENU_DIR_CMD_ARG** *class 'str'* default: *"startmenu"* { #START_MENU_DIR_CMD_ARG data-toc-label=START_MENU_DIR_CMD_ARG }
-
-
-### *QtIfwPackageScript*.**TAB** *class 'str'* default: *"    "* { #TAB data-toc-label=TAB }
-
-
-### *QtIfwPackageScript*.**TARGET_DIR_CMD_ARG** *class 'str'* default: *"target"* { #TARGET_DIR_CMD_ARG data-toc-label=TARGET_DIR_CMD_ARG }
-
-
-### *QtIfwPackageScript*.**TARGET_DIR_KEY** *class 'str'* default: *"TargetDir"* { #TARGET_DIR_KEY data-toc-label=TARGET_DIR_KEY }
-
-
-### *QtIfwPackageScript*.**TARGET_EXISTS_OPT_CMD_ARG** *class 'str'* default: *"onexist"* { #TARGET_EXISTS_OPT_CMD_ARG data-toc-label=TARGET_EXISTS_OPT_CMD_ARG }
-
-
-### *QtIfwPackageScript*.**TARGET_EXISTS_OPT_FAIL** *class 'str'* default: *"fail"* { #TARGET_EXISTS_OPT_FAIL data-toc-label=TARGET_EXISTS_OPT_FAIL }
-
-
-### *QtIfwPackageScript*.**TARGET_EXISTS_OPT_PROMPT** *class 'str'* default: *"prompt"* { #TARGET_EXISTS_OPT_PROMPT data-toc-label=TARGET_EXISTS_OPT_PROMPT }
-
-
-### *QtIfwPackageScript*.**TARGET_EXISTS_OPT_REMOVE** *class 'str'* default: *"remove"* { #TARGET_EXISTS_OPT_REMOVE data-toc-label=TARGET_EXISTS_OPT_REMOVE }
-
-
-### *QtIfwPackageScript*.**TRUE** *class 'str'* default: *"true"* { #TRUE data-toc-label=TRUE }
-
-
-### *QtIfwPackageScript*.**TRY** *class 'str'* default: *"try { "* { #TRY data-toc-label=TRY }
-
-
-### *QtIfwPackageScript*.**USER_KEY** *class 'str'* default: *"User"* { #USER_KEY data-toc-label=USER_KEY }
-
-
-### *QtIfwPackageScript*.**VERBOSE_CMD_SWITCH_ARG** *class 'str'* default: *"-v"* { #VERBOSE_CMD_SWITCH_ARG data-toc-label=VERBOSE_CMD_SWITCH_ARG }
-
-
-### *QtIfwPackageScript*.**YES** *class 'str'* default: *"QMessageBox.Yes"* { #YES data-toc-label=YES }
+### *obj*.**isAutoComponentCreateOperationsForArchive** *class 'bool'* default: *True* { #isAutoComponentCreateOperationsForArchive data-toc-label=isAutoComponentCreateOperationsForArchive }
 
 
 ### *QtIfwPackageScript*.**andList**`#!py3 (conditions)` { #andList data-toc-label=andList }
@@ -2762,103 +2855,193 @@ ______
 ### *QtIfwPackageScript*.**yesNoPopup**`#!py3 (msg, title='Question', resultVar='result')` { #yesNoPopup data-toc-label=yesNoPopup }
 
 
-### *obj*.**addSimpleOperation**`#!py3 (self, name, parms=None, isElevated=False, isAutoQuote=True)` { #addSimpleOperation data-toc-label=addSimpleOperation }
+### *QtIfwPackageScript*.**ABORT** *class 'str'* default: *"QMessageBox.Abort"* { #ABORT data-toc-label=ABORT }
 
 
-### *obj*.**debug**`#!py3 (self)` { #debug data-toc-label=debug }
+### *QtIfwPackageScript*.**ACCEPT_EULA_CMD_ARG** *class 'str'* default: *"accept"* { #ACCEPT_EULA_CMD_ARG data-toc-label=ACCEPT_EULA_CMD_ARG }
 
 
-### *obj*.**dirPath**`#!py3 (self)` { #dirPath data-toc-label=dirPath }
-
-PURE VIRTUAL
-### *obj*.**exists**`#!py3 (self)` { #exists data-toc-label=exists }
+### *QtIfwPackageScript*.**AND** *class 'str'* default: *" && "* { #AND data-toc-label=AND }
 
 
-### *obj*.**path**`#!py3 (self)` { #path data-toc-label=path }
-
-PURE VIRTUAL
-### *obj*.**write**`#!py3 (self)` { #write data-toc-label=write }
+### *QtIfwPackageScript*.**ASSIGN** *class 'str'* default: *"="* { #ASSIGN data-toc-label=ASSIGN }
 
 
-### *obj*.**pkgName** *class 'NoneType'* default: *None* { #pkgName data-toc-label=pkgName }
+### *QtIfwPackageScript*.**AUTH_ERROR_MSGBOX_ID** *class 'str'* default: *"AuthorizationError"* { #AUTH_ERROR_MSGBOX_ID data-toc-label=AUTH_ERROR_MSGBOX_ID }
 
 
-### *obj*.**pkgVersion** *class 'NoneType'* default: *None* { #pkgVersion data-toc-label=pkgVersion }
+### *QtIfwPackageScript*.**AUTO_PILOT_CMD_ARG** *class 'str'* default: *"auto"* { #AUTO_PILOT_CMD_ARG data-toc-label=AUTO_PILOT_CMD_ARG }
 
 
-### *obj*.**pkgSubDirName** *class 'NoneType'* default: *None* { #pkgSubDirName data-toc-label=pkgSubDirName }
+### *QtIfwPackageScript*.**CANCEL** *class 'str'* default: *"QMessageBox.Cancel"* { #CANCEL data-toc-label=CANCEL }
 
 
-### *obj*.**shortcuts** *class 'list'* default: *[]* { #shortcuts data-toc-label=shortcuts }
+### *QtIfwPackageScript*.**CATCH** *class 'str'* default: *"catch(e) { "* { #CATCH data-toc-label=CATCH }
 
 
-### *obj*.**externalOps** *class 'list'* default: *[]* { #externalOps data-toc-label=externalOps }
+### *QtIfwPackageScript*.**CONCAT** *class 'str'* default: *" + "* { #CONCAT data-toc-label=CONCAT }
 
 
-### *obj*.**killOps** *class 'list'* default: *[]* { #killOps data-toc-label=killOps }
+### *QtIfwPackageScript*.**DEFAULT_TARGET_DIR_KEY** *class 'str'* default: *"DefaultTargetDir"* { #DEFAULT_TARGET_DIR_KEY data-toc-label=DEFAULT_TARGET_DIR_KEY }
 
 
-### *obj*.**preOpSupport** *class 'NoneType'* default: *None* { #preOpSupport data-toc-label=preOpSupport }
+### *QtIfwPackageScript*.**DRYRUN_CMD_ARG** *class 'str'* default: *"dryrun"* { #DRYRUN_CMD_ARG data-toc-label=DRYRUN_CMD_ARG }
 
 
-### *obj*.**customOperations** *class 'NoneType'* default: *None* { #customOperations data-toc-label=customOperations }
+### *QtIfwPackageScript*.**ELSE** *class 'str'* default: *"else "* { #ELSE data-toc-label=ELSE }
 
 
-### *obj*.**bundledScripts** *class 'list'* default: *[]* { #bundledScripts data-toc-label=bundledScripts }
+### *QtIfwPackageScript*.**END_BLOCK** *class 'str'* default: *"}
+"* { #END_BLOCK data-toc-label=END_BLOCK }
 
 
-### *obj*.**dynamicTexts** *class 'dict'* default: *{}* { #dynamicTexts data-toc-label=dynamicTexts }
+### *QtIfwPackageScript*.**END_LINE** *class 'str'* default: *";
+"* { #END_LINE data-toc-label=END_LINE }
 
 
-### *obj*.**installResources** *class 'list'* default: *[]* { #installResources data-toc-label=installResources }
+### *QtIfwPackageScript*.**EQUAL_TO** *class 'str'* default: *" == "* { #EQUAL_TO data-toc-label=EQUAL_TO }
 
 
-### *obj*.**externalDependencies** *class 'list'* default: *[]* { #externalDependencies data-toc-label=externalDependencies }
+### *QtIfwPackageScript*.**ERR_LOG_DEFAULT_PATH** *class 'str'* default: *"%temp%\\installer.err"* { #ERR_LOG_DEFAULT_PATH data-toc-label=ERR_LOG_DEFAULT_PATH }
 
 
-### *obj*.**areDependenciesPreserved** *class 'bool'* default: *True* { #areDependenciesPreserved data-toc-label=areDependenciesPreserved }
+### *QtIfwPackageScript*.**ERR_LOG_PATH_CMD_ARG** *class 'str'* default: *"errlog"* { #ERR_LOG_PATH_CMD_ARG data-toc-label=ERR_LOG_PATH_CMD_ARG }
 
 
-### *obj*.**uiPages** *class 'list'* default: *[]* { #uiPages data-toc-label=uiPages }
+### *QtIfwPackageScript*.**EXCLUDE_LIST_CMD_ARG** *class 'str'* default: *"exclude"* { #EXCLUDE_LIST_CMD_ARG data-toc-label=EXCLUDE_LIST_CMD_ARG }
 
 
-### *obj*.**widgets** *class 'list'* default: *[]* { #widgets data-toc-label=widgets }
+### *QtIfwPackageScript*.**EXIT_FUNCTION** *class 'str'* default: *"
+    return;
+"* { #EXIT_FUNCTION data-toc-label=EXIT_FUNCTION }
 
 
-### *obj*.**packageGlobals** *class 'NoneType'* default: *None* { #packageGlobals data-toc-label=packageGlobals }
+### *QtIfwPackageScript*.**FALSE** *class 'str'* default: *"false"* { #FALSE data-toc-label=FALSE }
 
 
-### *obj*.**isAutoGlobals** *class 'bool'* default: *True* { #isAutoGlobals data-toc-label=isAutoGlobals }
+### *QtIfwPackageScript*.**IF** *class 'str'* default: *"if "* { #IF data-toc-label=IF }
 
 
-### *obj*.**componentConstructorBody** *class 'NoneType'* default: *None* { #componentConstructorBody data-toc-label=componentConstructorBody }
+### *QtIfwPackageScript*.**INCLUDE_LIST_CMD_ARG** *class 'str'* default: *"include"* { #INCLUDE_LIST_CMD_ARG data-toc-label=INCLUDE_LIST_CMD_ARG }
 
 
-### *obj*.**isAutoComponentConstructor** *class 'bool'* default: *True* { #isAutoComponentConstructor data-toc-label=isAutoComponentConstructor }
+### *QtIfwPackageScript*.**INSTALL_LIST_CMD_ARG** *class 'str'* default: *"install"* { #INSTALL_LIST_CMD_ARG data-toc-label=INSTALL_LIST_CMD_ARG }
 
 
-### *obj*.**componentLoadedCallbackBody** *class 'NoneType'* default: *None* { #componentLoadedCallbackBody data-toc-label=componentLoadedCallbackBody }
+### *QtIfwPackageScript*.**INTERUPTED_KEY** *class 'str'* default: *"isInterupted"* { #INTERUPTED_KEY data-toc-label=INTERUPTED_KEY }
 
 
-### *obj*.**isAutoComponentLoadedCallback** *class 'bool'* default: *True* { #isAutoComponentLoadedCallback data-toc-label=isAutoComponentLoadedCallback }
+### *QtIfwPackageScript*.**IS_NET_CONNECTED_KEY** *class 'str'* default: *"isNetConnected"* { #IS_NET_CONNECTED_KEY data-toc-label=IS_NET_CONNECTED_KEY }
 
 
-### *obj*.**componentEnteredCallbackBody** *class 'NoneType'* default: *None* { #componentEnteredCallbackBody data-toc-label=componentEnteredCallbackBody }
+### *QtIfwPackageScript*.**MAINTAIN_MODE_CMD_ARG** *class 'str'* default: *"mode"* { #MAINTAIN_MODE_CMD_ARG data-toc-label=MAINTAIN_MODE_CMD_ARG }
 
 
-### *obj*.**isAutoComponentEnteredCallback** *class 'bool'* default: *True* { #isAutoComponentEnteredCallback data-toc-label=isAutoComponentEnteredCallback }
+### *QtIfwPackageScript*.**MAINTAIN_MODE_OPT_ADD_REMOVE** *class 'str'* default: *"addremove"* { #MAINTAIN_MODE_OPT_ADD_REMOVE data-toc-label=MAINTAIN_MODE_OPT_ADD_REMOVE }
 
 
-### *obj*.**componentCreateOperationsBody** *class 'NoneType'* default: *None* { #componentCreateOperationsBody data-toc-label=componentCreateOperationsBody }
+### *QtIfwPackageScript*.**MAINTAIN_MODE_OPT_REMOVE_ALL** *class 'str'* default: *"removeall"* { #MAINTAIN_MODE_OPT_REMOVE_ALL data-toc-label=MAINTAIN_MODE_OPT_REMOVE_ALL }
 
 
-### *obj*.**isAutoComponentCreateOperations** *class 'bool'* default: *True* { #isAutoComponentCreateOperations data-toc-label=isAutoComponentCreateOperations }
+### *QtIfwPackageScript*.**MAINTAIN_MODE_OPT_UPDATE** *class 'str'* default: *"update"* { #MAINTAIN_MODE_OPT_UPDATE data-toc-label=MAINTAIN_MODE_OPT_UPDATE }
 
 
-### *obj*.**componentCreateOperationsForArchiveBody** *class 'NoneType'* default: *None* { #componentCreateOperationsForArchiveBody data-toc-label=componentCreateOperationsForArchiveBody }
+### *QtIfwPackageScript*.**MAINTAIN_PASSTHRU_CMD_ARG** *class 'str'* default: *"maintpassthru"* { #MAINTAIN_PASSTHRU_CMD_ARG data-toc-label=MAINTAIN_PASSTHRU_CMD_ARG }
 
 
-### *obj*.**isAutoComponentCreateOperationsForArchive** *class 'bool'* default: *True* { #isAutoComponentCreateOperationsForArchive data-toc-label=isAutoComponentCreateOperationsForArchive }
+### *QtIfwPackageScript*.**MAINTENANCE_TOOL_NAME** *class 'str'* default: *"maintenancetool.exe"* { #MAINTENANCE_TOOL_NAME data-toc-label=MAINTENANCE_TOOL_NAME }
+
+
+### *QtIfwPackageScript*.**NEW_LINE** *class 'str'* default: *"
+"* { #NEW_LINE data-toc-label=NEW_LINE }
+
+
+### *QtIfwPackageScript*.**NO** *class 'str'* default: *"QMessageBox.No"* { #NO data-toc-label=NO }
+
+
+### *QtIfwPackageScript*.**NOT** *class 'str'* default: *"! "* { #NOT data-toc-label=NOT }
+
+
+### *QtIfwPackageScript*.**NOT_EQUAL_TO** *class 'str'* default: *" != "* { #NOT_EQUAL_TO data-toc-label=NOT_EQUAL_TO }
+
+
+### *QtIfwPackageScript*.**NULL** *class 'str'* default: *"null"* { #NULL data-toc-label=NULL }
+
+
+### *QtIfwPackageScript*.**OK** *class 'str'* default: *"QMessageBox.Yes"* { #OK data-toc-label=OK }
+
+
+### *QtIfwPackageScript*.**OR** *class 'str'* default: *" || "* { #OR data-toc-label=OR }
+
+
+### *QtIfwPackageScript*.**OUT_LOG_DEFAULT_PATH** *class 'str'* default: *"%temp%\\installer.out"* { #OUT_LOG_DEFAULT_PATH data-toc-label=OUT_LOG_DEFAULT_PATH }
+
+
+### *QtIfwPackageScript*.**OUT_LOG_PATH_CMD_ARG** *class 'str'* default: *"outlog"* { #OUT_LOG_PATH_CMD_ARG data-toc-label=OUT_LOG_PATH_CMD_ARG }
+
+
+### *QtIfwPackageScript*.**PATH_SEP** *class 'str'* default: *""\\""* { #PATH_SEP data-toc-label=PATH_SEP }
+
+
+### *QtIfwPackageScript*.**PRODUCT_NAME_KEY** *class 'str'* default: *"ProductName"* { #PRODUCT_NAME_KEY data-toc-label=PRODUCT_NAME_KEY }
+
+
+### *QtIfwPackageScript*.**QUIT_MSGBOX_ID** *class 'str'* default: *"cancelInstallation"* { #QUIT_MSGBOX_ID data-toc-label=QUIT_MSGBOX_ID }
+
+
+### *QtIfwPackageScript*.**REBOOT_CMD_ARG** *class 'str'* default: *"reboot"* { #REBOOT_CMD_ARG data-toc-label=REBOOT_CMD_ARG }
+
+
+### *QtIfwPackageScript*.**RESTORE_MSGBOX_DEFAULT** *class 'str'* default: *"QMessageBox.RestoreDefaults"* { #RESTORE_MSGBOX_DEFAULT data-toc-label=RESTORE_MSGBOX_DEFAULT }
+
+
+### *QtIfwPackageScript*.**RUN_PROGRAM_CMD_ARG** *class 'str'* default: *"run"* { #RUN_PROGRAM_CMD_ARG data-toc-label=RUN_PROGRAM_CMD_ARG }
+
+
+### *QtIfwPackageScript*.**STARTMENU_DIR_KEY** *class 'str'* default: *"StartMenuDir"* { #STARTMENU_DIR_KEY data-toc-label=STARTMENU_DIR_KEY }
+
+
+### *QtIfwPackageScript*.**START_BLOCK** *class 'str'* default: *"{
+"* { #START_BLOCK data-toc-label=START_BLOCK }
+
+
+### *QtIfwPackageScript*.**START_MENU_DIR_CMD_ARG** *class 'str'* default: *"startmenu"* { #START_MENU_DIR_CMD_ARG data-toc-label=START_MENU_DIR_CMD_ARG }
+
+
+### *QtIfwPackageScript*.**TAB** *class 'str'* default: *"    "* { #TAB data-toc-label=TAB }
+
+
+### *QtIfwPackageScript*.**TARGET_DIR_CMD_ARG** *class 'str'* default: *"target"* { #TARGET_DIR_CMD_ARG data-toc-label=TARGET_DIR_CMD_ARG }
+
+
+### *QtIfwPackageScript*.**TARGET_DIR_KEY** *class 'str'* default: *"TargetDir"* { #TARGET_DIR_KEY data-toc-label=TARGET_DIR_KEY }
+
+
+### *QtIfwPackageScript*.**TARGET_EXISTS_OPT_CMD_ARG** *class 'str'* default: *"onexist"* { #TARGET_EXISTS_OPT_CMD_ARG data-toc-label=TARGET_EXISTS_OPT_CMD_ARG }
+
+
+### *QtIfwPackageScript*.**TARGET_EXISTS_OPT_FAIL** *class 'str'* default: *"fail"* { #TARGET_EXISTS_OPT_FAIL data-toc-label=TARGET_EXISTS_OPT_FAIL }
+
+
+### *QtIfwPackageScript*.**TARGET_EXISTS_OPT_PROMPT** *class 'str'* default: *"prompt"* { #TARGET_EXISTS_OPT_PROMPT data-toc-label=TARGET_EXISTS_OPT_PROMPT }
+
+
+### *QtIfwPackageScript*.**TARGET_EXISTS_OPT_REMOVE** *class 'str'* default: *"remove"* { #TARGET_EXISTS_OPT_REMOVE data-toc-label=TARGET_EXISTS_OPT_REMOVE }
+
+
+### *QtIfwPackageScript*.**TRUE** *class 'str'* default: *"true"* { #TRUE data-toc-label=TRUE }
+
+
+### *QtIfwPackageScript*.**TRY** *class 'str'* default: *"try { "* { #TRY data-toc-label=TRY }
+
+
+### *QtIfwPackageScript*.**USER_KEY** *class 'str'* default: *"User"* { #USER_KEY data-toc-label=USER_KEY }
+
+
+### *QtIfwPackageScript*.**VERBOSE_CMD_SWITCH_ARG** *class 'str'* default: *"-v"* { #VERBOSE_CMD_SWITCH_ARG data-toc-label=VERBOSE_CMD_SWITCH_ARG }
+
+
+### *QtIfwPackageScript*.**YES** *class 'str'* default: *"QMessageBox.Yes"* { #YES data-toc-label=YES }
 
 
 
@@ -2867,6 +3050,15 @@ ______
 ## **QtIfwPackageXml**`#!py3 class` { #QtIfwPackageXml data-toc-label=QtIfwPackageXml }
 
 
+
+**Base Classes:**
+
+_QtIfwXml
+
+
+**Magic Methods:**
+
+ - [`__init__`](#QtIfwPackageXml-init)
 
 **Instance Methods:** 
 
@@ -2896,6 +3088,9 @@ ______
  - [`UserInterfaces`](#UserInterfaces)
  - [`Licenses`](#Licenses)
 
+### **QtIfwPackageXml**`#!py3 (pkgName, displayName, description, version, scriptName=None, isDefault=True, isRequired=False, isHidden=False, isCheckable=True)` { #QtIfwPackageXml-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**addCustomTags**`#!py3 (self, root)` { #addCustomTags data-toc-label=addCustomTags }
 
 VIRTUAL
@@ -2935,7 +3130,7 @@ PURE VIRTUAL
 ### *obj*.**Script** *class 'NoneType'* default: *None* { #Script data-toc-label=Script }
 
 
-### *obj*.**ReleaseDate** *class 'datetime.date'* default: *2023-02-19* { #ReleaseDate data-toc-label=ReleaseDate }
+### *obj*.**ReleaseDate** *class 'datetime.date'* default: *2023-03-05* { #ReleaseDate data-toc-label=ReleaseDate }
 
 
 ### *obj*.**Virtual** *class 'NoneType'* default: *None* { #Virtual data-toc-label=Virtual }
@@ -2969,6 +3164,13 @@ ______
 
 
 
+**Magic Methods:**
+
+ - [`__init__`](#QtIfwShortcut-init)
+
+**Instance Methods:** 
+
+
 **Instance Attributes:** 
 
  - [`productName`](#productName)
@@ -2986,6 +3188,9 @@ ______
  - [`isDesktopShortcut`](#isDesktopShortcut)
  - [`isAdjancentShortcut`](#isAdjancentShortcut)
 
+### **QtIfwShortcut**`#!py3 (productName='@ProductName@', command=None, args=None, exeDir='@TargetDir@', exeName=None, exeVersion='0.0.0.0', isGui=True, pngIconResPath=None)` { #QtIfwShortcut-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**productName** *class 'NoneType'* default: *None* { #productName data-toc-label=productName }
 
 
@@ -3035,16 +3240,37 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`BASE_ON_ENTER_TMPT`](#BASE_ON_ENTER_TMPT)
- - [`BASE_ON_LOAD_TMPT`](#BASE_ON_LOAD_TMPT)
+_QtIfwInterface, QtIfwUiPage
+
+
+**Magic Methods:**
+
+ - [`__init__`](#QtIfwSimpleTextPage-init)
 
 **Instance Methods:** 
 
  - [`fileName`](#fileName)
  - [`resolve`](#resolve)
  - [`write`](#write)
+
+**Class/Static Attributes:** 
+
+ - [`BASE_ON_ENTER_TMPT`](#BASE_ON_ENTER_TMPT)
+ - [`BASE_ON_LOAD_TMPT`](#BASE_ON_LOAD_TMPT)
+
+### **QtIfwSimpleTextPage**`#!py3 (name, pageOrder=None, title='', text='', onLoad=None, onEnter=None)` { #QtIfwSimpleTextPage-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
+### *obj*.**fileName**`#!py3 (self)` { #fileName data-toc-label=fileName }
+
+
+### *obj*.**resolve**`#!py3 (self, qtIfwConfig)` { #resolve data-toc-label=resolve }
+
+
+### *obj*.**write**`#!py3 (self, dirPath)` { #write data-toc-label=write }
+
 
 ### *QtIfwSimpleTextPage*.**BASE_ON_ENTER_TMPT** *class 'str'* default: *"
     var page = gui.pageWidgetByObjectName("Dynamic%s");
@@ -3075,6 +3301,37 @@ ______
 "* { #BASE_ON_LOAD_TMPT data-toc-label=BASE_ON_LOAD_TMPT }
 
 
+
+______
+
+## **QtIfwTargetDirPage**`#!py3 class` { #QtIfwTargetDirPage data-toc-label=QtIfwTargetDirPage }
+
+
+
+**Base Classes:**
+
+_QtIfwInterface, QtIfwUiPage
+
+
+**Magic Methods:**
+
+ - [`__init__`](#QtIfwTargetDirPage-init)
+
+**Instance Methods:** 
+
+ - [`fileName`](#fileName)
+ - [`resolve`](#resolve)
+ - [`write`](#write)
+
+**Class/Static Attributes:** 
+
+ - [`BASE_ON_ENTER_TMPT`](#BASE_ON_ENTER_TMPT)
+ - [`BASE_ON_LOAD_TMPT`](#BASE_ON_LOAD_TMPT)
+ - [`NAME`](#NAME)
+
+### **QtIfwTargetDirPage**`#!py3 ()` { #QtIfwTargetDirPage-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**fileName**`#!py3 (self)` { #fileName data-toc-label=fileName }
 
 
@@ -3083,25 +3340,6 @@ ______
 
 ### *obj*.**write**`#!py3 (self, dirPath)` { #write data-toc-label=write }
 
-
-
-______
-
-## **QtIfwTargetDirPage**`#!py3 class` { #QtIfwTargetDirPage data-toc-label=QtIfwTargetDirPage }
-
-
-
-**Class/Static Attributes:** 
-
- - [`BASE_ON_ENTER_TMPT`](#BASE_ON_ENTER_TMPT)
- - [`BASE_ON_LOAD_TMPT`](#BASE_ON_LOAD_TMPT)
- - [`NAME`](#NAME)
-
-**Instance Methods:** 
-
- - [`fileName`](#fileName)
- - [`resolve`](#resolve)
- - [`write`](#write)
 
 ### *QtIfwTargetDirPage*.**BASE_ON_ENTER_TMPT** *class 'str'* default: *"
     var page = gui.pageWidgetByObjectName("Dynamic%s");
@@ -3135,15 +3373,6 @@ ______
 ### *QtIfwTargetDirPage*.**NAME** *class 'str'* default: *"ReplaceTargetDirectory"* { #NAME data-toc-label=NAME }
 
 
-### *obj*.**fileName**`#!py3 (self)` { #fileName data-toc-label=fileName }
-
-
-### *obj*.**resolve**`#!py3 (self, qtIfwConfig)` { #resolve data-toc-label=resolve }
-
-
-### *obj*.**write**`#!py3 (self, dirPath)` { #write data-toc-label=write }
-
-
 
 ______
 
@@ -3151,10 +3380,14 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`BASE_ON_ENTER_TMPT`](#BASE_ON_ENTER_TMPT)
- - [`BASE_ON_LOAD_TMPT`](#BASE_ON_LOAD_TMPT)
+_QtIfwInterface
+
+
+**Magic Methods:**
+
+ - [`__init__`](#QtIfwUiPage-init)
 
 **Instance Methods:** 
 
@@ -3166,6 +3399,29 @@ ______
 
  - [`pageOrder`](#pageOrder)
  - [`isIncInAutoPilot`](#isIncInAutoPilot)
+
+**Class/Static Attributes:** 
+
+ - [`BASE_ON_ENTER_TMPT`](#BASE_ON_ENTER_TMPT)
+ - [`BASE_ON_LOAD_TMPT`](#BASE_ON_LOAD_TMPT)
+
+### **QtIfwUiPage**`#!py3 (name, pageOrder=None, sourcePath=None, content=None, onLoad=None, onEnter=None)` { #QtIfwUiPage-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
+### *obj*.**fileName**`#!py3 (self)` { #fileName data-toc-label=fileName }
+
+
+### *obj*.**resolve**`#!py3 (self, qtIfwConfig)` { #resolve data-toc-label=resolve }
+
+
+### *obj*.**write**`#!py3 (self, dirPath)` { #write data-toc-label=write }
+
+
+### *obj*.**pageOrder** *class 'NoneType'* default: *None* { #pageOrder data-toc-label=pageOrder }
+
+
+### *obj*.**isIncInAutoPilot** *class 'bool'* default: *False* { #isIncInAutoPilot data-toc-label=isIncInAutoPilot }
+
 
 ### *QtIfwUiPage*.**BASE_ON_ENTER_TMPT** *class 'str'* default: *"
     var page = gui.pageWidgetByObjectName("Dynamic%s");
@@ -3196,27 +3452,21 @@ ______
 "* { #BASE_ON_LOAD_TMPT data-toc-label=BASE_ON_LOAD_TMPT }
 
 
-### *obj*.**fileName**`#!py3 (self)` { #fileName data-toc-label=fileName }
-
-
-### *obj*.**resolve**`#!py3 (self, qtIfwConfig)` { #resolve data-toc-label=resolve }
-
-
-### *obj*.**write**`#!py3 (self, dirPath)` { #write data-toc-label=write }
-
-
-### *obj*.**pageOrder** *class 'NoneType'* default: *None* { #pageOrder data-toc-label=pageOrder }
-
-
-### *obj*.**isIncInAutoPilot** *class 'bool'* default: *False* { #isIncInAutoPilot data-toc-label=isIncInAutoPilot }
-
-
 
 ______
 
 ## **QtIfwWidget**`#!py3 class` { #QtIfwWidget data-toc-label=QtIfwWidget }
 
 
+
+**Base Classes:**
+
+_QtIfwInterface
+
+
+**Magic Methods:**
+
+ - [`__init__`](#QtIfwWidget-init)
 
 **Instance Methods:** 
 
@@ -3229,6 +3479,9 @@ ______
  - [`pageName`](#pageName)
  - [`position`](#position)
 
+### **QtIfwWidget**`#!py3 (name, pageName, position=None, sourcePath=None, content=None, onLoad=None, onEnter=None)` { #QtIfwWidget-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**fileName**`#!py3 (self)` { #fileName data-toc-label=fileName }
 
 
@@ -3251,9 +3504,14 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`DIVIDER`](#DIVIDER)
+_DistBuildProcessBase, _BuildInstallerProcess
+
+
+**Magic Methods:**
+
+ - [`__init__`](#RobustInstallerProcess-init)
 
 **Instance Methods:** 
 
@@ -3276,9 +3534,13 @@ ______
  - [`onQtIfwConfig`](#onQtIfwConfig)
  - [`run`](#run)
 
-### *RobustInstallerProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+**Class/Static Attributes:** 
 
+ - [`DIVIDER`](#DIVIDER)
 
+### **RobustInstallerProcess**`#!py3 (masterConfigFactory, name='Robust Installer Process', pyPkgConfigFactoryDict=None, iExpressPkgConfigFactoryDict=None, ifwPackages=None, isDesktopTarget=False, isHomeDirTarget=False)` { #RobustInstallerProcess-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
+
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**onConfigFactory**`#!py3 (self, key, factory)` { #onConfigFactory data-toc-label=onConfigFactory }
 
 VIRTUAL
@@ -3331,6 +3593,9 @@ VIRTUAL
 
 VIRTUAL
 ### *obj*.**run**`#!py3 (self)` { #run data-toc-label=run }
+
+
+### *RobustInstallerProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
 
 
 

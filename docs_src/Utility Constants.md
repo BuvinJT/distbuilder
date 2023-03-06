@@ -58,20 +58,23 @@ ______
 
 ______
 
-### **IS_LINUX** *class 'bool'* default: *False* { #IS_LINUX data-toc-label=IS_LINUX }
+### **IS_LINUX** *class 'bool'* default: <span style=color:gray>&lt;Platform dependent&gt;</span> { #IS_LINUX data-toc-label=IS_LINUX }
 
-
-
-______
-
-### **IS_MACOS** *class 'bool'* default: *False* { #IS_MACOS data-toc-label=IS_MACOS }
-
+Determine if build process is being run on Linux.
 
 
 ______
 
-### **IS_WINDOWS** *class 'bool'* default: *True* { #IS_WINDOWS data-toc-label=IS_WINDOWS }
+### **IS_MACOS** *class 'bool'* default: <span style=color:gray>&lt;Platform dependent&gt;</span> { #IS_MACOS data-toc-label=IS_MACOS }
 
+Determine if build process is being run on macOS.
+
+
+______
+
+### **IS_WINDOWS** *class 'bool'* default: <span style=color:gray>&lt;Platform dependent&gt;</span> { #IS_WINDOWS data-toc-label=IS_WINDOWS }
+
+Determine if build process is being run on Windows.
 
 
 ______

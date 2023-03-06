@@ -146,7 +146,7 @@ from distbuilder.pip_installer import(
 )
 
 # docs > Qt CPP.md 
-""" DOCS > VIRTUAL
+""" docs : virtual_code
 from distbuilder.qt_cpp import (
     QtCppConfig, 
     qmakeInit, installDeployTools, renameExe, 

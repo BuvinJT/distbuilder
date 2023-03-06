@@ -2,10 +2,12 @@
 
 
 
-**Class/Static Attributes:** 
+**Magic Methods:**
 
- - [`DEFAULT_DIGEST`](#DEFAULT_DIGEST)
- - [`DEFAULT_TIMESTAMP_SERVER`](#DEFAULT_TIMESTAMP_SERVER)
+ - [`__init__`](#CodeSignConfig-init)
+
+**Instance Methods:** 
+
 
 **Instance Attributes:** 
 
@@ -18,12 +20,14 @@
  - [`otherSignToolArgs`](#otherSignToolArgs)
  - [`isDebugMode`](#isDebugMode)
 
-### *CodeSignConfig*.**DEFAULT_DIGEST** *class 'str'* default: *"sha256"* { #DEFAULT_DIGEST data-toc-label=DEFAULT_DIGEST }
+**Class/Static Attributes:** 
 
+ - [`DEFAULT_DIGEST`](#DEFAULT_DIGEST)
+ - [`DEFAULT_TIMESTAMP_SERVER`](#DEFAULT_TIMESTAMP_SERVER)
 
-### *CodeSignConfig*.**DEFAULT_TIMESTAMP_SERVER** *class 'str'* default: *"http://timestamp.digicert.com"* { #DEFAULT_TIMESTAMP_SERVER data-toc-label=DEFAULT_TIMESTAMP_SERVER }
+### **CodeSignConfig**`#!py3 (keyFilePath=None, keyPassword=None)` { #CodeSignConfig-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
-
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**keyFilePath** *class 'NoneType'* default: *None* { #keyFilePath data-toc-label=keyFilePath }
 
 
@@ -48,6 +52,12 @@
 ### *obj*.**isDebugMode** *class 'bool'* default: *True* { #isDebugMode data-toc-label=isDebugMode }
 
 
+### *CodeSignConfig*.**DEFAULT_DIGEST** *class 'str'* default: *"sha256"* { #DEFAULT_DIGEST data-toc-label=DEFAULT_DIGEST }
+
+
+### *CodeSignConfig*.**DEFAULT_TIMESTAMP_SERVER** *class 'str'* default: *"http://timestamp.digicert.com"* { #DEFAULT_TIMESTAMP_SERVER data-toc-label=DEFAULT_TIMESTAMP_SERVER }
+
+
 
 ______
 
@@ -55,11 +65,12 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Magic Methods:**
 
- - [`DEFAULT_END_DATE`](#DEFAULT_END_DATE)
- - [`LIFETIME_SIGNING_EKU`](#LIFETIME_SIGNING_EKU)
- - [`NO_MAX_CHILDREN`](#NO_MAX_CHILDREN)
+ - [`__init__`](#SelfSignedCertConfig-init)
+
+**Instance Methods:** 
+
 
 **Instance Attributes:** 
 
@@ -72,15 +83,15 @@ ______
  - [`otherArgs`](#otherArgs)
  - [`isDebugMode`](#isDebugMode)
 
-### *SelfSignedCertConfig*.**DEFAULT_END_DATE** *class 'str'* default: *None* { #DEFAULT_END_DATE data-toc-label=DEFAULT_END_DATE }
+**Class/Static Attributes:** 
 
+ - [`DEFAULT_END_DATE`](#DEFAULT_END_DATE)
+ - [`LIFETIME_SIGNING_EKU`](#LIFETIME_SIGNING_EKU)
+ - [`NO_MAX_CHILDREN`](#NO_MAX_CHILDREN)
 
-### *SelfSignedCertConfig*.**LIFETIME_SIGNING_EKU** *class 'str'* default: *None* { #LIFETIME_SIGNING_EKU data-toc-label=LIFETIME_SIGNING_EKU }
+### **SelfSignedCertConfig**`#!py3 (companyTradeName, destDirPath=None)` { #SelfSignedCertConfig-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
-
-### *SelfSignedCertConfig*.**NO_MAX_CHILDREN** *class 'int'* default: *None* { #NO_MAX_CHILDREN data-toc-label=NO_MAX_CHILDREN }
-
-
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**commonName** *class 'NoneType'* default: *None* { #commonName data-toc-label=commonName }
 
 
@@ -105,6 +116,15 @@ ______
 ### *obj*.**isDebugMode** *class 'NoneType'* default: *None* { #isDebugMode data-toc-label=isDebugMode }
 
 
+### *SelfSignedCertConfig*.**DEFAULT_END_DATE** *class 'str'* default: *None* { #DEFAULT_END_DATE data-toc-label=DEFAULT_END_DATE }
+
+
+### *SelfSignedCertConfig*.**LIFETIME_SIGNING_EKU** *class 'str'* default: *None* { #LIFETIME_SIGNING_EKU data-toc-label=LIFETIME_SIGNING_EKU }
+
+
+### *SelfSignedCertConfig*.**NO_MAX_CHILDREN** *class 'int'* default: *None* { #NO_MAX_CHILDREN data-toc-label=NO_MAX_CHILDREN }
+
+
 
 ______
 
@@ -112,9 +132,10 @@ ______
 
 
 
-**Class/Static Attributes:** 
+**Base Classes:**
 
- - [`DIVIDER`](#DIVIDER)
+_DistBuildProcessBase, _BuildPackageProcess, PyToBinPackageProcess
+
 
 **Instance Methods:** 
 
@@ -125,8 +146,9 @@ ______
  - [`onPyInstConfig`](#onPyInstConfig)
  - [`run`](#run)
 
-### *TrustInstallerBuilderProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+**Class/Static Attributes:** 
 
+ - [`DIVIDER`](#DIVIDER)
 
 ### *obj*.**onFinalize**`#!py3 (self)` { #onFinalize data-toc-label=onFinalize }
 
@@ -144,6 +166,9 @@ VIRTUAL
 
 VIRTUAL
 ### *obj*.**run**`#!py3 (self)` { #run data-toc-label=run }
+
+
+### *TrustInstallerBuilderProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
 
 
 

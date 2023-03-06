@@ -2,10 +2,9 @@
 
 
 
-**Class/Static Methods:** 
+**Magic Methods:**
 
- - [`isSingletonOpen`](#isSingletonOpen)
- - [`singleton`](#singleton)
+ - [`__init__`](#Logger-init)
 
 **Instance Methods:** 
 
@@ -28,12 +27,14 @@
  - [`name`](#name)
  - [`isUniqueFile`](#isUniqueFile)
 
-### *Logger*.**isSingletonOpen**`#!py3 ()` { #isSingletonOpen data-toc-label=isSingletonOpen }
+**Class/Static Methods:** 
 
+ - [`isSingletonOpen`](#isSingletonOpen)
+ - [`singleton`](#singleton)
 
-### *Logger*.**singleton**`#!py3 (name=None, isUniqueFile=False)` { #singleton data-toc-label=singleton }
+### **Logger**`#!py3 (name=None, isUniqueFile=False)` { #Logger-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
-
+Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**close**`#!py3 (self)` { #close data-toc-label=close }
 
 
@@ -77,6 +78,12 @@
 
 
 ### *obj*.**isUniqueFile** *class 'NoneType'* default: *None* { #isUniqueFile data-toc-label=isUniqueFile }
+
+
+### *Logger*.**isSingletonOpen**`#!py3 ()` { #isSingletonOpen data-toc-label=isSingletonOpen }
+
+
+### *Logger*.**singleton**`#!py3 (name=None, isUniqueFile=False)` { #singleton data-toc-label=singleton }
 
 
 
