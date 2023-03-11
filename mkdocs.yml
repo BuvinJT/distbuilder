@@ -5,7 +5,7 @@ nav:
     - Home: index.md
     - Quick Start: QuickStart.md
     - Examples: Examples.md
-    - Old Reference:
+    - Feature Topics:
         - High Level Classes: HighLevel.md
         - Configuration Classes: ConfigClasses.md
         - Low Level Functions: LowLevel.md
