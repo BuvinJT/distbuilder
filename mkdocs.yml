@@ -1,13 +1,14 @@
 site_name: Distribution Builder
 theme:
-  name: 'material'
+  name: 'windmill' 
+  # pip install mkdocs-windmill
 nav:
     - Home: index.md
     - Quick Start: QuickStart.md
     - Examples: Examples.md
     - Feature Topics:
-        - High Level Classes: HighLevel.md
-        - Configuration Classes: ConfigClasses.md
+        - Process Classes: HighLevel.md
+        - Config Classes: ConfigClasses.md
         - Low Level Functions: LowLevel.md
         - Qt C++ Integration: QtCpp.md
     - Reference:

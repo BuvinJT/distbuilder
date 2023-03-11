@@ -1,5 +1,11 @@
-# Configuration Classes
+# ConfigFactory  
 ![distbuilder logo](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png)
+
+It is typical for a build script to start by creating a high-level [ConfigFactory](Config-Factory.md) object and set its attributes.
+
+The primary functions within this library rely upon a collection of "configuration" objects which act as "smart  parameter sets".  Those parameters are used to drive various [Processes](HighLevel.Md).  Many of these config classes have overlapping attributes. Scripts which employ a collection of those low levels objects in the raw tend to include a lot of tedious and redundant assignment operations.  With this in mind, the ConfigFactory class was created, to radically simplify many scripts.
+
+# Configuration Classes
 
 The following classes are used to create objects which
 are employed as arguments to various functions within the library.
