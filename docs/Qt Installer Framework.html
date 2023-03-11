@@ -1589,10 +1589,8 @@
 <h3 id="ERR_LOG_PATH_CMD_ARG"><em>QtIfwControlScript</em>.<strong>ERR_LOG_PATH_CMD_ARG</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;errlog&rdquo;</em><a class="headerlink" href="#ERR_LOG_PATH_CMD_ARG" title="Permanent link">&para;</a></h3>
 <h3 id="EXCLUDE_LIST_CMD_ARG"><em>QtIfwControlScript</em>.<strong>EXCLUDE_LIST_CMD_ARG</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;exclude&rdquo;</em><a class="headerlink" href="#EXCLUDE_LIST_CMD_ARG" title="Permanent link">&para;</a></h3>
 <h3 id="qtifwcontrolscriptexit_function-class-str-default"><em>QtIfwControlScript</em>.<strong>EXIT_FUNCTION</strong> <em>class &lsquo;str&rsquo;</em> default: *&rdquo;<a class="headerlink" href="#qtifwcontrolscriptexit_function-class-str-default" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code><span class="k">return</span><span class="c1">;</span>
-</code></pre></div>
-
-<p>&rdquo;* { #EXIT_FUNCTION data-toc-label=EXIT_FUNCTION }</p>
+<p>return;
+&ldquo;* { #EXIT_FUNCTION data-toc-label=EXIT_FUNCTION }</p>
 <h3 id="FALSE"><em>QtIfwControlScript</em>.<strong>FALSE</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;false&rdquo;</em><a class="headerlink" href="#FALSE" title="Permanent link">&para;</a></h3>
 <h3 id="FINISHED_MESSAGE_LABEL"><em>QtIfwControlScript</em>.<strong>FINISHED_MESSAGE_LABEL</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;MessageLabel&rdquo;</em><a class="headerlink" href="#FINISHED_MESSAGE_LABEL" title="Permanent link">&para;</a></h3>
 <h3 id="FINISH_BUTTON"><em>QtIfwControlScript</em>.<strong>FINISH_BUTTON</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;buttons.FinishButton&rdquo;</em><a class="headerlink" href="#FINISH_BUTTON" title="Permanent link">&para;</a></h3>
@@ -2475,10 +2473,8 @@ to the file you know for a fact is found there)!</p>
 <h3 id="ERR_LOG_PATH_CMD_ARG"><em>QtIfwPackageScript</em>.<strong>ERR_LOG_PATH_CMD_ARG</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;errlog&rdquo;</em><a class="headerlink" href="#ERR_LOG_PATH_CMD_ARG" title="Permanent link">&para;</a></h3>
 <h3 id="EXCLUDE_LIST_CMD_ARG"><em>QtIfwPackageScript</em>.<strong>EXCLUDE_LIST_CMD_ARG</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;exclude&rdquo;</em><a class="headerlink" href="#EXCLUDE_LIST_CMD_ARG" title="Permanent link">&para;</a></h3>
 <h3 id="qtifwpackagescriptexit_function-class-str-default"><em>QtIfwPackageScript</em>.<strong>EXIT_FUNCTION</strong> <em>class &lsquo;str&rsquo;</em> default: *&rdquo;<a class="headerlink" href="#qtifwpackagescriptexit_function-class-str-default" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code><span class="k">return</span><span class="c1">;</span>
-</code></pre></div>
-
-<p>&rdquo;* { #EXIT_FUNCTION data-toc-label=EXIT_FUNCTION }</p>
+<p>return;
+&ldquo;* { #EXIT_FUNCTION data-toc-label=EXIT_FUNCTION }</p>
 <h3 id="FALSE"><em>QtIfwPackageScript</em>.<strong>FALSE</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;false&rdquo;</em><a class="headerlink" href="#FALSE" title="Permanent link">&para;</a></h3>
 <h3 id="IF"><em>QtIfwPackageScript</em>.<strong>IF</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;if &ldquo;</em><a class="headerlink" href="#IF" title="Permanent link">&para;</a></h3>
 <h3 id="INCLUDE_LIST_CMD_ARG"><em>QtIfwPackageScript</em>.<strong>INCLUDE_LIST_CMD_ARG</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;include&rdquo;</em><a class="headerlink" href="#INCLUDE_LIST_CMD_ARG" title="Permanent link">&para;</a></h3>
@@ -2651,34 +2647,30 @@ to the file you know for a fact is found there)!</p>
 <h3 id="resolve"><em>obj</em>.<strong>resolve</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qtIfwConfig</span><span class="p">)</span></code><a class="headerlink" href="#resolve" title="Permanent link">&para;</a></h3>
 <h3 id="write"><em>obj</em>.<strong>write</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dirPath</span><span class="p">)</span></code><a class="headerlink" href="#write" title="Permanent link">&para;</a></h3>
 <h3 id="qtifwsimpletextpagebase_on_enter_tmpt-class-str-default"><em>QtIfwSimpleTextPage</em>.<strong>BASE_ON_ENTER_TMPT</strong> <em>class &lsquo;str&rsquo;</em> default: *&rdquo;<a class="headerlink" href="#qtifwsimpletextpagebase_on_enter_tmpt-class-str-default" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code><span class="n">var</span> <span class="n">page</span> <span class="o">=</span> <span class="n">gui</span><span class="p">.</span><span class="n">pageWidgetByObjectName</span><span class="p">(</span><span class="s">&quot;Dynamic%s&quot;</span><span class="p">);</span>
-<span class="k">if</span><span class="p">(</span> <span class="n">installer</span><span class="p">.</span><span class="n">value</span><span class="p">(</span> <span class="s">&quot;auto&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span> <span class="p">)</span><span class="o">==</span><span class="s">&quot;true&quot;</span> <span class="p">)</span>
-    <span class="n">gui</span><span class="p">.</span><span class="n">clickButton</span><span class="p">(</span><span class="n">buttons</span><span class="p">.</span><span class="n">NextButton</span><span class="p">);</span>
-<span class="k">else</span> <span class="p">{</span>
-<span class="nf">%s</span>                        
-<span class="p">}</span>
-</code></pre></div>
-
-<p>&rdquo;* { #BASE_ON_ENTER_TMPT data-toc-label=BASE_ON_ENTER_TMPT }</p>
+<p>var page = gui.pageWidgetByObjectName(&ldquo;Dynamic%s&rdquo;);
+if( installer.value( &ldquo;auto&rdquo;, &ldquo;&rdquo; )==&rdquo;true&rdquo; )
+gui.clickButton(buttons.NextButton);
+else {
+%s                      <br />
+}
+&ldquo;* { #BASE_ON_ENTER_TMPT data-toc-label=BASE_ON_ENTER_TMPT }</p>
 <h3 id="qtifwsimpletextpagebase_on_load_tmpt-class-str-default"><em>QtIfwSimpleTextPage</em>.<strong>BASE_ON_LOAD_TMPT</strong> <em>class &lsquo;str&rsquo;</em> default: *&rdquo;<a class="headerlink" href="#qtifwsimpletextpagebase_on_load_tmpt-class-str-default" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code><span class="k">var</span> <span class="n">page</span> <span class="o">=</span> <span class="n">gui</span><span class="o">.</span><span class="n">pageWidgetByObjectName</span><span class="p">(</span> <span class="s2">&quot;Dynamic</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="p">);</span>
-<span class="k">var</span> <span class="n">wizardStyle</span> <span class="o">=</span> <span class="n">installer</span><span class="o">.</span><span class="n">value</span><span class="p">(</span> <span class="s2">&quot;__wizardStyle&quot;</span><span class="p">,</span> <span class="s2">&quot;Aero&quot;</span> <span class="p">);</span>
-<span class="n">switch</span><span class="p">(</span> <span class="n">wizardStyle</span> <span class="p">){</span>
-<span class="n">case</span> <span class="s2">&quot;Mac&quot;</span><span class="p">:</span> 
-    <span class="n">page</span><span class="o">.</span><span class="n">minimumSize</span><span class="o">.</span><span class="n">width</span><span class="o">=</span><span class="mi">300</span><span class="p">;</span>
-    <span class="k">break</span><span class="p">;</span>
-<span class="n">case</span> <span class="s2">&quot;Classic&quot;</span><span class="p">:</span> 
-    <span class="n">page</span><span class="o">.</span><span class="n">minimumSize</span><span class="o">.</span><span class="n">width</span><span class="o">=</span><span class="mi">475</span><span class="p">;</span>
-    <span class="k">break</span><span class="p">;</span>
-<span class="n">case</span> <span class="s2">&quot;Modern&quot;</span><span class="p">:</span> 
-    <span class="n">page</span><span class="o">.</span><span class="n">minimumSize</span><span class="o">.</span><span class="n">width</span><span class="o">=</span><span class="mi">480</span><span class="p">;</span>
-    <span class="k">break</span><span class="p">;</span>        
-<span class="n">default</span><span class="p">:</span> <span class="o">//</span> <span class="s2">&quot;Aero&quot;</span> <span class="o">-</span> <span class="n">This</span> <span class="k">is</span> <span class="n">the</span> <span class="n">hard</span> <span class="n">coded</span> <span class="n">width</span> <span class="n">of</span> <span class="n">QtIfw</span> <span class="n">example</span> <span class="o">.</span><span class="n">ui</span><span class="s1">&#39;s</span>
-    <span class="n">page</span><span class="o">.</span><span class="n">minimumSize</span><span class="o">.</span><span class="n">width</span><span class="o">=</span><span class="mi">491</span><span class="p">;</span>   
-<span class="p">}</span>
-</code></pre></div>
-
-<p>&rdquo;* { #BASE_ON_LOAD_TMPT data-toc-label=BASE_ON_LOAD_TMPT }</p>
+<p>var page = gui.pageWidgetByObjectName( &ldquo;Dynamic%s&rdquo; );
+var wizardStyle = installer.value( &ldquo;__wizardStyle&rdquo;, &ldquo;Aero&rdquo; );
+switch( wizardStyle ){
+case &ldquo;Mac&rdquo;: 
+page.minimumSize.width=300;
+break;
+case &ldquo;Classic&rdquo;: 
+page.minimumSize.width=475;
+break;
+case &ldquo;Modern&rdquo;: 
+page.minimumSize.width=480;
+break;      <br />
+default: // &ldquo;Aero&rdquo; - This is the hard coded width of QtIfw example .ui&rsquo;s
+page.minimumSize.width=491; <br />
+}  <br />
+&ldquo;* { #BASE_ON_LOAD_TMPT data-toc-label=BASE_ON_LOAD_TMPT }</p>
 <hr />
 <h2 id="QtIfwTargetDirPage"><strong>QtIfwTargetDirPage</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#QtIfwTargetDirPage" title="Permanent link">&para;</a></h2>
 <p><strong>Base Classes:</strong></p>
@@ -2705,34 +2697,30 @@ to the file you know for a fact is found there)!</p>
 <h3 id="resolve"><em>obj</em>.<strong>resolve</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qtIfwConfig</span><span class="p">)</span></code><a class="headerlink" href="#resolve" title="Permanent link">&para;</a></h3>
 <h3 id="write"><em>obj</em>.<strong>write</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dirPath</span><span class="p">)</span></code><a class="headerlink" href="#write" title="Permanent link">&para;</a></h3>
 <h3 id="qtifwtargetdirpagebase_on_enter_tmpt-class-str-default"><em>QtIfwTargetDirPage</em>.<strong>BASE_ON_ENTER_TMPT</strong> <em>class &lsquo;str&rsquo;</em> default: *&rdquo;<a class="headerlink" href="#qtifwtargetdirpagebase_on_enter_tmpt-class-str-default" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code><span class="n">var</span> <span class="n">page</span> <span class="o">=</span> <span class="n">gui</span><span class="p">.</span><span class="n">pageWidgetByObjectName</span><span class="p">(</span><span class="s">&quot;Dynamic%s&quot;</span><span class="p">);</span>
-<span class="k">if</span><span class="p">(</span> <span class="n">installer</span><span class="p">.</span><span class="n">value</span><span class="p">(</span> <span class="s">&quot;auto&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span> <span class="p">)</span><span class="o">==</span><span class="s">&quot;true&quot;</span> <span class="p">)</span>
-    <span class="n">gui</span><span class="p">.</span><span class="n">clickButton</span><span class="p">(</span><span class="n">buttons</span><span class="p">.</span><span class="n">NextButton</span><span class="p">);</span>
-<span class="k">else</span> <span class="p">{</span>
-<span class="nf">%s</span>                        
-<span class="p">}</span>
-</code></pre></div>
-
-<p>&rdquo;* { #BASE_ON_ENTER_TMPT data-toc-label=BASE_ON_ENTER_TMPT }</p>
+<p>var page = gui.pageWidgetByObjectName(&ldquo;Dynamic%s&rdquo;);
+if( installer.value( &ldquo;auto&rdquo;, &ldquo;&rdquo; )==&rdquo;true&rdquo; )
+gui.clickButton(buttons.NextButton);
+else {
+%s                      <br />
+}
+&ldquo;* { #BASE_ON_ENTER_TMPT data-toc-label=BASE_ON_ENTER_TMPT }</p>
 <h3 id="qtifwtargetdirpagebase_on_load_tmpt-class-str-default"><em>QtIfwTargetDirPage</em>.<strong>BASE_ON_LOAD_TMPT</strong> <em>class &lsquo;str&rsquo;</em> default: *&rdquo;<a class="headerlink" href="#qtifwtargetdirpagebase_on_load_tmpt-class-str-default" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code><span class="k">var</span> <span class="n">page</span> <span class="o">=</span> <span class="n">gui</span><span class="o">.</span><span class="n">pageWidgetByObjectName</span><span class="p">(</span> <span class="s2">&quot;Dynamic</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="p">);</span>
-<span class="k">var</span> <span class="n">wizardStyle</span> <span class="o">=</span> <span class="n">installer</span><span class="o">.</span><span class="n">value</span><span class="p">(</span> <span class="s2">&quot;__wizardStyle&quot;</span><span class="p">,</span> <span class="s2">&quot;Aero&quot;</span> <span class="p">);</span>
-<span class="n">switch</span><span class="p">(</span> <span class="n">wizardStyle</span> <span class="p">){</span>
-<span class="n">case</span> <span class="s2">&quot;Mac&quot;</span><span class="p">:</span> 
-    <span class="n">page</span><span class="o">.</span><span class="n">minimumSize</span><span class="o">.</span><span class="n">width</span><span class="o">=</span><span class="mi">300</span><span class="p">;</span>
-    <span class="k">break</span><span class="p">;</span>
-<span class="n">case</span> <span class="s2">&quot;Classic&quot;</span><span class="p">:</span> 
-    <span class="n">page</span><span class="o">.</span><span class="n">minimumSize</span><span class="o">.</span><span class="n">width</span><span class="o">=</span><span class="mi">475</span><span class="p">;</span>
-    <span class="k">break</span><span class="p">;</span>
-<span class="n">case</span> <span class="s2">&quot;Modern&quot;</span><span class="p">:</span> 
-    <span class="n">page</span><span class="o">.</span><span class="n">minimumSize</span><span class="o">.</span><span class="n">width</span><span class="o">=</span><span class="mi">480</span><span class="p">;</span>
-    <span class="k">break</span><span class="p">;</span>        
-<span class="n">default</span><span class="p">:</span> <span class="o">//</span> <span class="s2">&quot;Aero&quot;</span> <span class="o">-</span> <span class="n">This</span> <span class="k">is</span> <span class="n">the</span> <span class="n">hard</span> <span class="n">coded</span> <span class="n">width</span> <span class="n">of</span> <span class="n">QtIfw</span> <span class="n">example</span> <span class="o">.</span><span class="n">ui</span><span class="s1">&#39;s</span>
-    <span class="n">page</span><span class="o">.</span><span class="n">minimumSize</span><span class="o">.</span><span class="n">width</span><span class="o">=</span><span class="mi">491</span><span class="p">;</span>   
-<span class="p">}</span>
-</code></pre></div>
-
-<p>&rdquo;* { #BASE_ON_LOAD_TMPT data-toc-label=BASE_ON_LOAD_TMPT }</p>
+<p>var page = gui.pageWidgetByObjectName( &ldquo;Dynamic%s&rdquo; );
+var wizardStyle = installer.value( &ldquo;__wizardStyle&rdquo;, &ldquo;Aero&rdquo; );
+switch( wizardStyle ){
+case &ldquo;Mac&rdquo;: 
+page.minimumSize.width=300;
+break;
+case &ldquo;Classic&rdquo;: 
+page.minimumSize.width=475;
+break;
+case &ldquo;Modern&rdquo;: 
+page.minimumSize.width=480;
+break;      <br />
+default: // &ldquo;Aero&rdquo; - This is the hard coded width of QtIfw example .ui&rsquo;s
+page.minimumSize.width=491; <br />
+}  <br />
+&ldquo;* { #BASE_ON_LOAD_TMPT data-toc-label=BASE_ON_LOAD_TMPT }</p>
 <h3 id="NAME"><em>QtIfwTargetDirPage</em>.<strong>NAME</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;ReplaceTargetDirectory&rdquo;</em><a class="headerlink" href="#NAME" title="Permanent link">&para;</a></h3>
 <hr />
 <h2 id="QtIfwUiPage"><strong>QtIfwUiPage</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#QtIfwUiPage" title="Permanent link">&para;</a></h2>
@@ -2766,34 +2754,30 @@ to the file you know for a fact is found there)!</p>
 <h3 id="pageOrder"><em>obj</em>.<strong>pageOrder</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#pageOrder" title="Permanent link">&para;</a></h3>
 <h3 id="isIncInAutoPilot"><em>obj</em>.<strong>isIncInAutoPilot</strong> <em>class &lsquo;bool&rsquo;</em> default: <em>False</em><a class="headerlink" href="#isIncInAutoPilot" title="Permanent link">&para;</a></h3>
 <h3 id="qtifwuipagebase_on_enter_tmpt-class-str-default"><em>QtIfwUiPage</em>.<strong>BASE_ON_ENTER_TMPT</strong> <em>class &lsquo;str&rsquo;</em> default: *&rdquo;<a class="headerlink" href="#qtifwuipagebase_on_enter_tmpt-class-str-default" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code><span class="n">var</span> <span class="n">page</span> <span class="o">=</span> <span class="n">gui</span><span class="p">.</span><span class="n">pageWidgetByObjectName</span><span class="p">(</span><span class="s">&quot;Dynamic%s&quot;</span><span class="p">);</span>
-<span class="k">if</span><span class="p">(</span> <span class="n">installer</span><span class="p">.</span><span class="n">value</span><span class="p">(</span> <span class="s">&quot;auto&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span> <span class="p">)</span><span class="o">==</span><span class="s">&quot;true&quot;</span> <span class="p">)</span>
-    <span class="n">gui</span><span class="p">.</span><span class="n">clickButton</span><span class="p">(</span><span class="n">buttons</span><span class="p">.</span><span class="n">NextButton</span><span class="p">);</span>
-<span class="k">else</span> <span class="p">{</span>
-<span class="nf">%s</span>                        
-<span class="p">}</span>
-</code></pre></div>
-
-<p>&rdquo;* { #BASE_ON_ENTER_TMPT data-toc-label=BASE_ON_ENTER_TMPT }</p>
+<p>var page = gui.pageWidgetByObjectName(&ldquo;Dynamic%s&rdquo;);
+if( installer.value( &ldquo;auto&rdquo;, &ldquo;&rdquo; )==&rdquo;true&rdquo; )
+gui.clickButton(buttons.NextButton);
+else {
+%s                      <br />
+}
+&ldquo;* { #BASE_ON_ENTER_TMPT data-toc-label=BASE_ON_ENTER_TMPT }</p>
 <h3 id="qtifwuipagebase_on_load_tmpt-class-str-default"><em>QtIfwUiPage</em>.<strong>BASE_ON_LOAD_TMPT</strong> <em>class &lsquo;str&rsquo;</em> default: *&rdquo;<a class="headerlink" href="#qtifwuipagebase_on_load_tmpt-class-str-default" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code><span class="k">var</span> <span class="n">page</span> <span class="o">=</span> <span class="n">gui</span><span class="o">.</span><span class="n">pageWidgetByObjectName</span><span class="p">(</span> <span class="s2">&quot;Dynamic</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="p">);</span>
-<span class="k">var</span> <span class="n">wizardStyle</span> <span class="o">=</span> <span class="n">installer</span><span class="o">.</span><span class="n">value</span><span class="p">(</span> <span class="s2">&quot;__wizardStyle&quot;</span><span class="p">,</span> <span class="s2">&quot;Aero&quot;</span> <span class="p">);</span>
-<span class="n">switch</span><span class="p">(</span> <span class="n">wizardStyle</span> <span class="p">){</span>
-<span class="n">case</span> <span class="s2">&quot;Mac&quot;</span><span class="p">:</span> 
-    <span class="n">page</span><span class="o">.</span><span class="n">minimumSize</span><span class="o">.</span><span class="n">width</span><span class="o">=</span><span class="mi">300</span><span class="p">;</span>
-    <span class="k">break</span><span class="p">;</span>
-<span class="n">case</span> <span class="s2">&quot;Classic&quot;</span><span class="p">:</span> 
-    <span class="n">page</span><span class="o">.</span><span class="n">minimumSize</span><span class="o">.</span><span class="n">width</span><span class="o">=</span><span class="mi">475</span><span class="p">;</span>
-    <span class="k">break</span><span class="p">;</span>
-<span class="n">case</span> <span class="s2">&quot;Modern&quot;</span><span class="p">:</span> 
-    <span class="n">page</span><span class="o">.</span><span class="n">minimumSize</span><span class="o">.</span><span class="n">width</span><span class="o">=</span><span class="mi">480</span><span class="p">;</span>
-    <span class="k">break</span><span class="p">;</span>        
-<span class="n">default</span><span class="p">:</span> <span class="o">//</span> <span class="s2">&quot;Aero&quot;</span> <span class="o">-</span> <span class="n">This</span> <span class="k">is</span> <span class="n">the</span> <span class="n">hard</span> <span class="n">coded</span> <span class="n">width</span> <span class="n">of</span> <span class="n">QtIfw</span> <span class="n">example</span> <span class="o">.</span><span class="n">ui</span><span class="s1">&#39;s</span>
-    <span class="n">page</span><span class="o">.</span><span class="n">minimumSize</span><span class="o">.</span><span class="n">width</span><span class="o">=</span><span class="mi">491</span><span class="p">;</span>   
-<span class="p">}</span>
-</code></pre></div>
-
-<p>&rdquo;* { #BASE_ON_LOAD_TMPT data-toc-label=BASE_ON_LOAD_TMPT }</p>
+<p>var page = gui.pageWidgetByObjectName( &ldquo;Dynamic%s&rdquo; );
+var wizardStyle = installer.value( &ldquo;__wizardStyle&rdquo;, &ldquo;Aero&rdquo; );
+switch( wizardStyle ){
+case &ldquo;Mac&rdquo;: 
+page.minimumSize.width=300;
+break;
+case &ldquo;Classic&rdquo;: 
+page.minimumSize.width=475;
+break;
+case &ldquo;Modern&rdquo;: 
+page.minimumSize.width=480;
+break;      <br />
+default: // &ldquo;Aero&rdquo; - This is the hard coded width of QtIfw example .ui&rsquo;s
+page.minimumSize.width=491; <br />
+}  <br />
+&ldquo;* { #BASE_ON_LOAD_TMPT data-toc-label=BASE_ON_LOAD_TMPT }</p>
 <hr />
 <h2 id="QtIfwWidget"><strong>QtIfwWidget</strong><code class="highlight"><span class="k">class</span></code><a class="headerlink" href="#QtIfwWidget" title="Permanent link">&para;</a></h2>
 <p><strong>Base Classes:</strong></p>

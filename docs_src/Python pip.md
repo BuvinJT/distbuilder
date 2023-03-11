@@ -3,7 +3,7 @@
 See Pip docs for details on these settings.
 
 Important Note: source maybe a: 
-    package name, git repo url, or local path
+package name, git repo url, or local path
 
 **Magic Methods:**
 

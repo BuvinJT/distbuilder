@@ -1250,7 +1250,7 @@ DOES NOT WORK FOR WIZARD BUTTONS!!!
 
 
 ### *QtIfwControlScript*.**EXIT_FUNCTION** *class 'str'* default: *"
-    return;
+return;
 "* { #EXIT_FUNCTION data-toc-label=EXIT_FUNCTION }
 
 
@@ -2912,7 +2912,7 @@ PURE VIRTUAL
 
 
 ### *QtIfwPackageScript*.**EXIT_FUNCTION** *class 'str'* default: *"
-    return;
+return;
 "* { #EXIT_FUNCTION data-toc-label=EXIT_FUNCTION }
 
 
@@ -3273,31 +3273,31 @@ Initialize self.  See help(type(self)) for accurate signature.
 
 
 ### *QtIfwSimpleTextPage*.**BASE_ON_ENTER_TMPT** *class 'str'* default: *"
-    var page = gui.pageWidgetByObjectName("Dynamic%s");
-    if( installer.value( "auto", "" )=="true" )
-        gui.clickButton(buttons.NextButton);
-    else {
-    %s                        
-    }
+var page = gui.pageWidgetByObjectName("Dynamic%s");
+if( installer.value( "auto", "" )=="true" )
+gui.clickButton(buttons.NextButton);
+else {
+%s                        
+}
 "* { #BASE_ON_ENTER_TMPT data-toc-label=BASE_ON_ENTER_TMPT }
 
 
 ### *QtIfwSimpleTextPage*.**BASE_ON_LOAD_TMPT** *class 'str'* default: *"    
-    var page = gui.pageWidgetByObjectName( "Dynamic%s" );
-    var wizardStyle = installer.value( "__wizardStyle", "Aero" );
-    switch( wizardStyle ){
-    case "Mac": 
-        page.minimumSize.width=300;
-        break;
-    case "Classic": 
-        page.minimumSize.width=475;
-        break;
-    case "Modern": 
-        page.minimumSize.width=480;
-        break;        
-    default: // "Aero" - This is the hard coded width of QtIfw example .ui's
-        page.minimumSize.width=491;   
-    }    
+var page = gui.pageWidgetByObjectName( "Dynamic%s" );
+var wizardStyle = installer.value( "__wizardStyle", "Aero" );
+switch( wizardStyle ){
+case "Mac": 
+page.minimumSize.width=300;
+break;
+case "Classic": 
+page.minimumSize.width=475;
+break;
+case "Modern": 
+page.minimumSize.width=480;
+break;        
+default: // "Aero" - This is the hard coded width of QtIfw example .ui's
+page.minimumSize.width=491;   
+}    
 "* { #BASE_ON_LOAD_TMPT data-toc-label=BASE_ON_LOAD_TMPT }
 
 
@@ -3342,31 +3342,31 @@ Initialize self.  See help(type(self)) for accurate signature.
 
 
 ### *QtIfwTargetDirPage*.**BASE_ON_ENTER_TMPT** *class 'str'* default: *"
-    var page = gui.pageWidgetByObjectName("Dynamic%s");
-    if( installer.value( "auto", "" )=="true" )
-        gui.clickButton(buttons.NextButton);
-    else {
-    %s                        
-    }
+var page = gui.pageWidgetByObjectName("Dynamic%s");
+if( installer.value( "auto", "" )=="true" )
+gui.clickButton(buttons.NextButton);
+else {
+%s                        
+}
 "* { #BASE_ON_ENTER_TMPT data-toc-label=BASE_ON_ENTER_TMPT }
 
 
 ### *QtIfwTargetDirPage*.**BASE_ON_LOAD_TMPT** *class 'str'* default: *"    
-    var page = gui.pageWidgetByObjectName( "Dynamic%s" );
-    var wizardStyle = installer.value( "__wizardStyle", "Aero" );
-    switch( wizardStyle ){
-    case "Mac": 
-        page.minimumSize.width=300;
-        break;
-    case "Classic": 
-        page.minimumSize.width=475;
-        break;
-    case "Modern": 
-        page.minimumSize.width=480;
-        break;        
-    default: // "Aero" - This is the hard coded width of QtIfw example .ui's
-        page.minimumSize.width=491;   
-    }    
+var page = gui.pageWidgetByObjectName( "Dynamic%s" );
+var wizardStyle = installer.value( "__wizardStyle", "Aero" );
+switch( wizardStyle ){
+case "Mac": 
+page.minimumSize.width=300;
+break;
+case "Classic": 
+page.minimumSize.width=475;
+break;
+case "Modern": 
+page.minimumSize.width=480;
+break;        
+default: // "Aero" - This is the hard coded width of QtIfw example .ui's
+page.minimumSize.width=491;   
+}    
 "* { #BASE_ON_LOAD_TMPT data-toc-label=BASE_ON_LOAD_TMPT }
 
 
@@ -3424,31 +3424,31 @@ Initialize self.  See help(type(self)) for accurate signature.
 
 
 ### *QtIfwUiPage*.**BASE_ON_ENTER_TMPT** *class 'str'* default: *"
-    var page = gui.pageWidgetByObjectName("Dynamic%s");
-    if( installer.value( "auto", "" )=="true" )
-        gui.clickButton(buttons.NextButton);
-    else {
-    %s                        
-    }
+var page = gui.pageWidgetByObjectName("Dynamic%s");
+if( installer.value( "auto", "" )=="true" )
+gui.clickButton(buttons.NextButton);
+else {
+%s                        
+}
 "* { #BASE_ON_ENTER_TMPT data-toc-label=BASE_ON_ENTER_TMPT }
 
 
 ### *QtIfwUiPage*.**BASE_ON_LOAD_TMPT** *class 'str'* default: *"    
-    var page = gui.pageWidgetByObjectName( "Dynamic%s" );
-    var wizardStyle = installer.value( "__wizardStyle", "Aero" );
-    switch( wizardStyle ){
-    case "Mac": 
-        page.minimumSize.width=300;
-        break;
-    case "Classic": 
-        page.minimumSize.width=475;
-        break;
-    case "Modern": 
-        page.minimumSize.width=480;
-        break;        
-    default: // "Aero" - This is the hard coded width of QtIfw example .ui's
-        page.minimumSize.width=491;   
-    }    
+var page = gui.pageWidgetByObjectName( "Dynamic%s" );
+var wizardStyle = installer.value( "__wizardStyle", "Aero" );
+switch( wizardStyle ){
+case "Mac": 
+page.minimumSize.width=300;
+break;
+case "Classic": 
+page.minimumSize.width=475;
+break;
+case "Modern": 
+page.minimumSize.width=480;
+break;        
+default: // "Aero" - This is the hard coded width of QtIfw example .ui's
+page.minimumSize.width=491;   
+}    
 "* { #BASE_ON_LOAD_TMPT data-toc-label=BASE_ON_LOAD_TMPT }
 
 
