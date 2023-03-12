@@ -65,6 +65,124 @@ Qt C++ Integration:
 * Clang
 * GCC/G++
 
+## Installation Help
+
+### Problems with Pip
+
+- If a simple `pip` command is not working for you, you may need to use the "long version" of that command:  
+
+```
+python -m pip install distbuilder
+```
+ 
+- Within some environments, it may be necessary to run pip installations with **elevated privileges**, e.g. by prefixing the command with `sudo`.
+
+### From source installation
+
+To install from the raw source instead (useful if you want a 
+"cutting edge" alpha release), you may perform a Git clone from 
+`https://github.com/BuvinJT/distbuilder.git`, 
+or otherwise download the repository in a "flat" manner 
+from the [GitHub Page](https://github.com/BuvinJT/distbuilder).
+You may also visit the [PyPi downloads](https://pypi.org/project/distbuilder/#files) 
+page for this project to instantly acquire an official release in the form 
+of a tarball.
+
+With a local copy of the full source, on Windows you may be able
+to simply run `install.bat` (or `install3.bat`). 
+On Mac or Linux, you may use the counterpart `install.sh` 
+(or `install3.sh`) instead.  Those scripts are found in the repo's
+root.
+
+If you encounter failures with those scripts, you probably need to 
+tweak them slightly for your environment.  Before attempting that, 
+however, try this "manual" approach. From a command line interface, 
+change to the directory containing the source, then execute:
+
+	python -m pip install .
+
+    (Don't miss the period at the end!)
+
+## Pre-Requisites
+
+### Python 2.7 or Newer
+
+If you don't have [Python](https://www.python.org/) installed, you'll 
+need to start there!
+
+While it *may* be possible to run distbuilder on versions of Python predating v.2.7,  
+this is not a supported condition. It recommended that you use v.3.x if possible, since
+Python 2 is now officially "dead" to begin with... 
+
+### Pip
+
+Both the distbuilder installation, and the use of *some features within it*, 
+require [pip](https://docs.python.org/3/installing/index.html). 
+More than likely, you already have that installed.  If not, note that the installation 
+process may be slightly different based on your platform or environmental details 
+(e.g. having multiple Python installations).  The scope of such matters is beyond what 
+can be addressed here.  Refer to these links as a starting point: 
+
+- [Pip on Windows](https://stackoverflow.com/questions/4750806/how-do-i-install-pip-on-windows)
+- [Pip on Mac](https://stackoverflow.com/questions/17271319/how-do-i-install-pip-on-macos-or-os-x)
+- [Pip on Linux](https://stackoverflow.com/questions/6587507/how-to-install-pip-with-python-3)
+
+### Opy
+
+The distbuilder library requires a *fork* from the open source project 
+"Opy", dubbed "**Opy for Distribution Builder**". When installing 
+distbuilder, this dependency should be **automatically installed**
+for you. To acquire the source for that directly, and manually install
+it instead, you may use the links/urls below:  
+
+[Opy for Distribution Builder](https://github.com/QQuick/Opy/tree/opy_distbuilder)  
+
+Or, via the direct git clone url:
+
+`https://github.com/QQuick/Opy.git`
+	
+BRANCH: opy_distbuilder
+	
+The most recent (development) commits, however, are 
+accessible from the development [GitHub Page](https://github.com/BuvinJT/Opy)
+or directly via git using:   
+
+`https://github.com/BuvinJT/Opy.git`		
+
+### Qt Installer Framework (optional / recommended) 
+
+Additionally, the "Qt Installer Framework"
+is a conditional dependency.  This component is not a hard
+requirement, but is *strongly recommended*, so 
+that you may employ the installer creating features
+offered by distbuilder.
+
+When you use the library's features which require 
+this external utility, it will be **automatically installed** 
+for you, if it is not already present on the system (or 
+cannot be found).
+
+If desired, you may also manually install it. 
+Installation and uninstallation can, in fact, be accomplished
+with functions provided by distbuilder. (Refer to 
+[installQtIfw](LowLevel.md#installqtifw) / [unInstallQtIfw](LowLevel.md#uninstallqtifw)
+for details.)
+
+Alternatively, QtIFW can be directly acquired from: 
+[QtIFW downloads](http://download.qt.io/official_releases/qt-installer-framework)
+
+If manually installed, the "best" way to integrate it 
+with distbuilder is to define an environmental
+variable named `QT_IFW_DIR` and the set value
+for that equal to the directory where you 
+installed the utility. See [QtIFW issues](Issues.md#qt-installer-framework-issues) 
+if you require help with that.  Note, it also possible to
+supply the path within your implementation script. 
+Refer to [QtIfwConfig](ConfigClasses.md#qtifwconfig)
+or [buildInstaller](LowLevel.md#buildinstaller) for more details. 
+
+
+
 ## Binary launching runtime issues
 
 ### Relative resources

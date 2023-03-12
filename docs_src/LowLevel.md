@@ -1,4 +1,4 @@
-# Low Level Classes And Functions 
+# Granular Operations 
 ![distbuilder logo](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png)
 
 ## Stand Alone Executables 
