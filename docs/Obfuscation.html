@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="./img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Obfuscation - Distribution Builder</title>
+    <link href="./css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="./css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="./css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="./css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="./js/jquery-3.2.1.min.js"></script>
+    <script src="./js/bootstrap-3.3.7.min.js"></script>
+    <script src="./js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '.';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Additional Project Goals", url: "#_top", children: [
+          ]},
+          {title: "Important Notes", url: "#important-notes", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="./js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="QtCpp.html" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="QtCpp.html" class="btn btn-xs btn-link">
+        Qt C++ Integration
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="LowLevel.html" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="LowLevel.html" class="btn btn-xs btn-link">
+        Granular Operations
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h2 id="additional-project-goals">Additional Project Goals<a class="headerlink" href="#additional-project-goals" title="Permanent link">&para;</a></h2>
+<p>In addition to everything which is already fleshed out and functional within it, 
+&ldquo;Distribution Builder&rdquo; will soon supply a <strong>new development paradigm</strong>&hellip;  Using the 
+obfuscation and library management features, it will provide the ability for collaborators 
+to work on a <strong>Python</strong> project together, <strong>without directly sharing source code</strong>!</p>
+<p>We acknowledge this idea may to be deemed &ldquo;anti-Pythonic&rdquo; by purists, since the language is
+commonly employed for open source purposes, and the Python ecosystem is almost 100%
+open source.  Note that the &ldquo;Distribution Builder&rdquo; developers are not anti-open source!
+In fact, observe that this project is itself open source, and built over the top of other open 
+source projects!  We are, however, pro-security, and we advocate for the owners of 
+intellectual property. We argue that if it is not universally &ldquo;wrong&rdquo; to produce 
+close sourced programs, doing so should not be dubbed off limits with Python,
+if an organization or individual so choses.   </p>
+<p>Once theses features (in development) are completed and smoothed over, each Python developer 
+on a project could independently create libraries with a clear text 
+<em>public</em> interface, but which employ code bases that are obfuscated.  Other developers 
+could then implement the functionality of those libraries as they develop their modules.
+&ldquo;Distribution Builder&rdquo; could next seamlessly bring together everyone&rsquo;s work into a single 
+project, where all of the protected code bases work together and even the &ldquo;seams&rdquo; between 
+those public interfaces become obfuscated. In this scenario, each developer will have this 
+capability, and therefore be able to test their own work - on the fly - within the context 
+of the larger product.  </p>
+<p>Producing software in this manner, allows engineers to work together 
+on endeavors where there are gray areas pertaining to intellectual rights and/or the
+legalities of such have yet to be solidified.  This mechanism mitigates the risk
+of an individual stealing an entire code base, or being &ldquo;boxed out&rdquo; of a project for
+which they made considerable contributions.  </p>
+<p>While this overarching <em>concept</em> has long been available with other languages (e.g. with 
+C++ dll&rsquo;s and other analogous compiled components), this has not generally been an option 
+for Python.  Even in those languages where such is a &ldquo;ready option&rdquo;, a development scheme 
+of this nature is often too cumbersome to employ, or simply not an option developers have
+considered. &ldquo;Distribution Builder&rdquo; aims to make this a painless and realistic mode of 
+operation for Python.</p>
+<h2 id="important-notes">Important Notes<a class="headerlink" href="#important-notes" title="Permanent link">&para;</a></h2>
+<p>At the present time, the weakest components in the library are admittedly the obfuscation 
+features. There is a bit of a learning curve for utilizing such, and a fair degree of 
+effort is likely required to perfect it for your own project right now.  It is recommended 
+that you employ these security features only after getting the rest of your build process 
+defined.</p>
+
+  <br>
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="QtCpp.html" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="QtCpp.html" class="btn btn-xs btn-link">
+        Qt C++ Integration
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="LowLevel.html" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="LowLevel.html" class="btn btn-xs btn-link">
+        Granular Operations
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

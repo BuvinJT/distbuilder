@@ -34,6 +34,8 @@
         var pageToc = [
           {title: "Troubleshooting", url: "#_top", children: [
               {title: "Tested Against", url: "#tested-against" },
+              {title: "Installation Help", url: "#installation-help" },
+              {title: "Pre-Requisites", url: "#pre-requisites" },
               {title: "Binary launching runtime issues", url: "#binary-launching-runtime-issues" },
               {title: "Qt Installer Framework issues", url: "#qt-installer-framework-issues" },
               {title: "Get Help", url: "#get-help" },
@@ -144,6 +146,98 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 <li>Clang</li>
 <li>GCC/G++</li>
 </ul>
+<h2 id="installation-help">Installation Help<a class="headerlink" href="#installation-help" title="Permanent link">&para;</a></h2>
+<h3 id="problems-with-pip">Problems with Pip<a class="headerlink" href="#problems-with-pip" title="Permanent link">&para;</a></h3>
+<ul>
+<li>If a simple <code>pip</code> command is not working for you, you may need to use the &ldquo;long version&rdquo; of that command:  </li>
+</ul>
+<div class="highlight"><pre><span></span><code>python -m pip install distbuilder
+</code></pre></div>
+<ul>
+<li>Within some environments, it may be necessary to run pip installations with <strong>elevated privileges</strong>, e.g. by prefixing the command with <code>sudo</code>.</li>
+</ul>
+<h3 id="from-source-installation">From source installation<a class="headerlink" href="#from-source-installation" title="Permanent link">&para;</a></h3>
+<p>To install from the raw source instead (useful if you want a 
+&ldquo;cutting edge&rdquo; alpha release), you may perform a Git clone from 
+<code>https://github.com/BuvinJT/distbuilder.git</code>, 
+or otherwise download the repository in a &ldquo;flat&rdquo; manner 
+from the <a href="https://github.com/BuvinJT/distbuilder">GitHub Page</a>.
+You may also visit the <a href="https://pypi.org/project/distbuilder/#files">PyPi downloads</a> 
+page for this project to instantly acquire an official release in the form 
+of a tarball.</p>
+<p>With a local copy of the full source, on Windows you may be able
+to simply run <code>install.bat</code> (or <code>install3.bat</code>). 
+On Mac or Linux, you may use the counterpart <code>install.sh</code> 
+(or <code>install3.sh</code>) instead.  Those scripts are found in the repo&rsquo;s
+root.</p>
+<p>If you encounter failures with those scripts, you probably need to 
+tweak them slightly for your environment.  Before attempting that, 
+however, try this &ldquo;manual&rdquo; approach. From a command line interface, 
+change to the directory containing the source, then execute:</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">python</span> <span class="o">-</span><span class="nv">m</span> <span class="nv">pip</span> <span class="nv">install</span> .
+
+<span class="ss">(</span><span class="nv">Don</span><span class="s1">&#39;</span><span class="s">t miss the period at the end!)</span>
+</code></pre></div>
+
+<h2 id="pre-requisites">Pre-Requisites<a class="headerlink" href="#pre-requisites" title="Permanent link">&para;</a></h2>
+<h3 id="python-27-or-newer">Python 2.7 or Newer<a class="headerlink" href="#python-27-or-newer" title="Permanent link">&para;</a></h3>
+<p>If you don&rsquo;t have <a href="https://www.python.org/">Python</a> installed, you&rsquo;ll 
+need to start there!</p>
+<p>While it <em>may</em> be possible to run distbuilder on versions of Python predating v.2.7,<br />
+this is not a supported condition. It recommended that you use v.3.x if possible, since
+Python 2 is now officially &ldquo;dead&rdquo; to begin with&hellip; </p>
+<h3 id="pip">Pip<a class="headerlink" href="#pip" title="Permanent link">&para;</a></h3>
+<p>Both the distbuilder installation, and the use of <em>some features within it</em>, 
+require <a href="https://docs.python.org/3/installing/index.html">pip</a>. 
+More than likely, you already have that installed.  If not, note that the installation 
+process may be slightly different based on your platform or environmental details 
+(e.g. having multiple Python installations).  The scope of such matters is beyond what 
+can be addressed here.  Refer to these links as a starting point: </p>
+<ul>
+<li><a href="https://stackoverflow.com/questions/4750806/how-do-i-install-pip-on-windows">Pip on Windows</a></li>
+<li><a href="https://stackoverflow.com/questions/17271319/how-do-i-install-pip-on-macos-or-os-x">Pip on Mac</a></li>
+<li><a href="https://stackoverflow.com/questions/6587507/how-to-install-pip-with-python-3">Pip on Linux</a></li>
+</ul>
+<h3 id="opy">Opy<a class="headerlink" href="#opy" title="Permanent link">&para;</a></h3>
+<p>The distbuilder library requires a <em>fork</em> from the open source project 
+&ldquo;Opy&rdquo;, dubbed &ldquo;<strong>Opy for Distribution Builder</strong>&rdquo;. When installing 
+distbuilder, this dependency should be <strong>automatically installed</strong>
+for you. To acquire the source for that directly, and manually install
+it instead, you may use the links/urls below:  </p>
+<p><a href="https://github.com/QQuick/Opy/tree/opy_distbuilder">Opy for Distribution Builder</a>  </p>
+<p>Or, via the direct git clone url:</p>
+<p><code>https://github.com/QQuick/Opy.git</code></p>
+<p>BRANCH: opy_distbuilder</p>
+<p>The most recent (development) commits, however, are 
+accessible from the development <a href="https://github.com/BuvinJT/Opy">GitHub Page</a>
+or directly via git using:   </p>
+<p><code>https://github.com/BuvinJT/Opy.git</code>        </p>
+<h3 id="qt-installer-framework-optional-recommended">Qt Installer Framework (optional / recommended)<a class="headerlink" href="#qt-installer-framework-optional-recommended" title="Permanent link">&para;</a></h3>
+<p>Additionally, the &ldquo;Qt Installer Framework&rdquo;
+is a conditional dependency.  This component is not a hard
+requirement, but is <em>strongly recommended</em>, so 
+that you may employ the installer creating features
+offered by distbuilder.</p>
+<p>When you use the library&rsquo;s features which require 
+this external utility, it will be <strong>automatically installed</strong> 
+for you, if it is not already present on the system (or 
+cannot be found).</p>
+<p>If desired, you may also manually install it. 
+Installation and uninstallation can, in fact, be accomplished
+with functions provided by distbuilder. (Refer to 
+<a href="LowLevel.html#installqtifw">installQtIfw</a> / <a href="LowLevel.html#uninstallqtifw">unInstallQtIfw</a>
+for details.)</p>
+<p>Alternatively, QtIFW can be directly acquired from: 
+<a href="http://download.qt.io/official_releases/qt-installer-framework">QtIFW downloads</a></p>
+<p>If manually installed, the &ldquo;best&rdquo; way to integrate it 
+with distbuilder is to define an environmental
+variable named <code>QT_IFW_DIR</code> and the set value
+for that equal to the directory where you 
+installed the utility. See <a href="Issues.html#qt-installer-framework-issues">QtIFW issues</a> 
+if you require help with that.  Note, it also possible to
+supply the path within your implementation script. 
+Refer to <a href="ConfigClasses.html#qtifwconfig">QtIfwConfig</a>
+or <a href="LowLevel.html#buildinstaller">buildInstaller</a> for more details. </p>
 <h2 id="binary-launching-runtime-issues">Binary launching runtime issues<a class="headerlink" href="#binary-launching-runtime-issues" title="Permanent link">&para;</a></h2>
 <h3 id="relative-resources">Relative resources<a class="headerlink" href="#relative-resources" title="Permanent link">&para;</a></h3>
 <p>If your application uses &ldquo;relative resources&rdquo; (e.g. images, etc. packaged

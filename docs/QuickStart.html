@@ -34,10 +34,7 @@
         var pageToc = [
           {title: "Quick Start Guide", url: "#_top", children: [
               {title: "Installation", url: "#installation" },
-              {title: "Pre-Requisites", url: "#pre-requisites" },
-              {title: "Implementation Overview", url: "#implementation-overview" },
-              {title: "Getting Started", url: "#getting-started" },
-              {title: "Learn More", url: "#learn-more" },
+              {title: "Use", url: "#use" },
           ]},
         ];
 
@@ -83,147 +80,28 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
     <h1 id="quick-start-guide">Quick Start Guide<a class="headerlink" href="#quick-start-guide" title="Permanent link">&para;</a></h1>
 <p><img alt="distbuilder logo" src="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png" /></p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<h3 id="easy-installation-via-pip">Easy installation (via pip)<a class="headerlink" href="#easy-installation-via-pip" title="Permanent link">&para;</a></h3>
-<p>Depending upon your computer&rsquo;s configuration, installation may be as simple 
-as executing the following on your terminal / command prompt:</p>
+<p>Easy as pie:</p>
 <div class="codehilite"><pre><span></span><code>pip install distbuilder
 </code></pre></div>
 
-<p>Alternatively, you might need to use the &ldquo;long version&rdquo; of that:  </p>
-<div class="codehilite"><pre><span></span><code>python -m pip install distbuilder
-</code></pre></div>
-
-<p>Within some environments, it may necessary to run pip installations
-with elevated privileges, e.g. by prefixing the command with <code>sudo</code>.</p>
-<h3 id="from-source-installation">From source installation<a class="headerlink" href="#from-source-installation" title="Permanent link">&para;</a></h3>
-<p>To install from the raw source instead (useful if you want a 
-&ldquo;cutting edge&rdquo; alpha release), you may perform a Git clone from 
-<code>https://github.com/BuvinJT/distbuilder.git</code>, 
-or otherwise download the repository in a &ldquo;flat&rdquo; manner 
-from the <a href="https://github.com/BuvinJT/distbuilder">GitHub Page</a>.
-You may also visit the <a href="https://pypi.org/project/distbuilder/#files">PyPi downloads</a> 
-page for this project to instantly acquire an official release in the form 
-of a tarball.</p>
-<p>With a local copy of the full source, on Windows you may be able
-to simply run <code>install.bat</code> (or <code>install3.bat</code>). 
-On Mac or Linux, you may use the counterpart <code>install.sh</code> 
-(or <code>install3.sh</code>) instead.  Those scripts are found in the repo&rsquo;s
-root.</p>
-<p>If you encounter failures with those scripts, you probably need to 
-tweak them slightly for your environment.  Before attempting that, 
-however, try this &ldquo;manual&rdquo; approach. From a command line interface, 
-change to the directory containing the source, then execute:</p>
-<div class="codehilite"><pre><span></span><code><span class="nv">python</span> <span class="o">-</span><span class="nv">m</span> <span class="nv">pip</span> <span class="nv">install</span> .
-
-<span class="ss">(</span><span class="nv">Don</span><span class="s1">&#39;</span><span class="s">t miss the period at the end!)</span>
-</code></pre></div>
-
-<h2 id="pre-requisites">Pre-Requisites<a class="headerlink" href="#pre-requisites" title="Permanent link">&para;</a></h2>
-<h3 id="python-27-or-newer">Python 2.7 or Newer<a class="headerlink" href="#python-27-or-newer" title="Permanent link">&para;</a></h3>
-<p>If you don&rsquo;t have <a href="https://www.python.org/">Python</a> installed, you&rsquo;ll 
-need to start there!</p>
-<p>While it <em>may</em> be possible to run distbuilder on versions of Python predating v.2.7,<br />
-this is not a supported condition. It recommended that you use v.3.x if possible, since
-Python 2 is now officially &ldquo;dead&rdquo; to begin with&hellip; </p>
-<h3 id="pip">Pip<a class="headerlink" href="#pip" title="Permanent link">&para;</a></h3>
-<p>Both the distbuilder installation, and the use of <em>some features within it</em>, 
-require <a href="https://docs.python.org/3/installing/index.html">pip</a>. 
-More than likely, you already have that installed.  If not, note that the installation 
-process may be slightly different based on your platform or environmental details 
-(e.g. having multiple Python installations).  The scope of such matters is beyond what 
-can be addressed here.  Refer to these links as a starting point: </p>
+<blockquote>
+<p>Trouble? See: <a href="Issues.html#Installation-Help">Installation Help</a></p>
+</blockquote>
+<h2 id="use">Use<a class="headerlink" href="#use" title="Permanent link">&para;</a></h2>
+<h3 id="build-scripts">Build Scripts<a class="headerlink" href="#build-scripts" title="Permanent link">&para;</a></h3>
+<p>A standard way for distbuilder to be used is to have a <code>build.py</code> script placed in the root directory of a project.  The script employs this library to &ldquo;build&rdquo; a product of some form or another.  A developer may run the  script on demand, or it may be included in an automated process such as a build pipeline.</p>
+<p>Typically, build scripts follow a general pattern where they create a <a href="ConfigClasses.html#configfactory">ConfigFactory</a> along with an instance of a <a href="HighLevel.html">Process Class</a>. A collection of parameters are defined through the ConfigFactory and the Process is run to produce an archive file, an executable, an installer, or some other &ldquo;distribution package&rdquo;.</p>
+<h3 id="setup-scripts">Setup Scripts<a class="headerlink" href="#setup-scripts" title="Permanent link">&para;</a></h3>
+<p>Distbuilder is great to use within a <code>setup.py</code> script as well. It is a common Python practice to provide such a script to be run by each developer within their work environment. A setup script will install dependencies and perform other initialization tasks for working on the project. For more on this usage, refer to:</p>
 <ul>
-<li><a href="https://stackoverflow.com/questions/4750806/how-do-i-install-pip-on-windows">Pip on Windows</a></li>
-<li><a href="https://stackoverflow.com/questions/17271319/how-do-i-install-pip-on-macos-or-os-x">Pip on Mac</a></li>
-<li><a href="https://stackoverflow.com/questions/6587507/how-to-install-pip-with-python-3">Pip on Linux</a></li>
+<li><a href="LowLevel.html#library-installation">Library Installation</a></li>
+<li><a href="LowLevel.html#module-import-utilities">Module import utilities</a> </li>
+<li><a href="LowLevel.html#download">download</a></li>
+<li><a href="LowLevel.html#run">run</a></li>
 </ul>
-<h3 id="opy">Opy<a class="headerlink" href="#opy" title="Permanent link">&para;</a></h3>
-<p>The distbuilder library requires a <em>fork</em> from the open source project 
-&ldquo;Opy&rdquo;, dubbed &ldquo;<strong>Opy for Distribution Builder</strong>&rdquo;. When installing 
-distbuilder, this dependency should be <strong>automatically installed</strong>
-for you. To acquire the source for that directly, and manually install
-it instead, you may use the links/urls below:  </p>
-<p><a href="https://github.com/QQuick/Opy/tree/opy_distbuilder">Opy for Distribution Builder</a>  </p>
-<p>Or, via the direct git clone url:</p>
-<p><code>https://github.com/QQuick/Opy.git</code></p>
-<p>BRANCH: opy_distbuilder</p>
-<p>The most recent (development) commits, however, are 
-accessible from the development <a href="https://github.com/BuvinJT/Opy">GitHub Page</a>
-or directly via git using:   </p>
-<p><code>https://github.com/BuvinJT/Opy.git</code>        </p>
-<h3 id="qt-installer-framework-optional-recommended">Qt Installer Framework (optional / recommended)<a class="headerlink" href="#qt-installer-framework-optional-recommended" title="Permanent link">&para;</a></h3>
-<p>Additionally, the &ldquo;Qt Installer Framework&rdquo;
-is a conditional dependency.  This component is not a hard
-requirement, but is <em>strongly recommended</em>, so 
-that you may employ the installer creating features
-offered by distbuilder.</p>
-<p>When you use the library&rsquo;s features which require 
-this external utility, it will be <strong>automatically installed</strong> 
-for you, if it is not already present on the system (or 
-cannot be found).</p>
-<p>If desired, you may also manually install it. 
-Installation and uninstallation can, in fact, be accomplished
-with functions provided by distbuilder. (Refer to 
-<a href="LowLevel.html#installqtifw">installQtIfw</a> / <a href="LowLevel.html#uninstallqtifw">unInstallQtIfw</a>
-for details.)</p>
-<p>Alternatively, QtIFW can be directly acquired from: 
-<a href="http://download.qt.io/official_releases/qt-installer-framework">QtIFW downloads</a></p>
-<p>If manually installed, the &ldquo;best&rdquo; way to integrate it 
-with distbuilder is to define an environmental
-variable named <code>QT_IFW_DIR</code> and the set value
-for that equal to the directory where you 
-installed the utility. See <a href="Issues.html#qt-installer-framework-issues">QtIFW issues</a> 
-if you require help with that.  Note, it also possible to
-supply the path within your implementation script. 
-Refer to <a href="ConfigClasses.html#qtifwconfig">QtIfwConfig</a>
-or <a href="LowLevel.html#buildinstaller">buildInstaller</a> for more details. </p>
-<h2 id="implementation-overview">Implementation Overview<a class="headerlink" href="#implementation-overview" title="Permanent link">&para;</a></h2>
-<p>The &ldquo;standard&rdquo; way distbuilder is intended to be used is by
-adding a <code>build.py</code> script to the root directory of the
-project you wish to distribute. (Note: the file may have 
-any name of your choice - &ldquo;build.py&rdquo; is merely a 
-recommended naming convention).  After defining that 
-script, you simply run it to build your distribution package. </p>
-<p>In <code>build.py</code>, you may wish to import everything 
-from this library via <code>import distbuilder *</code>.  If 
-your build script will use a large collection of the 
-&ldquo;low level functions&rdquo; offered by the library, starting it 
-in that manner is often a convenient choice.  If you will only 
-be employing the high level classes and functions, you may be better 
-off to selectively import them.  The first example project
-<a href="Examples.html#hello-world-example">Hello World Example</a>, 
-for instance, only needs two specific imports, and so it starts out
-<code>from distbuilder import PyToBinPackageProcess, ConfigFactory</code>.      </p>
-<p>Additionally, distbuilder may serve you well as a <code>setup.py</code> script,
-which you run within a given development environment to install dependencies
-and/or perform other initialization tasks for working on the project.
-For more on this usage, refer to:</p>
-<ul>
-<li>
-<p><a href="LowLevel.html#library-installation">Library Installation</a></p>
-</li>
-<li>
-<p><a href="LowLevel.html#module-import-utilities">Module import utilities</a> </p>
-</li>
-<li>
-<p><a href="LowLevel.html#download">download</a></p>
-</li>
-<li>
-<p><a href="LowLevel.html#run">run</a></p>
-</li>
-</ul>
-<h2 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>
-<p>The easiest way for most people to learn how to use distbuilder is to step through
-some <a href="Examples.html">examples</a>. Unfortunately, it is not practical to provide, and
-describe, demonstrations of all of the library&rsquo;s features (and no reader would likely
-wish to invest the time required for such an endeavor!) If you spend just 10 minutes
-reviewing a handful of the ones provided, however, you should come away with a solid 
-base from which start employing this tool.  </p>
-<h2 id="learn-more">Learn More<a class="headerlink" href="#learn-more" title="Permanent link">&para;</a></h2>
-<p>For a more thorough explanation of how to use the 
-library, continue on to <a href="HighLevel.html">High Level Classes</a> next. 
-Then, review <a href="ConfigClasses.html#configuration-classes">Configuration Classes</a> 
-and/or <a href="LowLevel.html">Low Level Functions</a> for even more details.</p>
+<h3 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h3>
+<p>The easiest way for most people to learn how to use distbuilder is to dive head first into a few basic <a href="Examples.html">Examples</a>.  If you can afford just 5 to 10 minutes reviewing some of the provided demos, you should come away ready to start using this tool.  </p>
+<p>If you&rsquo;re ready to begin a more thorough examination of the library, continue on to <a href="HighLevel.html">Process Classes</a>, <a href="ConfigClasses.html#configuration-classes">Configuration Classes</a>, and <a href="LowLevel.html">Granular Operations</a> for even more details.</p>
 
   <br>
     
