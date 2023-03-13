@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="./img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Multi-Package Examples - Distribution Builder</title>
+    <link href="./css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="./css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="./css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="./css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="./js/jquery-3.2.1.min.js"></script>
+    <script src="./js/bootstrap-3.3.7.min.js"></script>
+    <script src="./js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '.';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Multi-Package Examples", url: "#_top", children: [
+              {title: "Hello Packages Example", url: "#hello-packages-example" },
+              {title: "Hello Merge Example", url: "#hello-merge-example" },
+          ]},
+        ];
+
+    </script>
+    <script src="./js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="ContextAlteringExamples.html" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="ContextAlteringExamples.html" class="btn btn-xs btn-link">
+        Context Altering Examples
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="BasicExamples.html" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="BasicExamples.html" class="btn btn-xs btn-link">
+        Basic Examples
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="multi-package-examples">Multi-Package Examples<a class="headerlink" href="#multi-package-examples" title="Permanent link">&para;</a></h1>
+<p><img alt="distbuilder logo" src="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png" /></p>
+<h2 id="hello-packages-example">Hello Packages Example<a class="headerlink" href="#hello-packages-example" title="Permanent link">&para;</a></h2>
+<p>The Hello Packages Example is a demonstration of using the 
+<a href="HighLevel.html#robustinstallerprocess">RobustInstallerProcess</a> class.
+It demonstrates a way that you can generate and then &ldquo;combine&rdquo; multiple 
+&ldquo;packages&rdquo; into a single installer with a single build process.
+In this case, those become separate components which may be 
+installed <em>selectively</em> by the end user. </p>
+<p>This example requires that both of the first examples 
+(Hello World &amp; Hello World Tk) be present in the testing environment 
+within directories adjacent to a third directory where you place the next file.
+Those first two must be named <code>hello_world</code> and <code>hello_world_tk</code> for this
+&ldquo;master&rdquo; script to function.</p>
+<p>You may download/copy the example file directly from GitHub 
+(into a <code>hello_packages</code> directory):   </p>
+<p>Build script: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_packages/build.py">build.py</a></p>
+<h2 id="hello-merge-example">Hello Merge Example<a class="headerlink" href="#hello-merge-example" title="Permanent link">&para;</a></h2>
+<p>This is another demonstration of using the 
+<a href="HighLevel.html#robust-installer-process">RobustInstallerProcess</a> class.</p>
+<p>Similar to the Hello Packages Example, Hello Merge demonstrates 
+how you can &ldquo;merge&rdquo; multiple &ldquo;packages&rdquo; into a <em>single package</em> within
+an installer.  The content of the two programs, which worked independently,
+will become one component which may <em>NOT</em> be installed selectively by the user. </p>
+<p>This example requires that both of the first examples 
+(Hello World &amp; Hello World Tk) be present in the testing environment 
+within directories adjacent to a third directory where you place the next file.
+Those first two must be named <code>hello_world</code> and <code>hello_world_tk</code> for this
+&ldquo;master&rdquo; script to function.</p>
+<p>You may download/copy the example file directly from GitHub 
+(into a <code>hello_merge</code> directory):   </p>
+<p>Build script: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_merge/build.py">build.py</a></p>
+<p>The key points to this example are to demo the implementation of the<br />
+<a href="HighLevel.html#onPackagesStaged">onPackagesStaged</a> virtual function of
+<a href="HighLevel.html#robust-installer-process">RobustInstallerProcess</a>.
+Within that, <a href="LowLevel.html#qtifwpackage-list-manipulation">QtIfwPackage list manipulation</a> 
+is shown (by default) via <a href="LowLevel.html#mergeQtIfwPackages">mergeQtIfwPackages</a>.
+If you comment that line out, and uncomment the call to 
+<a href="LowLevel.html#nestQtIfwPackage">nestQtIfwPackage</a> below it,
+you may test the results of these alternate ways to combine packages.</p>
+<p>The demo goes on to show low-level manipulations, and regenerations of the files
+produced by, <a href="ConfigClasses.html#qtifwpackage">QtIfwConfigXml</a> and 
+<a href="ConfigClasses.html#qtifwpackage">QtIfwPackageXml</a> objects to give you further
+insight into the design patterns and functionality of the library. </p>
+
+  <br>
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="ContextAlteringExamples.html" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="ContextAlteringExamples.html" class="btn btn-xs btn-link">
+        Context Altering Examples
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="BasicExamples.html" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="BasicExamples.html" class="btn btn-xs btn-link">
+        Basic Examples
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="./img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Context Altering Examples - Distribution Builder</title>
+    <link href="./css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="./css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="./css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="./css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="./js/jquery-3.2.1.min.js"></script>
+    <script src="./js/bootstrap-3.3.7.min.js"></script>
+    <script src="./js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '.';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Context Altering Examples", url: "#_top", children: [
+              {title: "Hello Silent Example", url: "#hello-silent-example" },
+              {title: "Hello Wrapper Example", url: "#hello-wrapper-example" },
+              {title: "Hello Startup Example", url: "#hello-startup-example" },
+          ]},
+        ];
+
+    </script>
+    <script src="./js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="InstallerOperationsExamples.html" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="InstallerOperationsExamples.html" class="btn btn-xs btn-link">
+        Installer Operations Examples
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="MultiPackageExamples.html" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="MultiPackageExamples.html" class="btn btn-xs btn-link">
+        Multi-Package Examples
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="context-altering-examples">Context Altering Examples<a class="headerlink" href="#context-altering-examples" title="Permanent link">&para;</a></h1>
+<p><img alt="distbuilder logo" src="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png" /></p>
+<h2 id="hello-silent-example">Hello Silent Example<a class="headerlink" href="#hello-silent-example" title="Permanent link">&para;</a></h2>
+<p>It is another demonstration of using the 
+<a href="HighLevel.html#pytobininstallerprocess">PyToBinInstallerProcess</a> class.</p>
+<p>Hello Silent demonstrates how one can use distbuilder to build &ldquo;silent&rdquo; installers. 
+These do not require user interactions for them to complete their tasks.  Instead, 
+they run automatically, while having the same flexible options present in the gui 
+installers made available via command line arguments.</p>
+<p>&ldquo;Silent&rdquo; installers built by distbuilder provide a very important additional feature.<br />
+They are able to be run in <strong>non-gui contexts</strong>, such as on &ldquo;headless servers&rdquo;.
+Silent installers are, of course, also desirable (on any platform) for mass 
+installation purposes such as when a network administrator needs to install the 
+same program on countless workstations. </p>
+<p>Building a silent installer requires nothing more than setting the 
+<code>isSilentSetup</code> configuration option to <code>True</code>.  As such, you can easily define a 
+full blown packaging and installation process that could be run in Windows (for example) 
+using an interactive graphical interface, AND could also be used on a CentOS server 
+(for example), with nothing but a terminal interface available. 
+You would only have to toggle the <code>isSilentSetup</code> option before running the build script!</p>
+<p>This example expects that you already downloaded the first example 
+(Hello World). That must be present in the testing environment within a directory 
+adjacent to where you place the next file.  That first directory must be 
+named <code>hello_world</code> for this &ldquo;master&rdquo; script (which draws upon that) to function.</p>
+<p>You may download/copy the example file directly from GitHub 
+(into a <code>hello_silent</code> directory):   </p>
+<p>Build script: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_silent/build.py">build.py</a></p>
+<p>Upon building the silent installer, the demo is set to test &ldquo;Auto Installation&rdquo; of it. 
+With that enabled, it will run the installer with the command line argument to 
+&ldquo;force installation&rdquo;. If run more than once, that option will cause it to uninstall 
+any prior existing installation rather than exiting with an error, as it would do
+by default when a conflict was detected.</p>
+<p>For more information, refer to <a href="LowLevel.html#silent-installers">Silent Installers</a>.</p>
+<h2 id="hello-wrapper-example">Hello Wrapper Example<a class="headerlink" href="#hello-wrapper-example" title="Permanent link">&para;</a></h2>
+<p>This example provides a <strong>collection</strong> of demonstrations using the
+<a href="ConfigClasses.html#qtifwexewrapper">QtIfwExeWrapper</a> class. A &ldquo;wrapper&rdquo; 
+can super impose environmental conditions on the context
+within which the binary is run.  Notably, this may include an 
+<a href="LowLevel.html#executablescript">ExecutableScript</a> for maximum flexibility.
+Follow the links to learn to more.</p>
+<p>This example requires that both of the first examples 
+(Hello World &amp; Hello World Tk) be present in the testing environment 
+within directories adjacent to a third directory where you place the next set of files.
+Those first two must be named <code>hello_world</code> and <code>hello_world_tk</code> for this
+&ldquo;master&rdquo; script to fully function.</p>
+<p>You may download/copy the example files directly from GitHub 
+(into a <code>hello_wrapper</code> directory):   </p>
+<p>Build script: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_wrapper/build.py">build.py</a></p>
+<p>GUI app: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_wrapper/hello_gui.py">hello_gui.py</a></p>
+<p>Terminal app: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_wrapper/hello_terminal.py">hello_terminal.py</a></p>
+<p>Within the build script, select a particular example to test and uncomment its <code>p.run()</code> line.  Then, run the script to see the results.  </p>
+<p>In conjunction with choosing a wrapper feature to test, you may switch between
+a gui and non-gui context. To do so, swap the commented out lines in the ConfigFactory
+attributes. That is, near the top of the script change:</p>
+<div class="codehilite"><pre><span></span><code>f.isGui            = True        
+f.entryPointPy     = &quot;hello_gui.py&quot;
+</code></pre></div>
+
+<p>To: </p>
+<div class="codehilite"><pre><span></span><code>f.isGui            = False 
+f.entryPointPy     = &quot;hello_terminal.py&quot;
+</code></pre></div>
+
+<p>When the resulting app is run, it will show the effect of implementing the 
+various wrapper features e.g. the arguments the program received, or if you 
+are running in an &ldquo;elevated&rdquo; context, etc.  </p>
+<p>If desired, you may also wish to test running these demo programs post installation in 
+&ldquo;debug mode&rdquo;. See the documentation on the <a href="LowLevel.html#run">run</a> function.</p>
+<h2 id="hello-startup-example">Hello Startup Example<a class="headerlink" href="#hello-startup-example" title="Permanent link">&para;</a></h2>
+<p>TODO: FILL IN!</p>
+
+  <br>
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="InstallerOperationsExamples.html" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="InstallerOperationsExamples.html" class="btn btn-xs btn-link">
+        Installer Operations Examples
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="MultiPackageExamples.html" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="MultiPackageExamples.html" class="btn btn-xs btn-link">
+        Multi-Package Examples
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

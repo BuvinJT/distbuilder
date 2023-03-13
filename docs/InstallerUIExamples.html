@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="./img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Installer UI Examples - Distribution Builder</title>
+    <link href="./css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="./css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="./css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="./css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="./js/jquery-3.2.1.min.js"></script>
+    <script src="./js/bootstrap-3.3.7.min.js"></script>
+    <script src="./js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '.';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Installer UI Examples", url: "#_top", children: [
+              {title: "Custom Graphics Examples", url: "#custom-graphics-examples" },
+              {title: "Custom Interactions Examples", url: "#custom-interactions-examples" },
+              {title: "Custom Pages Examples", url: "#custom-pages-examples" },
+              {title: "Widget Injections Example", url: "#widget-injections-example" },
+              {title: "Hello Dynamic Finish Example", url: "#hello-dynamic-finish-example" },
+          ]},
+        ];
+
+    </script>
+    <script src="./js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="CodeSigningExamples.html" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="CodeSigningExamples.html" class="btn btn-xs btn-link">
+        Code Signing Examples
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="InstallerOperationsExamples.html" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="InstallerOperationsExamples.html" class="btn btn-xs btn-link">
+        Installer Operations Examples
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="installer-ui-examples">Installer UI Examples<a class="headerlink" href="#installer-ui-examples" title="Permanent link">&para;</a></h1>
+<p><img alt="distbuilder logo" src="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png" /></p>
+<h2 id="custom-graphics-examples">Custom Graphics Examples<a class="headerlink" href="#custom-graphics-examples" title="Permanent link">&para;</a></h2>
+<p>TODO: FILL IN!</p>
+<h2 id="custom-interactions-examples">Custom Interactions Examples<a class="headerlink" href="#custom-interactions-examples" title="Permanent link">&para;</a></h2>
+<p>TODO: FILL IN!</p>
+<h2 id="custom-pages-examples">Custom Pages Examples<a class="headerlink" href="#custom-pages-examples" title="Permanent link">&para;</a></h2>
+<p>A QtIwf installer is extremely customizable.  In addition to simply copying
+files to another machine, it can perform extended operations on that target 
+to further refine the environment where the program will run.  Not only that,
+but the installer&rsquo;s interface, and logic flow, can be manipulated to precisely 
+fit your use case.  This example demonstrates a proof of concept modification
+to that UI.     </p>
+<p>This example requires the Hello World Tk files be present in the testing environment 
+within a directory adjacent to where you will place the build script for this one.
+That required folder must be named <code>hello_world_tk</code> for this &ldquo;master&rdquo; script to 
+function.</p>
+<p>You may download/copy the example file directly from GitHub 
+(into a <code>hello_qtifw_ui</code> directory):   </p>
+<p>Build script: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_qtifw_ui/build.py">build.py</a></p>
+<p>The demo shows how one may assign the <a href="HighLevel.html#ifwuipages">ifwUiPages</a> attribute of a ConfigFactory to to easily add or replace default installer &ldquo;pages&rdquo; / &ldquo;screens&rdquo;
+with custom definitions.  Those pages are represented using <a href="ConfigClasses.html#qtifwuipage">QtIfwUiPage</a> objects.  </p>
+<p>The QtIfwUiPage class is designed with the expectation that you may wish to create custom pages using the <a href="https://doc.qt.io/qt-5/designer-quick-start.html">Qt Designer WYSIWYG</a> tool. Alternatively, your needs maybe met by employing a derived class
+e.g. <a href="ConfigClasses.html#qtifwsimpletextpage">QtIfwSimpleTextPage</a>, which draws upon
+a built-in library resource file for the page layout.   </p>
+<p>In concert with altering these visual dimensions of the user experience, you may
+revise the logic via <a href="LowLevel.html#installer-scripting">Installer Scripting</a>, or call upon the higher level script abstraction classes <a href="ConfigClasses.html#qtifwcontrolscript">QtIfwControlScript</a> or
+<a href="ConfigClasses.html#qtifwpackagescript">QtIfwPackageScript</a>. </p>
+<h2 id="widget-injections-example">Widget Injections Example<a class="headerlink" href="#widget-injections-example" title="Permanent link">&para;</a></h2>
+<p>TODO: FILL IN!</p>
+<h2 id="hello-dynamic-finish-example">Hello Dynamic Finish Example<a class="headerlink" href="#hello-dynamic-finish-example" title="Permanent link">&para;</a></h2>
+<p>TODO: FILL IN!</p>
+
+  <br>
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="CodeSigningExamples.html" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="CodeSigningExamples.html" class="btn btn-xs btn-link">
+        Code Signing Examples
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="InstallerOperationsExamples.html" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="InstallerOperationsExamples.html" class="btn btn-xs btn-link">
+        Installer Operations Examples
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

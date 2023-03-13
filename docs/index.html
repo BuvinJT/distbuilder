@@ -96,8 +96,33 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 </li>
         <li class="wm-toc-li wm-toc-lev1 "><a href="QuickStart.html" class="wm-article-link wm-toc-text">Quick Start</a>
 </li>
-        <li class="wm-toc-li wm-toc-lev1 "><a href="Examples.html" class="wm-article-link wm-toc-text">Examples</a>
+        <li class="wm-toc-li wm-toc-lev1 wm-toc-opener"><span class="wm-toc-text">Examples</span>
 </li>
+<li class="wm-toc-li-nested collapse">
+  <ul class="wm-toctree">
+      <li class="wm-toc-li wm-toc-lev2 "><a href="ExamplesSource.md" class="wm-article-link wm-toc-text">Examples Source / Resources</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="BasicExamples.html" class="wm-article-link wm-toc-text">Basic Examples</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="MultiPackageExamples.html" class="wm-article-link wm-toc-text">Multi-Package Examples</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="ContextAlteringExamples.html" class="wm-article-link wm-toc-text">Context Altering Examples</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="InstallerOperationsExamples.html" class="wm-article-link wm-toc-text">Installer Operations Examples</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="InstallerUIExamples.html" class="wm-article-link wm-toc-text">Installer UI Examples</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="CodeSigningExamples.html" class="wm-article-link wm-toc-text">Code Signing Examples</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="OpyExamples.html" class="wm-article-link wm-toc-text">Python Obfuscation Examples</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="QtCppExamples.html" class="wm-article-link wm-toc-text">Qt C++ Examples</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="IExpressExamples.html" class="wm-article-link wm-toc-text">Windows Scripting Examples</a>
+</li>
+  </ul>
+</li>
+
         <li class="wm-toc-li wm-toc-lev1 wm-toc-opener"><span class="wm-toc-text">Features and Concepts</span>
 </li>
 <li class="wm-toc-li-nested collapse">
@@ -182,10 +207,10 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     <h1 id="distribution-builder-python-library">Distribution Builder Python Library<a class="headerlink" href="#distribution-builder-python-library" title="Permanent link">&para;</a></h1>
 <p><img alt="distbuilder logo" src="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png" /></p>
-<p><strong>Distribution Builder</strong> (aka <code>distbuilder</code>) is an open source <a href="https://www.python.org/">Python</a> library. It is a &ldquo;meta tool&rdquo;, which manages and combines a collection of powerful utilities controlled through a single, easy to use, Python interface.</p>
-<p>The most prominent Distribution Builder features include the ability to create <strong>stand-alone binaries</strong> from Python scripts,  and to create <strong>installers</strong> in a <strong>cross platform</strong> manner. The installers can be built for either <strong>gui</strong> or <strong>non-gui</strong> contexts. Additionally, the library can be used to <strong>obfuscate</strong> Python, protecting your intellectual property.</p>
+<p><strong>Distribution Builder</strong> (aka <code>distbuilder</code>) is an open source <a href="https://www.python.org/">Python</a> library. It is a &ldquo;meta tool&rdquo; which wraps and interlinks a collection of powerful utilities behind a single Python interface.</p>
+<p>The most prominent <code>distbuilder</code> features include the ability to create <strong>stand-alone binaries</strong> from Python scripts, and to create <strong>installers</strong> in a <strong>cross platform</strong> manner. The installers can be built for either <strong>gui</strong> or <strong>non-gui</strong> contexts. Additionally, the library can be used to <strong>obfuscate</strong> Python, protecting your intellectual property.</p>
 <p>Distribution Builder is able to do all this by leveraging the power of many other open source technologies, including: <a href="https://pypi.org/project/pip/">pip</a>, <a href="http://www.pyinstaller.org">PyInstaller</a>, <a href="http://doc.qt.io/qtinstallerframework">The Qt Installer Framework</a>, <a href="https://en.wikipedia.org/wiki/IExpress">IExpress</a>, <a href="https://pypi.org/project/opy-distbuilder/">Opy</a>, and more. </p>
-<p>This library is not only an <em>ideal</em> tool for packaging and deploying <strong>Python</strong> based programs, but can help you to distribute software written in practically <strong>any language</strong>!  To this end, a specific module has been added to ease cross platform <a href="QtCpp.html">Qt C++ Integration</a> with distbuilder. And on Windows specifically, this library provides the additional means to transform simple scripts written in <a href="https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/windows-commands">Batch</a>, <a href="https://learn.microsoft.com/en-us/powershell/scripting/overview?view=powershell-7.2">PowerShell</a>, <a href="https://learn.microsoft.com/en-us/windows/win32/lwef/using-vbscript">VBScript</a>, or <a href="https://learn.microsoft.com/en-us/windows/win32/lwef/using-javascript-and-jscript">JScript</a> into stand-alone .EXEs. There are plans for more more cross language, and cross framework, integration modules to become available in the future.</p>
+<p>This library is an <em>ideal</em> tool for packaging and deploying <strong>Python</strong> based programs.  Beyond that, it can also help you to distribute software written in practically <strong>any language</strong>!  To this end, a specific module has been added to ease cross platform <a href="QtCpp.html">Qt C++ Integration</a> with distbuilder. And on Windows specifically, the library provides the <a href="HighLevel.html#iexpresspackageprocess">additional means</a> to transform simple scripts written in <a href="https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/windows-commands">Batch</a>, <a href="https://learn.microsoft.com/en-us/powershell/scripting/overview?view=powershell-7.2">PowerShell</a>, <a href="https://learn.microsoft.com/en-us/windows/win32/lwef/using-vbscript">VBScript</a>, or <a href="https://learn.microsoft.com/en-us/windows/win32/lwef/using-javascript-and-jscript">JScript</a> into stand-alone executables. There are plans for more more cross language, and cross framework, integration modules to become available in the future.</p>
 <p>This library has been tested on recent versions of Windows, macOS, and multiple Linux distros. It is intended for Python 3, but is backwards compatible with Python 2.7+. </p>
 <p>This <a href="QuickStart.html">Quick Start Guide</a> will help you take the first step towards distributing your software to the world!</p>
 
@@ -217,5 +242,5 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 </html>
 <!--
 MkDocs version : 1.2.1
-Build Date UTC : 2023-03-12 18:00:11.908361+00:00
+Build Date UTC : 2023-03-13 00:52:39.239936+00:00
 -->

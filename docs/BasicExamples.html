@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="./img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Basic Examples - Distribution Builder</title>
+    <link href="./css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="./css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="./css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="./css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="./js/jquery-3.2.1.min.js"></script>
+    <script src="./js/bootstrap-3.3.7.min.js"></script>
+    <script src="./js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '.';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Basic Examples", url: "#_top", children: [
+              {title: "Hello World Example", url: "#hello-world-example" },
+              {title: "Hello World Tk Example", url: "#hello-world-tk-example" },
+          ]},
+        ];
+
+    </script>
+    <script src="./js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="MultiPackageExamples.html" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="MultiPackageExamples.html" class="btn btn-xs btn-link">
+        Multi-Package Examples
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="QuickStart.html" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="QuickStart.html" class="btn btn-xs btn-link">
+        Quick Start
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="basic-examples">Basic Examples<a class="headerlink" href="#basic-examples" title="Permanent link">&para;</a></h1>
+<p><img alt="distbuilder logo" src="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png" /></p>
+<h2 id="hello-world-example">Hello World Example<a class="headerlink" href="#hello-world-example" title="Permanent link">&para;</a></h2>
+<p>The Hello World Example is a simple demonstration of using the 
+<a href="HighLevel.html#pytobinpackageprocess">PyToBinPackageProcess</a> class. 
+This is one of the most straightforward, simple use cases for the library.  </p>
+<p>If you did not download the full source for the library (inclusive of the examples) 
+you may download/copy the following individual files directly from GitHub into a local directory. 
+It is recommended that you place them in a directory named <code>hello_world</code>.   </p>
+<ul>
+<li>Example program: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/hello.py">hello.py</a></li>
+<li>Build script: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/build.py">build.py</a></li>
+<li>Example resource: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/LICENSE">LICENSE</a></li>
+</ul>
+<p>Start by confirming you can run the program script in the &ldquo;natural&rdquo; manner:</p>
+<div class="codehilite"><pre><span></span><code>python hello.py
+</code></pre></div>
+
+<p>Don&rsquo;t expect it to do much&hellip;  It simply writes &ldquo;Hello World!&rdquo; to the console.</p>
+<p>Now, run the build script:</p>
+<div class="codehilite"><pre><span></span><code>python build.py
+</code></pre></div>
+
+<p>The build script should achieve the following:</p>
+<ul>
+<li>converts the Python script to a stand-alone executable binary</li>
+<li>bundles the example resource (license file) into a directory with the binary</li>
+<li>compresses the distribution into a simple zip file (left in the same directory as the source)</li>
+</ul>
+<p>Having witnessed that function, review the <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world/build.py">build.py</a>
+ script for yourself.  It should be self-explanatory for a moderately 
+ seasoned Python developer.  </p>
+<h2 id="hello-world-tk-example">Hello World Tk Example<a class="headerlink" href="#hello-world-tk-example" title="Permanent link">&para;</a></h2>
+<p>This next example is a more comprehensive version of the first Hello World.
+It is a demonstration of using the 
+<a href="HighLevel.html#pytobininstallerprocess">PyToBinInstallerProcess</a> class.</p>
+<p><em>Note: This example requires the standard Python <a href="https://tkdocs.com/tutorial/install.html">TKinter</a> 
+library be installed.</em></p>
+<p>You may download/copy the following individual files directly from GitHub into a local directory.<br />
+It is recommended that you place them in a directory named <code>hello_world_tk</code>.   </p>
+<ul>
+<li>Example app: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/hello.py">hello.py</a></li>
+<li>Build script: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/build.py">build.py</a></li>
+<li>Windows resource: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.ico">demo.ico</a></li>
+<li>Mac resource: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.icns">demo.icns</a></li>
+<li>Linux resource: <a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/demo.png">demo.png</a></li>
+</ul>
+<p>Start by confirming you can run the program script in the &ldquo;natural&rdquo; manner:</p>
+<div class="codehilite"><pre><span></span><code>python hello.py
+</code></pre></div>
+
+<p>The program is a single button GUI. Clicking the button writes &ldquo;Hello World!&rdquo; 
+to the console. </p>
+<p>Now, run the build script:</p>
+<div class="codehilite"><pre><span></span><code>python build.py
+</code></pre></div>
+
+<p>The build script should achieve the following:</p>
+<ul>
+<li>obfuscates the code (to mitigate the risk of reverse engineering) </li>
+<li>converts the obfuscated version of the source to a stand-alone executable</li>
+<li>builds a full installer with the executable bundled into it</li>
+<li>moves the installer to your desktop (for convenience)</li>
+<li>launches the installer (for testing)</li>
+</ul>
+<p>Proceed through the installer, and then run the program 
+to confirm it works.  </p>
+<p>Having witnessed everything function, review the 
+<a href="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/examples/hello_world_tk/build.py">build.py</a> 
+script. The script is a simple example, but covers a good portion of the 
+&ldquo;core&rdquo; distbuilder features.</p>
+<h3 id="feature-spotlight-file-name-normalization">Feature spotlight: &ldquo;file name normalization&rdquo;<a class="headerlink" href="#feature-spotlight-file-name-normalization" title="Permanent link">&para;</a></h3>
+<p>You might notice that binary names/paths (in any of the examples) may or may not
+include extensions such as <code>.exe</code>.  Likewise, icons may or may not have extensions
+such as <code>.ico</code> specified.  Yet, these scripts work cross platform, where the extensions
+differ!  That is due to the use of <a href="LowLevel.html#normbinaryname">normBinaryName</a> and
+<a href="LowLevel.html#normiconname">normIconName</a> functions under the hood of distbuilder&rsquo;s processes.
+The library corrects those names for you automatically based upon the environmental context.</p>
+<p>Currently, alternate icon resources must be provided which align with the platform context.
+There are plans, however, for future releases of the library to generate missing icon formats
+for you as needed.    </p>
+<h3 id="extended-feature-demo-debug-mode">Extended feature demo: &ldquo;debug mode&rdquo;<a class="headerlink" href="#extended-feature-demo-debug-mode" title="Permanent link">&para;</a></h3>
+<p>Here is a good place to illustrate one very useful extended feature of this library,
+which may prove immeaditely valuable to you.  This is will also help you to understand
+a common pattern for using some of the primary distbuilder classes. </p>
+<p>Locate the following commented out line in the Hello World Tk build script:</p>
+<div class="codehilite"><pre><span></span><code>#def onPyPackageProcess( self, prc ): prc.isExeTest = True
+</code></pre></div>
+
+<p>Uncomment that, and run the build process again.  In the 
+middle of the process, the standalone binary will be run 
+for you in &ldquo;debug&rdquo; mode.  Upon closing the program, the 
+rest of the build process will continue.  </p>
+<p>This code demonstrates a design pattern employed by the &ldquo;high level&rdquo; 
+process classes in distbuilder.  That pattern is for a high level 
+class to generate a &ldquo;configuration object&rdquo;, or a lower level &ldquo;process 
+object&rdquo;, automatically set it up for the client implementation,
+and then &ldquo;pass it through&rdquo; an overridable function where you may
+access such and revise it for your own needs prior to its use.  </p>
+<p>So, what&rsquo;s the point of setting <code>prc.isExeTest = True</code> ?
+If you have run this example program, the most astute observer may notice 
+(on Windows or Mac, but not Linux&hellip;) 
+that the stdout/err messages (seen by clicking the &ldquo;Hello Tkinter&rdquo; 
+button when running the raw .py script) are not produced on the terminal
+by the <em>standalone version</em> of the program when it is launched in the 
+normal manner.  That is due to a feature of PyInstaller (and/or by additional platform
+details regarding standard output streams) to &ldquo;swallow&rdquo; console 
+messages produced by gui applications. That may be desired behavior for a 
+public release, but it may be also be highly counterproductive for debugging, 
+since there are times when the standalone version may require specialized
+coding to make it work correctly in that context compared to how it did as a 
+basic .py script. As such, distbuilder has included a solution for this, as 
+demonstrated here. Refer to <a href="LowLevel.html#testing">Testing</a> for more details.    </p>
+
+  <br>
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="MultiPackageExamples.html" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="MultiPackageExamples.html" class="btn btn-xs btn-link">
+        Multi-Package Examples
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="QuickStart.html" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="QuickStart.html" class="btn btn-xs btn-link">
+        Quick Start
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

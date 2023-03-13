@@ -5,7 +5,18 @@ theme:
 nav:
     - Home: index.md
     - Quick Start: QuickStart.md
-    - Examples: Examples.md
+    - Examples: 
+        - Examples Source / Resources: ExamplesSource.md
+        - Basic Examples: BasicExamples.md
+        - Multi-Package Examples: MultiPackageExamples.md
+        - Context Altering Examples: ContextAlteringExamples.md
+        - Installer Operations Examples: InstallerOperationsExamples.md
+        - Installer UI Examples: InstallerUIExamples.md
+        - Code Signing Examples: CodeSigningExamples.md
+        - Python Obfuscation Examples: OpyExamples.md
+        - Qt C++ Examples: QtCppExamples.md
+        - Windows Scripting Examples: IExpressExamples.md
+
     - Features and Concepts:
         - Process Classes: HighLevel.md
         - Config Classes: ConfigClasses.md
