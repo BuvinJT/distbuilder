@@ -114,98 +114,98 @@ Produce a version info object.
 
 **Parameters**
 
- **ifwConfig:** `QtIfwConfig` -- Installer config object containing 
+> **ifwConfig:** `QtIfwConfig` -- Installer config object containing 
 branding info.
 
 **Returns**
 
- `WindowsExeVersionInfo` -- version info object for Windows `.exe`.
+> `WindowsExeVersionInfo` -- version info object for Windows `.exe`.
 ### *obj*.**iExpressConfig**`#!py3 (self)` { #iExpressConfig data-toc-label=iExpressConfig }
 
 Produce an IExpress configuration Object.
 
 **Returns**
 
- `IExpressConfig` -- Configuration object for running IExpress.
+> `IExpressConfig` -- Configuration object for running IExpress.
 ### *obj*.**opyConfig**`#!py3 (self)` { #opyConfig data-toc-label=opyConfig }
 
 Produce an Opy configuration Object.
 
 **Returns**
 
- `OpyConfig` -- Configuration object for running Opy.
+> `OpyConfig` -- Configuration object for running Opy.
 ### *obj*.**pyInstallerConfig**`#!py3 (self)` { #pyInstallerConfig data-toc-label=pyInstallerConfig }
 
 Produce a PyInstaller configuration Object.
 
 **Returns**
 
- `PyInstallerConfig` -- Configuration object for running PyInstaller.
+> `PyInstallerConfig` -- Configuration object for running PyInstaller.
 ### *obj*.**qtIfwConfig**`#!py3 (self, packages=None)` { #qtIfwConfig data-toc-label=qtIfwConfig }
 
 Produce a QtIFW configuration Object.
 
 **Parameters**
 
- **packages:** `list` of `QtIfwPackage` -- (Optional) Installer package objects.
+> **packages:** `list` of `QtIfwPackage` -- (Optional) Installer package objects.
 
 **Returns**
 
- `QtIfwConfig` -- Configuration object for running the Qt Installer Framework.
+> `QtIfwConfig` -- Configuration object for running the Qt Installer Framework.
 ### *obj*.**qtIfwConfigXml**`#!py3 (self)` { #qtIfwConfigXml data-toc-label=qtIfwConfigXml }
 
 Produce a QtIFW config.xml Object.
 
 **Returns**
 
- `QtIfwConfigXml` -- Abstraction layer over QtIFW config.xml file.
+> `QtIfwConfigXml` -- Abstraction layer over QtIFW config.xml file.
 ### *obj*.**qtIfwControlScript**`#!py3 (self, configXml)` { #qtIfwControlScript data-toc-label=qtIfwControlScript }
 
 Produce a QtIFW Control Script Object.
 
 **Parameters**
 
- **configXml:** `QtIfwConfigXml` --  QtIFW ConfigXml Object
+> **configXml:** `QtIfwConfigXml` --  QtIFW ConfigXml Object
 
 **Returns**
 
- `QtIfwControlScript` -- Abstraction layer over QtIFW Control Script.
+> `QtIfwControlScript` -- Abstraction layer over QtIFW Control Script.
 ### *obj*.**qtIfwExeWrapper**`#!py3 (self, wrapperScript=None, workingDir=None, isElevated=False, envVars=None, args=None, isExe=False)` { #qtIfwExeWrapper data-toc-label=qtIfwExeWrapper }
 
 Produce a QtIfw Exe Wrapper Object.
 
 **Parameters**
 
- **wrapperScript:** `str` / `ExecutableScript` -- (Optional) **runtime** script executed over the top of the primary payload / target. 
+> **wrapperScript:** `str` / `ExecutableScript` -- (Optional) **runtime** script executed over the top of the primary payload / target. 
 
- **workingDir:** `str` --  (Optional) **runtime** working directory
+> **workingDir:** `str` --  (Optional) **runtime** working directory
 
- **isElevated:** `bool` -- (Optional) **runtime** privilege elevation
+> **isElevated:** `bool` -- (Optional) **runtime** privilege elevation
 
- **envVars:** `dict` -- (Optional) **runtime** environmental variable values
+> **envVars:** `dict` -- (Optional) **runtime** environmental variable values
 
- **args:** `dict` --  (Optional) **runtime** arguments to the program
+> **args:** `dict` --  (Optional) **runtime** arguments to the program
 
- **isExe:** `bool` --  (Windows only) Produce a container `exe`.
+> **isExe:** `bool` --  (Windows only) Produce a container `exe`.
 
 **Returns**
 
- `QtIfwExeWrapper` -- QtIFW Exe Wrapper object.
+> `QtIfwExeWrapper` -- QtIFW Exe Wrapper object.
 ### *obj*.**qtIfwPackage**`#!py3 (self, pyInstConfig=None, iExpressConfig=None, isTempSrc=False)` { #qtIfwPackage data-toc-label=qtIfwPackage }
 
 Produce a package for QtIFW installer. 
 
 **Parameters**
 
- **pyInstConfig:** `PyInstallerConfig` -- (Optional) Config object for running PyInstaller
+> **pyInstConfig:** `PyInstallerConfig` -- (Optional) Config object for running PyInstaller
 
- **iExpressConfig:** `IExpressConfig` -- (Optional) Config object for running IExpress
+> **iExpressConfig:** `IExpressConfig` -- (Optional) Config object for running IExpress
 
- **isTempSrc:** `bool` -- Is using ephemeral source code (e.g. obfuscated)
+> **isTempSrc:** `bool` -- Is using ephemeral source code (e.g. obfuscated)
 
 **Returns**
 
- `QtIfwPackage` -- Abstraction layer over a QtIFW Package.
+> `QtIfwPackage` -- Abstraction layer over a QtIFW Package.
 
 ### *obj*.**qtIfwPackageScript**`#!py3 (self, pyInstConfig=None)` { #qtIfwPackageScript data-toc-label=qtIfwPackageScript }
 
@@ -213,35 +213,35 @@ Produce a QtIFW Package Script Object.
 
 **Parameters**
 
- **pyInstConfig:** `PyInstallerConfig` -- (Optional) Config object for running QtIFW
+> **pyInstConfig:** `PyInstallerConfig` -- (Optional) Config object for running QtIFW
 
 **Returns**
 
- `QtIfwPackageScript` -- Abstraction layer over QtIFW Package Script.
+> `QtIfwPackageScript` -- Abstraction layer over QtIFW Package Script.
 ### *obj*.**qtIfwPackageXml**`#!py3 (self)` { #qtIfwPackageXml data-toc-label=qtIfwPackageXml }
 
 Produce a QtIFW package .xml Object.
 
 **Returns**
 
- `QtIfwPackageXml` -- Abstraction layer over QtIFW package .xml files.
-### *obj*.**cfgId** *class 'NoneType'* default: *None* { #cfgId data-toc-label=cfgId }
+> `QtIfwPackageXml` -- Abstraction layer over QtIFW package .xml files.
+### *obj*.**cfgId** *<class 'NoneType'>* default: *None* { #cfgId data-toc-label=cfgId }
 
 Useful to distinguish between multiple ConfigFactory objects, as
 are often employed by a [RobustInstallerProcess](#robustinstallerprocess).
-### *obj*.**productName** *class 'NoneType'* default: *None* { #productName data-toc-label=productName }
+### *obj*.**productName** *<class 'NoneType'>* default: *None* { #productName data-toc-label=productName }
 
 The name for the product on the whole, or a sub component
 within it (based upon the context of how the factory object is used).  Such
 will appear as "brandings" upon a [Stand Alone Executable](LowLevel.md#stand-alone-executables) 
 and/or as labels/details within [Installer](LowLevel.md#installers) menus.
-### *obj*.**description** *class 'NoneType'* default: *None* { #description data-toc-label=description }
+### *obj*.**description** *<class 'NoneType'>* default: *None* { #description data-toc-label=description }
 
 The description for the product on the whole, or a sub component
 within it (based upon the context of how the factory object is used). Such
 will appear as "brandings" upon a [Stand Alone Executable](LowLevel.md#stand-alone-executables) 
 and/or as labels/details within [Installer](LowLevel.md#installers) menus.
-### *obj*.**companyTradeName** *class 'NoneType'* default: *None* { #companyTradeName data-toc-label=companyTradeName }
+### *obj*.**companyTradeName** *<class 'NoneType'>* default: *None* { #companyTradeName data-toc-label=companyTradeName }
 
 Akin to `productName` and `description` attributes.  
 
@@ -249,7 +249,7 @@ Note the `companyTradeName` will be used in standard labels, directory names, sh
 produced by the process employing the ConfigFactory.  In contrast, `companyLegalName`
 will appear within copyrights, EULAs, and the like where an "official" / legal name is 
 called for.
-### *obj*.**companyLegalName** *class 'NoneType'* default: *None* { #companyLegalName data-toc-label=companyLegalName }
+### *obj*.**companyLegalName** *<class 'NoneType'>* default: *None* { #companyLegalName data-toc-label=companyLegalName }
 
 Akin to `productName` and `description` attributes.  
 
@@ -257,7 +257,7 @@ Note the `companyTradeName` will be used in standard labels, directory names, sh
 produced by the process employing the ConfigFactory.  In contrast, `companyLegalName`
 will appear within copyrights, EULAs, and the like where an "official" / legal name is 
 called for.
-### *obj*.**version** *class 'tuple'* default: *(0, 0, 0, 0)* { #version data-toc-label=version }
+### *obj*.**version** *<class 'tuple'>* default: *(0, 0, 0, 0)* { #version data-toc-label=version }
 
 Akin to `productName` and `description` attributes, this can be applied to
 either a [Stand Alone Executable](LowLevel.md#stand-alone-executables) 
@@ -274,22 +274,22 @@ See [versionTuple, versionStr](LowLevel.md#versiontuple,-versionstr).
 Note that each part maybe any number of digits long.  i.e. this is a perfectly 
 valid version stamp: `2.11.6.139`.  That example would be denoted in tuple form 
 as: `(2,11,6,139)`
-### *obj*.**isGui** *class 'bool'* default: *False* { #isGui data-toc-label=isGui }
+### *obj*.**isGui** *<class 'bool'>* default: *False* { #isGui data-toc-label=isGui }
 
 This is attribute used for a variety of purposes, which would be difficult to 
 list here. Perhaps most notably, it is applied directly to the production of  
 [Stand Alone Executables](LowLevel.md#stand-alone-executables).
-### *obj*.**binaryName** *class 'NoneType'* default: *None* { #binaryName data-toc-label=binaryName }
+### *obj*.**binaryName** *<class 'NoneType'>* default: *None* { #binaryName data-toc-label=binaryName }
 
 This is attribute used for a variety of purposes, which would be difficult to 
 list here. Perhaps most notably, it is applied directly to the production of  
 [Stand Alone Executables](LowLevel.md#stand-alone-executables).
-### *obj*.**sourceDir** *class 'NoneType'* default: *None* { #sourceDir data-toc-label=sourceDir }
+### *obj*.**sourceDir** *<class 'NoneType'>* default: *None* { #sourceDir data-toc-label=sourceDir }
 
 This attribute is used to resolve relative paths to absolute paths in various 
 contexts. When omitted, such paths are normally resolved relative to the directory 
 containing the build script (NOT the current working directory!).
-### *obj*.**iconFilePath** *class 'NoneType'* default: *None* { #iconFilePath data-toc-label=iconFilePath }
+### *obj*.**iconFilePath** *<class 'NoneType'>* default: *None* { #iconFilePath data-toc-label=iconFilePath }
 
 Based upon context, this attribute is used to embedded (or bundle) an icon for
 a [Stand Alone Executable](LowLevel.md#stand-alone-executables) or an
@@ -300,7 +300,7 @@ on Windows you must use a ".ico" file, on macOS a ".icns", or on Linux a ".png".
 You do NOT have to specify the extension, however, when setting this attribute.
 Such will be automatically determined per the platform at runtime. 
 
-### *obj*.**entryPointPy** *class 'NoneType'* default: *None* { #entryPointPy data-toc-label=entryPointPy }
+### *obj*.**entryPointPy** *<class 'NoneType'>* default: *None* { #entryPointPy data-toc-label=entryPointPy }
 
 This attribute is most notably used when producing a 
 [Stand Alone Executable](LowLevel.md#stand-alone-executables).
@@ -310,7 +310,7 @@ from which to build a binary.
 This is also used during an [Executable Obfuscation](LowLevel.md#executable-obfuscation)
 process.  The entry point module **name** is **not** obfuscated (though its contents are). 
 
-### *obj*.**specFilePath** *class 'NoneType'* default: *None* { #specFilePath data-toc-label=specFilePath }
+### *obj*.**specFilePath** *<class 'NoneType'>* default: *None* { #specFilePath data-toc-label=specFilePath }
 
 This attribute is a relatively sophisticated component used for   
 producing a given [Stand Alone Executable](LowLevel.md#stand-alone-executables).
@@ -328,7 +328,7 @@ config factory provide an `onMakeSpec( spec )` function.  And, if writing your
 own low level equivalents of the process class operations, the library provides
 an [makePyInstSpec](LowLevel.md#makePyInstSpec) function.
 
-### *obj*.**isOneFile** *class 'bool'* default: *True* { #isOneFile data-toc-label=isOneFile }
+### *obj*.**isOneFile** *<class 'bool'>* default: *True* { #isOneFile data-toc-label=isOneFile }
 
 This switch controls a notable PyInstaller feature, i.e. bundling dependencies
 into a single (compressed) exe when creating a 
@@ -342,7 +342,7 @@ We recommend using the one file option for "small" programs, or ones which will
 not likely be opened very often.  Set this to `False`, however, to boost 
 a program's performance as far as load time is concerned. 
 
-### *obj*.**entryPointScript** *class 'NoneType'* default: *None* { #entryPointScript data-toc-label=entryPointScript }
+### *obj*.**entryPointScript** *<class 'NoneType'>* default: *None* { #entryPointScript data-toc-label=entryPointScript }
 
 This attribute is used when producing a 
 [Stand Alone Executable](LowLevel.md#stand-alone-executables) 
@@ -370,7 +370,7 @@ Additionally the header provides the following global variables
 (which are named identically across the supported scripting languages):
 `PID`, `PPID`, `EXE_PATH`, `THIS_DIR`, `LIB_DIR`, `RES_DIR`        
 
-### *obj*.**distResources** *class 'list'* default: *[]* { #distResources data-toc-label=distResources }
+### *obj*.**distResources** *<class 'list'>* default: *[]* { #distResources data-toc-label=distResources }
 
 The `distResources` attribute is an optional list of external resources to bundle 
 into the distribution package.  You may use a simple list of strings containing 
@@ -393,11 +393,11 @@ This attribute is also used for producing a
 `qtIfwPackage()` function for this class.
 This too may be done for you via various high level process classes.
 
-### *obj*.**isObfuscating** *class 'bool'* default: *False* { #isObfuscating data-toc-label=isObfuscating }
+### *obj*.**isObfuscating** *<class 'bool'>* default: *False* { #isObfuscating data-toc-label=isObfuscating }
 
 The `isObfuscating` switch toggles whether code obfuscation is employed by a process
 using the config factory (based upon context).
-### *obj*.**opyBundleLibs** *class 'NoneType'* default: *None* { #opyBundleLibs data-toc-label=opyBundleLibs }
+### *obj*.**opyBundleLibs** *<class 'NoneType'>* default: *None* { #opyBundleLibs data-toc-label=opyBundleLibs }
 
 The `opyBundleLibs` and `opyPatches` are details used for generating an 
 [OpyConfig](ConfigClasses.md#opyconfig) object when invoking the `opyConfig()`
@@ -408,12 +408,12 @@ For more information, refer to the following:
 - [Hello World Tk Example](Examples.md#hello-world-tk-example)    
 - [Opy for Distribution Builder](https://pypi.org/project/opy-distbuilder/)
 
-### *obj*.**opyPatches** *class 'NoneType'* default: *None* { #opyPatches data-toc-label=opyPatches }
+### *obj*.**opyPatches** *<class 'NoneType'>* default: *None* { #opyPatches data-toc-label=opyPatches }
 
 The `opyBundleLibs` and `opyPatches` are details used for generating an 
 [OpyConfig](ConfigClasses.md#opyconfig) object when invoking the `opyConfig()`
 function for this class.
-### *obj*.**isSilentSetup** *class 'bool'* default: *False* { #isSilentSetup data-toc-label=isSilentSetup }
+### *obj*.**isSilentSetup** *<class 'bool'>* default: *False* { #isSilentSetup data-toc-label=isSilentSetup }
 
 When `isSilentSetup` is enabled, the QtIFW installer produced will not display a GUI or 
 provide any interactive prompts for the user.  All options are dictated by command line 
@@ -426,14 +426,14 @@ For more information refer to:
 - [Silent Installers](LowLevel.md#silent-installers)
 - [Hello Silent Example](Examples.md#hello-silent-example)        
 
-### *obj*.**setupName** *class 'str'* default: *"setup.exe"* { #setupName data-toc-label=setupName }
+### *obj*.**setupName** *<class 'str'>* default: *"setup.exe"* { #setupName data-toc-label=setupName }
 
 This is the file name given to a QtIFW installer when the config factory is used in a 
 context to produce one. This attribute is specifically applied when generating a 
 [QtIfwConfig](ConfigClasses.md#qtifwconfig) object upon invoking the `qtIfwConfig()`
 function for this class.
 
-### *obj*.**ifwDefDirPath** *class 'NoneType'* default: *None* { #ifwDefDirPath data-toc-label=ifwDefDirPath }
+### *obj*.**ifwDefDirPath** *<class 'NoneType'>* default: *None* { #ifwDefDirPath data-toc-label=ifwDefDirPath }
 
 When producing a QtIFW installer this attribute may *optionally* be used to specify 
 an external, hard coded definition for the installer.  This is useful when either 
@@ -449,7 +449,7 @@ This attribute is specifically applied when generating a
 [QtIfwConfig](ConfigClasses.md#qtifwconfig) object upon invoking the `qtIfwConfig()`
 function for this class.
 
-### *obj*.**ifwPackages** *class 'NoneType'* default: *None* { #ifwPackages data-toc-label=ifwPackages }
+### *obj*.**ifwPackages** *<class 'NoneType'>* default: *None* { #ifwPackages data-toc-label=ifwPackages }
 
 When producing a QtIFW installer, this attribute maybe used to list of "Qt IFW Packages".
 Items in this list may be dynamic [QtIfwPackage](ConfigClasses.md#qtifwpackage) objects,
@@ -468,7 +468,7 @@ For more information refer to:
 - [RobustInstallerProcess](#robustinstallerprocess)
 - [QtIfwPackage list manipulation](LowLevel.md#qtifwpackage-list-manipulation) 
 
-### *obj*.**isLimitedMaintenance** *class 'bool'* default: *True* { #isLimitedMaintenance data-toc-label=isLimitedMaintenance }
+### *obj*.**isLimitedMaintenance** *<class 'bool'>* default: *True* { #isLimitedMaintenance data-toc-label=isLimitedMaintenance }
 
 When producing a QtIFW installer, when this attribute is set to `True` (the 
 default) the "maintenance tool" included with the distribution will not display
@@ -482,7 +482,7 @@ simplifies both the end user workflow and the developer's coding / testing tasks
 When building an online installer, you may wish to enable the extended 
 features, by disabling this switch.    
 
-### *obj*.**replaceTarget** *class 'bool'* default: *False* { #replaceTarget data-toc-label=replaceTarget }
+### *obj*.**replaceTarget** *<class 'bool'>* default: *False* { #replaceTarget data-toc-label=replaceTarget }
 
 When producing a QtIFW installer, switch this attribute to `True` if you wish for the
 installer to automatically replace a prior installation.  On Windows, this will reference
@@ -490,36 +490,36 @@ the applications registered in the OS, and run the uninstallation for the prior 
 via that mechanism.  On other platforms, this uses the QtIFW Maintenance Tool directly to 
 "silently" uninstall a prior install found at the target location.
 
-### *obj*.**ifwWizardStyle** *class 'NoneType'* default: *None* { #ifwWizardStyle data-toc-label=ifwWizardStyle }
+### *obj*.**ifwWizardStyle** *<class 'NoneType'>* default: *None* { #ifwWizardStyle data-toc-label=ifwWizardStyle }
 
 QtIFW installer predefined visual style.
 
-- QtIfwConfigXml.DEFAULT_WIZARD_STYLE per platform        
-- QtIfwConfigXml.WizardStyle.AERO     Windows Default    
-- QtIfwConfigXml.WizardStyle.MAC      MacOS Default
-- QtIfwConfigXml.WizardStyle.MODERN   Linux Default
-- QtIfwConfigXml.WizardStyle.CLASSIC  Simliar to MODERN  
+- QtIfwConfigXml.DEFAULT_WIZARD_STYLE <per platform>        
+- QtIfwConfigXml.WizardStyle.AERO     <Windows Default>    
+- QtIfwConfigXml.WizardStyle.MAC      <MacOS Default>
+- QtIfwConfigXml.WizardStyle.MODERN   <Linux Default>
+- QtIfwConfigXml.WizardStyle.CLASSIC  <Simliar to MODERN>  
 
-### *obj*.**ifwLogoFilePath** *class 'NoneType'* default: *None* { #ifwLogoFilePath data-toc-label=ifwLogoFilePath }
-
-Relative or absolute path to QtIFW installer image resources.  These should .png 
-files (on any platform).  Transparency is supported.
-
- Note: this is only applied in MODERN or CLASSIC style installers.   
-
-### *obj*.**ifwBannerFilePath** *class 'NoneType'* default: *None* { #ifwBannerFilePath data-toc-label=ifwBannerFilePath }
+### *obj*.**ifwLogoFilePath** *<class 'NoneType'>* default: *None* { #ifwLogoFilePath data-toc-label=ifwLogoFilePath }
 
 Relative or absolute path to QtIFW installer image resources.  These should .png 
 files (on any platform).  Transparency is supported.
 
- Note: this is only applied in MODERN style installers.   
+> Note: this is only applied in MODERN or CLASSIC style installers.   
 
-### *obj*.**licensePath** *class 'NoneType'* default: *None* { #licensePath data-toc-label=licensePath }
+### *obj*.**ifwBannerFilePath** *<class 'NoneType'>* default: *None* { #ifwBannerFilePath data-toc-label=ifwBannerFilePath }
+
+Relative or absolute path to QtIFW installer image resources.  These should .png 
+files (on any platform).  Transparency is supported.
+
+> Note: this is only applied in MODERN style installers.   
+
+### *obj*.**licensePath** *<class 'NoneType'>* default: *None* { #licensePath data-toc-label=licensePath }
 
 Relative or absolute path to a license file to be included in an installer, which the 
 end user will be required to agree to.        
 
-### *obj*.**ifwUiPages** *class 'NoneType'* default: *None* { #ifwUiPages data-toc-label=ifwUiPages }
+### *obj*.**ifwUiPages** *<class 'NoneType'>* default: *None* { #ifwUiPages data-toc-label=ifwUiPages }
 
 Use this to specify a list of [QtIfwUiPage](ConfigClasses.md#qtifwuipage) 
 objects.  With that, you may fully customize the installer's UI using the
@@ -530,10 +530,10 @@ script abstraction classes [QtIfwControlScript](ConfigClasses.md#qtifwcontrolscr
 [QtIfwPackageScript](ConfigClasses.md#qtifwpackagescript) can be used to provide
 dynamic features for the page. 
 
-### *obj*.**ifwWidgets** *class 'NoneType'* default: *None* { #ifwWidgets data-toc-label=ifwWidgets }
+### *obj*.**ifwWidgets** *<class 'NoneType'>* default: *None* { #ifwWidgets data-toc-label=ifwWidgets }
 
 
-### *obj*.**ifwCntrlScript** *class 'NoneType'* default: *None* { #ifwCntrlScript data-toc-label=ifwCntrlScript }
+### *obj*.**ifwCntrlScript** *<class 'NoneType'>* default: *None* { #ifwCntrlScript data-toc-label=ifwCntrlScript }
 
 QtIFW installers may have a "Control Script" and/or a collection of "Package Scripts".
 The "Control Script" is intended to dictate how the installer *interface*  behaves, and
@@ -559,23 +559,23 @@ defined script.
 `ifwCntrlScriptName` provides a means to define the name of the file generated, in case 
 there is need or desire to override the default.         
 
-### *obj*.**ifwCntrlScriptText** *class 'NoneType'* default: *None* { #ifwCntrlScriptText data-toc-label=ifwCntrlScriptText }
+### *obj*.**ifwCntrlScriptText** *<class 'NoneType'>* default: *None* { #ifwCntrlScriptText data-toc-label=ifwCntrlScriptText }
 
 
-### *obj*.**ifwCntrlScriptPath** *class 'NoneType'* default: *None* { #ifwCntrlScriptPath data-toc-label=ifwCntrlScriptPath }
+### *obj*.**ifwCntrlScriptPath** *<class 'NoneType'>* default: *None* { #ifwCntrlScriptPath data-toc-label=ifwCntrlScriptPath }
 
 
-### *obj*.**ifwCntrlScriptName** *class 'str'* default: *"installscript.qs"* { #ifwCntrlScriptName data-toc-label=ifwCntrlScriptName }
+### *obj*.**ifwCntrlScriptName** *<class 'str'>* default: *"installscript.qs"* { #ifwCntrlScriptName data-toc-label=ifwCntrlScriptName }
 
 
-### *obj*.**ifwPkgId** *class 'NoneType'* default: *None* { #ifwPkgId data-toc-label=ifwPkgId }
+### *obj*.**ifwPkgId** *<class 'NoneType'>* default: *None* { #ifwPkgId data-toc-label=ifwPkgId }
 
 `ifwPkgId` is employed for distbuilder operations where multiple packages are
 involved. For more information refer to: 
 
 [QtIfwPackage list manipulation](LowLevel.md#qtifwpackage-list-manipulation)             
 
-### *obj*.**ifwPkgName** *class 'NoneType'* default: *None* { #ifwPkgName data-toc-label=ifwPkgName }
+### *obj*.**ifwPkgName** *<class 'NoneType'>* default: *None* { #ifwPkgName data-toc-label=ifwPkgName }
 
 This attribute is utilized to differentiate [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
 objects, and the packages which are produced for an installer.
@@ -586,7 +586,7 @@ objects, and the packages which are produced for an installer.
 QtInstaller for deployment on a target environment.  Normally, you may allow
 distbuilder to set the name for you automatically.
 
-### *obj*.**ifwPkgNamePrefix** *class 'str'* default: *"com"* { #ifwPkgNamePrefix data-toc-label=ifwPkgNamePrefix }
+### *obj*.**ifwPkgNamePrefix** *<class 'str'>* default: *"com"* { #ifwPkgNamePrefix data-toc-label=ifwPkgNamePrefix }
 
 This attribute is utilized to differentiate [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
 objects, and the packages which are produced for an installer.
@@ -597,20 +597,20 @@ objects, and the packages which are produced for an installer.
 QtInstaller for deployment on a target environment.  Normally, you may allow
 distbuilder to set the name for you automatically.
 
-### *obj*.**ifwPkgIsDefault** *class 'bool'* default: *True* { #ifwPkgIsDefault data-toc-label=ifwPkgIsDefault }
+### *obj*.**ifwPkgIsDefault** *<class 'bool'>* default: *True* { #ifwPkgIsDefault data-toc-label=ifwPkgIsDefault }
 
 Simple option for controlling how the package 
 (i.e. component) will be selected by the end user of the installer.
 `ifwPkgIsDefault` will automatically select (or not select) the component by
 default.   
 
-### *obj*.**ifwPkgIsRequired** *class 'bool'* default: *False* { #ifwPkgIsRequired data-toc-label=ifwPkgIsRequired }
+### *obj*.**ifwPkgIsRequired** *<class 'bool'>* default: *False* { #ifwPkgIsRequired data-toc-label=ifwPkgIsRequired }
 
 Simple option for controlling how the package 
 (i.e. component) will be selected by the end user of the installer.
 `ifwPkgIsRequired` dictates if the user can opt out of the component.
 
-### *obj*.**ifwPkgIsHidden** *class 'bool'* default: *False* { #ifwPkgIsHidden data-toc-label=ifwPkgIsHidden }
+### *obj*.**ifwPkgIsHidden** *<class 'bool'>* default: *False* { #ifwPkgIsHidden data-toc-label=ifwPkgIsHidden }
 
 Simple option for controlling how the package 
 (i.e. component) will be selected by the end user of the installer.
@@ -618,7 +618,7 @@ Simple option for controlling how the package
 but insulates the user from even seeing the component as separate entity 
 when enabled.  
 
-### *obj*.**ifwPkgScript** *class 'NoneType'* default: *None* { #ifwPkgScript data-toc-label=ifwPkgScript }
+### *obj*.**ifwPkgScript** *<class 'NoneType'>* default: *None* { #ifwPkgScript data-toc-label=ifwPkgScript }
 
 QtIFW installers may have a "Control Script" and/or a collection of "Package Scripts".
 The "Control Script" is intended to dictate how the installer *interface*  behaves, and
@@ -644,16 +644,16 @@ defined script.
 `ifwPkgScriptName` provides a means to define the name of the file generated, in case 
 there is need or desire to override the default.         
 
-### *obj*.**ifwPkgScriptText** *class 'NoneType'* default: *None* { #ifwPkgScriptText data-toc-label=ifwPkgScriptText }
+### *obj*.**ifwPkgScriptText** *<class 'NoneType'>* default: *None* { #ifwPkgScriptText data-toc-label=ifwPkgScriptText }
 
 
-### *obj*.**ifwPkgScriptPath** *class 'NoneType'* default: *None* { #ifwPkgScriptPath data-toc-label=ifwPkgScriptPath }
+### *obj*.**ifwPkgScriptPath** *<class 'NoneType'>* default: *None* { #ifwPkgScriptPath data-toc-label=ifwPkgScriptPath }
 
 
-### *obj*.**ifwPkgScriptName** *class 'str'* default: *"installscript.qs"* { #ifwPkgScriptName data-toc-label=ifwPkgScriptName }
+### *obj*.**ifwPkgScriptName** *<class 'str'>* default: *"installscript.qs"* { #ifwPkgScriptName data-toc-label=ifwPkgScriptName }
 
 
-### *obj*.**pkgType** *class 'NoneType'* default: *None* { #pkgType data-toc-label=pkgType }
+### *obj*.**pkgType** *<class 'NoneType'>* default: *None* { #pkgType data-toc-label=pkgType }
 
 This specifies the type (`QtIfwPackage.Type`) of package being built.  
 The options for this include:  
@@ -677,7 +677,7 @@ See:
 [QtIfwExternalResource](ConfigClasses.md#qtifwexternalresource)
 [QtIfwExternalOp](ConfigClasses.md#qtifwexternalop)   
 
-### *obj*.**pkgSubDirName** *class 'NoneType'* default: *None* { #pkgSubDirName data-toc-label=pkgSubDirName }
+### *obj*.**pkgSubDirName** *<class 'NoneType'>* default: *None* { #pkgSubDirName data-toc-label=pkgSubDirName }
 
 If a `pkgSubDirName` is specified, this places the package inside of sub directory, 
 rather than having the contents there of installed directly to the top level directory
@@ -689,7 +689,7 @@ one directory during installation (if the end user selects more than one package
 In the event "collisions" could occur (at installation or run time) due to this, 
 the suggested resolution is to employ this option, thereby encapsulating the package(s). 
 
-### *obj*.**pkgSrcDirPath** *class 'NoneType'* default: *None* { #pkgSrcDirPath data-toc-label=pkgSrcDirPath }
+### *obj*.**pkgSrcDirPath** *<class 'NoneType'>* default: *None* { #pkgSrcDirPath data-toc-label=pkgSrcDirPath }
 
 When building installers that have external resources which are not part of
 automatically generated products/packages, these attributes may be used to define the paths
@@ -708,7 +708,7 @@ the package.
 
 See: [RobustInstallerProcess](#robustinstallerprocess).         
 
-### *obj*.**pkgSrcExePath** *class 'NoneType'* default: *None* { #pkgSrcExePath data-toc-label=pkgSrcExePath }
+### *obj*.**pkgSrcExePath** *<class 'NoneType'>* default: *None* { #pkgSrcExePath data-toc-label=pkgSrcExePath }
 
 When building installers that have external resources which are not part of
 automatically generated products/packages, these attributes may be used to define the paths
@@ -727,10 +727,10 @@ the package.
 
 See: [RobustInstallerProcess](#robustinstallerprocess).         
 
-### *obj*.**pkgCodeSignTargets** *class 'NoneType'* default: *None* { #pkgCodeSignTargets data-toc-label=pkgCodeSignTargets }
+### *obj*.**pkgCodeSignTargets** *<class 'NoneType'>* default: *None* { #pkgCodeSignTargets data-toc-label=pkgCodeSignTargets }
 
 
-### *obj*.**pkgExeWrapper** *class 'NoneType'* default: *None* { #pkgExeWrapper data-toc-label=pkgExeWrapper }
+### *obj*.**pkgExeWrapper** *<class 'NoneType'>* default: *None* { #pkgExeWrapper data-toc-label=pkgExeWrapper }
 
 A [QtIfwExeWrapper](ConfigClasses.md#qtifwexewrapper) object used to "wrap"
 the primary executable in a [QtIfwPackage](ConfigClasses.md#qtifwpackage) 
@@ -741,7 +741,7 @@ within which the binary is run.  Notably, this may include an
 [ExecutableScript](LowLevel.md#executablescript) for maximum flexibility.
 Follow the links to learn to more.        
 
-### *obj*.**pkgExternalDependencies** *class 'NoneType'* default: *None* { #pkgExternalDependencies data-toc-label=pkgExternalDependencies }
+### *obj*.**pkgExternalDependencies** *<class 'NoneType'>* default: *None* { #pkgExternalDependencies data-toc-label=pkgExternalDependencies }
 
 
 **MAC / LINUX Only**
@@ -756,10 +756,10 @@ what is available within a given package manager on the target.
 For example, the package "xvfb" maybe specified as `["xvfb","Xvfb"]`.  That handles the fact the "X" is capitalized 
 within some contexts (e.g. within YUM on RHEL...) but is lower case in others.
 
-### *obj*.**pkgConfigs** *class 'NoneType'* default: *None* { #pkgConfigs data-toc-label=pkgConfigs }
+### *obj*.**pkgConfigs** *<class 'NoneType'>* default: *None* { #pkgConfigs data-toc-label=pkgConfigs }
 
 
-### *obj*.**startOnBoot** *class 'bool'* default: *False* { #startOnBoot data-toc-label=startOnBoot }
+### *obj*.**startOnBoot** *<class 'bool'>* default: *False* { #startOnBoot data-toc-label=startOnBoot }
 
 Enable `startOnBoot` to have the installer register the "primary" exe 
 within a package as a program to launch upon booting the system. By default,
@@ -770,10 +770,10 @@ In Windows, this will lead to an auto implementation of a [QtIfwExeWrapper](Conf
 producing a "wrapper/proxy/launcher" exe adjacent to the actual one.  That 
 launcher is what will actually be registered in the OS.          
 
-### *obj*.**codeSignConfig** *class 'NoneType'* default: *None* { #codeSignConfig data-toc-label=codeSignConfig }
+### *obj*.**codeSignConfig** *<class 'NoneType'>* default: *None* { #codeSignConfig data-toc-label=codeSignConfig }
 
 
-### *obj*.**qtCppConfig** *class 'NoneType'* default: *None* { #qtCppConfig data-toc-label=qtCppConfig }
+### *obj*.**qtCppConfig** *<class 'NoneType'>* default: *None* { #qtCppConfig data-toc-label=qtCppConfig }
 
 A [QtCppConfig](ConfigClasses.md#qtcppconfig) object.  Used to define how to
 package programs developed within the Qt C++ libraries / framework. 

@@ -92,13 +92,13 @@ Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**write**`#!py3 (self)` { #write data-toc-label=write }
 
 
-### *obj*.**isContribHook** *class 'NoneType'* default: *None* { #isContribHook data-toc-label=isContribHook }
+### *obj*.**isContribHook** *<class 'NoneType'>* default: *None* { #isContribHook data-toc-label=isContribHook }
 
 
-### *obj*.**isRunTimeHook** *class 'NoneType'* default: *None* { #isRunTimeHook data-toc-label=isRunTimeHook }
+### *obj*.**isRunTimeHook** *<class 'NoneType'>* default: *None* { #isRunTimeHook data-toc-label=isRunTimeHook }
 
 
-### *obj*.**hooksDirPath** *class 'NoneType'* default: *None* { #hooksDirPath data-toc-label=hooksDirPath }
+### *obj*.**hooksDirPath** *<class 'NoneType'>* default: *None* { #hooksDirPath data-toc-label=hooksDirPath }
 
 
 ### *PyInstHook*.**linesToStr**`#!py3 (lines)` { #linesToStr data-toc-label=linesToStr }
@@ -110,28 +110,28 @@ Initialize self.  See help(type(self)) for accurate signature.
 ### *PyInstHook*.**typeOf**`#!py3 (path)` { #typeOf data-toc-label=typeOf }
 
 
-### *PyInstHook*.**APPLESCRIPT_EXT** *class 'str'* default: *"scpt"* { #APPLESCRIPT_EXT data-toc-label=APPLESCRIPT_EXT }
+### *PyInstHook*.**APPLESCRIPT_EXT** *<class 'str'>* default: *"scpt"* { #APPLESCRIPT_EXT data-toc-label=APPLESCRIPT_EXT }
 
 
-### *PyInstHook*.**BATCH_EXT** *class 'str'* default: *"bat"* { #BATCH_EXT data-toc-label=BATCH_EXT }
+### *PyInstHook*.**BATCH_EXT** *<class 'str'>* default: *"bat"* { #BATCH_EXT data-toc-label=BATCH_EXT }
 
 
-### *PyInstHook*.**FILE_NAME_PREFIX** *class 'str'* default: *"hook-"* { #FILE_NAME_PREFIX data-toc-label=FILE_NAME_PREFIX }
+### *PyInstHook*.**FILE_NAME_PREFIX** *<class 'str'>* default: *"hook-"* { #FILE_NAME_PREFIX data-toc-label=FILE_NAME_PREFIX }
 
 
-### *PyInstHook*.**JSCRIPT_EXT** *class 'str'* default: *"js"* { #JSCRIPT_EXT data-toc-label=JSCRIPT_EXT }
+### *PyInstHook*.**JSCRIPT_EXT** *<class 'str'>* default: *"js"* { #JSCRIPT_EXT data-toc-label=JSCRIPT_EXT }
 
 
-### *PyInstHook*.**POWERSHELL_EXT** *class 'str'* default: *"ps1"* { #POWERSHELL_EXT data-toc-label=POWERSHELL_EXT }
+### *PyInstHook*.**POWERSHELL_EXT** *<class 'str'>* default: *"ps1"* { #POWERSHELL_EXT data-toc-label=POWERSHELL_EXT }
 
 
-### *PyInstHook*.**SHELL_EXT** *class 'str'* default: *"sh"* { #SHELL_EXT data-toc-label=SHELL_EXT }
+### *PyInstHook*.**SHELL_EXT** *<class 'str'>* default: *"sh"* { #SHELL_EXT data-toc-label=SHELL_EXT }
 
 
-### *PyInstHook*.**SUPPORTED_EXTS** *class 'list'* default: *['sh', 'bat', 'vbs', 'js', 'ps1', 'scpt']* { #SUPPORTED_EXTS data-toc-label=SUPPORTED_EXTS }
+### *PyInstHook*.**SUPPORTED_EXTS** *<class 'list'>* default: *['sh', 'bat', 'vbs', 'js', 'ps1', 'scpt']* { #SUPPORTED_EXTS data-toc-label=SUPPORTED_EXTS }
 
 
-### *PyInstHook*.**VBSCRIPT_EXT** *class 'str'* default: *"vbs"* { #VBSCRIPT_EXT data-toc-label=VBSCRIPT_EXT }
+### *PyInstHook*.**VBSCRIPT_EXT** *<class 'str'>* default: *"vbs"* { #VBSCRIPT_EXT data-toc-label=VBSCRIPT_EXT }
 
 
 
@@ -219,31 +219,31 @@ binary produced.
 ### *obj*.**write**`#!py3 (self)` { #write data-toc-label=write }
 
 
-### *obj*.**filePath** *class 'NoneType'* default: *None* { #filePath data-toc-label=filePath }
+### *obj*.**filePath** *<class 'NoneType'>* default: *None* { #filePath data-toc-label=filePath }
 
 
-### *obj*.**pyInstConfig** *class 'NoneType'* default: *None* { #pyInstConfig data-toc-label=pyInstConfig }
+### *obj*.**pyInstConfig** *<class 'NoneType'>* default: *None* { #pyInstConfig data-toc-label=pyInstConfig }
 
 
-### *obj*.**warningBehavior** *class 'NoneType'* default: *None* { #warningBehavior data-toc-label=warningBehavior }
+### *obj*.**warningBehavior** *<class 'NoneType'>* default: *None* { #warningBehavior data-toc-label=warningBehavior }
 
 
-### *obj*.**isUnBufferedStdIo** *class 'bool'* default: *False* { #isUnBufferedStdIo data-toc-label=isUnBufferedStdIo }
+### *obj*.**isUnBufferedStdIo** *<class 'bool'>* default: *False* { #isUnBufferedStdIo data-toc-label=isUnBufferedStdIo }
 
 
-### *obj*.**isModInitDebug** *class 'bool'* default: *False* { #isModInitDebug data-toc-label=isModInitDebug }
+### *obj*.**isModInitDebug** *<class 'bool'>* default: *False* { #isModInitDebug data-toc-label=isModInitDebug }
 
 
 ### *PyInstSpec*.**cfgToPath**`#!py3 (pyInstConfig)` { #cfgToPath data-toc-label=cfgToPath }
 
 
-### *PyInstSpec*.**WARN_ERROR** *class 'int'* default: *2* { #WARN_ERROR data-toc-label=WARN_ERROR }
+### *PyInstSpec*.**WARN_ERROR** *<class 'int'>* default: *2* { #WARN_ERROR data-toc-label=WARN_ERROR }
 
 
-### *PyInstSpec*.**WARN_IGNORE** *class 'int'* default: *0* { #WARN_IGNORE data-toc-label=WARN_IGNORE }
+### *PyInstSpec*.**WARN_IGNORE** *<class 'int'>* default: *0* { #WARN_IGNORE data-toc-label=WARN_IGNORE }
 
 
-### *PyInstSpec*.**WARN_ONCE** *class 'int'* default: *1* { #WARN_ONCE data-toc-label=WARN_ONCE }
+### *PyInstSpec*.**WARN_ONCE** *<class 'int'>* default: *1* { #WARN_ONCE data-toc-label=WARN_ONCE }
 
 
 
@@ -291,67 +291,67 @@ Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**toArgs**`#!py3 (self, isMakeSpec=False)` { #toArgs data-toc-label=toArgs }
 
 
-### *obj*.**name** *class 'NoneType'* default: *None* { #name data-toc-label=name }
+### *obj*.**name** *<class 'NoneType'>* default: *None* { #name data-toc-label=name }
 
 
-### *obj*.**sourceDir** *class 'NoneType'* default: *None* { #sourceDir data-toc-label=sourceDir }
+### *obj*.**sourceDir** *<class 'NoneType'>* default: *None* { #sourceDir data-toc-label=sourceDir }
 
 
-### *obj*.**entryPointPy** *class 'NoneType'* default: *None* { #entryPointPy data-toc-label=entryPointPy }
+### *obj*.**entryPointPy** *<class 'NoneType'>* default: *None* { #entryPointPy data-toc-label=entryPointPy }
 
 
-### *obj*.**pyInstSpec** *class 'NoneType'* default: *None* { #pyInstSpec data-toc-label=pyInstSpec }
+### *obj*.**pyInstSpec** *<class 'NoneType'>* default: *None* { #pyInstSpec data-toc-label=pyInstSpec }
 
 
-### *obj*.**isGui** *class 'bool'* default: *False* { #isGui data-toc-label=isGui }
+### *obj*.**isGui** *<class 'bool'>* default: *False* { #isGui data-toc-label=isGui }
 
 
-### *obj*.**iconFilePath** *class 'NoneType'* default: *None* { #iconFilePath data-toc-label=iconFilePath }
+### *obj*.**iconFilePath** *<class 'NoneType'>* default: *None* { #iconFilePath data-toc-label=iconFilePath }
 
 
-### *obj*.**versionInfo** *class 'NoneType'* default: *None* { #versionInfo data-toc-label=versionInfo }
+### *obj*.**versionInfo** *<class 'NoneType'>* default: *None* { #versionInfo data-toc-label=versionInfo }
 
 
-### *obj*.**versionFilePath** *class 'NoneType'* default: *None* { #versionFilePath data-toc-label=versionFilePath }
+### *obj*.**versionFilePath** *<class 'NoneType'>* default: *None* { #versionFilePath data-toc-label=versionFilePath }
 
 
-### *obj*.**isAutoElevated** *class 'bool'* default: *False* { #isAutoElevated data-toc-label=isAutoElevated }
+### *obj*.**isAutoElevated** *<class 'bool'>* default: *False* { #isAutoElevated data-toc-label=isAutoElevated }
 
 
-### *obj*.**isOneFile** *class 'bool'* default: *True* { #isOneFile data-toc-label=isOneFile }
+### *obj*.**isOneFile** *<class 'bool'>* default: *True* { #isOneFile data-toc-label=isOneFile }
 
 
-### *obj*.**importPaths** *class 'list'* default: *[]* { #importPaths data-toc-label=importPaths }
+### *obj*.**importPaths** *<class 'list'>* default: *[]* { #importPaths data-toc-label=importPaths }
 
 
-### *obj*.**hiddenImports** *class 'list'* default: *[]* { #hiddenImports data-toc-label=hiddenImports }
+### *obj*.**hiddenImports** *<class 'list'>* default: *[]* { #hiddenImports data-toc-label=hiddenImports }
 
 
-### *obj*.**dataFilePaths** *class 'list'* default: *[]* { #dataFilePaths data-toc-label=dataFilePaths }
+### *obj*.**dataFilePaths** *<class 'list'>* default: *[]* { #dataFilePaths data-toc-label=dataFilePaths }
 
 
-### *obj*.**binaryFilePaths** *class 'list'* default: *[]* { #binaryFilePaths data-toc-label=binaryFilePaths }
+### *obj*.**binaryFilePaths** *<class 'list'>* default: *[]* { #binaryFilePaths data-toc-label=binaryFilePaths }
 
 
-### *obj*.**distResources** *class 'list'* default: *[]* { #distResources data-toc-label=distResources }
+### *obj*.**distResources** *<class 'list'>* default: *[]* { #distResources data-toc-label=distResources }
 
 
-### *obj*.**distDirs** *class 'list'* default: *[]* { #distDirs data-toc-label=distDirs }
+### *obj*.**distDirs** *<class 'list'>* default: *[]* { #distDirs data-toc-label=distDirs }
 
 
-### *obj*.**codeSignConfig** *class 'list'* default: *[]* { #codeSignConfig data-toc-label=codeSignConfig }
+### *obj*.**codeSignConfig** *<class 'list'>* default: *[]* { #codeSignConfig data-toc-label=codeSignConfig }
 
 
-### *obj*.**codeSignTargets** *class 'list'* default: *[]* { #codeSignTargets data-toc-label=codeSignTargets }
+### *obj*.**codeSignTargets** *<class 'list'>* default: *[]* { #codeSignTargets data-toc-label=codeSignTargets }
 
 
-### *obj*.**distDirPath** *class 'NoneType'* default: *None* { #distDirPath data-toc-label=distDirPath }
+### *obj*.**distDirPath** *<class 'NoneType'>* default: *None* { #distDirPath data-toc-label=distDirPath }
 
 
-### *obj*.**otherPyInstArgs** *class 'str'* default: *"&lt;empty string&gt;"* { #otherPyInstArgs data-toc-label=otherPyInstArgs }
+### *obj*.**otherPyInstArgs** *<class 'str'>* default: *"&lt;empty string&gt;"* { #otherPyInstArgs data-toc-label=otherPyInstArgs }
 
 
-### *obj*.**isSpecFileRemoved** *class 'bool'* default: *False* { #isSpecFileRemoved data-toc-label=isSpecFileRemoved }
+### *obj*.**isSpecFileRemoved** *<class 'bool'>* default: *False* { #isSpecFileRemoved data-toc-label=isSpecFileRemoved }
 
 
 
@@ -424,7 +424,7 @@ VIRTUAL
 ### *obj*.**run**`#!py3 (self)` { #run data-toc-label=run }
 
 
-### *PyToBinInstallerProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+### *PyToBinInstallerProcess*.**DIVIDER** *<class 'str'>* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
 
 
 
@@ -484,19 +484,19 @@ VIRTUAL
 ### *obj*.**run**`#!py3 (self)` { #run data-toc-label=run }
 
 
-### *obj*.**isObfuscationTest** *class 'bool'* default: *False* { #isObfuscationTest data-toc-label=isObfuscationTest }
+### *obj*.**isObfuscationTest** *<class 'bool'>* default: *False* { #isObfuscationTest data-toc-label=isObfuscationTest }
 
 
-### *obj*.**isWarningSuppression** *class 'bool'* default: *True* { #isWarningSuppression data-toc-label=isWarningSuppression }
+### *obj*.**isWarningSuppression** *<class 'bool'>* default: *True* { #isWarningSuppression data-toc-label=isWarningSuppression }
 
 
-### *obj*.**isUnBufferedStdIo** *class 'bool'* default: *False* { #isUnBufferedStdIo data-toc-label=isUnBufferedStdIo }
+### *obj*.**isUnBufferedStdIo** *<class 'bool'>* default: *False* { #isUnBufferedStdIo data-toc-label=isUnBufferedStdIo }
 
 
-### *obj*.**isPyInstDupDataPatched** *class 'NoneType'* default: *None* { #isPyInstDupDataPatched data-toc-label=isPyInstDupDataPatched }
+### *obj*.**isPyInstDupDataPatched** *<class 'NoneType'>* default: *None* { #isPyInstDupDataPatched data-toc-label=isPyInstDupDataPatched }
 
 
-### *PyToBinPackageProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+### *PyToBinPackageProcess*.**DIVIDER** *<class 'str'>* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
 
 
 
@@ -534,7 +534,7 @@ ______
 
 ______
 
-### **pyScriptToExe**`#!py3 (name=None, entryPointPy=None, pyInstConfig=<py_installer.PyInstallerConfig object at 0x04C04AF0>, opyConfig=None, distResources=None, distDirs=None)` { #pyScriptToExe data-toc-label=pyScriptToExe }
+### **pyScriptToExe**`#!py3 (name=None, entryPointPy=None, pyInstConfig=<py_installer.PyInstallerConfig object at 0x045FC2F0>, opyConfig=None, distResources=None, distDirs=None)` { #pyScriptToExe data-toc-label=pyScriptToExe }
 
 returns: (binDir, binPath) 
 

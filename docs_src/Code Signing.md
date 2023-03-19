@@ -28,34 +28,34 @@
 ### **CodeSignConfig**`#!py3 (keyFilePath=None, keyPassword=None)` { #CodeSignConfig-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
 Initialize self.  See help(type(self)) for accurate signature.
-### *obj*.**keyFilePath** *class 'NoneType'* default: *None* { #keyFilePath data-toc-label=keyFilePath }
+### *obj*.**keyFilePath** *<class 'NoneType'>* default: *None* { #keyFilePath data-toc-label=keyFilePath }
 
 
-### *obj*.**keyPassword** *class 'NoneType'* default: *None* { #keyPassword data-toc-label=keyPassword }
+### *obj*.**keyPassword** *<class 'NoneType'>* default: *None* { #keyPassword data-toc-label=keyPassword }
 
 
-### *obj*.**signToolPath** *class 'NoneType'* default: *None* { #signToolPath data-toc-label=signToolPath }
+### *obj*.**signToolPath** *<class 'NoneType'>* default: *None* { #signToolPath data-toc-label=signToolPath }
 
 
-### *obj*.**fileDigest** *class 'str'* default: *"sha256"* { #fileDigest data-toc-label=fileDigest }
+### *obj*.**fileDigest** *<class 'str'>* default: *"sha256"* { #fileDigest data-toc-label=fileDigest }
 
 
-### *obj*.**timeStampDigest** *class 'str'* default: *"sha256"* { #timeStampDigest data-toc-label=timeStampDigest }
+### *obj*.**timeStampDigest** *<class 'str'>* default: *"sha256"* { #timeStampDigest data-toc-label=timeStampDigest }
 
 
-### *obj*.**timeStampServerUrl** *class 'str'* default: *"http://timestamp.digicert.com"* { #timeStampServerUrl data-toc-label=timeStampServerUrl }
+### *obj*.**timeStampServerUrl** *<class 'str'>* default: *"http://timestamp.digicert.com"* { #timeStampServerUrl data-toc-label=timeStampServerUrl }
 
 
-### *obj*.**otherSignToolArgs** *class 'str'* default: *"&lt;empty string&gt;"* { #otherSignToolArgs data-toc-label=otherSignToolArgs }
+### *obj*.**otherSignToolArgs** *<class 'str'>* default: *"&lt;empty string&gt;"* { #otherSignToolArgs data-toc-label=otherSignToolArgs }
 
 
-### *obj*.**isDebugMode** *class 'bool'* default: *True* { #isDebugMode data-toc-label=isDebugMode }
+### *obj*.**isDebugMode** *<class 'bool'>* default: *True* { #isDebugMode data-toc-label=isDebugMode }
 
 
-### *CodeSignConfig*.**DEFAULT_DIGEST** *class 'str'* default: *"sha256"* { #DEFAULT_DIGEST data-toc-label=DEFAULT_DIGEST }
+### *CodeSignConfig*.**DEFAULT_DIGEST** *<class 'str'>* default: *"sha256"* { #DEFAULT_DIGEST data-toc-label=DEFAULT_DIGEST }
 
 
-### *CodeSignConfig*.**DEFAULT_TIMESTAMP_SERVER** *class 'str'* default: *"http://timestamp.digicert.com"* { #DEFAULT_TIMESTAMP_SERVER data-toc-label=DEFAULT_TIMESTAMP_SERVER }
+### *CodeSignConfig*.**DEFAULT_TIMESTAMP_SERVER** *<class 'str'>* default: *"http://timestamp.digicert.com"* { #DEFAULT_TIMESTAMP_SERVER data-toc-label=DEFAULT_TIMESTAMP_SERVER }
 
 
 
@@ -92,37 +92,37 @@ ______
 ### **SelfSignedCertConfig**`#!py3 (companyTradeName, destDirPath=None)` { #SelfSignedCertConfig-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
 Initialize self.  See help(type(self)) for accurate signature.
-### *obj*.**commonName** *class 'NoneType'* default: *None* { #commonName data-toc-label=commonName }
+### *obj*.**commonName** *<class 'NoneType'>* default: *None* { #commonName data-toc-label=commonName }
 
 
-### *obj*.**endDate** *class 'NoneType'* default: *None* { #endDate data-toc-label=endDate }
+### *obj*.**endDate** *<class 'NoneType'>* default: *None* { #endDate data-toc-label=endDate }
 
 
-### *obj*.**destDirPath** *class 'NoneType'* default: *None* { #destDirPath data-toc-label=destDirPath }
+### *obj*.**destDirPath** *<class 'NoneType'>* default: *None* { #destDirPath data-toc-label=destDirPath }
 
 
-### *obj*.**caCertPath** *class 'NoneType'* default: *None* { #caCertPath data-toc-label=caCertPath }
+### *obj*.**caCertPath** *<class 'NoneType'>* default: *None* { #caCertPath data-toc-label=caCertPath }
 
 
-### *obj*.**privateKeyPath** *class 'NoneType'* default: *None* { #privateKeyPath data-toc-label=privateKeyPath }
+### *obj*.**privateKeyPath** *<class 'NoneType'>* default: *None* { #privateKeyPath data-toc-label=privateKeyPath }
 
 
-### *obj*.**makeCertPath** *class 'NoneType'* default: *None* { #makeCertPath data-toc-label=makeCertPath }
+### *obj*.**makeCertPath** *<class 'NoneType'>* default: *None* { #makeCertPath data-toc-label=makeCertPath }
 
 
-### *obj*.**otherArgs** *class 'NoneType'* default: *None* { #otherArgs data-toc-label=otherArgs }
+### *obj*.**otherArgs** *<class 'NoneType'>* default: *None* { #otherArgs data-toc-label=otherArgs }
 
 
-### *obj*.**isDebugMode** *class 'NoneType'* default: *None* { #isDebugMode data-toc-label=isDebugMode }
+### *obj*.**isDebugMode** *<class 'NoneType'>* default: *None* { #isDebugMode data-toc-label=isDebugMode }
 
 
-### *SelfSignedCertConfig*.**DEFAULT_END_DATE** *class 'str'* default: *None* { #DEFAULT_END_DATE data-toc-label=DEFAULT_END_DATE }
+### *SelfSignedCertConfig*.**DEFAULT_END_DATE** *<class 'str'>* default: *None* { #DEFAULT_END_DATE data-toc-label=DEFAULT_END_DATE }
 
 
-### *SelfSignedCertConfig*.**LIFETIME_SIGNING_EKU** *class 'str'* default: *None* { #LIFETIME_SIGNING_EKU data-toc-label=LIFETIME_SIGNING_EKU }
+### *SelfSignedCertConfig*.**LIFETIME_SIGNING_EKU** *<class 'str'>* default: *None* { #LIFETIME_SIGNING_EKU data-toc-label=LIFETIME_SIGNING_EKU }
 
 
-### *SelfSignedCertConfig*.**NO_MAX_CHILDREN** *class 'int'* default: *None* { #NO_MAX_CHILDREN data-toc-label=NO_MAX_CHILDREN }
+### *SelfSignedCertConfig*.**NO_MAX_CHILDREN** *<class 'int'>* default: *None* { #NO_MAX_CHILDREN data-toc-label=NO_MAX_CHILDREN }
 
 
 
@@ -168,7 +168,7 @@ VIRTUAL
 ### *obj*.**run**`#!py3 (self)` { #run data-toc-label=run }
 
 
-### *TrustInstallerBuilderProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+### *TrustInstallerBuilderProcess*.**DIVIDER** *<class 'str'>* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
 
 
 
@@ -196,19 +196,19 @@ ______
 
 ## **Constants and Globals** { #Constants-and-Globals data-toc-label="Constants and Globals" }
 
-### **MAKECERT_PATH_ENV_VAR** *class 'str'* default: *"MAKECERT_PATH"* { #MAKECERT_PATH_ENV_VAR data-toc-label=MAKECERT_PATH_ENV_VAR }
+### **MAKECERT_PATH_ENV_VAR** *<class 'str'>* default: *"MAKECERT_PATH"* { #MAKECERT_PATH_ENV_VAR data-toc-label=MAKECERT_PATH_ENV_VAR }
 
 
 
 ______
 
-### **PVK2PFX_PATH_ENV_VAR** *class 'str'* default: *"PVK2PFX_PATH"* { #PVK2PFX_PATH_ENV_VAR data-toc-label=PVK2PFX_PATH_ENV_VAR }
+### **PVK2PFX_PATH_ENV_VAR** *<class 'str'>* default: *"PVK2PFX_PATH"* { #PVK2PFX_PATH_ENV_VAR data-toc-label=PVK2PFX_PATH_ENV_VAR }
 
 
 
 ______
 
-### **SIGNTOOL_PATH_ENV_VAR** *class 'str'* default: *"SIGNTOOL_PATH"* { #SIGNTOOL_PATH_ENV_VAR data-toc-label=SIGNTOOL_PATH_ENV_VAR }
+### **SIGNTOOL_PATH_ENV_VAR** *<class 'str'>* default: *"SIGNTOOL_PATH"* { #SIGNTOOL_PATH_ENV_VAR data-toc-label=SIGNTOOL_PATH_ENV_VAR }
 
 
 

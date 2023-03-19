@@ -29,37 +29,37 @@ package name, git repo url, or local path
 ### **PipConfig**`#!py3 (source=None, version=None, verEquality='==', destPath=None, asSource=False, incDependencies=True, isForced=False, isCacheUsed=True, isUpgrade=False, otherPipArgs='')` { #PipConfig-init data-toc-label="&lowbar;&lowbar;init&lowbar;&lowbar;" }
 
 Initialize self.  See help(type(self)) for accurate signature.
-### *obj*.**pipCmdBase** *class 'str'* default: *""c:\python37\python3.exe" -m pip"* { #pipCmdBase data-toc-label=pipCmdBase }
+### *obj*.**pipCmdBase** *<class 'str'>* default: *""c:\python37\python3.exe" -m pip"* { #pipCmdBase data-toc-label=pipCmdBase }
 
 
-### *obj*.**source** *class 'NoneType'* default: *None* { #source data-toc-label=source }
+### *obj*.**source** *<class 'NoneType'>* default: *None* { #source data-toc-label=source }
 
 
-### *obj*.**version** *class 'NoneType'* default: *None* { #version data-toc-label=version }
+### *obj*.**version** *<class 'NoneType'>* default: *None* { #version data-toc-label=version }
 
 
-### *obj*.**verEquality** *class 'NoneType'* default: *None* { #verEquality data-toc-label=verEquality }
+### *obj*.**verEquality** *<class 'NoneType'>* default: *None* { #verEquality data-toc-label=verEquality }
 
 
-### *obj*.**destPath** *class 'NoneType'* default: *None* { #destPath data-toc-label=destPath }
+### *obj*.**destPath** *<class 'NoneType'>* default: *None* { #destPath data-toc-label=destPath }
 
 
-### *obj*.**asSource** *class 'NoneType'* default: *None* { #asSource data-toc-label=asSource }
+### *obj*.**asSource** *<class 'NoneType'>* default: *None* { #asSource data-toc-label=asSource }
 
 
-### *obj*.**incDependencies** *class 'NoneType'* default: *None* { #incDependencies data-toc-label=incDependencies }
+### *obj*.**incDependencies** *<class 'NoneType'>* default: *None* { #incDependencies data-toc-label=incDependencies }
 
 
-### *obj*.**isForced** *class 'NoneType'* default: *None* { #isForced data-toc-label=isForced }
+### *obj*.**isForced** *<class 'NoneType'>* default: *None* { #isForced data-toc-label=isForced }
 
 
-### *obj*.**isCacheUsed** *class 'NoneType'* default: *None* { #isCacheUsed data-toc-label=isCacheUsed }
+### *obj*.**isCacheUsed** *<class 'NoneType'>* default: *None* { #isCacheUsed data-toc-label=isCacheUsed }
 
 
-### *obj*.**isUpgrade** *class 'NoneType'* default: *None* { #isUpgrade data-toc-label=isUpgrade }
+### *obj*.**isUpgrade** *<class 'NoneType'>* default: *None* { #isUpgrade data-toc-label=isUpgrade }
 
 
-### *obj*.**otherPipArgs** *class 'NoneType'* default: *None* { #otherPipArgs data-toc-label=otherPipArgs }
+### *obj*.**otherPipArgs** *<class 'NoneType'>* default: *None* { #otherPipArgs data-toc-label=otherPipArgs }
 
 
 

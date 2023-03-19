@@ -74,10 +74,10 @@ Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**writeLn**`#!py3 (self, msg)` { #writeLn data-toc-label=writeLn }
 
 
-### *obj*.**name** *class 'str'* default: *"pymkdocs"* { #name data-toc-label=name }
+### *obj*.**name** *<class 'str'>* default: *"pymkdocs"* { #name data-toc-label=name }
 
 
-### *obj*.**isUniqueFile** *class 'NoneType'* default: *None* { #isUniqueFile data-toc-label=isUniqueFile }
+### *obj*.**isUniqueFile** *<class 'NoneType'>* default: *None* { #isUniqueFile data-toc-label=isUniqueFile }
 
 
 ### *Logger*.**isSingletonOpen**`#!py3 ()` { #isSingletonOpen data-toc-label=isSingletonOpen }

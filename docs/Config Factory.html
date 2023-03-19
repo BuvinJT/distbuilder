@@ -183,93 +183,127 @@ objects from a &ldquo;callback&rdquo; function within a derived &ldquo;Process&r
 <h3 id="exeVersionInfo"><em>obj</em>.<strong>exeVersionInfo</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ifwConfig</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#exeVersionInfo" title="Permanent link">&para;</a></h3>
 <p>Produce a version info object.</p>
 <p><strong>Parameters</strong></p>
+<blockquote>
 <p><strong>ifwConfig:</strong> <code>QtIfwConfig</code> &ndash; Installer config object containing 
 branding info.</p>
+</blockquote>
 <p><strong>Returns</strong></p>
+<blockquote>
 <p><code>WindowsExeVersionInfo</code> &ndash; version info object for Windows <code>.exe</code>.</p>
+</blockquote>
 <h3 id="iExpressConfig"><em>obj</em>.<strong>iExpressConfig</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#iExpressConfig" title="Permanent link">&para;</a></h3>
 <p>Produce an IExpress configuration Object.</p>
 <p><strong>Returns</strong></p>
+<blockquote>
 <p><code>IExpressConfig</code> &ndash; Configuration object for running IExpress.</p>
+</blockquote>
 <h3 id="opyConfig"><em>obj</em>.<strong>opyConfig</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#opyConfig" title="Permanent link">&para;</a></h3>
 <p>Produce an Opy configuration Object.</p>
 <p><strong>Returns</strong></p>
+<blockquote>
 <p><code>OpyConfig</code> &ndash; Configuration object for running Opy.</p>
+</blockquote>
 <h3 id="pyInstallerConfig"><em>obj</em>.<strong>pyInstallerConfig</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#pyInstallerConfig" title="Permanent link">&para;</a></h3>
 <p>Produce a PyInstaller configuration Object.</p>
 <p><strong>Returns</strong></p>
+<blockquote>
 <p><code>PyInstallerConfig</code> &ndash; Configuration object for running PyInstaller.</p>
+</blockquote>
 <h3 id="qtIfwConfig"><em>obj</em>.<strong>qtIfwConfig</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packages</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#qtIfwConfig" title="Permanent link">&para;</a></h3>
 <p>Produce a QtIFW configuration Object.</p>
 <p><strong>Parameters</strong></p>
+<blockquote>
 <p><strong>packages:</strong> <code>list</code> of <code>QtIfwPackage</code> &ndash; (Optional) Installer package objects.</p>
+</blockquote>
 <p><strong>Returns</strong></p>
+<blockquote>
 <p><code>QtIfwConfig</code> &ndash; Configuration object for running the Qt Installer Framework.</p>
+</blockquote>
 <h3 id="qtIfwConfigXml"><em>obj</em>.<strong>qtIfwConfigXml</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#qtIfwConfigXml" title="Permanent link">&para;</a></h3>
 <p>Produce a QtIFW config.xml Object.</p>
 <p><strong>Returns</strong></p>
+<blockquote>
 <p><code>QtIfwConfigXml</code> &ndash; Abstraction layer over QtIFW config.xml file.</p>
+</blockquote>
 <h3 id="qtIfwControlScript"><em>obj</em>.<strong>qtIfwControlScript</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configXml</span><span class="p">)</span></code><a class="headerlink" href="#qtIfwControlScript" title="Permanent link">&para;</a></h3>
 <p>Produce a QtIFW Control Script Object.</p>
 <p><strong>Parameters</strong></p>
+<blockquote>
 <p><strong>configXml:</strong> <code>QtIfwConfigXml</code> &ndash;  QtIFW ConfigXml Object</p>
+</blockquote>
 <p><strong>Returns</strong></p>
+<blockquote>
 <p><code>QtIfwControlScript</code> &ndash; Abstraction layer over QtIFW Control Script.</p>
+</blockquote>
 <h3 id="qtIfwExeWrapper"><em>obj</em>.<strong>qtIfwExeWrapper</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wrapperScript</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">workingDir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">isElevated</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">envVars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">isExe</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code><a class="headerlink" href="#qtIfwExeWrapper" title="Permanent link">&para;</a></h3>
 <p>Produce a QtIfw Exe Wrapper Object.</p>
 <p><strong>Parameters</strong></p>
+<blockquote>
 <p><strong>wrapperScript:</strong> <code>str</code> / <code>ExecutableScript</code> &ndash; (Optional) <strong>runtime</strong> script executed over the top of the primary payload / target. </p>
 <p><strong>workingDir:</strong> <code>str</code> &ndash;  (Optional) <strong>runtime</strong> working directory</p>
 <p><strong>isElevated:</strong> <code>bool</code> &ndash; (Optional) <strong>runtime</strong> privilege elevation</p>
 <p><strong>envVars:</strong> <code>dict</code> &ndash; (Optional) <strong>runtime</strong> environmental variable values</p>
 <p><strong>args:</strong> <code>dict</code> &ndash;  (Optional) <strong>runtime</strong> arguments to the program</p>
 <p><strong>isExe:</strong> <code>bool</code> &ndash;  (Windows only) Produce a container <code>exe</code>.</p>
+</blockquote>
 <p><strong>Returns</strong></p>
+<blockquote>
 <p><code>QtIfwExeWrapper</code> &ndash; QtIFW Exe Wrapper object.</p>
+</blockquote>
 <h3 id="qtIfwPackage"><em>obj</em>.<strong>qtIfwPackage</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pyInstConfig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">iExpressConfig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">isTempSrc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code><a class="headerlink" href="#qtIfwPackage" title="Permanent link">&para;</a></h3>
 <p>Produce a package for QtIFW installer. </p>
 <p><strong>Parameters</strong></p>
+<blockquote>
 <p><strong>pyInstConfig:</strong> <code>PyInstallerConfig</code> &ndash; (Optional) Config object for running PyInstaller</p>
 <p><strong>iExpressConfig:</strong> <code>IExpressConfig</code> &ndash; (Optional) Config object for running IExpress</p>
 <p><strong>isTempSrc:</strong> <code>bool</code> &ndash; Is using ephemeral source code (e.g. obfuscated)</p>
+</blockquote>
 <p><strong>Returns</strong></p>
+<blockquote>
 <p><code>QtIfwPackage</code> &ndash; Abstraction layer over a QtIFW Package.</p>
+</blockquote>
 <h3 id="qtIfwPackageScript"><em>obj</em>.<strong>qtIfwPackageScript</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pyInstConfig</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code><a class="headerlink" href="#qtIfwPackageScript" title="Permanent link">&para;</a></h3>
 <p>Produce a QtIFW Package Script Object.</p>
 <p><strong>Parameters</strong></p>
+<blockquote>
 <p><strong>pyInstConfig:</strong> <code>PyInstallerConfig</code> &ndash; (Optional) Config object for running QtIFW</p>
+</blockquote>
 <p><strong>Returns</strong></p>
+<blockquote>
 <p><code>QtIfwPackageScript</code> &ndash; Abstraction layer over QtIFW Package Script.</p>
+</blockquote>
 <h3 id="qtIfwPackageXml"><em>obj</em>.<strong>qtIfwPackageXml</strong><code class="highlight"><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code><a class="headerlink" href="#qtIfwPackageXml" title="Permanent link">&para;</a></h3>
 <p>Produce a QtIFW package .xml Object.</p>
 <p><strong>Returns</strong></p>
+<blockquote>
 <p><code>QtIfwPackageXml</code> &ndash; Abstraction layer over QtIFW package .xml files.</p>
-<h3 id="cfgId"><em>obj</em>.<strong>cfgId</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#cfgId" title="Permanent link">&para;</a></h3>
+</blockquote>
+<h3 id="cfgId"><em>obj</em>.<strong>cfgId</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#cfgId" title="Permanent link">&para;</a></h3>
 <p>Useful to distinguish between multiple ConfigFactory objects, as
 are often employed by a <a href="#robustinstallerprocess">RobustInstallerProcess</a>.</p>
-<h3 id="productName"><em>obj</em>.<strong>productName</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#productName" title="Permanent link">&para;</a></h3>
+<h3 id="productName"><em>obj</em>.<strong>productName</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#productName" title="Permanent link">&para;</a></h3>
 <p>The name for the product on the whole, or a sub component
 within it (based upon the context of how the factory object is used).  Such
 will appear as &ldquo;brandings&rdquo; upon a <a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a> 
 and/or as labels/details within <a href="LowLevel.html#installers">Installer</a> menus.</p>
-<h3 id="description"><em>obj</em>.<strong>description</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#description" title="Permanent link">&para;</a></h3>
+<h3 id="description"><em>obj</em>.<strong>description</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#description" title="Permanent link">&para;</a></h3>
 <p>The description for the product on the whole, or a sub component
 within it (based upon the context of how the factory object is used). Such
 will appear as &ldquo;brandings&rdquo; upon a <a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a> 
 and/or as labels/details within <a href="LowLevel.html#installers">Installer</a> menus.</p>
-<h3 id="companyTradeName"><em>obj</em>.<strong>companyTradeName</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#companyTradeName" title="Permanent link">&para;</a></h3>
+<h3 id="companyTradeName"><em>obj</em>.<strong>companyTradeName</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#companyTradeName" title="Permanent link">&para;</a></h3>
 <p>Akin to <code>productName</code> and <code>description</code> attributes.  </p>
 <p>Note the <code>companyTradeName</code> will be used in standard labels, directory names, shortcuts, etc.
 produced by the process employing the ConfigFactory.  In contrast, <code>companyLegalName</code>
 will appear within copyrights, EULAs, and the like where an &ldquo;official&rdquo; / legal name is 
 called for.</p>
-<h3 id="companyLegalName"><em>obj</em>.<strong>companyLegalName</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#companyLegalName" title="Permanent link">&para;</a></h3>
+<h3 id="companyLegalName"><em>obj</em>.<strong>companyLegalName</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#companyLegalName" title="Permanent link">&para;</a></h3>
 <p>Akin to <code>productName</code> and <code>description</code> attributes.  </p>
 <p>Note the <code>companyTradeName</code> will be used in standard labels, directory names, shortcuts, etc.
 produced by the process employing the ConfigFactory.  In contrast, <code>companyLegalName</code>
 will appear within copyrights, EULAs, and the like where an &ldquo;official&rdquo; / legal name is 
 called for.</p>
-<h3 id="version"><em>obj</em>.<strong>version</strong> <em>class &lsquo;tuple&rsquo;</em> default: <em>(0, 0, 0, 0)</em><a class="headerlink" href="#version" title="Permanent link">&para;</a></h3>
+<h3 id="version"><em>obj</em>.<strong>version</strong> <em><class 'tuple'></em> default: <em>(0, 0, 0, 0)</em><a class="headerlink" href="#version" title="Permanent link">&para;</a></h3>
 <p>Akin to <code>productName</code> and <code>description</code> attributes, this can be applied to
 either a <a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a> 
 or an <a href="LowLevel.html#installers">Installer</a> based on the context of what uses
@@ -283,19 +317,19 @@ See <a href="LowLevel.html#versiontuple,-versionstr">versionTuple, versionStr</a
 <p>Note that each part maybe any number of digits long.  i.e. this is a perfectly 
 valid version stamp: <code>2.11.6.139</code>.  That example would be denoted in tuple form 
 as: <code>(2,11,6,139)</code></p>
-<h3 id="isGui"><em>obj</em>.<strong>isGui</strong> <em>class &lsquo;bool&rsquo;</em> default: <em>False</em><a class="headerlink" href="#isGui" title="Permanent link">&para;</a></h3>
+<h3 id="isGui"><em>obj</em>.<strong>isGui</strong> <em><class 'bool'></em> default: <em>False</em><a class="headerlink" href="#isGui" title="Permanent link">&para;</a></h3>
 <p>This is attribute used for a variety of purposes, which would be difficult to 
 list here. Perhaps most notably, it is applied directly to the production of<br />
 <a href="LowLevel.html#stand-alone-executables">Stand Alone Executables</a>.</p>
-<h3 id="binaryName"><em>obj</em>.<strong>binaryName</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#binaryName" title="Permanent link">&para;</a></h3>
+<h3 id="binaryName"><em>obj</em>.<strong>binaryName</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#binaryName" title="Permanent link">&para;</a></h3>
 <p>This is attribute used for a variety of purposes, which would be difficult to 
 list here. Perhaps most notably, it is applied directly to the production of<br />
 <a href="LowLevel.html#stand-alone-executables">Stand Alone Executables</a>.</p>
-<h3 id="sourceDir"><em>obj</em>.<strong>sourceDir</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#sourceDir" title="Permanent link">&para;</a></h3>
+<h3 id="sourceDir"><em>obj</em>.<strong>sourceDir</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#sourceDir" title="Permanent link">&para;</a></h3>
 <p>This attribute is used to resolve relative paths to absolute paths in various 
 contexts. When omitted, such paths are normally resolved relative to the directory 
 containing the build script (NOT the current working directory!).</p>
-<h3 id="iconFilePath"><em>obj</em>.<strong>iconFilePath</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#iconFilePath" title="Permanent link">&para;</a></h3>
+<h3 id="iconFilePath"><em>obj</em>.<strong>iconFilePath</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#iconFilePath" title="Permanent link">&para;</a></h3>
 <p>Based upon context, this attribute is used to embedded (or bundle) an icon for
 a <a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a> or an
 <a href="LowLevel.html#installers">Installer</a>. </p>
@@ -303,14 +337,14 @@ a <a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a> or 
 on Windows you must use a &ldquo;.ico&rdquo; file, on macOS a &ldquo;.icns&rdquo;, or on Linux a &ldquo;.png&rdquo;.
 You do NOT have to specify the extension, however, when setting this attribute.
 Such will be automatically determined per the platform at runtime. </p>
-<h3 id="entryPointPy"><em>obj</em>.<strong>entryPointPy</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#entryPointPy" title="Permanent link">&para;</a></h3>
+<h3 id="entryPointPy"><em>obj</em>.<strong>entryPointPy</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#entryPointPy" title="Permanent link">&para;</a></h3>
 <p>This attribute is most notably used when producing a 
 <a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a>.
 In that context, it points PyInstaller to the starting point for the source 
 from which to build a binary.</p>
 <p>This is also used during an <a href="LowLevel.html#executable-obfuscation">Executable Obfuscation</a>
 process.  The entry point module <strong>name</strong> is <strong>not</strong> obfuscated (though its contents are). </p>
-<h3 id="specFilePath"><em>obj</em>.<strong>specFilePath</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#specFilePath" title="Permanent link">&para;</a></h3>
+<h3 id="specFilePath"><em>obj</em>.<strong>specFilePath</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#specFilePath" title="Permanent link">&para;</a></h3>
 <p>This attribute is a relatively sophisticated component used for <br />
 producing a given <a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a>.
 Most users of this library will never need to use this, though some may
@@ -324,7 +358,7 @@ files and configurations.  Also, many of the process classes which employ a
 config factory provide an <code>onMakeSpec( spec )</code> function.  And, if writing your 
 own low level equivalents of the process class operations, the library provides
 an <a href="LowLevel.html#makePyInstSpec">makePyInstSpec</a> function.</p>
-<h3 id="isOneFile"><em>obj</em>.<strong>isOneFile</strong> <em>class &lsquo;bool&rsquo;</em> default: <em>True</em><a class="headerlink" href="#isOneFile" title="Permanent link">&para;</a></h3>
+<h3 id="isOneFile"><em>obj</em>.<strong>isOneFile</strong> <em><class 'bool'></em> default: <em>True</em><a class="headerlink" href="#isOneFile" title="Permanent link">&para;</a></h3>
 <p>This switch controls a notable PyInstaller feature, i.e. bundling dependencies
 into a single (compressed) exe when creating a 
 <a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a> vs leaving the 
@@ -335,7 +369,7 @@ of slowing down the launching of an executable.  </p>
 <p>We recommend using the one file option for &ldquo;small&rdquo; programs, or ones which will
 not likely be opened very often.  Set this to <code>False</code>, however, to boost 
 a program&rsquo;s performance as far as load time is concerned. </p>
-<h3 id="entryPointScript"><em>obj</em>.<strong>entryPointScript</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#entryPointScript" title="Permanent link">&para;</a></h3>
+<h3 id="entryPointScript"><em>obj</em>.<strong>entryPointScript</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#entryPointScript" title="Permanent link">&para;</a></h3>
 <p>This attribute is used when producing a 
 <a href="LowLevel.html#stand-alone-executables">Stand Alone Executable</a> 
 via an implementation of <em>IExpress</em>. Using this mechanism, you may convert a program written in a native Windows 
@@ -356,7 +390,7 @@ This is a critical detail when resources are bundled with the program.
 Additionally the header provides the following global variables 
 (which are named identically across the supported scripting languages):
 <code>PID</code>, <code>PPID</code>, <code>EXE_PATH</code>, <code>THIS_DIR</code>, <code>LIB_DIR</code>, <code>RES_DIR</code>        </p>
-<h3 id="distResources"><em>obj</em>.<strong>distResources</strong> <em>class &lsquo;list&rsquo;</em> default: <em>[]</em><a class="headerlink" href="#distResources" title="Permanent link">&para;</a></h3>
+<h3 id="distResources"><em>obj</em>.<strong>distResources</strong> <em><class 'list'></em> default: <em>[]</em><a class="headerlink" href="#distResources" title="Permanent link">&para;</a></h3>
 <p>The <code>distResources</code> attribute is an optional list of external resources to bundle 
 into the distribution package.  You may use a simple list of strings containing 
 file/directory names or paths <em>relative</em> to the build script directory. Else, you 
@@ -375,10 +409,10 @@ Note this may be done for you via various high level process classes.</p>
 <a href="ConfigClasses.html#qtifwpackage">QtIfwPackage</a> object when invoking the
 <code>qtIfwPackage()</code> function for this class.
 This too may be done for you via various high level process classes.</p>
-<h3 id="isObfuscating"><em>obj</em>.<strong>isObfuscating</strong> <em>class &lsquo;bool&rsquo;</em> default: <em>False</em><a class="headerlink" href="#isObfuscating" title="Permanent link">&para;</a></h3>
+<h3 id="isObfuscating"><em>obj</em>.<strong>isObfuscating</strong> <em><class 'bool'></em> default: <em>False</em><a class="headerlink" href="#isObfuscating" title="Permanent link">&para;</a></h3>
 <p>The <code>isObfuscating</code> switch toggles whether code obfuscation is employed by a process
 using the config factory (based upon context).</p>
-<h3 id="opyBundleLibs"><em>obj</em>.<strong>opyBundleLibs</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#opyBundleLibs" title="Permanent link">&para;</a></h3>
+<h3 id="opyBundleLibs"><em>obj</em>.<strong>opyBundleLibs</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#opyBundleLibs" title="Permanent link">&para;</a></h3>
 <p>The <code>opyBundleLibs</code> and <code>opyPatches</code> are details used for generating an 
 <a href="ConfigClasses.html#opyconfig">OpyConfig</a> object when invoking the <code>opyConfig()</code>
 function for this class.
@@ -387,11 +421,11 @@ For more information, refer to the following:      <br />
 - <a href="LowLevel.html#obfuscation-features">Obfuscation Features</a><br />
 - <a href="Examples.md#hello-world-tk-example">Hello World Tk Example</a>  <br />
 - <a href="https://pypi.org/project/opy-distbuilder/">Opy for Distribution Builder</a></p>
-<h3 id="opyPatches"><em>obj</em>.<strong>opyPatches</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#opyPatches" title="Permanent link">&para;</a></h3>
+<h3 id="opyPatches"><em>obj</em>.<strong>opyPatches</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#opyPatches" title="Permanent link">&para;</a></h3>
 <p>The <code>opyBundleLibs</code> and <code>opyPatches</code> are details used for generating an 
 <a href="ConfigClasses.html#opyconfig">OpyConfig</a> object when invoking the <code>opyConfig()</code>
 function for this class.</p>
-<h3 id="isSilentSetup"><em>obj</em>.<strong>isSilentSetup</strong> <em>class &lsquo;bool&rsquo;</em> default: <em>False</em><a class="headerlink" href="#isSilentSetup" title="Permanent link">&para;</a></h3>
+<h3 id="isSilentSetup"><em>obj</em>.<strong>isSilentSetup</strong> <em><class 'bool'></em> default: <em>False</em><a class="headerlink" href="#isSilentSetup" title="Permanent link">&para;</a></h3>
 <p>When <code>isSilentSetup</code> is enabled, the QtIFW installer produced will not display a GUI or 
 provide any interactive prompts for the user.  All options are dictated by command line 
 arguments. While this may certainly be desirable on any platform, it is<br />
@@ -402,12 +436,12 @@ arguments. While this may certainly be desirable on any platform, it is<br />
 <li><a href="LowLevel.html#silent-installers">Silent Installers</a></li>
 <li><a href="Examples.md#hello-silent-example">Hello Silent Example</a>        </li>
 </ul>
-<h3 id="setupName"><em>obj</em>.<strong>setupName</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;setup.exe&rdquo;</em><a class="headerlink" href="#setupName" title="Permanent link">&para;</a></h3>
+<h3 id="setupName"><em>obj</em>.<strong>setupName</strong> <em><class 'str'></em> default: <em>&ldquo;setup.exe&rdquo;</em><a class="headerlink" href="#setupName" title="Permanent link">&para;</a></h3>
 <p>This is the file name given to a QtIFW installer when the config factory is used in a 
 context to produce one. This attribute is specifically applied when generating a 
 <a href="ConfigClasses.html#qtifwconfig">QtIfwConfig</a> object upon invoking the <code>qtIfwConfig()</code>
 function for this class.</p>
-<h3 id="ifwDefDirPath"><em>obj</em>.<strong>ifwDefDirPath</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#ifwDefDirPath" title="Permanent link">&para;</a></h3>
+<h3 id="ifwDefDirPath"><em>obj</em>.<strong>ifwDefDirPath</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#ifwDefDirPath" title="Permanent link">&para;</a></h3>
 <p>When producing a QtIFW installer this attribute may <em>optionally</em> be used to specify 
 an external, hard coded definition for the installer.  This is useful when either 
 integrating the distbuilder library with an existing QtIFW installer, or when a 
@@ -419,7 +453,7 @@ and additions applied to it.    </p>
 <p>This attribute is specifically applied when generating a 
 <a href="ConfigClasses.html#qtifwconfig">QtIfwConfig</a> object upon invoking the <code>qtIfwConfig()</code>
 function for this class.</p>
-<h3 id="ifwPackages"><em>obj</em>.<strong>ifwPackages</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#ifwPackages" title="Permanent link">&para;</a></h3>
+<h3 id="ifwPackages"><em>obj</em>.<strong>ifwPackages</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#ifwPackages" title="Permanent link">&para;</a></h3>
 <p>When producing a QtIFW installer, this attribute maybe used to list of &ldquo;Qt IFW Packages&rdquo;.
 Items in this list may be dynamic <a href="ConfigClasses.html#qtifwpackage">QtIfwPackage</a> objects,
 or be simple strings defining relative paths to QtIFW packages which are defined
@@ -434,7 +468,7 @@ function for this class.</p>
 <li><a href="#robustinstallerprocess">RobustInstallerProcess</a></li>
 <li><a href="LowLevel.html#qtifwpackage-list-manipulation">QtIfwPackage list manipulation</a> </li>
 </ul>
-<h3 id="isLimitedMaintenance"><em>obj</em>.<strong>isLimitedMaintenance</strong> <em>class &lsquo;bool&rsquo;</em> default: <em>True</em><a class="headerlink" href="#isLimitedMaintenance" title="Permanent link">&para;</a></h3>
+<h3 id="isLimitedMaintenance"><em>obj</em>.<strong>isLimitedMaintenance</strong> <em><class 'bool'></em> default: <em>True</em><a class="headerlink" href="#isLimitedMaintenance" title="Permanent link">&para;</a></h3>
 <p>When producing a QtIFW installer, when this attribute is set to <code>True</code> (the 
 default) the &ldquo;maintenance tool&rdquo; included with the distribution will not display
 an introduction page with the options to add, remove, or update components.
@@ -445,33 +479,37 @@ buttons only produce errors.  Further, having this limitation imposed
 simplifies both the end user workflow and the developer&rsquo;s coding / testing tasks.  </p>
 <p>When building an online installer, you may wish to enable the extended 
 features, by disabling this switch.    </p>
-<h3 id="replaceTarget"><em>obj</em>.<strong>replaceTarget</strong> <em>class &lsquo;bool&rsquo;</em> default: <em>False</em><a class="headerlink" href="#replaceTarget" title="Permanent link">&para;</a></h3>
+<h3 id="replaceTarget"><em>obj</em>.<strong>replaceTarget</strong> <em><class 'bool'></em> default: <em>False</em><a class="headerlink" href="#replaceTarget" title="Permanent link">&para;</a></h3>
 <p>When producing a QtIFW installer, switch this attribute to <code>True</code> if you wish for the
 installer to automatically replace a prior installation.  On Windows, this will reference
 the applications registered in the OS, and run the uninstallation for the prior install
 via that mechanism.  On other platforms, this uses the QtIFW Maintenance Tool directly to 
 &ldquo;silently&rdquo; uninstall a prior install found at the target location.</p>
-<h3 id="ifwWizardStyle"><em>obj</em>.<strong>ifwWizardStyle</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#ifwWizardStyle" title="Permanent link">&para;</a></h3>
+<h3 id="ifwWizardStyle"><em>obj</em>.<strong>ifwWizardStyle</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#ifwWizardStyle" title="Permanent link">&para;</a></h3>
 <p>QtIFW installer predefined visual style.</p>
 <ul>
-<li>QtIfwConfigXml.DEFAULT_WIZARD_STYLE per platform        </li>
-<li>QtIfwConfigXml.WizardStyle.AERO     Windows Default    </li>
-<li>QtIfwConfigXml.WizardStyle.MAC      MacOS Default</li>
-<li>QtIfwConfigXml.WizardStyle.MODERN   Linux Default</li>
-<li>QtIfwConfigXml.WizardStyle.CLASSIC  Simliar to MODERN  </li>
+<li>QtIfwConfigXml.DEFAULT_WIZARD_STYLE <per platform>        </li>
+<li>QtIfwConfigXml.WizardStyle.AERO     <Windows Default>    </li>
+<li>QtIfwConfigXml.WizardStyle.MAC      <MacOS Default></li>
+<li>QtIfwConfigXml.WizardStyle.MODERN   <Linux Default></li>
+<li>QtIfwConfigXml.WizardStyle.CLASSIC  <Simliar to MODERN>  </li>
 </ul>
-<h3 id="ifwLogoFilePath"><em>obj</em>.<strong>ifwLogoFilePath</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#ifwLogoFilePath" title="Permanent link">&para;</a></h3>
+<h3 id="ifwLogoFilePath"><em>obj</em>.<strong>ifwLogoFilePath</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#ifwLogoFilePath" title="Permanent link">&para;</a></h3>
 <p>Relative or absolute path to QtIFW installer image resources.  These should .png 
 files (on any platform).  Transparency is supported.</p>
+<blockquote>
 <p>Note: this is only applied in MODERN or CLASSIC style installers.   </p>
-<h3 id="ifwBannerFilePath"><em>obj</em>.<strong>ifwBannerFilePath</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#ifwBannerFilePath" title="Permanent link">&para;</a></h3>
+</blockquote>
+<h3 id="ifwBannerFilePath"><em>obj</em>.<strong>ifwBannerFilePath</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#ifwBannerFilePath" title="Permanent link">&para;</a></h3>
 <p>Relative or absolute path to QtIFW installer image resources.  These should .png 
 files (on any platform).  Transparency is supported.</p>
+<blockquote>
 <p>Note: this is only applied in MODERN style installers.   </p>
-<h3 id="licensePath"><em>obj</em>.<strong>licensePath</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#licensePath" title="Permanent link">&para;</a></h3>
+</blockquote>
+<h3 id="licensePath"><em>obj</em>.<strong>licensePath</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#licensePath" title="Permanent link">&para;</a></h3>
 <p>Relative or absolute path to a license file to be included in an installer, which the 
 end user will be required to agree to.        </p>
-<h3 id="ifwUiPages"><em>obj</em>.<strong>ifwUiPages</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#ifwUiPages" title="Permanent link">&para;</a></h3>
+<h3 id="ifwUiPages"><em>obj</em>.<strong>ifwUiPages</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#ifwUiPages" title="Permanent link">&para;</a></h3>
 <p>Use this to specify a list of <a href="ConfigClasses.html#qtifwuipage">QtIfwUiPage</a> 
 objects.  With that, you may fully customize the installer&rsquo;s UI using the
 <a href="https://doc.qt.io/qt-5/designer-quick-start.html">Qt Designer WYSIWYG</a> tool!</p>
@@ -479,8 +517,8 @@ objects.  With that, you may fully customize the installer&rsquo;s UI using the
 script abstraction classes <a href="ConfigClasses.html#qtifwcontrolscript">QtIfwControlScript</a> and
 <a href="ConfigClasses.html#qtifwpackagescript">QtIfwPackageScript</a> can be used to provide
 dynamic features for the page. </p>
-<h3 id="ifwWidgets"><em>obj</em>.<strong>ifwWidgets</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#ifwWidgets" title="Permanent link">&para;</a></h3>
-<h3 id="ifwCntrlScript"><em>obj</em>.<strong>ifwCntrlScript</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#ifwCntrlScript" title="Permanent link">&para;</a></h3>
+<h3 id="ifwWidgets"><em>obj</em>.<strong>ifwWidgets</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#ifwWidgets" title="Permanent link">&para;</a></h3>
+<h3 id="ifwCntrlScript"><em>obj</em>.<strong>ifwCntrlScript</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#ifwCntrlScript" title="Permanent link">&para;</a></h3>
 <p>QtIFW installers may have a &ldquo;Control Script&rdquo; and/or a collection of &ldquo;Package Scripts&rdquo;.
 The &ldquo;Control Script&rdquo; is intended to dictate how the installer <em>interface</em>  behaves, and
 other high level logic pertaining to the installer itself. In contrast, &ldquo;Package Scripts&rdquo;
@@ -498,43 +536,43 @@ object.</p>
 defined script.</p>
 <p><code>ifwCntrlScriptName</code> provides a means to define the name of the file generated, in case 
 there is need or desire to override the default.         </p>
-<h3 id="ifwCntrlScriptText"><em>obj</em>.<strong>ifwCntrlScriptText</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#ifwCntrlScriptText" title="Permanent link">&para;</a></h3>
-<h3 id="ifwCntrlScriptPath"><em>obj</em>.<strong>ifwCntrlScriptPath</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#ifwCntrlScriptPath" title="Permanent link">&para;</a></h3>
-<h3 id="ifwCntrlScriptName"><em>obj</em>.<strong>ifwCntrlScriptName</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;installscript.qs&rdquo;</em><a class="headerlink" href="#ifwCntrlScriptName" title="Permanent link">&para;</a></h3>
-<h3 id="ifwPkgId"><em>obj</em>.<strong>ifwPkgId</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#ifwPkgId" title="Permanent link">&para;</a></h3>
+<h3 id="ifwCntrlScriptText"><em>obj</em>.<strong>ifwCntrlScriptText</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#ifwCntrlScriptText" title="Permanent link">&para;</a></h3>
+<h3 id="ifwCntrlScriptPath"><em>obj</em>.<strong>ifwCntrlScriptPath</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#ifwCntrlScriptPath" title="Permanent link">&para;</a></h3>
+<h3 id="ifwCntrlScriptName"><em>obj</em>.<strong>ifwCntrlScriptName</strong> <em><class 'str'></em> default: <em>&ldquo;installscript.qs&rdquo;</em><a class="headerlink" href="#ifwCntrlScriptName" title="Permanent link">&para;</a></h3>
+<h3 id="ifwPkgId"><em>obj</em>.<strong>ifwPkgId</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#ifwPkgId" title="Permanent link">&para;</a></h3>
 <p><code>ifwPkgId</code> is employed for distbuilder operations where multiple packages are
 involved. For more information refer to: </p>
 <p><a href="LowLevel.html#qtifwpackage-list-manipulation">QtIfwPackage list manipulation</a>             </p>
-<h3 id="ifwPkgName"><em>obj</em>.<strong>ifwPkgName</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#ifwPkgName" title="Permanent link">&para;</a></h3>
+<h3 id="ifwPkgName"><em>obj</em>.<strong>ifwPkgName</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#ifwPkgName" title="Permanent link">&para;</a></h3>
 <p>This attribute is utilized to differentiate <a href="ConfigClasses.html#qtifwpackage">QtIfwPackage</a> 
 objects, and the packages which are produced for an installer.</p>
 <p><a href="#robustinstallerprocess">RobustInstallerProcess</a>. </p>
 <p><code>ifwPkgName</code> and <code>ifwPkgNamePrefix</code> are provided to override the name used by the
 QtInstaller for deployment on a target environment.  Normally, you may allow
 distbuilder to set the name for you automatically.</p>
-<h3 id="ifwPkgNamePrefix"><em>obj</em>.<strong>ifwPkgNamePrefix</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;com&rdquo;</em><a class="headerlink" href="#ifwPkgNamePrefix" title="Permanent link">&para;</a></h3>
+<h3 id="ifwPkgNamePrefix"><em>obj</em>.<strong>ifwPkgNamePrefix</strong> <em><class 'str'></em> default: <em>&ldquo;com&rdquo;</em><a class="headerlink" href="#ifwPkgNamePrefix" title="Permanent link">&para;</a></h3>
 <p>This attribute is utilized to differentiate <a href="ConfigClasses.html#qtifwpackage">QtIfwPackage</a> 
 objects, and the packages which are produced for an installer.</p>
 <p><a href="#robustinstallerprocess">RobustInstallerProcess</a>. </p>
 <p><code>ifwPkgName</code> and <code>ifwPkgNamePrefix</code> are provided to override the name used by the
 QtInstaller for deployment on a target environment.  Normally, you may allow
 distbuilder to set the name for you automatically.</p>
-<h3 id="ifwPkgIsDefault"><em>obj</em>.<strong>ifwPkgIsDefault</strong> <em>class &lsquo;bool&rsquo;</em> default: <em>True</em><a class="headerlink" href="#ifwPkgIsDefault" title="Permanent link">&para;</a></h3>
+<h3 id="ifwPkgIsDefault"><em>obj</em>.<strong>ifwPkgIsDefault</strong> <em><class 'bool'></em> default: <em>True</em><a class="headerlink" href="#ifwPkgIsDefault" title="Permanent link">&para;</a></h3>
 <p>Simple option for controlling how the package 
 (i.e. component) will be selected by the end user of the installer.
 <code>ifwPkgIsDefault</code> will automatically select (or not select) the component by
 default.   </p>
-<h3 id="ifwPkgIsRequired"><em>obj</em>.<strong>ifwPkgIsRequired</strong> <em>class &lsquo;bool&rsquo;</em> default: <em>False</em><a class="headerlink" href="#ifwPkgIsRequired" title="Permanent link">&para;</a></h3>
+<h3 id="ifwPkgIsRequired"><em>obj</em>.<strong>ifwPkgIsRequired</strong> <em><class 'bool'></em> default: <em>False</em><a class="headerlink" href="#ifwPkgIsRequired" title="Permanent link">&para;</a></h3>
 <p>Simple option for controlling how the package 
 (i.e. component) will be selected by the end user of the installer.
 <code>ifwPkgIsRequired</code> dictates if the user can opt out of the component.</p>
-<h3 id="ifwPkgIsHidden"><em>obj</em>.<strong>ifwPkgIsHidden</strong> <em>class &lsquo;bool&rsquo;</em> default: <em>False</em><a class="headerlink" href="#ifwPkgIsHidden" title="Permanent link">&para;</a></h3>
+<h3 id="ifwPkgIsHidden"><em>obj</em>.<strong>ifwPkgIsHidden</strong> <em><class 'bool'></em> default: <em>False</em><a class="headerlink" href="#ifwPkgIsHidden" title="Permanent link">&para;</a></h3>
 <p>Simple option for controlling how the package 
 (i.e. component) will be selected by the end user of the installer.
 <code>ifwPkgIsHidden</code> is similar to <code>ifwPkgIsDefault</code> and <code>ifwPkgIsRequired</code>, 
 but insulates the user from even seeing the component as separate entity 
 when enabled.  </p>
-<h3 id="ifwPkgScript"><em>obj</em>.<strong>ifwPkgScript</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#ifwPkgScript" title="Permanent link">&para;</a></h3>
+<h3 id="ifwPkgScript"><em>obj</em>.<strong>ifwPkgScript</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#ifwPkgScript" title="Permanent link">&para;</a></h3>
 <p>QtIFW installers may have a &ldquo;Control Script&rdquo; and/or a collection of &ldquo;Package Scripts&rdquo;.
 The &ldquo;Control Script&rdquo; is intended to dictate how the installer <em>interface</em>  behaves, and
 other high level logic pertaining to the installer itself. In contrast, &ldquo;Package Scripts&rdquo;
@@ -552,10 +590,10 @@ object.</p>
 defined script.</p>
 <p><code>ifwPkgScriptName</code> provides a means to define the name of the file generated, in case 
 there is need or desire to override the default.         </p>
-<h3 id="ifwPkgScriptText"><em>obj</em>.<strong>ifwPkgScriptText</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#ifwPkgScriptText" title="Permanent link">&para;</a></h3>
-<h3 id="ifwPkgScriptPath"><em>obj</em>.<strong>ifwPkgScriptPath</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#ifwPkgScriptPath" title="Permanent link">&para;</a></h3>
-<h3 id="ifwPkgScriptName"><em>obj</em>.<strong>ifwPkgScriptName</strong> <em>class &lsquo;str&rsquo;</em> default: <em>&ldquo;installscript.qs&rdquo;</em><a class="headerlink" href="#ifwPkgScriptName" title="Permanent link">&para;</a></h3>
-<h3 id="pkgType"><em>obj</em>.<strong>pkgType</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#pkgType" title="Permanent link">&para;</a></h3>
+<h3 id="ifwPkgScriptText"><em>obj</em>.<strong>ifwPkgScriptText</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#ifwPkgScriptText" title="Permanent link">&para;</a></h3>
+<h3 id="ifwPkgScriptPath"><em>obj</em>.<strong>ifwPkgScriptPath</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#ifwPkgScriptPath" title="Permanent link">&para;</a></h3>
+<h3 id="ifwPkgScriptName"><em>obj</em>.<strong>ifwPkgScriptName</strong> <em><class 'str'></em> default: <em>&ldquo;installscript.qs&rdquo;</em><a class="headerlink" href="#ifwPkgScriptName" title="Permanent link">&para;</a></h3>
+<h3 id="pkgType"><em>obj</em>.<strong>pkgType</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#pkgType" title="Permanent link">&para;</a></h3>
 <p>This specifies the type (<code>QtIfwPackage.Type</code>) of package being built.<br />
 The options for this include:  </p>
 <ul>
@@ -576,7 +614,7 @@ but no content files in a package, would be to &ldquo;nest&rdquo; another instal
 See: 
 <a href="ConfigClasses.html#qtifwexternalresource">QtIfwExternalResource</a>
 <a href="ConfigClasses.html#qtifwexternalop">QtIfwExternalOp</a>   </p>
-<h3 id="pkgSubDirName"><em>obj</em>.<strong>pkgSubDirName</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#pkgSubDirName" title="Permanent link">&para;</a></h3>
+<h3 id="pkgSubDirName"><em>obj</em>.<strong>pkgSubDirName</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#pkgSubDirName" title="Permanent link">&para;</a></h3>
 <p>If a <code>pkgSubDirName</code> is specified, this places the package inside of sub directory, 
 rather than having the contents there of installed directly to the top level directory
 of the target.</p>
@@ -585,7 +623,7 @@ When multiple packages are present, however, the content of each will be merged 
 one directory during installation (if the end user selects more than one package).<br />
 In the event &ldquo;collisions&rdquo; could occur (at installation or run time) due to this, 
 the suggested resolution is to employ this option, thereby encapsulating the package(s). </p>
-<h3 id="pkgSrcDirPath"><em>obj</em>.<strong>pkgSrcDirPath</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#pkgSrcDirPath" title="Permanent link">&para;</a></h3>
+<h3 id="pkgSrcDirPath"><em>obj</em>.<strong>pkgSrcDirPath</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#pkgSrcDirPath" title="Permanent link">&para;</a></h3>
 <p>When building installers that have external resources which are not part of
 automatically generated products/packages, these attributes may be used to define the paths
 to that package&rsquo;s content.  </p>
@@ -599,7 +637,7 @@ it was complied previously by some other build system).  Note, that if <code>bin
 is also defined, the <code>pkgSrcExePath</code> file will be renamed to that name upon building
 the package. </p>
 <p>See: <a href="#robustinstallerprocess">RobustInstallerProcess</a>.         </p>
-<h3 id="pkgSrcExePath"><em>obj</em>.<strong>pkgSrcExePath</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#pkgSrcExePath" title="Permanent link">&para;</a></h3>
+<h3 id="pkgSrcExePath"><em>obj</em>.<strong>pkgSrcExePath</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#pkgSrcExePath" title="Permanent link">&para;</a></h3>
 <p>When building installers that have external resources which are not part of
 automatically generated products/packages, these attributes may be used to define the paths
 to that package&rsquo;s content.  </p>
@@ -613,8 +651,8 @@ it was complied previously by some other build system).  Note, that if <code>bin
 is also defined, the <code>pkgSrcExePath</code> file will be renamed to that name upon building
 the package. </p>
 <p>See: <a href="#robustinstallerprocess">RobustInstallerProcess</a>.         </p>
-<h3 id="pkgCodeSignTargets"><em>obj</em>.<strong>pkgCodeSignTargets</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#pkgCodeSignTargets" title="Permanent link">&para;</a></h3>
-<h3 id="pkgExeWrapper"><em>obj</em>.<strong>pkgExeWrapper</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#pkgExeWrapper" title="Permanent link">&para;</a></h3>
+<h3 id="pkgCodeSignTargets"><em>obj</em>.<strong>pkgCodeSignTargets</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#pkgCodeSignTargets" title="Permanent link">&para;</a></h3>
+<h3 id="pkgExeWrapper"><em>obj</em>.<strong>pkgExeWrapper</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#pkgExeWrapper" title="Permanent link">&para;</a></h3>
 <p>A <a href="ConfigClasses.html#qtifwexewrapper">QtIfwExeWrapper</a> object used to &ldquo;wrap&rdquo;
 the primary executable in a <a href="ConfigClasses.html#qtifwpackage">QtIfwPackage</a> 
 being built using the factory provided configurations.</p>
@@ -622,7 +660,7 @@ being built using the factory provided configurations.</p>
 within which the binary is run.  Notably, this may include an 
 <a href="LowLevel.html#executablescript">ExecutableScript</a> for maximum flexibility.
 Follow the links to learn to more.        </p>
-<h3 id="pkgExternalDependencies"><em>obj</em>.<strong>pkgExternalDependencies</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#pkgExternalDependencies" title="Permanent link">&para;</a></h3>
+<h3 id="pkgExternalDependencies"><em>obj</em>.<strong>pkgExternalDependencies</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#pkgExternalDependencies" title="Permanent link">&para;</a></h3>
 <p><strong>MAC / LINUX Only</strong></p>
 <p>External packages to be installed.  This takes place prior to any 
 other installer operations, in case those operations (rather the 
@@ -632,8 +670,8 @@ When nesting lists, such represents alternate names to try based upon
 what is available within a given package manager on the target.<br />
 For example, the package &ldquo;xvfb&rdquo; maybe specified as <code>["xvfb","Xvfb"]</code>.  That handles the fact the &ldquo;X&rdquo; is capitalized 
 within some contexts (e.g. within YUM on RHEL&hellip;) but is lower case in others.</p>
-<h3 id="pkgConfigs"><em>obj</em>.<strong>pkgConfigs</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#pkgConfigs" title="Permanent link">&para;</a></h3>
-<h3 id="startOnBoot"><em>obj</em>.<strong>startOnBoot</strong> <em>class &lsquo;bool&rsquo;</em> default: <em>False</em><a class="headerlink" href="#startOnBoot" title="Permanent link">&para;</a></h3>
+<h3 id="pkgConfigs"><em>obj</em>.<strong>pkgConfigs</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#pkgConfigs" title="Permanent link">&para;</a></h3>
+<h3 id="startOnBoot"><em>obj</em>.<strong>startOnBoot</strong> <em><class 'bool'></em> default: <em>False</em><a class="headerlink" href="#startOnBoot" title="Permanent link">&para;</a></h3>
 <p>Enable <code>startOnBoot</code> to have the installer register the &ldquo;primary&rdquo; exe 
 within a package as a program to launch upon booting the system. By default,
 this is set to <code>False</code>, setting it to either <code>True</code> or to <code>CURRENT_USER</code> will have the same 
@@ -641,8 +679,8 @@ effect.  Assign it to <code>ALL_USERS</code> to have this applied for all system
 <p>In Windows, this will lead to an auto implementation of a <a href="ConfigClasses.html#qtifwexewrapper">QtIfwExeWrapper</a>, which employs the special <code>isExe</code> feature,
 producing a &ldquo;wrapper/proxy/launcher&rdquo; exe adjacent to the actual one.  That 
 launcher is what will actually be registered in the OS.          </p>
-<h3 id="codeSignConfig"><em>obj</em>.<strong>codeSignConfig</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#codeSignConfig" title="Permanent link">&para;</a></h3>
-<h3 id="qtCppConfig"><em>obj</em>.<strong>qtCppConfig</strong> <em>class &lsquo;NoneType&rsquo;</em> default: <em>None</em><a class="headerlink" href="#qtCppConfig" title="Permanent link">&para;</a></h3>
+<h3 id="codeSignConfig"><em>obj</em>.<strong>codeSignConfig</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#codeSignConfig" title="Permanent link">&para;</a></h3>
+<h3 id="qtCppConfig"><em>obj</em>.<strong>qtCppConfig</strong> <em><class 'NoneType'></em> default: <em>None</em><a class="headerlink" href="#qtCppConfig" title="Permanent link">&para;</a></h3>
 <p>A <a href="ConfigClasses.html#qtcppconfig">QtCppConfig</a> object.  Used to define how to
 package programs developed within the Qt C++ libraries / framework. </p>
 <p>See the <a href="QtCpp.html">Qt C++ Integration</a> document for more information.  </p>

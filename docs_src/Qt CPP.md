@@ -57,55 +57,55 @@ Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**validate**`#!py3 (self)` { #validate data-toc-label=validate }
 
 
-### *obj*.**qtBinDirPath** *class 'NoneType'* default: *None* { #qtBinDirPath data-toc-label=qtBinDirPath }
+### *obj*.**qtBinDirPath** *<class 'NoneType'>* default: *None* { #qtBinDirPath data-toc-label=qtBinDirPath }
 
 
-### *obj*.**binCompiler** *class 'NoneType'* default: *None* { #binCompiler data-toc-label=binCompiler }
+### *obj*.**binCompiler** *<class 'NoneType'>* default: *None* { #binCompiler data-toc-label=binCompiler }
 
 
-### *obj*.**qmlScrDirPath** *class 'NoneType'* default: *None* { #qmlScrDirPath data-toc-label=qmlScrDirPath }
+### *obj*.**qmlScrDirPath** *<class 'NoneType'>* default: *None* { #qmlScrDirPath data-toc-label=qmlScrDirPath }
 
 
-### *obj*.**cQtDeployerConfig** *class 'NoneType'* default: *None* { #cQtDeployerConfig data-toc-label=cQtDeployerConfig }
+### *obj*.**cQtDeployerConfig** *<class 'NoneType'>* default: *None* { #cQtDeployerConfig data-toc-label=cQtDeployerConfig }
 
 
-### *obj*.**libDirs** *class 'NoneType'* default: *None* { #libDirs data-toc-label=libDirs }
+### *obj*.**libDirs** *<class 'NoneType'>* default: *None* { #libDirs data-toc-label=libDirs }
 
 
-### *obj*.**plugins** *class 'NoneType'* default: *None* { #plugins data-toc-label=plugins }
+### *obj*.**plugins** *<class 'NoneType'>* default: *None* { #plugins data-toc-label=plugins }
 
 
-### *obj*.**hiddenQml** *class 'NoneType'* default: *None* { #hiddenQml data-toc-label=hiddenQml }
+### *obj*.**hiddenQml** *<class 'NoneType'>* default: *None* { #hiddenQml data-toc-label=hiddenQml }
 
 
-### *obj*.**hiddenDependencies** *class 'NoneType'* default: *None* { #hiddenDependencies data-toc-label=hiddenDependencies }
+### *obj*.**hiddenDependencies** *<class 'NoneType'>* default: *None* { #hiddenDependencies data-toc-label=hiddenDependencies }
 
 
-### *obj*.**ignoreLibs** *class 'NoneType'* default: *None* { #ignoreLibs data-toc-label=ignoreLibs }
+### *obj*.**ignoreLibs** *<class 'NoneType'>* default: *None* { #ignoreLibs data-toc-label=ignoreLibs }
 
 
-### *obj*.**ignoreEnv** *class 'NoneType'* default: *None* { #ignoreEnv data-toc-label=ignoreEnv }
+### *obj*.**ignoreEnv** *<class 'NoneType'>* default: *None* { #ignoreEnv data-toc-label=ignoreEnv }
 
 
-### *obj*.**recurseDepth** *class 'NoneType'* default: *None* { #recurseDepth data-toc-label=recurseDepth }
+### *obj*.**recurseDepth** *<class 'NoneType'>* default: *None* { #recurseDepth data-toc-label=recurseDepth }
 
 
-### *obj*.**deploySystem** *class 'NoneType'* default: *None* { #deploySystem data-toc-label=deploySystem }
+### *obj*.**deploySystem** *<class 'NoneType'>* default: *None* { #deploySystem data-toc-label=deploySystem }
 
 
-### *obj*.**deployLibc** *class 'NoneType'* default: *None* { #deployLibc data-toc-label=deployLibc }
+### *obj*.**deployLibc** *<class 'NoneType'>* default: *None* { #deployLibc data-toc-label=deployLibc }
 
 
-### *obj*.**allQml** *class 'NoneType'* default: *None* { #allQml data-toc-label=allQml }
+### *obj*.**allQml** *<class 'NoneType'>* default: *None* { #allQml data-toc-label=allQml }
 
 
-### *obj*.**strip** *class 'NoneType'* default: *None* { #strip data-toc-label=strip }
+### *obj*.**strip** *<class 'NoneType'>* default: *None* { #strip data-toc-label=strip }
 
 
-### *obj*.**translations** *class 'NoneType'* default: *None* { #translations data-toc-label=translations }
+### *obj*.**translations** *<class 'NoneType'>* default: *None* { #translations data-toc-label=translations }
 
 
-### *obj*.**otherArgs** *class 'NoneType'* default: *None* { #otherArgs data-toc-label=otherArgs }
+### *obj*.**otherArgs** *<class 'NoneType'>* default: *None* { #otherArgs data-toc-label=otherArgs }
 
 
 ### *QtCppConfig*.**exeWrapper**`#!py3 (exePath, isGui)` { #exeWrapper data-toc-label=exeWrapper }
@@ -114,7 +114,7 @@ Initialize self.  See help(type(self)) for accurate signature.
 ### *QtCppConfig*.**srcCompilerOptions**`#!py3 ()` { #srcCompilerOptions data-toc-label=srcCompilerOptions }
 
 
-### *QtCppConfig*.**CQtDeployerConfig** *class 'type'* default: *class 'qt_cpp.QtCppConfig.CQtDeployerConfig'* { #CQtDeployerConfig data-toc-label=CQtDeployerConfig }
+### *QtCppConfig*.**CQtDeployerConfig** *<class 'type'>* default: *<class 'qt_cpp.QtCppConfig.CQtDeployerConfig'>* { #CQtDeployerConfig data-toc-label=CQtDeployerConfig }
 
 
 ## **QtCppConfig.CQtDeployerConfig**`#!py3 class` { #QtCppConfig.CQtDeployerConfig data-toc-label=QtCppConfig.CQtDeployerConfig }

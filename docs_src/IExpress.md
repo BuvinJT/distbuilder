@@ -46,49 +46,49 @@ Initialize self.  See help(type(self)) for accurate signature.
 ### *obj*.**scriptType**`#!py3 (self)` { #scriptType data-toc-label=scriptType }
 
 
-### *obj*.**name** *class 'NoneType'* default: *None* { #name data-toc-label=name }
+### *obj*.**name** *<class 'NoneType'>* default: *None* { #name data-toc-label=name }
 
 
-### *obj*.**sourceDir** *class 'NoneType'* default: *None* { #sourceDir data-toc-label=sourceDir }
+### *obj*.**sourceDir** *<class 'NoneType'>* default: *None* { #sourceDir data-toc-label=sourceDir }
 
 
-### *obj*.**entryPointScript** *class 'NoneType'* default: *None* { #entryPointScript data-toc-label=entryPointScript }
+### *obj*.**entryPointScript** *<class 'NoneType'>* default: *None* { #entryPointScript data-toc-label=entryPointScript }
 
 
-### *obj*.**scriptHeader** *class 'NoneType'* default: *None* { #scriptHeader data-toc-label=scriptHeader }
+### *obj*.**scriptHeader** *<class 'NoneType'>* default: *None* { #scriptHeader data-toc-label=scriptHeader }
 
 
-### *obj*.**isScriptDebug** *class 'bool'* default: *False* { #isScriptDebug data-toc-label=isScriptDebug }
+### *obj*.**isScriptDebug** *<class 'bool'>* default: *False* { #isScriptDebug data-toc-label=isScriptDebug }
 
 
-### *obj*.**versionInfo** *class 'NoneType'* default: *None* { #versionInfo data-toc-label=versionInfo }
+### *obj*.**versionInfo** *<class 'NoneType'>* default: *None* { #versionInfo data-toc-label=versionInfo }
 
 
-### *obj*.**iconFilePath** *class 'NoneType'* default: *None* { #iconFilePath data-toc-label=iconFilePath }
+### *obj*.**iconFilePath** *<class 'NoneType'>* default: *None* { #iconFilePath data-toc-label=iconFilePath }
 
 
-### *obj*.**isAutoElevated** *class 'bool'* default: *False* { #isAutoElevated data-toc-label=isAutoElevated }
+### *obj*.**isAutoElevated** *<class 'bool'>* default: *False* { #isAutoElevated data-toc-label=isAutoElevated }
 
 
-### *obj*.**scriptImports** *class 'list'* default: *[]* { #scriptImports data-toc-label=scriptImports }
+### *obj*.**scriptImports** *<class 'list'>* default: *[]* { #scriptImports data-toc-label=scriptImports }
 
 
-### *obj*.**embeddedResources** *class 'list'* default: *[]* { #embeddedResources data-toc-label=embeddedResources }
+### *obj*.**embeddedResources** *<class 'list'>* default: *[]* { #embeddedResources data-toc-label=embeddedResources }
 
 
-### *obj*.**distResources** *class 'list'* default: *[]* { #distResources data-toc-label=distResources }
+### *obj*.**distResources** *<class 'list'>* default: *[]* { #distResources data-toc-label=distResources }
 
 
-### *obj*.**distDirs** *class 'list'* default: *[]* { #distDirs data-toc-label=distDirs }
+### *obj*.**distDirs** *<class 'list'>* default: *[]* { #distDirs data-toc-label=distDirs }
 
 
-### *obj*.**codeSignConfig** *class 'list'* default: *[]* { #codeSignConfig data-toc-label=codeSignConfig }
+### *obj*.**codeSignConfig** *<class 'list'>* default: *[]* { #codeSignConfig data-toc-label=codeSignConfig }
 
 
-### *obj*.**codeSignTargets** *class 'list'* default: *[]* { #codeSignTargets data-toc-label=codeSignTargets }
+### *obj*.**codeSignTargets** *<class 'list'>* default: *[]* { #codeSignTargets data-toc-label=codeSignTargets }
 
 
-### *obj*.**destDirPath** *class 'NoneType'* default: *None* { #destDirPath data-toc-label=destDirPath }
+### *obj*.**destDirPath** *<class 'NoneType'>* default: *None* { #destDirPath data-toc-label=destDirPath }
 
 
 
@@ -153,7 +153,7 @@ VIRTUAL
 ### *obj*.**run**`#!py3 (self)` { #run data-toc-label=run }
 
 
-### *IExpressInstallerProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+### *IExpressInstallerProcess*.**DIVIDER** *<class 'str'>* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
 
 
 
@@ -198,7 +198,7 @@ VIRTUAL
 ### *obj*.**run**`#!py3 (self)` { #run data-toc-label=run }
 
 
-### *IExpressPackageProcess*.**DIVIDER** *class 'str'* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
+### *IExpressPackageProcess*.**DIVIDER** *<class 'str'>* default: *"------------------------------------"* { #DIVIDER data-toc-label=DIVIDER }
 
 
 
