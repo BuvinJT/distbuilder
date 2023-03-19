@@ -105,8 +105,9 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     <h1 id="configfactory">ConfigFactory<a class="headerlink" href="#configfactory" title="Permanent link">&para;</a></h1>
 <p><img alt="distbuilder logo" src="https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png" /></p>
-<p>It is typical for a build script to start by creating a high-level <a href="Config-Factory.md">ConfigFactory</a> object and set its attributes.</p>
-<p>The primary functions within this library rely upon a collection of &ldquo;configuration&rdquo; objects which act as &ldquo;smart  parameter sets&rdquo;.  Those parameters are used to drive various <a href="HighLevel.Md">Processes</a>.  Many of these config classes have overlapping attributes. Scripts which employ a collection of those low levels objects in the raw tend to include a lot of tedious and redundant assignment operations.  With this in mind, the ConfigFactory class was created, to radically simplify many scripts.</p>
+<p>A ConfigFactory is an object which produces configuration objects.</p>
+<p>It is typical for a distbuilder build script to create a high-level <a href="Config-Factory.md">ConfigFactory</a> object, then set a collection of its attributes, and then pass it to a <a href="HighLevel.Md">Process</a>.</p>
+<p>The primary functions within this library rely upon a collection of &ldquo;configuration&rdquo; objects which act as &ldquo;smart  parameter sets&rdquo;.  Those parameters are used to drive various <a href="HighLevel.Md">Processes</a>. Many of these config classes have overlapping attributes. Scripts which employ a collection of those low levels objects in the raw tend to include a lot of tedious and redundant assignment operations.  With this in mind, the ConfigFactory class was created, to radically simplify many scripts.</p>
 <h1 id="configuration-classes">Configuration Classes<a class="headerlink" href="#configuration-classes" title="Permanent link">&para;</a></h1>
 <p>The following classes are used to create objects which
 are employed as arguments to various functions within the library.
