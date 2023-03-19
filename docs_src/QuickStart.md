@@ -28,6 +28,6 @@ Distbuilder is great to use within a `setup.py` script as well. It is a common P
 
 ### Getting Started
 
-The easiest way for most people to learn how to use distbuilder is to dive head first into a few basic [Examples](Examples.md).  If you can afford just 5 to 10 minutes reviewing some of the provided demos, you should come away ready to start using this tool.  
+The easiest way for most people to learn how to use distbuilder is to dive right into the [Basic Examples](BasicExamples.md).  From that, you should come away with a basic idea for how you might to use the tool.  
 
-If you're ready to begin a more thorough examination of the library, continue on to [Process Classes](HighLevel.md), [Configuration Classes](ConfigClasses.md#configuration-classes), and [Granular Operations](LowLevel.md) for even more details.
+If you want to begin a more thorough examination of the library, continue on to [Process Classes](HighLevel.md)...

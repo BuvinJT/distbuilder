@@ -79,14 +79,13 @@ python -m pip install distbuilder
 
 ### From source installation
 
-To install from the raw source instead (useful if you want a 
-"cutting edge" alpha release), you may perform a Git clone from 
+To install the library from the raw source  (useful if you want a 
+"cutting edge" alpha release!), you may perform a Git clone from 
 `https://github.com/BuvinJT/distbuilder.git`, 
 or otherwise download the repository in a "flat" manner 
 from the [GitHub Page](https://github.com/BuvinJT/distbuilder).
 You may also visit the [PyPi downloads](https://pypi.org/project/distbuilder/#files) 
-page for this project to instantly acquire an official release in the form 
-of a tarball.
+page for this project to acquire the tarball of an "official release" .
 
 With a local copy of the full source, on Windows you may be able
 to simply run `install.bat` (or `install3.bat`). 

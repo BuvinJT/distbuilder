@@ -9,7 +9,7 @@ nav:
         - Examples Source / Resources: ExamplesSource.md
         - Basic Examples: BasicExamples.md
         - Multi-Package Examples: MultiPackageExamples.md
-        - Context Altering Examples: ContextAlteringExamples.md
+        - Special Context Examples: SpecialContextExamples.md
         - Installer Operations Examples: InstallerOperationsExamples.md
         - Installer UI Examples: InstallerUIExamples.md
         - Code Signing Examples: CodeSigningExamples.md

@@ -1,4 +1,4 @@
-# Context Altering Examples
+# Special Context Examples
 ![distbuilder logo](https://raw.githubusercontent.com/BuvinJT/distbuilder/master/docs/img/distbuilder128.png)
 
 ## Hello Silent Example
